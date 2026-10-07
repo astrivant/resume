@@ -4,19 +4,14 @@
     "endorsements": 6,
     "weight": 13
   },
-  "Python": {
-    "references": 6,
-    "endorsements": 2,
-    "weight": 10
-  },
   "DevOps": {
     "references": 9,
     "endorsements": 0,
     "weight": 9
   },
-  "Linux": {
-    "references": 8,
-    "endorsements": 0,
+  "Python": {
+    "references": 4,
+    "endorsements": 2,
     "weight": 8
   },
   "Kubernetes": {
@@ -44,19 +39,14 @@
     "endorsements": 1,
     "weight": 5
   },
+  "Linux": {
+    "references": 5,
+    "endorsements": 0,
+    "weight": 5
+  },
   "Telecommunications": {
     "references": 1,
     "endorsements": 2,
-    "weight": 5
-  },
-  "Windows": {
-    "references": 5,
-    "endorsements": 0,
-    "weight": 5
-  },
-  "ZFS": {
-    "references": 5,
-    "endorsements": 0,
     "weight": 5
   },
   "AWS": {
@@ -77,11 +67,6 @@
   "Cloud Computing": {
     "references": 1,
     "endorsements": 1,
-    "weight": 3
-  },
-  "Disaster Recovery": {
-    "references": 3,
-    "endorsements": 0,
     "weight": 3
   },
   "GitHub": {
@@ -114,17 +99,17 @@
     "endorsements": 0,
     "weight": 3
   },
-  "Technical Support": {
-    "references": 3,
-    "endorsements": 0,
-    "weight": 3
-  },
   "Troubleshooting": {
     "references": 3,
     "endorsements": 0,
     "weight": 3
   },
   "Vault": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Windows": {
     "references": 3,
     "endorsements": 0,
     "weight": 3
@@ -139,17 +124,17 @@
     "endorsements": 0,
     "weight": 2
   },
+  "Disaster Recovery": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
   "Flask": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
   },
   "Graph Theory": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "Hyper-V": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -164,16 +149,6 @@
     "endorsements": 0,
     "weight": 2
   },
-  "iSCSI": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "NFS": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
   "Orchids": {
     "references": 2,
     "endorsements": 0,
@@ -184,12 +159,12 @@
     "endorsements": 0,
     "weight": 2
   },
-  "Samba": {
+  "secrets management": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
   },
-  "secrets management": {
+  "ZFS": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -279,7 +254,17 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Hyper-V": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "Information Security": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "iSCSI": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -304,6 +289,11 @@
     "endorsements": 0,
     "weight": 1
   },
+  "NFS": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "OpenShift": {
     "references": 1,
     "endorsements": 0,
@@ -319,12 +309,22 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Samba": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "Software as a Service (SaaS)": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
   },
   "Software Infrastructure": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Technical Support": {
     "references": 1,
     "endorsements": 0,
     "weight": 1

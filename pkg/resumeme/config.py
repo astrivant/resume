@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from importlib.resources import files
 from pathlib import Path
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 import cattrs
 import yaml
@@ -180,6 +180,7 @@ class StyleOverrides(TypedDict, total=False):
 
     Attributes:
         paper (str): A4 or letter paper name.
+        profile_column_side (Literal["left", "right"]): First-page profile placement; right lets body text continue beneath it.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
@@ -199,6 +200,7 @@ class StyleOverrides(TypedDict, total=False):
     """
 
     paper: str
+    profile_column_side: Literal["left", "right"]
     accent: str
     background: str
     font_size: int
@@ -224,6 +226,7 @@ class Style:
 
     Attributes:
         paper (str): A4 or letter paper name.
+        profile_column_side (Literal["left", "right"]): First-page profile placement; right lets body text continue beneath it.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
@@ -245,6 +248,7 @@ class Style:
     """
 
     paper: str = "letter"
+    profile_column_side: Literal["left", "right"] = "left"
     accent: str = "245135"
     background: str = "FFFFFF"
     font_size: int = 10

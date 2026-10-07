@@ -151,12 +151,19 @@
 ((* if section.key == 'skills' and skill_cloud *))
 % Center the cloud and its compact caption together, keeping the section heading aligned with other sections.
 \begingroup\centering
-% Scale both bounds to 75% of the original display size without changing the cloud's proportions or weights.
-\includegraphics[width=0.75\linewidth,height=0.4125\textheight,keepaspectratio]{((( skill_cloud )))}\par
-{\footnotesize\itshape Top skills}\par
 ((* if style.skill_colors|length > 1 *))
-{\footnotesize Relative endorsements: 0\%\enspace\raisebox{-0.3mm}{\pgfuseshading{skillendorsements}}\enspace100\%}\par
-((* endif *))
+% Place the compact vertical scale in the left margin without shifting the centered cloud.
+\makebox[0pt][r]{%
+\begin{tikzpicture}[baseline=(current bounding box.center),font=\footnotesize]
+\node[anchor=south west,inner sep=0pt] at (0,0) {\pgfuseshading{skillendorsements}};
+\node[anchor=south,inner sep=0pt] at (1mm,19mm) {100\%};
+\node[anchor=north,inner sep=0pt] at (1mm,-1mm) {0\%};
+\node[rotate=90,anchor=south,inner sep=0pt] at (-4mm,9mm) {Relative endorsements};
+\end{tikzpicture}\hspace{3mm}}%
+((* endif -*))
+% Scale both bounds to 75% of the original display size without changing the cloud's proportions or weights.
+\raisebox{-0.5\height}{\includegraphics[width=0.75\linewidth,height=0.4125\textheight,keepaspectratio]{((( skill_cloud )))}}\par
+{\footnotesize\itshape Top skills}\par
 \endgroup
 \end{minipage}
 ((* elif tiled *))
@@ -199,9 +206,10 @@
 ((* for color in style.skill_colors *))
 \definecolor{skillstop((( loop.index0 )))}{HTML}{((( color )))}
 ((* endfor *))
-\pgfdeclarehorizontalshading{skillendorsements}{2mm}{%
+% The scale is half the former 36mm length, with zero endorsements at the bottom.
+\pgfdeclareverticalshading{skillendorsements}{2mm}{%
 ((* for color in style.skill_colors -*))
-color( ((( 36 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop((( loop.index0 ))))((* if not loop.last *));((* endif *))%
+color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop((( loop.index0 ))))((* if not loop.last *));((* endif *))%
 ((* endfor -*))
 }
 ((* endif *))
@@ -409,11 +417,20 @@ color( ((( 36 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \endgroup
 }
 \urlstyle{same}
-% Reserve a narrow identity column on page one, then use full-width continuation pages.
-% Flow frames let long content continue instead of clipping it in a fixed-height box.
-% Allocate 26% to identity and 69% to the body, retaining a 5% gutter.
+% Allocate 26% to identity and 69% to the body, retaining a 5% gutter on either side.
+((* if style.profile_column_side == 'right' *))
+\newsavebox{\profileidentitybox}
+\newlength{\profilecolumnheight}
+\newlength{\profilebelowheight}
+\newflowframe[1]{0.26\textwidth}{\textheight}{0.74\textwidth}{0pt}[identity]
+\newflowframe[1]{0.69\textwidth}{\textheight}{0pt}{0pt}[opening]
+% Activate the full-width lower frame after measuring the visible profile, before body text starts.
+\newflowframe[none]{\textwidth}{\textheight}{0pt}{0pt}[belowidentity]
+((* else *))
+% The original left profile remains a full-height column with a full-height body beside it.
 \newflowframe[1]{0.26\textwidth}{\textheight}{0pt}{0pt}[identity]
 \newflowframe[1]{0.69\textwidth}{\textheight}{0.31\textwidth}{0pt}[opening]
+((* endif *))
 \newflowframe[>1]{\textwidth}{\textheight}{0pt}{0pt}[continuation]
 % Flow frames reset their text color on entry; inherit the configured body ink in every column and continuation page.
 \setallflowframes{textcolor=ink}
@@ -422,6 +439,10 @@ color( ((( 36 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* set contact_first = section_navigation and section_navigation[0][1].key == 'contact' *))
 ((# Relocate observed header branding beside its name, using the same linked company row as Experience. #))
 ((* set header, header_badges = profile|header_logos *))
+((* if style.profile_column_side == 'right' *))
+% Keep one content definition: measuring must not duplicate anchors or change which header fields are visible.
+\newcommand{\profileidentity}{%
+((* endif *))
 {\color{profilename}\fontsize{24}{28}\selectfont\bfseries ((( profile.name|tex )))}\par
 ((# Keep captured pronouns with the name, above the portrait, and omit their old position in the intro below. #))
 ((* for line in profile.intro if line is pronouns *))
@@ -469,6 +490,30 @@ color( ((( 36 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \par\addvspace{12pt}
 ((* if contact_first *))
 ((( render_section(section_navigation[0][1], section_navigation[0][0]) )))
+((* endif *))
+((* if style.profile_column_side == 'right' *))
+}
+% Measure the actual header, including optional contact and navigation, with its normal column typography.
+\sbox{\profileidentitybox}{%
+  \begin{minipage}{\linewidth}
+    \raggedright\setlength{\parskip}{3pt}%
+    % Pagination belongs to the surrounding frames, never to this measurement box.
+    \renewcommand{\profileparagraph}[1]{#1\par}%
+    \renewcommand{\Needspace}[1]{}%
+    \profileidentity
+  \end{minipage}%
+}
+\setlength{\profilecolumnheight}{\dimexpr\ht\profileidentitybox+\dp\profileidentitybox+\baselineskip\relax}
+\setlength{\profilebelowheight}{\dimexpr\typeblockheight-\profilecolumnheight\relax}
+\ifdim\profilebelowheight>3\baselineskip
+  % The body starts to the left, then continues at full width once it clears the profile's lower edge.
+  \setflowframe*{opening}{height=\profilecolumnheight,y=\profilebelowheight}%
+  \setflowframe*{belowidentity}{pages=1,height=\profilebelowheight,y=0pt}%
+  \noindent\usebox{\profileidentitybox}\par
+\else
+  % A very tall header retains normal breakable columns instead of being clipped or squeezed into a fixed box.
+  \profileidentity
+\fi
 ((* endif *))
 ((# A header-only profile does not need a forced break or an empty body heading. #))
 ((* set body = section_navigation[1:] if contact_first else section_navigation *))

@@ -392,3 +392,76 @@ def test_missing_credentials_fail_before_browser(tmp_path: Path, monkeypatch: Mo
         publish_ownership(_config(), tmp_path, tmp_path / "missing.pub", headless=True)
 
     firefox.assert_not_called()
+
+
+@pytest.mark.parametrize("edit_route", ["edit/intro/", "edit/forms/summary/new/"])
+def test_editor_supports_empty_and_existing_about(edit_route: str, monkeypatch: MonkeyPatch) -> None:
+    """
+    Open only the configured owner's summary form using observable owner controls.
+
+    Args:
+        edit_route (str): Owner control available on a minimal or populated profile.
+        monkeypatch (MonkeyPatch): Navigation replacement retaining browser URL transitions.
+
+    Returns:
+        None: The unique visible textarea and Save control are returned from the correct dialog.
+    """
+    driver = MagicMock()
+    link, dialog, field, save, cancel = (MagicMock() for _ in range(5))
+    link.get_attribute.return_value = "https://www.linkedin.com/in/test-owner/" + edit_route
+    save.text, cancel.text = "Save", "Cancel"
+    dialog.find_elements.side_effect = lambda selector_type, selector: [field] if selector == "textarea" else [cancel, save]
+    elements = {
+        'main h1, section[aria-label="Primary content"] h2': [MagicMock()],
+        "a[href]": [link],
+        '[role="dialog"] textarea': [field],
+        '[role="dialog"]': [dialog],
+    }
+    driver.find_elements.side_effect = lambda selector_type, selector: elements[selector]
+    monkeypatch.setattr("resumeme.linkedin.ownership._navigate", lambda page, url, settings: setattr(page, "current_url", url))
+    assert _editor(driver, _config()) == (field, save)
+    assert driver.current_url == "https://www.linkedin.com/in/test-owner/edit/forms/summary/new/"
+    save.click.assert_not_called()
+
+
+def test_truncated_input_is_never_submitted(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """
+    Detect field truncation even when the editor does not expose maxlength.
+
+    Args:
+        tmp_path (Path): Ignored backup root.
+        monkeypatch (MonkeyPatch): Textarea substitution that drops typed content.
+
+    Returns:
+        None: Save is not clicked after partial text acceptance.
+    """
+    field, save = _field("Original"), MagicMock()
+    field.send_keys.side_effect = None
+    monkeypatch.setattr("resumeme.linkedin.ownership._editor", MagicMock(return_value=(field, save)))
+
+    with pytest.raises(ValueError, match="complete About text"):
+        _update_about(MagicMock(), _config(), tmp_path, _BLOCK, dry_run=False)
+
+    save.click.assert_not_called()
+
+
+def test_unconfirmed_save_is_not_reported_as_success(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """
+    Require a fresh editor read to match the submitted text before reporting success.
+
+    Args:
+        tmp_path (Path): Backup root.
+        monkeypatch (MonkeyPatch): Editor reads returning unchanged server text after Save.
+
+    Returns:
+        None: Failed persistence remains an actionable failure.
+    """
+    field, save = _field("Original"), MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.ownership._editor", MagicMock(side_effect=[(field, save), (_field("Original"), MagicMock())]))
+    driver = MagicMock()
+    driver.find_elements.return_value = []
+
+    with pytest.raises(ValueError, match="did not retain"):
+        _update_about(driver, _config(), tmp_path, _BLOCK, dry_run=False)
+
+    save.click.assert_called_once()

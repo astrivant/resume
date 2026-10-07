@@ -8,11 +8,49 @@ from attrs import evolve
 
 from resumeme.compiler.asts.dates import employment_period
 from resumeme.compiler.asts.profile import Entry
+from resumeme.compiler.constants.locations import WORK_MODES
 from resumeme.compiler.passes.experience import regroup_positions
 from resumeme.compiler.passes.lists import text_blocks
+from resumeme.compiler.passes.locations import job_locations
 from resumeme.compiler.passes.media import employer_badge
 
 __all__ = ["experience_layout"]
+
+
+def _role_metadata(entry: Entry) -> Entry:
+    """
+    Move a nested role's work arrangement onto its dates and duration row.
+
+    Args:
+        entry (Entry): Individual role separated from its company context.
+
+    Returns:
+        Entry: Display copy with compact metadata, retaining geography and description text.
+    """
+
+    # Only inspect the header's first date row and its immediate successor; work-mode words in prose stay untouched.
+    dated = next((index for index, line in enumerate(entry.paragraphs[:3]) if employment_period(line)), None)
+
+    if dated is None or dated + 1 >= len(entry.paragraphs):
+        return entry
+
+    metadata = entry.paragraphs[dated + 1].strip()
+    place, separator, mode = metadata.rpartition("·")
+    mode = mode.strip()
+
+    if mode.casefold() not in WORK_MODES or (separator and metadata not in job_locations(entry)):
+        return entry
+
+    # Preserve any clickable place on its own row; never duplicate a mode already present in the date metadata.
+    dates = entry.paragraphs[dated].rstrip()
+    existing_modes = {part.strip().casefold() for part in dates.split("·")[1:]} & WORK_MODES
+
+    if existing_modes and mode.casefold() not in existing_modes:
+        return entry
+
+    combined = dates if existing_modes else f"{dates} · {mode}"
+    replacement = [combined, place.rstrip()] if separator else [combined]
+    return evolve(entry, paragraphs=[*entry.paragraphs[:dated], *replacement, *entry.paragraphs[dated + 2 :]])
 
 
 def experience_layout(entry: Entry) -> Entry:
@@ -40,7 +78,7 @@ def experience_layout(entry: Entry) -> Entry:
 
         positions = [
             evolve(
-                position,
+                _role_metadata(position),
                 images=[image for image in position.images if not logo or image.url != logo.url],
                 links=[link for link in position.links if not logo or not logo.link or (link.resolved_url or link.url) != logo.link],
             )
@@ -71,5 +109,7 @@ def experience_layout(entry: Entry) -> Entry:
             return entry
 
     ends = [*starts[1:], len(entry.paragraphs)]
-    positions = [Entry(entry.paragraphs[start], entry.paragraphs[start + 1 : end]) for start, end in zip(starts, ends, strict=True)]
+    positions = [
+        _role_metadata(Entry(entry.paragraphs[start], entry.paragraphs[start + 1 : end])) for start, end in zip(starts, ends, strict=True)
+    ]
     return evolve(entry, paragraphs=entry.paragraphs[: starts[0]], positions=positions)

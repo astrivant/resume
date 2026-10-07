@@ -54,7 +54,7 @@ photographs retain their source colors.
 `skill_colors` is an ordered list of hexadecimal color stops. The first represents
 zero endorsements; the last represents the highest endorsement count among the
 20 displayed skills. Intermediate counts interpolate between the stops.
-The centered cloud includes a short caption and a matching 0–100% color scale;
+The centered cloud includes a short caption and a compact vertical 0–100% color scale to its left;
 single-color palettes omit the scale.
 
 ```text

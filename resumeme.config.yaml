@@ -66,11 +66,11 @@ experience:
       company: PremiScale
 
   # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
-  last_years: null
+  last_years: 6
 
   # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
   # null uses today's UTC date. Keep explicit dates quoted.
-  as_of: '2020-06-01'
+  as_of: null
 
   # Reflow single line breaks inside job prose and bullets. False retains captured line boundaries.
   # Blank lines, new bullets, metadata, and the labels below remain boundaries either way.
@@ -105,6 +105,9 @@ output:
   tex: tex/resume.tex
   pdf: resume.pdf
 style:
+  # left keeps the full-height profile column; right places it at the upper right with body text flowing below it.
+  profile_column_side: right
+
   show_headline: false
 
   # null uses the base style below; set tiger to apply the matching overrides in themes.
@@ -126,7 +129,7 @@ style:
   # Set true to display the cover/background photo; the portrait stays visible.
   show_header_photo: false
 
-  # Link visible sections beneath the LinkedIn profile link in the first-page left column.
+  # Link visible sections beneath the LinkedIn profile link in the first-page profile column.
   show_table_of_contents: true
 
   # Bold job subsection labels with a small gap above them. False displays those labels as ordinary text.

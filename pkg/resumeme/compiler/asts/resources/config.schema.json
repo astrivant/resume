@@ -248,6 +248,9 @@
               },
               "show_headline": {
                 "$ref": "#/properties/style/properties/show_headline"
+              },
+              "profile_column_side": {
+                "$ref": "#/properties/style/properties/profile_column_side"
               }
             },
             "additionalProperties": false
@@ -270,6 +273,14 @@
           "type": "boolean",
           "default": false,
           "description": "Display the captured headline beneath the portrait; hidden by default."
+        },
+        "profile_column_side": {
+          "description": "First-page profile placement: left keeps full-height columns; right wraps body content beside and below the profile.",
+          "enum": [
+            "left",
+            "right"
+          ],
+          "default": "left"
         }
       },
       "required": [],

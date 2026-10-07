@@ -11,6 +11,7 @@
 - [Rendering and PDF builds](#rendering-and-pdf-builds)
 - [Container usage and tag publication](containers.md)
 - [Signed releases](#signed-releases)
+- [LinkedIn signing identity](ownership.md)
 - [Pipeline and ownership](#pipeline-and-ownership)
 - [Development](development.md)
 - [Capture limits and recovery](#capture-limits-and-recovery)
@@ -26,6 +27,9 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | Setting | Default | Purpose |
 | --- | --- | --- |
 | `linkedin.username` | `emmeowzing` | Profile slug from `/in/<username>/` |
+| `linkedin.ownership.update_about` | `false` | Update live About with the public signing fingerprint after a signed release |
+| `linkedin.ownership.repository` | `null` | Release repository (`OWNER/REPO`); defaults to Actions context or local origin |
+| `linkedin.ownership.releases_url` | `null` | Optional HTTPS short link; otherwise use the repository releases page |
 | `section_order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
 | `project_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
 | `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
@@ -49,6 +53,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `codex.model` | `null` | Codex model override, or the pinned CLI's default |
 | `codex.about_max_words` | `100` | Maximum generated About length, from 1 to 300 words |
 | `codex.headline_max_words` | `18` | Maximum portrait summary length, from 1 to 40 words |
+| `style.profile_column_side` | `left` | `right` places the profile at the upper right and lets body content use the full width beneath it |
 | `style.paper` | `letter` | `letter` (8.5 × 11 inches) or `a4` |
 | `style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
@@ -76,6 +81,16 @@ Select `style.theme: tiger` to use the autumn palette included in the reference
 config, or add your own entries under `style.themes`. The selected entry overrides
 matching base style fields, including paper size and visibility toggles. Omitted
 fields keep their base values. See [inline themes and palette sources](themes.md).
+
+### First-page profile placement
+
+Set `style.profile_column_side: right` for an upper-right profile block. Its height
+is measured from the enabled portrait, header text, social links, contents, and
+leading Contact section. Body text starts to its left and continues at full width
+below it; later pages use the full width. The default, `left`, retains the original
+full-height column layout. This setting also supports inline theme overrides.
+An oversized profile block falls back to ordinary flowing columns so long contact
+information remains visible.
 
 ### Section visibility, order, and tiles
 

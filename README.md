@@ -296,7 +296,8 @@ features you use. GitHub supplies the publication token:
 - **`LINKEDIN_USERNAME` — required for monthly refresh.** Your LinkedIn login email
   or account identifier; this is separate from `linkedin.username`, the profile slug.
 - **`LINKEDIN_PASSWORD` — required for monthly refresh.** The login password. These
-  two secrets reach only the capture step on scheduled or manual refresh runs.
+  two secrets reach capture on refresh runs and the optional
+  [LinkedIn signing identity update](docs/ownership.md) after signed releases.
 - **`OPENAI_API_KEY` — required only when `codex.enabled: true`.** An API key from
   your OpenAI project, stored as an Actions repository secret. The Codex summary
   job receives it; ordinary builds and pull-request checks do not. API usage is

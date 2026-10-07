@@ -26,7 +26,8 @@ gh secret set LINKEDIN_PASSWORD
 
 - `LINKEDIN_USERNAME`: login email/account identifier, separate from the public
   profile slug in `resumeme.config.yaml`.
-- `LINKEDIN_PASSWORD`: account password, passed only to the capture step.
+- `LINKEDIN_PASSWORD`: account password, passed only to capture or an explicitly enabled
+  ownership update.
 - `OPENAI_API_KEY`: needed only if `codex.enabled` is true; monthly builds then
   regenerate the About and portrait summaries from that same fresh capture.
 - `COSIGN_PRIVATE_KEY` and optional `COSIGN_PASSWORD`: needed when publishing a
@@ -92,6 +93,9 @@ the PDF, Cosign signature bundles, public key, SHA-256 manifest, key fingerprint
 and source revision. The container stage then appends its pull instructions to
 the same release. See [signature verification](README.md#signed-releases).
 
-Tag releases do not sign in to LinkedIn, update `main`, or choose a newer document.
+Tag releases do not update `main` or choose a newer document. If
+`linkedin.ownership.update_about` is enabled, a separate job signs in after
+publication to maintain the public signing fingerprint and releases link in
+About. See [configuration, previews, and recovery](ownership.md).
 Reruns reconcile the same tag; an existing public PDF is never replaced. Share
 the release's PDF and verification files with the intended recipient.

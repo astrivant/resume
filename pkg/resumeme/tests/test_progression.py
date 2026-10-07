@@ -135,3 +135,90 @@ def test_role_progression_renders_once_after_job_filters(tmp_path: Path, filtere
     assert (previous_heading in text) is not filtered
     assert ("Earlier delivery" in text) is not filtered
     assert text.index(company_heading) < text.index(r"\begin{roleprogression}") < text.index(current_heading)
+
+
+@pytest.mark.parametrize("structured", [False, True])
+@pytest.mark.parametrize("mode", ["Remote", "On-site", "Hybrid"])
+def test_nested_role_work_mode_follows_duration(structured: bool, mode: str) -> None:
+    """
+    Compact work arrangements in both legacy and structured company progressions.
+
+    Args:
+        structured (bool): Whether capture recorded explicit role boundaries.
+        mode (str): Supported standalone work arrangement.
+
+    Returns:
+        None: Each mode follows its duration once and captured paragraphs remain intact.
+    """
+    current = Entry("Engineer", ["Apr 2021 - Jul 2021 · 4 mos", mode, "Built systems"])
+    previous = Entry("Associate", ["Jan 2021 - Mar 2021 · 3 mos", "On-site", "Earlier work"])
+    lines = ["Full-time · 7 mos", current.title, *current.paragraphs, previous.title, *previous.paragraphs]
+    group = Entry("Example", lines, positions=[current, previous] if structured else [])
+    display = experience_layout(group)
+    assert display.positions[0].paragraphs == [f"Apr 2021 - Jul 2021 · 4 mos · {mode}", "Built systems"]
+    assert display.positions[1].paragraphs == ["Jan 2021 - Mar 2021 · 3 mos · On-site", "Earlier work"]
+    assert current.paragraphs == ["Apr 2021 - Jul 2021 · 4 mos", mode, "Built systems"]
+    assert group.paragraphs == lines
+    assert experience_layout(current) == current
+
+
+def test_nested_work_mode_retains_clickable_geography(tmp_path: Path) -> None:
+    """
+    Keep location links and role anchors after moving the arrangement into date metadata.
+
+    Args:
+        tmp_path (Path): Isolated template rendering directory.
+
+    Returns:
+        None: Only metadata placement changes; the visible location remains a Google Maps link.
+    """
+    current = Entry("Engineer", ["Apr 2021 - Jul 2021 · 4 mos", "Boston, MA · Remote", "Built systems"])
+    previous = Entry("Associate", ["Jan 2021 - Mar 2021 · 3 mos", "On-site", "Earlier work"])
+    group = Entry("Example", [current.title, *current.paragraphs, previous.title, *previous.paragraphs], positions=[current, previous])
+    profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [group])])
+    source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
+    assert r"\profileparagraph{Apr 2021 - Jul 2021 · 4 mos · Remote}" in source
+    assert r"\profileparagraph{Jan 2021 - Mar 2021 · 3 mos · On-site}" in source
+    assert r"\href{https://www.google.com/maps/search/?api=1\&query=Boston\%2C+MA}{Boston, MA}" in source
+    assert r"\hypertarget{resumeme-section-0-job-0-0}" in source
+    assert r"\profileparagraph{On-site}" not in source
+    assert current.paragraphs[1] == "Boston, MA · Remote"
+
+
+@pytest.mark.parametrize(
+    "paragraphs",
+    [
+        ["2021 - 2022 · 1 yr", "Remote systems delivery"],
+        ["2021 - 2022 · 1 yr", "Responsibilities", "Remote"],
+        ["2021 - 2022 · 1 yr", "- Built systems · Remote"],
+        ["2021 - 2022 · 1 yr · Hybrid", "On-site"],
+        ["Remote", "Undated role"],
+    ],
+)
+def test_work_mode_compaction_leaves_ambiguous_body_text_unchanged(paragraphs: list[str]) -> None:
+    """
+    Avoid moving prose, undated arrangements, or conflicting metadata into the header.
+
+    Args:
+        paragraphs (list[str]): Role text without an unambiguous adjacent work-mode row.
+
+    Returns:
+        None: The role's display text is preserved verbatim.
+    """
+    role = Entry("Engineer", paragraphs)
+    group = Entry("Example", [role.title, *paragraphs], positions=[role])
+    assert experience_layout(group).positions[0].paragraphs == paragraphs
+
+
+def test_existing_date_work_mode_is_not_duplicated() -> None:
+    """
+    Remove a repeated standalone arrangement without adding another date suffix.
+
+    Returns:
+        None: The displayed role retains exactly one occurrence of its work mode.
+    """
+    role = Entry("Engineer", ["2021 - 2022 · 1 yr · Remote", "Remote", "Built systems"])
+    group = Entry("Example", [role.title, *role.paragraphs], positions=[role])
+    display = experience_layout(group).positions[0]
+    assert display.paragraphs == ["2021 - 2022 · 1 yr · Remote", "Built systems"]
+    assert experience_layout(display) == display
