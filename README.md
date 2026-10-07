@@ -3,7 +3,7 @@
 <img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220" align="left">
 
 **Your résumé deserves better than LinkedIn's PDF export.** Skip the clunky
-formatting and the copy-paste routine of maintaining a second résumé. `resumeme` turns your profile into a polished, illustrated PDF you'll *actually want to send* to a hiring manager offline.
+formatting and the copy-paste routine of maintaining a second résumé. `resumeme` ☕ turns your profile into a polished, illustrated PDF you'll *actually want to send* to a hiring manager offline.
 
 Build and release your résumé like software: fork the project, set your username,
 capture your profile, and keep `main` current with monthly refreshes. Tag the
@@ -156,6 +156,12 @@ capture LinkedIn first. After validation, main-branch publication commits the PD
 and any refreshed inputs together. User-created tags add a release link and key
 fingerprint to the committed PDF's footer, sign it, and publish a release.
 Pull requests validate without publishing or signing in.
+
+For applications, add LinkedIn company usernames and job links to
+`codex.companies`. CI tailors additional summaries to those employers and commits
+the PDFs under `single-origin/`, alongside your generic resume. See
+[single-origin resumes](docs/codex.md#single-origin-resumes) for configuration and
+company/job context overrides.
 
 See [configuration, architecture, and capture limits](docs/README.md) for the details.
 

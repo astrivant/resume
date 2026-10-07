@@ -4,10 +4,13 @@ Load a strict configuration with paths anchored to its own directory.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 from importlib.resources import files
 from pathlib import Path
 from typing import Literal, TypedDict
+from urllib.parse import urlsplit
 
 import cattrs
 import yaml
@@ -22,6 +25,7 @@ from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 __all__ = [
     "Capture",
     "Codex",
+    "CompanyTarget",
     "Config",
     "Education",
     "EducationSelector",
@@ -119,6 +123,40 @@ class Readme:
 
 
 @frozen
+class CompanyTarget:
+    """
+    Select one employer and job for an additional tailored resume.
+
+    Attributes:
+        username (str): Company slug from its LinkedIn company URL.
+        job_url (str): HTTPS URL of the specific advertised position.
+        context (str): Additional tailoring preferences for this target.
+        company_context (str): Company text supplied instead of fetching LinkedIn; empty fetches the company page.
+        job_context (str): Job description supplied instead of fetching its URL; empty fetches the job page.
+    """
+
+    username: str
+    job_url: str
+    context: str = ""
+    company_context: str = ""
+    job_context: str = ""
+
+    @property
+    def key(self) -> str:
+        """
+        Identify a stable output directory without collisions between jobs at one company.
+
+        Returns:
+            str: Company slug followed by a LinkedIn job ID or a digest of an external job URL.
+        """
+        parsed = urlsplit(self.job_url)
+        match = re.fullmatch(r"/jobs/view/(?:[^/]*-)?(\d+)/?", parsed.path)
+        linkedin = parsed.hostname == "linkedin.com" or (parsed.hostname or "").endswith(".linkedin.com")
+        job = match[1] if linkedin and match else hashlib.sha256(self.job_url.encode("utf-8")).hexdigest()[:16]
+        return f"{self.username.lower()}/job-{job}"
+
+
+@frozen
 class Codex:
     """
     Configure optional résumé summaries without storing API credentials.
@@ -129,6 +167,7 @@ class Codex:
         model (str | None): Explicit Codex model, or None for the pinned CLI's default.
         about_max_words (int): Maximum words in the generated About paragraph.
         headline_max_words (int): Maximum words in the summary beneath the portrait.
+        companies (list[CompanyTarget]): Additional employer/job variants; the generic resume is always retained.
     """
 
     enabled: bool = False
@@ -136,6 +175,7 @@ class Codex:
     model: str | None = None
     about_max_words: int = 100
     headline_max_words: int = 18
+    companies: list[CompanyTarget] = field(factory=list)
 
 
 @frozen
@@ -444,6 +484,12 @@ def load_config(path: Path) -> Config:
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
 
+    # Distinct URLs for the same LinkedIn job can differ only in tracking parameters; never let them overwrite one output.
+    company_keys = [company.key for company in config.codex.companies]
+
+    if len(company_keys) != len(set(company_keys)):
+        raise ValueError("codex.companies must select distinct company/job pairs.")
+
     # Contribution ownership is explicit: never infer a GitHub account from the LinkedIn username or a repository owner.
     if config.github.contributions.enabled and config.github.username is None:
         raise ValueError("Set github.username before enabling github.contributions.")
@@ -454,6 +500,7 @@ def load_config(path: Path) -> Config:
 
     # Inputs, templates, and outputs share one root but must never resolve to the same file or directory.
     paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf]
+    paths.extend(f"single-origin/{key}/resume.pdf" for key in company_keys)
 
     if config.template:
         paths.append(config.template)

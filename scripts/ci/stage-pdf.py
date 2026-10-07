@@ -4,10 +4,12 @@ Stage the configured PDF at a stable artifact path shared by build and deploy.
 
 from __future__ import annotations
 
+import os
 import shutil
 from pathlib import Path
 
 from resumeme.config import load_config, project_path
+from resumeme.github.company_artifacts import stage_companies
 
 # Decouple user-configurable output paths from the artifact name expected by signing and deploy stages.
 config = load_config(Path("resumeme.config.yaml"))
@@ -19,3 +21,4 @@ if not source.read_bytes().startswith(b"%PDF-"):
 
 artifact.parent.mkdir(parents=True, exist_ok=True)
 shutil.copyfile(source, artifact)
+stage_companies(Path.cwd(), config, artifact.parent, generated=os.environ.get("USE_CODEX_SUMMARY") == "true")

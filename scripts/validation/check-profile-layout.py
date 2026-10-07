@@ -1,5 +1,5 @@
 """
-Check compiled first-page wrapping against synthetic short and tall profile columns.
+Check compiled profile wrapping and skill-cloud alignment against synthetic layouts.
 """
 
 from __future__ import annotations
@@ -9,20 +9,17 @@ import tempfile
 from datetime import timedelta
 from itertools import pairwise
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from attrs import evolve
 from PIL import Image
 from pypdf import PdfReader
+from pypdf.generic import DictionaryObject
 
 from resumeme.compiler.asts.contributions import ContributionCalendar, ContributionDay, calendar_window
-from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, Skill
 from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, GitHub, GitHubContributions, LinkedIn, Output, Style
-
-if TYPE_CHECKING:
-    from pypdf.generic import DictionaryObject
 
 
 def _rows(path: Path) -> list[tuple[int, str, float, float]]:
@@ -66,12 +63,69 @@ def _rows(path: Path) -> list[tuple[int, str, float, float]]:
     return rows
 
 
+def _assert_cloud_centered(path: Path, cloud: Path) -> int:
+    """
+    Check the final skill image's drawn position against the physical page midpoint.
+
+    Args:
+        path (Path): Compiled fixture ending with its Skills section.
+        cloud (Path): Generated cloud image used to distinguish it from profile artwork.
+
+    Returns:
+        int: One-based page number containing the verified cloud.
+
+    Raises:
+        AssertionError: The cloud is absent, duplicated, or displaced from the page center.
+    """
+    reader = PdfReader(path)
+    page = reader.pages[-1]
+    resources = page["/Resources"].get_object()
+    assert isinstance(resources, DictionaryObject)
+    objects = resources["/XObject"].get_object()
+    assert isinstance(objects, DictionaryObject)
+
+    with Image.open(cloud) as image:
+        size = image.size
+
+    # Synthetic portraits and banners have distinct dimensions; match the generated raster without relying on resource names.
+    names = {
+        str(name)
+        for name, reference in objects.items()
+        if isinstance(artwork := reference.get_object(), DictionaryObject)
+        and artwork.get("/Subtype") == "/Image"
+        and (artwork.get("/Width"), artwork.get("/Height")) == size
+    }
+    centers: list[float] = []
+
+    def locate(operator: bytes, operands: list[object], cm: list[float], tm: list[float]) -> None:
+        """
+        Record image placement after applying the page's current graphics transformation.
+
+        Args:
+            operator (bytes): Parsed PDF operation.
+            operands (list[object]): Operation arguments, including the image resource name.
+            cm (list[float]): Current graphics transformation matrix.
+            tm (list[float]): Text transformation matrix.
+
+        Returns:
+            None: Drawn image centers are collected for the alignment assertion.
+        """
+        if operator == b"Do" and str(operands[0]) in names:
+            centers.append(cm[4] + (cm[0] + cm[2]) / 2)
+
+    page.extract_text(visitor_operand_before=locate)
+    expected = float(page.mediabox.left + page.mediabox.right) / 2
+    assert len(centers) == 1, f"Expected one skill cloud, found {len(centers)}"
+    assert abs(centers[0] - expected) < 0.5, f"Cloud center {centers[0]:.2f}pt differs from page center {expected:.2f}pt"
+    return len(reader.pages)
+
+
 def main() -> None:
     """
     Compile bounded layout fixtures using the selected installed PDF backend.
 
     Returns:
-        None: Assertions verify text preservation, continuous baselines, and adaptive line widths.
+        None: Assertions verify text preservation, adaptive line widths, and centered clouds on first and continuation pages.
 
     Raises:
         AssertionError: Body text is lost, overlaps the profile, or leaves unnecessary gaps at its lower edge.
@@ -84,9 +138,10 @@ def main() -> None:
         end.isoformat(),
         [ContributionDay((start + timedelta(days=offset)).isoformat(), 0, 0) for offset in range((end - start).days + 1)],
     )
-    words = [f"word{index:03d}" for index in range(450)]
+    words = [f"word{index:03d}" for index in range(650)]
     sentence = "Build practical tools and reliable platforms for engineering teams, improving delivery speed and operational consistency."
     transitions: list[int] = []
+    skills = Section("skills", "Skills", [Entry("Python", skills=[Skill("Python", 2), Skill("Rust", 1)])])
 
     # Both previews use one uninterrupted paragraph, so moving it wholesale below the profile cannot pass.
     with tempfile.TemporaryDirectory(prefix="profile-layout-", dir=Path.cwd()) as directory:
@@ -108,7 +163,7 @@ def main() -> None:
                 ]
                 if expanded
                 else [],
-                sections=[Section("about", "About", [Entry(paragraphs=[sentence, " ".join(words)])])],
+                sections=[Section("about", "About", [Entry(paragraphs=[sentence, " ".join(words)])]), skills],
             )
             config = Config(
                 LinkedIn(profile.username),
@@ -119,7 +174,10 @@ def main() -> None:
                 output=Output(tex=f"{name}/resume.tex", pdf=f"{name}/resume.pdf"),
             )
             source = render_profile(profile, config, root, contributions=calendar if expanded else None)
-            rows = _rows(compile_pdf(source, config, root))
+            pdf = compile_pdf(source, config, root)
+            rows = _rows(pdf)
+            cloud_page = _assert_cloud_centered(pdf, next((source.parent / "assets").glob("skills-*.png")))
+            assert cloud_page > 1, f"{name}: fixture did not exercise a continuation-page cloud"
             text = " ".join(row[1] for row in rows)
             assert re.findall(r"word\d{3}", text) == words, f"{name}: lost, repeated, or reordered body text"
             assert not re.search(r"\d+\.\d+pt", text), f"{name}: layout dimensions leaked into visible text"
@@ -136,7 +194,7 @@ def main() -> None:
             assert 0 < header_bottom - body[transition][1] < 36, f"{name}: wrapping ended too early or reserved extra lines"
             assert all(0 < upper[1] - lower[1] < 15 for upper, lower in pairwise(body)), f"{name}: gap inside paragraph"
             transitions.append(transition)
-            print(f"{name}: continuous paragraph widens after {transition} lines")
+            print(f"{name}: continuous paragraph widens after {transition} lines; cloud centered on page {cloud_page}")
 
         assert transitions[1] > transitions[0], "Enabling profile content did not increase its wrapping exclusion"
 
@@ -149,13 +207,17 @@ def main() -> None:
                     "projects",
                     "Projects",
                     [Entry("Project proof", ["Complete project description"], [Link("Source", "https://github.com/example/project")])],
-                )
+                ),
+                skills,
             ],
         )
         config = Config(LinkedIn(profile.username), style=Style(profile_column_side="right", show_table_of_contents=False))
-        rows = _rows(compile_pdf(render_profile(profile, config, root), config, root))
+        source = render_profile(profile, config, root)
+        pdf = compile_pdf(source, config, root)
+        rows = _rows(pdf)
         assert any(page == 1 and "Project proof" in text for page, text, _, _ in rows), "Short profile stranded Projects on page two"
-        print("projects: first-page space reused below the profile")
+        assert _assert_cloud_centered(pdf, next((source.parent / "assets").glob("skills-*.png"))) == 1, "Cloud fixture left page one"
+        print("projects: first-page space reused below the profile; cloud centered on page one")
 
         # An oversized optional Contact section must remain breakable rather than clipping a measured identity box.
         details = [f"Contact detail {index:03d}" for index in range(80)]

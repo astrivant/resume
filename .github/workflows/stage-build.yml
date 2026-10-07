@@ -11,7 +11,7 @@ on:
         type: boolean
         default: false
       summary:
-        description: Consume the single generated summary for this pipeline run
+        description: Consume the generic and company summary artifacts from this pipeline run
         type: boolean
         default: false
 permissions:

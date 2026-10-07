@@ -87,6 +87,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `codex.model` | `null` | Codex model override, or the pinned CLI's default |
 | `codex.about_max_words` | `100` | Maximum generated About length, from 1 to 300 words |
 | `codex.headline_max_words` | `18` | Maximum portrait summary length, from 1 to 40 words |
+| `codex.companies` | `[]` | Company usernames and job URLs for additional tailored PDFs under `single-origin/`; see [company summaries](codex.md#single-origin-resumes) |
 | `style.profile_column_side` | `left` | `right` places the profile at the upper right and lets body content use the full width beneath it |
 | `style.paper` | `letter` | `letter` (8.5 x 11 inches) or `a4` |
 | `style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |

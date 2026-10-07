@@ -53,6 +53,7 @@ if TYPE_CHECKING:
 
     from resumeme.compiler.asts.contributions import ContributionCalendar
     from resumeme.compiler.asts.profile import Entry, Link, Media, Profile
+    from resumeme.compiler.asts.summary import CompanyEvidence
     from resumeme.config import Config
 
 __all__ = ["render_profile"]
@@ -66,6 +67,7 @@ def render_profile(
     allow_incomplete: bool = False,
     summary_path: Path | None = None,
     contributions: ContributionCalendar | None = None,
+    company: CompanyEvidence | None = None,
 ) -> Path:
     """
     Render enabled sections and stage their referenced images alongside the TeX source.
@@ -77,6 +79,7 @@ def render_profile(
         allow_incomplete (bool): Explicitly accept capture warnings or missing assets.
         summary_path (Path | None): Explicit generated-copy artifact, validated against this capture and configuration.
         contributions (ContributionCalendar | None): Acquired public activity for the optional GitHub graph; rendering performs no requests.
+        company (CompanyEvidence | None): Employer evidence bound to a tailored summary; None selects generic copy.
 
     Returns:
         Path: Generated LaTeX source.
@@ -91,7 +94,7 @@ def render_profile(
 
     # Validate against the original inputs before display passes remove or relocate source text.
     summary = (
-        load_summary(summary_path, username=profile.username, source_digest=summary_digest(profile, config), settings=config.codex)
+        load_summary(summary_path, username=profile.username, source_digest=summary_digest(profile, config, company), settings=config.codex)
         if summary_path is not None
         else None
     )

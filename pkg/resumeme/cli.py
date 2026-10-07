@@ -14,6 +14,7 @@ import yaml
 from jsonschema import ValidationError
 from selenium.common.exceptions import NoSuchWindowException, TimeoutException, WebDriverException
 
+from resumeme.codex.companies import prepare_companies, render_companies
 from resumeme.codex.request import prepare_summary
 from resumeme.compiler.asts.contributions import load_calendar
 from resumeme.compiler.asts.profile import load_profile, save_profile
@@ -69,9 +70,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         if name in {"render", "build"}:
             command.add_argument("--summary", type=Path, help="Generated summary JSON relative to the configuration directory")
             command.add_argument(
+                "--company-summaries", type=Path, help="Explicit directory of company/job summary artifacts to render additionally"
+            )
+            command.add_argument(
                 "--github-calendar",
                 type=Path,
                 help="Reuse captured calendar JSON instead of fetching GitHub; match github.contributions.as_of",
+            )
+
+        if name == "summary-prompt":
+            command.add_argument(
+                "--companies", action="store_true", help="Also acquire configured employer/job context and prepare each prompt"
             )
 
     ownership = commands.add_parser("publish-ownership", help="Update live LinkedIn About with a signed release's public key identity")
@@ -118,6 +127,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if args.command == "summary-prompt":
             print(prepare_summary(profile, config, root))
+
+            if args.companies:
+                for directory in prepare_companies(profile, config, root):
+                    print(directory)
+
             return 0
 
         if args.command == "validate":
@@ -149,6 +163,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         result = compile_pdf(source, config, root) if args.command == "build" else source
         print(result)
+
+        # All variants share the same capture and calendar; explicit response bundles keep ordinary builds offline.
+        if args.company_summaries:
+            for result in render_companies(
+                profile,
+                config,
+                root,
+                project_path(root, str(args.company_summaries)),
+                compile_documents=args.command == "build",
+                contributions=contributions,
+            ):
+                print(result)
     except KeyboardInterrupt:
         # Browser cleanup happens in its context manager; retain the profile so the next capture can reuse login.
         print(

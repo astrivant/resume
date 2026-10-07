@@ -488,6 +488,43 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 40
+        },
+        "companies": {
+          "type": "array",
+          "default": [],
+          "maxItems": 255,
+          "items": {
+            "type": "object",
+            "required": [
+              "username",
+              "job_url"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "username": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9-]{0,99}$"
+              },
+              "job_url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https://[^\\s]+$",
+                "maxLength": 2048
+              },
+              "context": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "company_context": {
+                "type": "string",
+                "maxLength": 40000
+              },
+              "job_context": {
+                "type": "string",
+                "maxLength": 40000
+              }
+            }
+          }
         }
       }
     },

@@ -45,6 +45,15 @@ codex:
   # Add target roles, audience, tone, or additional factual background here. Never put an API key in this file.
   context: ''
 
+  # Additional tailored PDFs under single-origin/<company>/job-<id>/resume.pdf; the generic resume.pdf stays separate.
+  companies: []
+  # companies:
+  #   - username: example-company
+  #     job_url: https://www.linkedin.com/jobs/view/1234567890/
+  #     context: Emphasize platform reliability and developer tooling.
+  #     company_context: ''  # Optional company description instead of fetching its LinkedIn About page.
+  #     job_context: ''      # Optional full job description for login-only or expired postings.
+
 # Enabled sections in PDF/contents order. Reorder entries; comment out a key to hide that section.
 # Uncomment it to restore the section. Missing/empty sections are skipped; [] renders only the profile header.
 # Add unfamiliar keys from data/profile.json to include them. Featured uses the same tiles as Projects.

@@ -51,12 +51,91 @@ calling Codex. Enabling generation without the secret fails with a setup message
 - JSON includes an owner and input fingerprint. Changes to the evidence, context,
   model, or word limits require regeneration. Model output is escaped as plain text.
 
-The `resumeme-summary` Actions artifact contains the generated JSON. The test and
-build stages download that same artifact and independently validate it; TeXtidote
-therefore checks the copy used for the signed PDF. The summary job has repository
+The `resumeme-summary` Actions artifact contains the generated JSON and any
+company/job evidence snapshots. The test and build stages download that same
+artifact and independently validate each selected response. TeXtidote checks the
+generic document's generated copy. Summary jobs have repository
 read permissions, a read-only Codex permission profile, and the action's
 `drop-sudo` strategy. The API key is supplied only to the Codex action.
 Signing and publication keep their existing jobs and credentials.
+
+## Single-origin resumes
+
+Add company/job targets under `codex.companies`. Each target generates an additional
+About paragraph and portrait summary based on the same visible profile, with
+emphasis on experience relevant to that employer's position.
+
+```yaml
+codex:
+  enabled: true
+  context: Use direct, factual language for senior engineering roles.
+  companies:
+    - username: example-company
+      job_url: https://www.linkedin.com/jobs/view/1234567890/
+      context: Emphasize platform reliability and developer tooling.
+    - username: example-company
+      job_url: https://careers.example.com/jobs/developer-platform
+      context: Emphasize cross-team technical leadership.
+```
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `username` | Yes | Company slug from `linkedin.com/company/<username>/` |
+| `job_url` | Yes | HTTPS link to a specific LinkedIn or external job posting |
+| `context` | No | Additional writing preferences for this target |
+| `company_context` | No | Company description to use instead of fetching its LinkedIn About page |
+| `job_context` | No | Job description to use instead of fetching the job URL |
+
+CI creates a summary matrix containing the generic request plus one item per
+company/job pair, with up to four generation jobs running concurrently. Each
+item uses the same pinned Codex Action and shared word limits. Adding a company
+does not change the generic request. Employer requirements remain separate from
+the applicant's facts: the prompt asks for relevant emphasis, not invented skills,
+achievements, or employment at the target company. Section, job, education, and
+project filters apply to every variant.
+
+Public company/job text is fetched before generation using the configured
+timeouts and exponential retries. Supported pages expose LinkedIn description
+blocks or Organization/JobPosting JSON-LD. If a page requires login, has expired,
+or exposes no usable description, preparation fails with an override instruction.
+Paste its text into `company_context` or `job_context` to proceed; supplying both
+makes request preparation offline. These fields are committed with your config.
+
+```yaml
+    - username: example-company
+      job_url: https://www.linkedin.com/jobs/view/1234567890/
+      company_context: |
+        Example Company builds developer infrastructure for engineering teams.
+      job_context: |
+        Senior Platform Engineer. Own Kubernetes infrastructure, improve service
+        reliability, and collaborate with application teams on developer tooling.
+```
+
+The generic PDF keeps its configured `output.pdf` path. Additional PDFs use:
+
+```text
+resume.pdf
+single-origin/
+  example-company/
+    job-1234567890/resume.pdf
+    job-<URL-digest>/resume.pdf
+```
+
+LinkedIn jobs use their numeric job ID; external postings use the first 16
+hexadecimal characters of the job URL's SHA-256. Multiple jobs at one company
+remain independent. Duplicate destinations are rejected. Generated TeX and assets
+stay under `.cache/single-origin/`.
+
+Main-branch publication commits the selected PDFs together after validation. The
+`resume-pdf` CI artifact also contains them under `single-origin/`. Removed targets
+are no longer regenerated; their previously committed PDFs remain until you
+remove them. The existing tagged release signs the generic PDF; company PDFs are
+additional working artifacts in the repository and CI bundle.
+
+Each response is bound to its owner, visible profile, word limits, model, target,
+preferences, and exact fetched descriptions. Builds reuse the saved evidence
+without refetching pages. A missing response or changed input fails validation
+instead of falling back to generic text for a company.
 
 The action and CLI are pinned in
 [stage-summary.yml](../.github/workflows/stage-summary.yml). The integration uses
@@ -90,3 +169,25 @@ An ordinary `resumeme build` remains offline and uses captured text. The compile
 never invokes a model or automatically discovers cached summaries. To preview a
 CI result locally, download the `resumeme-summary` artifact from the matching
 commit and pass its JSON file explicitly with `--summary`.
+
+To prepare the generic and all company requests locally:
+
+```bash
+poetry run resumeme summary-prompt --companies
+```
+
+Run the same Codex command for each emitted directory, using its `prompt.txt` and
+`schema.json` and writing the result to its `summary.json`. Keep each `company.json`
+beside its response. Then build the complete set, or replace `build` with `render`
+to inspect the TeX without compiling PDFs:
+
+```bash
+poetry run resumeme build \
+    --summary .cache/codex/summary.json \
+    --company-summaries .cache/codex/companies
+```
+
+The compiler acquires an enabled GitHub calendar once and shares it across the
+generic and tailored versions. `--github-calendar` can reuse an existing calendar
+snapshot for a fully offline build. No additional secrets are required for company
+variants beyond the existing `OPENAI_API_KEY` used by generation.

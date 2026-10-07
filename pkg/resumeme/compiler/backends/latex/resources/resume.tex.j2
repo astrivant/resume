@@ -374,13 +374,13 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newcommand{\profileshape}{%
   \ifprofilebody\ifprofilewrapping\ifdim\hsize=\typeblockwidth%
     \parshape=0\relax%
-    % Infinite ragged-right stretch makes short and full lines equally attractive in a shaped paragraph.
-    \rightskip=0pt plus2em\relax%
     \profilesetwidth%
     \addtolength{\linewidth}{-\leftskip}%
     \ifnum\value{page}=1\relax%
       \setlength{\profileremaining}{\dimexpr\profilecolumnheight-\pagetotal\relax}%
       \ifdim\profileremaining>0pt%
+        % Limit stretch only beside the profile; full-width figures must retain their own centering glue.
+        \rightskip=0pt plus2em\relax%
         % Reserve only the lines whose tops overlap the measured profile, including a fractional final line.
         \profilenarrowlines=\profileremaining\relax%
         \divide\profilenarrowlines by\baselineskip\relax%

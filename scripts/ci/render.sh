@@ -6,6 +6,7 @@ summary_args=()
 
 if [[ "${USE_CODEX_SUMMARY:-false}" == true ]]; then
     summary_args+=(--summary .cache/codex/summary.json)
+    summary_args+=(--company-summaries .cache/codex/companies)
 fi
 
 poetry run resumeme render "${summary_args[@]}"

@@ -13,13 +13,30 @@ from attrs import frozen
 from jsonschema import Draft202012Validator
 
 from resumeme.compiler.constants.backend import AST_PACKAGE, SUMMARY_SCHEMA
+from resumeme.config import CompanyTarget
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from resumeme.config import Codex
 
-__all__ = ["Summary", "load_summary", "summary_schema"]
+__all__ = ["CompanyEvidence", "Summary", "load_summary", "summary_schema"]
+
+
+@frozen
+class CompanyEvidence:
+    """
+    Keep employer requirements separate from the applicant's professional history.
+
+    Attributes:
+        target (CompanyTarget): Configured employer, job URL, and per-target preferences.
+        company (str): Captured or explicitly supplied company background.
+        job (str): Captured or explicitly supplied job description.
+    """
+
+    target: CompanyTarget
+    company: str
+    job: str
 
 
 @frozen

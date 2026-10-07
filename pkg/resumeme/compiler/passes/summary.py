@@ -8,7 +8,7 @@ import hashlib
 import json
 from typing import TYPE_CHECKING
 
-from attrs import evolve
+from attrs import asdict, evolve
 
 from resumeme.compiler.asts.profile import Entry, Section
 from resumeme.compiler.asts.sections import section_key
@@ -18,7 +18,7 @@ from resumeme.compiler.passes.visibility import visible_profile
 
 if TYPE_CHECKING:
     from resumeme.compiler.asts.profile import Profile
-    from resumeme.compiler.asts.summary import Summary
+    from resumeme.compiler.asts.summary import CompanyEvidence, Summary
     from resumeme.config import Config
 
 __all__ = ["apply_summary", "summary_digest", "summary_evidence"]
@@ -42,13 +42,14 @@ def _entry_evidence(entry: Entry) -> dict[str, object]:
     }
 
 
-def summary_evidence(profile: Profile, config: Config) -> dict[str, object]:
+def summary_evidence(profile: Profile, config: Config, company: CompanyEvidence | None = None) -> dict[str, object]:
     """
     Prepare the filtered professional profile and explicit user context for Codex.
 
     Args:
         profile (Profile): Original validated capture.
         config (Config): Visibility rules and summary settings.
+        company (CompanyEvidence | None): Employer requirements for one variant, separate from the applicant's evidence.
 
     Returns:
         dict[str, object]: Professional evidence without contact blocks, remote assets, or credentials.
@@ -63,7 +64,7 @@ def summary_evidence(profile: Profile, config: Config) -> dict[str, object]:
 
     # Company groups retain their role boundaries without repeating each child's description in the parent.
     # Skills contribute labels only: reverse association rows can mention roles hidden by the employment filter.
-    return {
+    evidence: dict[str, object] = {
         "username": profile.username,
         "name": profile.name,
         "context": config.codex.context,
@@ -89,19 +90,26 @@ def summary_evidence(profile: Profile, config: Config) -> dict[str, object]:
         ],
     }
 
+    # Generic evidence deliberately excludes the target list, so adding employers cannot alter the generic summary.
+    if company is not None:
+        evidence["employer"] = asdict(company)
 
-def summary_digest(profile: Profile, config: Config) -> str:
+    return evidence
+
+
+def summary_digest(profile: Profile, config: Config, company: CompanyEvidence | None = None) -> str:
     """
     Fingerprint the complete generation input independently of JSON formatting.
 
     Args:
         profile (Profile): Original validated capture.
         config (Config): Visibility and summary settings used for generation.
+        company (CompanyEvidence | None): Exact company/job evidence for this variant, or None for generic copy.
 
     Returns:
         str: Hexadecimal SHA-256 used to reject stale or cross-owner summaries.
     """
-    encoded = json.dumps(summary_evidence(profile, config), sort_keys=True, ensure_ascii=False).encode("utf-8")
+    encoded = json.dumps(summary_evidence(profile, config, company), sort_keys=True, ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
 
