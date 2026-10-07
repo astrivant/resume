@@ -33,7 +33,6 @@ version you want to share to get a signed release.
   - [Contents](#contents)
   - [Quick start](#quick-start)
     - [1. Install](#1-install)
-      - [macOS prerequisites](#macos-prerequisites)
     - [2. Capture your profile](#2-capture-your-profile)
     - [3. Publish](#3-publish)
     - [Use with an AI agent](#use-with-an-ai-agent)
@@ -52,8 +51,6 @@ version you want to share to get a signed release.
     - [Codex summaries](#codex-summaries)
   - [Publishing](#publishing)
     - [Fork environment variables](#fork-environment-variables)
-      - [Configure signing secrets](#configure-signing-secrets)
-      - [LinkedIn authentication](#linkedin-authentication)
   - [Documentation](#documentation)
 
 ## Quick start
