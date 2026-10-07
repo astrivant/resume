@@ -28,7 +28,7 @@ poetry install --only main
 poetry run resume --help
 ```
 
-Change **one profile setting** in [resume.reference.yaml](resume.reference.yaml):
+Change **one profile setting** in [resume.config.yaml](resume.config.yaml):
 
 ```yaml
 linkedin:
@@ -54,7 +54,7 @@ Review `data/profile.json` and `data/assets/`, including the contact fields that
 appear in the PDF, then publish:
 
 ```bash
-git add resume.reference.yaml data/profile.json data/assets/
+git add resume.config.yaml data/profile.json data/assets/
 git commit -m "Update resume profile"
 git push origin main
 ```
@@ -96,7 +96,7 @@ to adjust retry or local browser settings.
 
 **LinkedIn login currently has no environment-variable configuration:**
 `LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD` are not read by the package or workflows.
-Set the profile slug in `resume.reference.yaml` under `linkedin.username`, sign in
+Set the profile slug in `resume.config.yaml` under `linkedin.username`, sign in
 locally with `resume capture`, and push the resulting snapshot and assets. Actions
 builds those committed inputs without signing in to LinkedIn.
 
@@ -105,13 +105,15 @@ builds those committed inputs without signing in to LinkedIn.
 - **Review your résumé in Git.** Profile text, images, configuration, and templates
   live in your repository. Changes have diffs and history.
 - **Keep the engineering detail.** Expanded descriptions, project links, company
-  logos, and illustrations flow across pages in a LinkedIn-inspired layout.
+  logos, and illustrations flow across plain US Letter pages in Garamond, with a
+  two-column first page for your profile, contact information, and About section.
 - **Make publishing a build step.** Push reviewed inputs; CI validates, renders,
   signs, commits the PDF, and publishes a release through the GitHub CLI.
 - **Share verifiable output.** Cosign signatures, verification bundles, checksums,
   and a public-key fingerprint accompany each release.
 - **Own the presentation.** Adjust paper size, colors, or text size in YAML, or
-  provide a custom LaTeX template without changing the collector.
+  select an [inline theme](docs/themes.md), including the autumn-colored `tiger`
+  option. Custom LaTeX templates can change the layout without changing the collector.
 
 ## How it works
 
@@ -131,7 +133,7 @@ See [configuration, architecture, and capture limits](docs/README.md) for the de
 
 After editing your LinkedIn profile, run `poetry run resume capture` again, review
 the changed snapshot and assets, and commit and push them. For layout changes,
-edit `resume.reference.yaml` and push; the saved profile can be reused.
+edit `resume.config.yaml` and push; the saved profile can be reused.
 
 Hide whole sections with the top-level `disable` list, for example:
 
@@ -162,7 +164,7 @@ missing dates remain visible. Defaults keep all jobs (`disable: []`,
 `as_of: '2026-10-07'` to keep builds anchored to the same window. See
 [job filtering](docs/README.md#job-filtering) for grouped roles and date precision.
 
-The cover/background photo is hidden by default in `resume.reference.yaml`. Set
+The cover/background photo is hidden by default in `resume.config.yaml`. Set
 `style.show_header_photo` to `true` to display it again; the portrait stays visible.
 
 Skills appear as a word cloud scored by **references + 2 × endorsements**.
@@ -180,7 +182,8 @@ poetry run resume build
 
 Pushing a Git tag runs the pipeline and publishes the tested runtime image to
 `ghcr.io/<owner>/<repository>:<tag>`, plus `:sha-<full-commit-sha>`. Forks publish
-under their own repository names. No extra registry secret is needed.
+under their own repository names. The tag's release notes include the exact image
+paths and copyable `docker pull` commands. No extra registry secret is needed.
 
 After publishing a tag such as `v0.1.0`, build from your captured inputs with Docker:
 

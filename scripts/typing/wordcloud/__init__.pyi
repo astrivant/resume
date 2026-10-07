@@ -21,7 +21,7 @@ class WordCloud:
         width: int,
         height: int,
         background_color: str,
-        colormap: str,
+        colormap: str | None = ...,
         color_func: _ColorFunction,
         max_words: int,
         min_font_size: int,

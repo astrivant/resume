@@ -64,14 +64,14 @@ jobs:
       contents: write
     with:
       sha: ${{ needs.source.outputs.sha }}
-  # Tag publication owns registry writes separately; branch and PR builds exercise the image without publishing it.
+  # Tag publication owns registry writes and container release notes; branch and PR builds only exercise the image.
   container-stage:
     name: Publish container
     needs: [source, verified]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-container.yml
     permissions:
-      contents: read
+      contents: write
       packages: write
     with:
       sha: ${{ needs.source.outputs.sha }}

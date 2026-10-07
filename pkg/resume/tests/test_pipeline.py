@@ -238,15 +238,56 @@ def test_config_defaults_and_unknown_fields(tmp_path: Path) -> None:
     Returns:
         None: Defaults work and unknown options fail schema validation.
     """
-    path = tmp_path / "resume.reference.yaml"
+    path = tmp_path / "resume.config.yaml"
     path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
     config = load_config(path)
     assert config.output.pdf == "resume.pdf"
     assert config.disable == []
     assert config.style.show_header_photo is True
+    assert config.style.paper == "letter"
+    assert config.style.background == "FFFFFF"
     path.write_text("linkedin:\n  username: example-person\n  password: forbidden\n", encoding="utf-8")
     with pytest.raises(ValidationError):
         load_config(path)
+
+
+@pytest.mark.parametrize("disabled", [[], ["about"], ["contact"], ["about", "contact", "projects"]])
+def test_opening_columns_respect_section_visibility(tmp_path: Path, disabled: list[str]) -> None:
+    """
+    Place contact details before the column break and About first in the body after filtering.
+
+    Args:
+        tmp_path (Path): Isolated render destination.
+        disabled (list[str]): Section keys excluded by the user.
+
+    Returns:
+        None: Enabled content appears once in its intended column, with no empty body forced for a minimal profile.
+    """
+    path = tmp_path / "resume.config.yaml"
+    path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
+    config = evolve(load_config(path), disable=disabled)
+    # Capture order is deliberately different from presentation order; filtering still owns what reaches either column.
+    profile = Profile(
+        "example-person",
+        "Alex Example",
+        sections=[
+            Section("projects", "Projects", [Entry("Project example")]),
+            Section("contact", "Contact", [Entry("Contact example")]),
+            Section("about", "About", [Entry("About example")]),
+        ],
+    )
+    rendered = render_profile(profile, config, tmp_path).read_text(encoding="utf-8").split(r"\begin{document}", 1)[1]
+    for key in ("about", "contact", "projects"):
+        assert (f"\\sectiontitle{{{key.title()}}}" in rendered) == (key not in disabled)
+    if "projects" in disabled:
+        assert "\\framebreak" not in rendered
+        return
+    before, after = rendered.split("\\framebreak", 1)
+    assert ("Contact example" in before) == ("contact" not in disabled)
+    assert "Contact example" not in after
+    assert "Project example" in after
+    if "about" not in disabled:
+        assert after.index("About example") < after.index("Project example")
 
 
 @pytest.mark.parametrize("value", ["skills", "[skills, skills]", "[null]", "[Skills]", "['']"])
@@ -261,7 +302,7 @@ def test_disable_rejects_invalid_section_lists(tmp_path: Path, value: str) -> No
     Returns:
         None: Invalid types, duplicate keys, and malformed section names fail validation.
     """
-    config = tmp_path / "resume.reference.yaml"
+    config = tmp_path / "resume.config.yaml"
     config.write_text(f"linkedin:\n  username: example-person\ndisable: {value}\n", encoding="utf-8")
     with pytest.raises(ValidationError):
         load_config(config)
@@ -279,7 +320,7 @@ def test_disabled_sections_are_omitted_without_changing_capture(tmp_path: Path, 
     Returns:
         None: Excluded content and media disappear from output while the snapshot stays intact.
     """
-    config = tmp_path / "resume.reference.yaml"
+    config = tmp_path / "resume.config.yaml"
     config.write_text("linkedin:\n  username: example-person\ndisable: [skills, independent-studies]\n", encoding="utf-8")
     if custom_template:
         with config.open("a", encoding="utf-8") as stream:
@@ -358,7 +399,7 @@ def test_header_photo_visibility_preserves_other_images_and_snapshot(
     Returns:
         None: Only enabled photos reach templates and staged assets; the saved snapshot stays intact.
     """
-    config_path = tmp_path / "resume.reference.yaml"
+    config_path = tmp_path / "resume.config.yaml"
     config_path.write_text(
         f"linkedin:\n  username: example-person\nstyle:\n  show_header_photo: {str(show_header_photo).lower()}\n",
         encoding="utf-8",
@@ -416,7 +457,7 @@ def test_header_photo_visibility_rejects_non_boolean_values(tmp_path: Path, valu
     Returns:
         None: Schema validation rejects the invalid switch.
     """
-    config = tmp_path / "resume.reference.yaml"
+    config = tmp_path / "resume.config.yaml"
     config.write_text(f"linkedin:\n  username: example-person\nstyle:\n  show_header_photo: {value}\n", encoding="utf-8")
     with pytest.raises(ValidationError):
         load_config(config)
@@ -539,7 +580,7 @@ def test_capture_warnings_stop_validation(tmp_path: Path) -> None:
     Returns:
         None: Warning-bearing snapshots require explicit acceptance.
     """
-    config = tmp_path / "resume.reference.yaml"
+    config = tmp_path / "resume.config.yaml"
     config.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
     profile = Profile("example-person", "Alex Example", warnings=["Some text could not be expanded."])
     save_profile(profile, tmp_path / "data/profile.json")

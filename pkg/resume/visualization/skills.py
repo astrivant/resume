@@ -9,6 +9,7 @@ import json
 import re
 import unicodedata
 from collections import Counter
+from functools import partial
 from importlib.resources import files
 from io import BytesIO
 from math import sqrt
@@ -68,18 +69,22 @@ def _normalized(value: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", value).casefold().split())
 
 
-def _word_color(*args: object, **kwargs: object) -> str:
+def _word_color(*args: object, colors: tuple[str, ...], **kwargs: object) -> str:
     """
-    Keep every cloud label readable against the resume's white profile cards.
+    Assign each label a stable theme color without consuming the layout's random state.
 
     Args:
         *args (object): WordCloud's word and layout arguments.
+        colors (tuple[str, ...]): Nonempty palette of six-digit hexadecimal colors.
         **kwargs (object): Additional WordCloud color callback arguments.
 
     Returns:
-        str: High-contrast LinkedIn blue for every label.
+        str: Hexadecimal color selected deterministically from the word's spelling.
     """
-    return "#0A66C2"
+    # A stable digest avoids Python's process-randomized hash and keeps a color-only change from rearranging words.
+    word = str(args[0] if args else kwargs.get("word", ""))
+    index = int.from_bytes(hashlib.sha256(word.encode("utf-8")).digest()[:4], "big") % len(colors)
+    return "#" + colors[index]
 
 
 def skill_scores(profile: Profile) -> dict[str, SkillScore]:
@@ -142,7 +147,9 @@ def skill_scores(profile: Profile) -> dict[str, SkillScore]:
     return dict(sorted(scores.items(), key=lambda item: (-item[1].weight, _normalized(item[0]))))
 
 
-def render_skill_cloud(scores: dict[str, SkillScore], directory: Path) -> str | None:
+def render_skill_cloud(
+    scores: dict[str, SkillScore], directory: Path, *, colors: tuple[str, ...] = ("0A66C2",), background: str = "FFFFFF"
+) -> str | None:
     """
     Write a deterministic PNG and score manifest beside generated LaTeX.
 
@@ -152,12 +159,14 @@ def render_skill_cloud(scores: dict[str, SkillScore], directory: Path) -> str | 
     Args:
         scores (dict[str, SkillScore]): Nonnegative counts for each displayed label.
         directory (Path): Generated TeX directory with an assets subdirectory.
+        colors (tuple[str, ...]): Nonempty theme palette of six-digit hexadecimal text colors.
+        background (str): Six-digit hexadecimal page color, shared by the PNG canvas.
 
     Returns:
         str | None: Relative PNG path, or None when no skills are present.
 
     Raises:
-        ValueError: The available canvas cannot display every skill legibly.
+        ValueError: The palette is empty or the available canvas cannot display every skill legibly.
     """
     manifest = directory / "skills.weights.json"
     # Remove stale generated clouds even when skills are now disabled; keep captured assets outside this cleanup.
@@ -178,6 +187,8 @@ def render_skill_cloud(scores: dict[str, SkillScore], directory: Path) -> str | 
     )
     if not scores:
         return None
+    if not colors:
+        raise ValueError("The skill cloud requires at least one theme color.")
     # Compress the visual range and give low-frequency labels a floor so heavily endorsed skills cannot make other labels unreadable.
     maximum = max(score.weight for score in scores.values())
     frequencies = {name: 0.25 + 0.75 * sqrt(score.weight / maximum) for name, score in scores.items()}
@@ -188,9 +199,8 @@ def render_skill_cloud(scores: dict[str, SkillScore], directory: Path) -> str | 
             font_path=str(files("resume.latex").joinpath("resources/fonts/EBGaramond-Regular.otf")),
             width=1800,
             height=800 * (attempt + 1),
-            background_color="white",
-            colormap="Blues",
-            color_func=_word_color,
+            background_color="#" + background,
+            color_func=partial(_word_color, colors=colors),
             max_words=len(scores),
             min_font_size=28,
             max_font_size=140,

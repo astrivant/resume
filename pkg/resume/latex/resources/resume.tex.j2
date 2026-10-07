@@ -1,38 +1,53 @@
 ((# Share escaping and visibility rules between the contact column and the document body. #))
 ((* macro render_section(section) *))
 \Needspace{5\baselineskip}
+((* if section.key == 'skills' and skill_cloud *))\begin{minipage}{\linewidth}((* endif *))
 \sectiontitle{((( section.title|tex )))}
 ((* if section.key == 'skills' and skill_cloud *))
-\includegraphics[width=\linewidth]{((( skill_cloud )))}\par
+% Bound the illustration height so a dense cloud leaves room for the sections that follow.
+\includegraphics[width=\linewidth,height=0.55\textheight,keepaspectratio]{((( skill_cloud )))}\par
+\end{minipage}
 ((* else *))
 ((* for entry in section.entries *))
 ((* if not loop.first *))\par\addvspace{9pt}((* endif *))
 ((* if section.key == 'about' *))
-((( entry.title|tex )))\par
+\profileparagraph{((( entry.title|tex )))}
 ((* else *))
 \Needspace{3\baselineskip}
 \entrytitle{((( entry.title|tex )))}
 ((* endif *))
 ((* for paragraph in entry.paragraphs *))
-((( paragraph|tex )))\par
+\profileparagraph{((( paragraph|tex )))}
 ((* endfor *))
-((* for image in entry.images *))
-((* set logo = '/company/' in image.link or '/school/' in image.link or 'logo' in image.alt|lower *))
+((# Match the source hierarchy: featured illustrations, compact attachments, organization logos, then tiny site icons. #))
+((* if entry.images *))\profileparagraph{((* endif *))
+((* for image in entry.images -*))
+((* set role = image|image_role -*))
 ((* if image.link *))\href{((( image.link|url )))}{((* endif *))%
-\includegraphics[width=((* if logo *))12mm((* else *))0.45\linewidth((* endif *)),height=((* if logo *))12mm((* else *))32mm((* endif *)),keepaspectratio]{((( image.path )))}%
+((* if role == 'portrait' -*))
+\portraitphoto[8mm]{((( image.path )))}%
+((* elif role == 'icon' -*))
+\includegraphics[width=3.5mm,height=3.5mm,keepaspectratio]{((( image.path )))}%
+((* elif role == 'logo' -*))
+\includegraphics[width=8mm,height=8mm,keepaspectratio]{((( image.path )))}%
+((* elif section.key in ['featured', 'activity'] -*))
+\includegraphics[width=0.8\linewidth,height=40mm,keepaspectratio]{((( image.path )))}%
+((* else -*))
+\includegraphics[width=24mm,height=14mm,keepaspectratio]{((( image.path )))}%
+((* endif -*))
 ((* if image.link *))}((* endif *))\hspace{3pt}
-((* endfor *))
-((* if entry.images *))\par((* endif *))
+((* endfor -*))
+((* if entry.images *))}((* endif *))
 ((* for link in entry.links *))
 ((* if link.label == link.url *))
-{\small\url{((( link.url )))}}\par
+\profileparagraph{{\small\url{((( link.url )))}}}
 ((* else *))
-{\small\href{((( link.url|url )))}{((( link.label|tex )))}}\par
+\profileparagraph{{\small\href{((( link.url|url )))}{((( link.label|tex )))}}}
 ((* endif *))
 ((* endfor *))
 ((* endfor *))
 ((* endif *))
-\par\addvspace{12pt}
+\par\addvspace{10pt}
 ((* endmacro *))
 \documentclass[((( style.font_size )))pt,((( style.paper )))paper]{article}
 \usepackage[utf8]{inputenc}
@@ -43,13 +58,17 @@
 \usepackage[lining]{ebgaramond}
 \usepackage{microtype}
 \usepackage{xcolor,graphicx,needspace}
+\usepackage{tikz}
 \usepackage{twemojis}
 \usepackage{flowfram}
 \usepackage{xurl}
 \usepackage[unicode,breaklinks=true]{hyperref}
 \definecolor{accent}{HTML}{((( style.accent )))}
 \definecolor{canvas}{HTML}{((( style.background )))}
-\definecolor{ink}{HTML}{191919}
+\definecolor{ink}{HTML}{((( style.ink )))}
+\definecolor{profilename}{HTML}{((( style.name_color )))}
+\definecolor{sectionheading}{HTML}{((( style.heading_color )))}
+\definecolor{entryheading}{HTML}{((( style.entry_color )))}
 \hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) — Resume}}
 \hypersetup{pdfsubject={Emoji graphics: Twemoji, copyright Twitter and contributors, CC BY 4.0, https://github.com/twitter/twemoji}}
 \pdfinfoomitdate=1
@@ -58,13 +77,49 @@
 \pagecolor{canvas}
 \color{ink}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{4pt}
+\setlength{\parskip}{3pt}
 \setlength{\emergencystretch}{3em}
 \raggedright
 \widowpenalty=10000
 \clubpenalty=10000
-\newcommand{\entrytitle}[1]{{\large\bfseries #1}\par\nopagebreak}
-\newcommand{\sectiontitle}[1]{{\Large\bfseries #1}\par\nopagebreak\vspace{3pt}}
+% Limit theme colors to their semantic roles; groups prevent heading colors leaking into body text.
+\newcommand{\entrytitle}[1]{{\color{entryheading}\large\bfseries #1}\par\nopagebreak}
+\newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{3pt}}
+% Scale to cover the circle without stretching, then clip only the portrait in the PDF.
+% Original captured images stay untouched, and logos retain their rectangular outlines.
+\newsavebox{\portraitmeasure}
+\newlength{\portraitdiameter}
+\newcommand{\portraitphoto}[2][28mm]{%
+  \begingroup
+  \setlength{\portraitdiameter}{#1}%
+  \sbox{\portraitmeasure}{\includegraphics[width=\portraitdiameter]{#2}}%
+  \ifdim\ht\portraitmeasure<\portraitdiameter
+    \sbox{\portraitmeasure}{\includegraphics[height=\portraitdiameter]{#2}}%
+  \fi
+  \begin{tikzpicture}
+    \path[use as bounding box] (-0.5\portraitdiameter,-0.5\portraitdiameter)
+      rectangle (0.5\portraitdiameter,0.5\portraitdiameter);
+    \clip (0,0) circle[radius=0.5\portraitdiameter];
+    \node[overlay,inner sep=0pt,outer sep=0pt] at (0,0) {\usebox{\portraitmeasure}};
+  \end{tikzpicture}%
+  \endgroup
+}
+% Finish ordinary first-page paragraphs before switching frame widths. Without this
+% measurement TeX would carry their narrow line breaks onto the full-width second page.
+% Paragraphs longer than a whole page remain breakable, so no profile text is clipped.
+\newsavebox{\paragraphmeasure}
+\newcommand{\profileparagraph}[1]{%
+  \par
+  \ifnum\value{page}=1
+    \sbox{\paragraphmeasure}{\parbox{\linewidth}{#1}}%
+    \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip\relax<\textheight
+      \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip\relax>\dimexpr\pagegoal-\pagetotal\relax
+        \framebreak
+      \fi
+    \fi
+  \fi
+  #1\par
+}
 \urlstyle{same}
 % Reserve a narrow identity column on page one, then use full-width continuation pages.
 % Flow frames let long content continue instead of clipping it in a fixed-height box.
@@ -72,12 +127,19 @@
 \newflowframe[1]{0.61\textwidth}{\textheight}{0.39\textwidth}{0pt}[opening]
 \newflowframe[>1]{\textwidth}{\textheight}{0pt}{0pt}[continuation]
 \begin{document}
-{\fontsize{24}{28}\selectfont\bfseries ((( profile.name|tex )))}\par\vspace{6pt}
+{\color{profilename}\fontsize{24}{28}\selectfont\bfseries ((( profile.name|tex )))}\par\vspace{6pt}
 ((* for image in profile.images *))
-((* if image is header_photo *))
+((* set role = image|image_role(header=true) *))
+((* if role == 'cover' *))
 \includegraphics[width=\linewidth]{((( image.path )))}\par
+((* elif role == 'portrait' *))
+\portraitphoto{((( image.path )))}\par
+((* elif role == 'logo' *))
+\includegraphics[width=8mm,height=8mm,keepaspectratio]{((( image.path )))}\par
+((* elif role == 'icon' *))
+\includegraphics[width=3.5mm,height=3.5mm,keepaspectratio]{((( image.path )))}\par
 ((* else *))
-\includegraphics[width=22mm,height=28mm,keepaspectratio]{((( image.path )))}\par
+\includegraphics[width=24mm,height=14mm,keepaspectratio]{((( image.path )))}\par
 ((* endif *))
 ((* endfor *))
 ((* for line in profile.intro *))

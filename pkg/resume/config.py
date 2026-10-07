@@ -7,13 +7,14 @@ from __future__ import annotations
 import json
 from importlib.resources import files
 from pathlib import Path
+from typing import TypedDict
 
 import cattrs
 import yaml
 from attrs import field, frozen
 from jsonschema import Draft202012Validator, FormatChecker
 
-__all__ = ["Capture", "Config", "Experience", "JobSelector", "LinkedIn", "Output", "Style", "load_config", "project_path"]
+__all__ = ["Capture", "Config", "Experience", "JobSelector", "LinkedIn", "Output", "Style", "StyleOverrides", "load_config", "project_path"]
 
 
 @frozen
@@ -100,6 +101,37 @@ class Output:
     pdf: str = "resume.pdf"
 
 
+class StyleOverrides(TypedDict, total=False):
+    """
+    Define the optional style fields that an inline theme may override.
+
+    Attributes:
+        paper (str): A4 or letter paper name.
+        accent (str): Six-digit hexadecimal hyperlink color.
+        background (str): Six-digit hexadecimal page background color.
+        font_size (int): Body font size in points.
+        show_header_photo (bool): Whether to display the profile cover photo.
+        skills_word_cloud (bool): Whether to replace the Skills list with a cloud.
+        ink (str): Six-digit hexadecimal body text color.
+        name_color (str): Six-digit hexadecimal profile name color.
+        heading_color (str): Six-digit hexadecimal section heading color.
+        entry_color (str): Six-digit hexadecimal entry heading color.
+        skill_colors (tuple[str, ...]): Nonempty palette of six-digit hexadecimal cloud colors.
+    """
+
+    paper: str
+    accent: str
+    background: str
+    font_size: int
+    show_header_photo: bool
+    skills_word_cloud: bool
+    ink: str
+    name_color: str
+    heading_color: str
+    entry_color: str
+    skill_colors: tuple[str, ...]
+
+
 @frozen
 class Style:
     """
@@ -107,11 +139,18 @@ class Style:
 
     Attributes:
         paper (str): A4 or letter paper name.
-        accent (str): Six-digit hexadecimal link and accent color.
+        accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile's cover/background photo.
         skills_word_cloud (bool): Replace the Skills list with a cloud weighted by references and endorsements.
+        ink (str): Six-digit hexadecimal body text color.
+        name_color (str): Six-digit hexadecimal profile name color.
+        heading_color (str): Six-digit hexadecimal section heading color.
+        entry_color (str): Six-digit hexadecimal entry heading color.
+        skill_colors (tuple[str, ...]): Nonempty palette of six-digit hexadecimal cloud colors.
+        theme (str | None): Selected key in themes; None uses the base style unchanged.
+        themes (dict[str, StyleOverrides]): Inline themes containing partial style overrides.
     """
 
     paper: str = "letter"
@@ -120,6 +159,13 @@ class Style:
     font_size: int = 10
     show_header_photo: bool = True
     skills_word_cloud: bool = True
+    ink: str = "191919"
+    name_color: str = "191919"
+    heading_color: str = "191919"
+    entry_color: str = "191919"
+    skill_colors: tuple[str, ...] = ("0A66C2",)
+    theme: str | None = None
+    themes: dict[str, StyleOverrides] = field(factory=dict)
 
 
 @frozen
@@ -179,13 +225,16 @@ def load_config(path: Path) -> Config:
 
     Raises:
         jsonschema.ValidationError: A value is invalid or a field is unknown.
-        ValueError: An output or template path escapes the project directory.
+        ValueError: A path escapes the project directory or the selected theme is not defined.
     """
     # Validate raw types before cattrs can coerce them, including real calendar dates for the job window.
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     schema = json.loads(files("resume").joinpath("resources/config.schema.json").read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
+    # Reject selector typos even for validation-only commands; themes are user-defined, not a hard-coded registry.
+    if config.style.theme is not None and config.style.theme not in config.style.themes:
+        raise ValueError(f"Unknown style.theme {config.style.theme!r}; define it under style.themes or use null.")
     # Inputs, templates, and outputs share one root but must never resolve to the same file or directory.
     paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf]
     if config.template:

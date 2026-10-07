@@ -102,8 +102,17 @@
           ]
         },
         "accent": {
+          "description": "Six-digit hexadecimal hyperlink color.",
           "type": "string",
           "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "theme": {
+          "description": "Optional key in style.themes; null leaves the base style unchanged.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "\\S"
         },
         "background": {
           "type": "string",
@@ -123,6 +132,82 @@
         "skills_word_cloud": {
           "description": "Display a skill cloud weighted by references plus twice each endorsement; disable skills to hide it.",
           "type": "boolean"
+        },
+        "ink": {
+          "description": "Body text color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "name_color": {
+          "description": "Profile name color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "heading_color": {
+          "description": "Section heading color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "entry_color": {
+          "description": "Entry heading color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "skill_colors": {
+          "description": "Deterministic skill-cloud palette.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Fa-f0-9]{6}$"
+          }
+        },
+        "themes": {
+          "description": "Inline partial style overrides; selected theme fields take precedence over base values.",
+          "type": "object",
+          "propertyNames": {
+            "pattern": "\\S"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "paper": {
+                "$ref": "#/properties/style/properties/paper"
+              },
+              "accent": {
+                "$ref": "#/properties/style/properties/accent"
+              },
+              "background": {
+                "$ref": "#/properties/style/properties/background"
+              },
+              "font_size": {
+                "$ref": "#/properties/style/properties/font_size"
+              },
+              "show_header_photo": {
+                "$ref": "#/properties/style/properties/show_header_photo"
+              },
+              "skills_word_cloud": {
+                "$ref": "#/properties/style/properties/skills_word_cloud"
+              },
+              "ink": {
+                "$ref": "#/properties/style/properties/ink"
+              },
+              "name_color": {
+                "$ref": "#/properties/style/properties/name_color"
+              },
+              "heading_color": {
+                "$ref": "#/properties/style/properties/heading_color"
+              },
+              "entry_color": {
+                "$ref": "#/properties/style/properties/entry_color"
+              },
+              "skill_colors": {
+                "$ref": "#/properties/style/properties/skill_colors"
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "required": [],

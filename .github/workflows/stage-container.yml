@@ -7,7 +7,7 @@ on:
         type: string
         required: true
 permissions:
-  contents: read
+  contents: write
   packages: write
 defaults:
   run:
@@ -47,3 +47,11 @@ jobs:
           SOURCE_SHA: ${{ inputs.sha }}
           IMAGE_TAGS: ${{ steps.metadata.outputs.tags }}
         run: bash scripts/ci/publish-container.sh
+      # Advertise only references whose uploads succeeded, preserving other notes on the corresponding Git-tag release.
+      - name: Add container pull commands to release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          IMAGE_TAGS: ${{ steps.metadata.outputs.tags }}
+        run: bash scripts/tooling/retry.sh bash scripts/release/publish-container-notes.sh

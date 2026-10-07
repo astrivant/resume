@@ -15,7 +15,7 @@
 
 ## Configuration
 
-`resume.reference.yaml` is the single user-maintained configuration file. A new
+`resume.config.yaml` is the single user-maintained configuration file. A new
 owner only needs to change `linkedin.username`; they must also capture their own
 profile while signed in. Configuration and snapshot ownership are validated before
 rendering. All paths are relative to the configuration file, even when the command
@@ -39,16 +39,28 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `output.assets` | `data/assets` | Content-addressed PNG images |
 | `output.tex` | `tex/resume.tex` | Generated LaTeX source |
 | `output.pdf` | `resume.pdf` | Compiled PDF and CI commit destination |
-| `style.paper` | `a4` | `a4` or `letter` |
+| `style.paper` | `letter` | `letter` (8.5 × 11 inches) or `a4` |
 | `style.accent` | `0A66C2` | Six-digit hexadecimal accent color |
-| `style.background` | `F3F2EF` | Six-digit hexadecimal page background |
+| `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; set to `false` in the reference config |
 | `style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
+| `style.ink` | `191919` | Six-digit hexadecimal body text color |
+| `style.name_color` | `191919` | Six-digit hexadecimal profile name color |
+| `style.heading_color` | `191919` | Six-digit hexadecimal section heading color |
+| `style.entry_color` | `191919` | Six-digit hexadecimal entry heading color |
+| `style.skill_colors` | `[0A66C2]` | Nonempty list of hexadecimal cloud colors |
+| `style.theme` | `null` | Optional name from `style.themes`; null uses the base style |
+| `style.themes` | `{}` | Inline partial style overrides; the reference config includes `tiger` |
 | `template` | `null` | Optional custom Jinja/LaTeX template |
 
 The configuration and profile JSON Schemas are packaged under
 `pkg/resume/resources/` and checked by pre-commit.
+
+Select `style.theme: tiger` to use the autumn palette included in the reference
+config, or add your own entries under `style.themes`. The selected entry overrides
+matching base style fields, including paper size and visibility toggles. Omitted
+fields keep their base values. See [inline themes and palette sources](themes.md).
 
 To hide entire sections, add their keys to the top-level `disable` list:
 
@@ -86,7 +98,7 @@ minimal profiles, legacy snapshots, and count interpretation.
 
 ## Job filtering
 
-Keep job presentation settings under `experience` in `resume.reference.yaml`:
+Keep job presentation settings under `experience` in `resume.config.yaml`:
 
 ```yaml
 experience:
@@ -224,10 +236,24 @@ and a failed build leaves the previous PDF intact. Logs are in `.cache/build/`.
 Fixed PDF timestamps and metadata make identical inputs reproducible. When using
 `experience.last_years`, pin `experience.as_of` to keep the date window fixed too.
 
-The layout adapts LinkedIn's profile cards, blue accents, gray canvas, sans-serif
-type, imagery, and hyperlinks to printed pages. Cards and text can continue across
-page boundaries. A paginated PDF cannot be pixel-identical to every responsive
-LinkedIn website variant. Emoji use the image-based `twemojis` package from the
+The default layout uses white US Letter pages with 19 mm margins, EB Garamond
+type, and unboxed section headings. On the first page, the profile header and
+enabled contact information occupy the left column; About starts the right column,
+followed by the remaining enabled sections. Later pages use the full text width.
+Disabling About starts the right column with the next enabled section. A minimal
+profile produces only its header, without empty section headings. Images and
+hyperlinks remain available. Image sizing follows the source's visual roles instead
+of download resolution: the profile portrait is a 28 mm circle, company/school
+logos fit within 8 mm, and site icons fit within 3.5 mm. Featured and Activity images
+are larger illustrations; job and project attachments fit within 24 × 14 mm.
+Only portraits are cropped to a circle; other images retain their aspect ratio
+and full content. These are print proportions, not pixel-for-pixel browser sizes.
+
+Garamond is bundled for offline builds in both compiler backends and used for
+the skills cloud too. Font credits and licenses are in
+[`pkg/resume/latex/resources/fonts/`](../pkg/resume/latex/resources/fonts/README.md).
+Set `style.paper: a4` for ISO A4; `style.font_size` controls the body text.
+Emoji use the image-based `twemojis` package from the
 compiler image. Twemoji graphics are copyright Twitter and contributors, licensed
 under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); attribution is also
 included in PDF metadata. pdfLaTeX supports the configured Latin font repertoire;
@@ -291,9 +317,10 @@ trusted fingerprint establishes whose key they are trusting.
 The workflow follows Polyad's stage architecture: resolve one immutable source
 commit; run independent test and build stages; require both in `CI verification`;
 then publish the PDF only from `main`. Pushed tags publish the tested runtime
-container through a separate stage with `packages: write`; see
+container through a separate stage with `packages: write` and `contents: write`
+for the tag release's pull instructions; see
 [container publication](containers.md#publish-on-a-tag). Test and build jobs have read-only repository access.
-The PDF deploy job alone has `contents: write`. Every external action is pinned by SHA,
+Only the PDF and container publication jobs have `contents: write`. Every external action is pinned by SHA,
 Poetry installs from the lockfile, and development tools stay out of runtime installs.
 
 Fork owners must enable Actions and permit `GITHUB_TOKEN` writes. Branch protection

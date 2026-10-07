@@ -59,10 +59,18 @@ def test_compiler_backends_publish_after_both_passes(tmp_path: Path, monkeypatch
         assert isinstance(environment, dict)
         assert environment["SOURCE_DATE_EPOCH"] == "946684800"
         assert environment["FORCE_SOURCE_DATE"] == "1"
+        # Fonts must be discoverable without a host installation, global font-map update, or compiler network access.
+        font_tree = environment["TEXMFHOME"]
+        assert isinstance(font_tree, str)
+        assert font_tree.endswith("/texmf")
+        if backend == "docker":
+            assert "TEXMFHOME=/output/texmf" in command
         assert kwargs["timeout"] == 120
         assert destination.read_bytes() == b"previous PDF"
         calls.append(command)
         output = next(path for path in (tmp_path / ".cache/build").iterdir() if path.is_dir())
+        assert (output / "texmf/tex/latex/ebgaramond/ebgaramond.sty").is_file()
+        assert (output / "texmf/fonts/type1/public/ebgaramond/EBGaramond-Regular.pfb").is_file()
         (output / "custom.pdf").write_bytes(b"%PDF-1.7\ncompiled")
         return subprocess.CompletedProcess(command, 0, stdout="compiler output", stderr="")
 

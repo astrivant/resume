@@ -68,7 +68,7 @@ def test_closed_window_is_an_actionable_cli_failure(tmp_path: Path, monkeypatch:
     Returns:
         None: The command reports failure and never saves a snapshot.
     """
-    config = tmp_path / "resume.reference.yaml"
+    config = tmp_path / "resume.config.yaml"
     config.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
 
     def capture(config: Config, root: Path, connect_port: int | None = None) -> Profile:

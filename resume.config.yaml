@@ -27,6 +27,8 @@ output:
   tex: tex/resume.tex
   pdf: resume.pdf
 style:
+  # null uses the base style below; set tiger to apply the matching overrides in themes.
+  theme: null
   # US Letter (8.5 x 11 inches); set a4 for ISO A4.
   paper: letter
   accent: '0A66C2'
@@ -36,5 +38,17 @@ style:
   show_header_photo: false
   # Aggregate visible skill references plus twice each observed endorsement.
   skills_word_cloud: true
+  # Each named theme can override any presentation field above, or the text/cloud colors below.
+  # Theme fields win over base style fields; omitted fields keep their base values.
+  themes:
+    tiger:
+      # Tiger Lily Plants CSS oranges and warm ink, with a complementary burgundy.
+      # Source and palette roles: docs/themes.md
+      accent: 'A44813'
+      ink: '241A15'
+      name_color: '6B2737'
+      heading_color: 'C44A11'
+      entry_color: '8F2E08'
+      skill_colors: ['6B2737', '8F2E08', 'A44813', 'C44A11', '86543B']
 # Optional exact template override; otherwise the package template is used.
 template: null

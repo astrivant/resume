@@ -38,9 +38,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     """
     # Keep capture separate from offline commands so CI can build committed inputs without a browser session.
     parser = argparse.ArgumentParser(description="Capture your LinkedIn profile and build an illustrated PDF résumé.")
-    parser.add_argument(
-        "--config", type=Path, default=Path("resume.reference.yaml"), help="Configuration file (default: resume.reference.yaml)"
-    )
+    parser.add_argument("--config", type=Path, default=Path("resume.config.yaml"), help="Configuration file (default: resume.config.yaml)")
     commands = parser.add_subparsers(dest="command", required=True)
     for name, help_text in (
         ("capture", "Open Firefox, wait for login, and save your expanded profile and images"),

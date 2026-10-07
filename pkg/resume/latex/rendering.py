@@ -15,6 +15,8 @@ from jinja2 import Environment, StrictUndefined
 from resume.config import project_path
 from resume.latex.escaping import latex_escape, latex_url
 from resume.latex.experience import filter_experience
+from resume.latex.media import image_role, is_header_photo
+from resume.latex.themes import resolve_style
 from resume.linkedin.sections import section_key
 from resume.models import Section
 from resume.visualization.skills import render_skill_cloud, skill_scores
@@ -26,21 +28,6 @@ if TYPE_CHECKING:
     from resume.models import Entry, Media, Profile
 
 __all__ = ["render_profile"]
-
-
-def _is_header_photo(image: Media) -> bool:
-    """
-    Identify a LinkedIn cover photo for visibility filtering and banner sizing.
-
-    Args:
-        image (Media): Captured image with its accessible label and source URL.
-
-    Returns:
-        bool: Whether the label or LinkedIn image URL identifies a cover/background photo.
-    """
-    # Cover URLs can identify a banner even when its accessible label is absent or generic.
-    label = image.alt.casefold()
-    return "background" in label or "cover" in label or "profile-displaybackgroundimage" in image.url.casefold()
 
 
 def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomplete: bool = False) -> Path:
@@ -62,6 +49,8 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     # Rendering must not silently promote a diagnostic capture into an apparently complete, publishable resume.
     if profile.warnings and not allow_incomplete:
         raise ValueError("Capture is incomplete: " + "; ".join(profile.warnings))
+    # Resolve before filtering or drawing: themes may change visibility and page settings as well as colors.
+    style = resolve_style(config.style)
     target = project_path(root, config.output.tex)
     target.parent.mkdir(parents=True, exist_ok=True)
     asset_directory = target.parent / "assets"
@@ -112,8 +101,8 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         ],
     )
     # Job tags can generate a Skills card even when LinkedIn did not provide a separate Skills section.
-    scores = skill_scores(visible) if config.style.skills_word_cloud and "skills" not in disabled else {}
-    skill_cloud = render_skill_cloud(scores, target.parent)
+    scores = skill_scores(visible) if style.skills_word_cloud and "skills" not in disabled else {}
+    skill_cloud = render_skill_cloud(scores, target.parent, colors=style.skill_colors, background=style.background)
     if skill_cloud and not any(section.key == "skills" for section in visible.sections):
         visible = evolve(visible, sections=[*visible.sections, Section("skills", "Skills")])
 
@@ -133,7 +122,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     # Build a template-specific view while leaving the captured snapshot available for later re-enabling of content.
     prepared = evolve(
         visible,
-        images=stage([image for image in profile.images if config.style.show_header_photo or not _is_header_photo(image)]),
+        images=stage([image for image in profile.images if style.show_header_photo or not is_header_photo(image)]),
         sections=[
             evolve(
                 section,
@@ -157,12 +146,13 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     )
     environment.filters["tex"] = latex_escape
     environment.filters["url"] = latex_url
-    environment.tests["header_photo"] = _is_header_photo
+    environment.tests["header_photo"] = is_header_photo
+    environment.filters["image_role"] = image_role
     # Custom templates receive the same filtered view as the packaged template, so presentation cannot bypass exclusions.
     if config.template:
         template = project_path(root, config.template).read_text(encoding="utf-8")
     else:
         template = files("resume.latex").joinpath("resources/resume.tex.j2").read_text(encoding="utf-8")
-    content = environment.from_string(template).render(profile=prepared, style=config.style, skill_cloud=skill_cloud)
+    content = environment.from_string(template).render(profile=prepared, style=style, skill_cloud=skill_cloud)
     target.write_text(content, encoding="utf-8")
     return target

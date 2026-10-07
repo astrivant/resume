@@ -5,7 +5,7 @@ image="${1:-resume:ci}"
 project=$(mktemp -d)
 trap 'rm -rf "$project"' EXIT
 # Synthetic inputs exercise packaged resources without reading or modifying the owner's captured profile.
-cat >"$project/resume.reference.yaml" <<'YAML'
+cat >"$project/resume.config.yaml" <<'YAML'
 linkedin:
   username: container-check
 YAML

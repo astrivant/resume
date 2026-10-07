@@ -256,7 +256,7 @@ def test_experience_config_rejects_invalid_filters(tmp_path: Path, settings: str
     Returns:
         None: Configuration validation fails instead of silently widening or narrowing the job list.
     """
-    path = tmp_path / "resume.reference.yaml"
+    path = tmp_path / "resume.config.yaml"
     path.write_text(f"linkedin:\n  username: example-person\nexperience: {settings}\n", encoding="utf-8")
     with pytest.raises(ValidationError):
         load_config(path)
@@ -272,7 +272,7 @@ def test_experience_config_defaults_and_roundtrip(tmp_path: Path) -> None:
     Returns:
         None: All jobs remain enabled by default and the documented selectors are usable.
     """
-    path = tmp_path / "resume.reference.yaml"
+    path = tmp_path / "resume.config.yaml"
     path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
     assert load_config(path).experience == Experience()
     with path.open("a", encoding="utf-8") as stream:

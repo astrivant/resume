@@ -8,7 +8,7 @@
 !LICENSE
 !.python-version
 !.pre-commit-config.yaml
-!resume.reference.yaml
+!resume.config.yaml
 !pkg/
 !pkg/**
 !scripts/
