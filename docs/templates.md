@@ -15,6 +15,7 @@ Rendering uses strict undefined-variable checks and these delimiters:
 | `style` | Effective style after theme overrides |
 | `skill_cloud` | Relative PNG path, or `None` |
 | `connection_count`, `connection_url` | Enabled captured values, otherwise empty strings |
+| `github_username` | Configured public account, or `None` |
 | `section_navigation` | `(anchor, section)` pairs in display order with unique TeX-safe anchors |
 
 Filters return presentation values without changing the captured snapshot.

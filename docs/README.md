@@ -86,6 +86,11 @@ The shipped config disables `contact`, `featured`, `recommendations`, `interests
 
 ### Header and skills
 
+- `show_headline` controls the captured headline beneath the portrait; it defaults
+  to false. It leaves the company and location visible. Older snapshots use a
+  conservative role-at-company match when an explicit headline field is absent.
+- `github.username` adds a public GitHub link below LinkedIn; `null` hides it.
+  Both links have platform icons. This setting is top-level identity configuration.
 - `show_header_photo` controls the cover image; the portrait remains visible.
 - `show_table_of_contents` adds links to visible sections in document order.
 - `show_connection_count` and `show_connection_link` control connection metadata
@@ -310,7 +315,7 @@ See the [template interface](templates.md) for context variables, filters, and
 escaping requirements.
 
 Bundled font licenses and credits are in
-[`latex/resources/fonts/`](../pkg/resumeme/compiler/backends/latex/resources/fonts/README.md).
+[`compiler/backends/latex/resources/fonts/`](../pkg/resumeme/compiler/backends/latex/resources/fonts/README.md).
 Emoji use Twemoji graphics under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/),
 with attribution in PDF metadata. Unsupported Unicode characters fail compilation.
 
@@ -390,10 +395,13 @@ existing draft before retrying after a lost network response.
 
 | Component | Responsibility | Interface |
 | --- | --- | --- |
-| `linkedin/` | Browser capture, parsing, link resolution, asset caching | `Profile` and cached PNGs |
-| `latex/` | Visibility, content organization, layout, compilation | Profile + config → TeX + PDF |
+| `linkedin/` | Browser authentication, capture, HTTP enrichment, asset caching | HTML and cached PNGs |
+| `compiler/asts/` | HTML parsing, schemas, attrs source and presentation records | HTML/JSON → typed profile and intermediate records |
+| `compiler/passes/` | Visibility, content organization, layout, and navigation | Typed profile → display structures |
+| `compiler/backends/latex/` | Escaping, Jinja resources, fonts, PDF toolchain | Display structures → TeX → PDF |
+| `compiler/pipeline.py`, `compiler/constants/` | Pass ordering, template bindings, shared vocabularies and target settings | Configured offline compilation |
 | `visualization/` | Skill scoring and endorsement colors | Visible profile → cloud + score manifest |
-| `config.py`, `models.py`, `resources/` | Typed data contracts and JSON Schemas | YAML configuration and versioned JSON snapshot |
+| `config.py` | Validated runtime and presentation settings | YAML → typed configuration |
 | `cli.py` | Pipeline commands | `capture`, `enrich`, `validate`, `render`, `build` |
 | `scripts/` | Tooling, CI, and release automation | Workflow steps and package entry points |
 
@@ -401,6 +409,7 @@ existing draft before retrying after a lost network response.
 contains local browser state and build intermediates. Capture owns network access;
 rendering and compilation consume local inputs. See the
 [template interface](templates.md) for rendering extensions.
+See [compiler boundaries and pass order](compiler.md) for the internal interfaces.
 
 ### Document review
 

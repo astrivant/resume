@@ -229,6 +229,11 @@ missing dates remain visible. Defaults keep all jobs (`disable: []`,
 
 ### Profile header and contact information
 
+The headline beneath the portrait is hidden by default; set
+`style.show_headline: true` to restore it. The company and location remain visible.
+Set `github.username` to your GitHub account for an icon and profile link directly
+below LinkedIn, or `null` to omit it. Both links use their platform icons.
+
 The cover/background photo is hidden by default in `resumeme.config.yaml`. Set
 `style.show_header_photo` to `true` to display it again; the portrait stays visible.
 

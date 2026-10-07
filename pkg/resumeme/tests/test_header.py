@@ -12,6 +12,7 @@ from attrs import evolve
 from jsonschema import ValidationError
 from PIL import Image
 
+from resumeme.compiler.asts.parsing import parse_profile
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
 from resumeme.compiler.passes.header import prepare_header, prepare_header_logos
 from resumeme.compiler.pipeline import render_profile
@@ -108,6 +109,30 @@ def test_headline_theme_and_github_config_validation(tmp_path: Path) -> None:
 
     with pytest.raises(ValidationError):
         load_config(path)
+
+
+@pytest.mark.parametrize(
+    "attributes", ['data-resume-headline=""', 'data-testid="profile-headline"', 'class="text-body-medium break-words"']
+)
+def test_capture_retains_explicit_headline_for_visibility(attributes: str) -> None:
+    """
+    Identify supported headline markup while preserving the original introductory text.
+
+    Args:
+        attributes (str): Supported semantic selector or established LinkedIn headline classes.
+
+    Returns:
+        None: The source profile retains the headline and the default display copy hides it.
+    """
+    profile = parse_profile(
+        f"<main><section><h1>Alex</h1><p {attributes}>Building useful systems</p><p>Boston, MA</p></section></main>",
+        "example-person",
+    )
+    assert profile.headline == "Building useful systems"
+    assert profile.headline in profile.intro
+    visible, _, _ = prepare_header(profile, Style())
+    assert visible.headline == ""
+    assert visible.intro == ["Boston, MA"]
 
 
 @pytest.mark.parametrize("show_count", [False, True])

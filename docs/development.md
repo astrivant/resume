@@ -21,8 +21,9 @@ shfmt. For container-based development, see [local image builds](containers.md#b
 ## Package responsibilities
 
 Implementation and tests live in `pkg/resumeme/`; repository tooling lives in
-`scripts/`. `linkedin/` owns capture and media, `latex/` owns rendering and
-compilation, and configuration and profile models are shared at the package root.
+`scripts/`. `linkedin/` owns browser and network acquisition; `compiler/` owns
+parsing, typed records, transformation passes, target resources, and compilation.
+Runtime options remain in `config.py`. See the [compiler architecture](compiler.md).
 See [pipeline and package ownership](README.md#pipeline-and-ownership), the
 [profile schema](profile-schema.md), and the [template interface](templates.md).
 
