@@ -142,8 +142,13 @@
 ((* set tiled = section.key in ['projects', 'featured'] *))
 ((* if tiled *))
 % Tiled sections use the full paper width; move past the first-page identity columns only when necessary.
+((* if style.profile_column_side == 'right' *))
+\profilefullwidth
+((* else *))
 \ifnum\value{page}=1\clearpage\fi
 ((* endif *))
+((* endif *))
+((* if section.key == 'skills' and skill_cloud and style.profile_column_side == 'right' *))\profilefullwidth((* endif *))
 ((# Reserve the first education entry's eight lines plus its section heading so reflow cannot strand the heading. #))
 \Needspace{((* if section.key == 'education' *))11((* else *))5((* endif *))\baselineskip}
 ((* if section.key == 'skills' and skill_cloud *))\begin{minipage}{\linewidth}((* endif *))
@@ -346,33 +351,107 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \end{tikzpicture}%
   \endgroup
 }
-% Finish ordinary first-page paragraphs before switching frame widths. Without this
-% measurement TeX would carry their narrow line breaks onto the full-width second page.
-% Paragraphs longer than a whole page remain breakable, so no profile text is clipped.
+% Measure paragraph starts for progression rails. Fixed-column layouts also use the
+% measurement to avoid carrying narrow line breaks onto a wider continuation page.
 \newsavebox{\paragraphmeasure}
 ((* if style.profile_column_side == 'right' *))
-\newlength{\profileparagraphwidth}
+\newlength{\profileparagraphwidth}%
+\newlength{\profileremaining}%
+\newlength{\profilelineindent}%
+\newlength{\profilelinewidth}%
+\newcount\profilenarrowlines%
+\newcount\profileshapeline%
+\newif\ifprofilebody%
+\newif\ifprofilewrapping%
+\newcommand{\profilesetwidth}{%
+  \ifprofilewrapping\ifinner\else%
+    \setlength{\linewidth}{\typeblockwidth}%
+    \ifnum\value{page}=1\relax%
+      \ifdim\pagetotal<\profilecolumnheight\setlength{\linewidth}{0.69\typeblockwidth}\fi%
+    \fi%
+  \fi\fi%
+}%
+\newcommand{\profileshape}{%
+  \ifprofilebody\ifprofilewrapping\ifdim\hsize=\typeblockwidth%
+    \parshape=0\relax%
+    % Infinite ragged-right stretch makes short and full lines equally attractive in a shaped paragraph.
+    \rightskip=0pt plus2em\relax%
+    \profilesetwidth%
+    \addtolength{\linewidth}{-\leftskip}%
+    \ifnum\value{page}=1\relax%
+      \setlength{\profileremaining}{\dimexpr\profilecolumnheight-\pagetotal\relax}%
+      \ifdim\profileremaining>0pt%
+        % Reserve only the lines whose tops overlap the measured profile, including a fractional final line.
+        \profilenarrowlines=\profileremaining\relax%
+        \divide\profilenarrowlines by\baselineskip\relax%
+        \advance\profilenarrowlines by1\relax%
+        \edef\profileshapespec{\the\numexpr\profilenarrowlines+1\relax}%
+        \profileshapeline=1\relax%
+        \loop%
+          \ifnum\profileshapeline>\profilenarrowlines%
+            \setlength{\profilelinewidth}{\typeblockwidth}%
+          \else%
+            \setlength{\profilelinewidth}{0.69\typeblockwidth}%
+          \fi%
+          % Explicit shapes supersede TeX's hanging indentation; preserve each bullet's continuation indent.
+          \setlength{\profilelineindent}{0pt}%
+          \ifnum\profileshapeline>\hangafter%
+            \setlength{\profilelineindent}{\hangindent}%
+          \fi%
+          \addtolength{\profilelinewidth}{-\profilelineindent}%
+          \edef\profileshapespec{\profileshapespec\space\the\profilelineindent\space\the\profilelinewidth}%
+          \advance\profileshapeline by1\relax%
+        \ifnum\profileshapeline<\numexpr\profilenarrowlines+2\relax\repeat%
+        \expandafter\parshape\profileshapespec\relax%
+      \fi%
+    \fi%
+  \fi\fi\fi%
+}%
+% Heading sizes and optional profile fields change vertical positions; recompute the exclusion at every body paragraph.
+\newcommand{\profileparagraphmark}{}%
+\AddToHook{para/begin}{\profileshape\profileparagraphmark}%
+\newcommand{\profilefullwidth}{%
+  \par%
+  \ifprofilewrapping%
+    \ifnum\value{page}=1\relax%
+      \ifdim\pagetotal<\profilecolumnheight%
+        \vspace*{\dimexpr\profilecolumnheight-\pagetotal\relax}%
+      \fi%
+    \fi%
+    \setlength{\linewidth}{\typeblockwidth}%
+  \else%
+    \ifnum\value{page}=1\clearpage\fi%
+  \fi%
+}%
 \newcommand{\profileparagraph}[1]{%
   \par
+  \profilesetwidth
   \setlength{\profileparagraphwidth}{\linewidth}%
   \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
   \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{#1}}%
-  % Move whole paragraphs across a frame boundary, then measure again at the newly available width.
-  \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\typeblockheight
-    \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax>\dimexpr\pagegoal-\pagetotal\relax
-      \framebreak
-      \setlength{\profileparagraphwidth}{\linewidth}%
-      \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
-      \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{#1}}%
+  % A header too tall to wrap retains the original column transition and its paragraph remeasurement.
+  \ifprofilewrapping\else
+    \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\typeblockheight
+      \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax>\dimexpr\pagegoal-\pagetotal\relax
+        \framebreak
+        \setlength{\profileparagraphwidth}{\linewidth}%
+        \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
+        \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{#1}}%
+      \fi
     \fi
   \fi
+  % Text stays in one frame: a paragraph can widen below the profile without leaving a paragraph-sized gap.
   \ifprofileprogression
     \stepcounter{profileparagraphid}%
     \begingroup
       \setlength{\leftskip}{\dimexpr6mm+0.6pt\relax}%
       \setlength{\linewidth}{\profileparagraphwidth}%
-      \noindent\tikz[remember picture,overlay]{%
-        \coordinate (role-start-\arabic{profileparagraphid}) at (-3mm-0.3pt,\ht\paragraphmeasure);
+      % Start the rail after bullet indentation has been set, without starting its paragraph prematurely.
+      \def\profileparagraphmark{%
+        \let\profileparagraphmark\relax
+        \tikz[remember picture,overlay]{%
+          \coordinate (role-start-\arabic{profileparagraphid}) at (-3mm-0.3pt,\ht\paragraphmeasure);
+        }%
       }%
       #1\par
     \endgroup
@@ -531,8 +610,6 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newlength{\profilebelowheight}
 \newflowframe[1]{0.26\textwidth}{\textheight}{0.74\textwidth}{0pt}[identity]
 \newflowframe[1]{0.69\textwidth}{\textheight}{0pt}{0pt}[opening]
-% Activate the full-width lower frame after measuring the visible profile, before body text starts.
-\newflowframe[none]{\textwidth}{\textheight}{0pt}{0pt}[belowidentity]
 ((* else *))
 % The original left profile remains a full-height column with a full-height body beside it.
 \newflowframe[1]{0.26\textwidth}{\textheight}{0pt}{0pt}[identity]
@@ -600,8 +677,8 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* elif connection_count *))
 ((( connection_count|tex )))\par
 ((* endif *))
-\par\addvspace{12pt}
 ((* if contact_first *))
+\par\addvspace{12pt}
 ((( render_section(section_navigation[0][1], section_navigation[0][0]) )))
 ((* endif *))
 ((* if style.profile_column_side == 'right' *))
@@ -616,12 +693,12 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \profileidentity
   \end{minipage}%
 }
-\setlength{\profilecolumnheight}{\dimexpr\ht\profileidentitybox+\dp\profileidentitybox+\baselineskip\relax}
+\setlength{\profilecolumnheight}{\dimexpr\ht\profileidentitybox+\dp\profileidentitybox+0.5\baselineskip\relax}
 \setlength{\profilebelowheight}{\dimexpr\typeblockheight-\profilecolumnheight\relax}
 \ifdim\profilebelowheight>3\baselineskip
-  % The body starts to the left, then continues at full width once it clears the profile's lower edge.
-  \setflowframe*{opening}{height=\profilecolumnheight,y=\profilebelowheight}%
-  \setflowframe*{belowidentity}{pages=1,height=\profilebelowheight,y=0pt}%
+  % One full-width body frame lets individual lines widen as soon as they clear the measured profile.
+  \setflowframe*{opening}{width=\typeblockwidth}%
+  \profilewrappingtrue
   \noindent\usebox{\profileidentitybox}\par
 \else
   % A very tall header retains normal breakable columns instead of being clipped or squeezed into a fixed box.
@@ -632,6 +709,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* set body = section_navigation[1:] if contact_first else section_navigation *))
 ((* if body *))
 \framebreak
+((* if style.profile_column_side == 'right' *))\profilebodytrue((* endif *))
 % Follow the configured section order in the body, including About and any relocated Contact info.
 ((* for anchor, section in body *))
 ((( render_section(section, anchor) )))

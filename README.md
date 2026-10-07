@@ -227,7 +227,19 @@ Post text and inline links stay in Featured. Commenting out `projects` also hide
 the relocated project cards.
 
 `project_filter` selects projects by source URL using a Python regex and defaults
-to GitHub URLs. Set it to `null` to include all projects. See
+to GitHub URLs. Set it to `null` to remove the URL restriction.
+Use `projects.include` to choose names and optionally distinguish their companies:
+
+```yaml
+projects:
+  include:
+    - name: resumeme
+    - name: Deployment platform
+      affiliation: Example Company
+```
+
+Matching ignores case and extra spaces. `include: null` keeps all names;
+`include: []` hides every project tile. The URL filter still applies. See
 [project filtering](docs/README.md#project-consolidation-and-links) for examples.
 
 ### Job history

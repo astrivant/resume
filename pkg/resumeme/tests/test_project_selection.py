@@ -152,7 +152,11 @@ def test_grouped_role_affiliations_survive_featured_deduplication() -> None:
         "example-person",
         "Alex",
         sections=[
-            Section("experience", "Experience", [Entry("First Company", positions=[role]), Entry("Second Company", positions=[role])]),
+            Section(
+                "experience",
+                "Experience",
+                [Entry(company, [role.title], links=role.links, positions=[role]) for company in ["First Company", "Second Company"]],
+            ),
             Section("featured", "Featured", [Entry("Post", ["Ordinary post text"], [Link("Tool", "https://lnkd.in/tool", url)])]),
         ],
     )

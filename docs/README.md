@@ -59,6 +59,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `linkedin.ownership.releases_url` | `null` | Optional HTTPS short link; otherwise use the repository releases page |
 | `section_order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
 | `project_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
+| `projects.include` | `null` | Project selectors requiring `name` with optional `affiliation`; `null` keeps all names, `[]` selects none |
 | `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
 | `experience.last_years` | `null` | Include jobs overlapping the trailing N calendar years; null keeps all dates |
 | `experience.as_of` | `null` | Quoted ISO date fixing the window endpoint; null uses today's UTC date |
@@ -468,6 +469,14 @@ The first page has an identity column and a content column starting with About b
 default; `section_order` controls the content sequence. Subsequent pages use the
 full text width. Projects and Featured use two-column tiles.
 
+With `style.profile_column_side: right`, each body paragraph adjusts its line widths
+to the measured profile height. Portraits, headline, social links, contribution
+graph, contents, and leading Contact information all participate in that measurement.
+Text can widen within a paragraph or bullet as it clears the profile; disabling
+items does not reserve their former space. Full-width tiles and the skills plot
+can use the remaining first-page area. A profile too tall to leave usable space
+below it retains the breakable two-column layout.
+
 | Content | Presentation |
 | --- | --- |
 | Profile | Round portrait, pronouns beneath the name, company logo beside its name |
@@ -498,8 +507,10 @@ these consolidated attachments.
 
 Deduplication uses resolved URLs, falling back to captured URLs. Fragments and
 trailing slashes are ignored; paths and query strings are significant. Unlinked
-attachments can match an unambiguous title. Shared LinkedIn viewer URLs do not
-identify a unique project.
+attachments can match an unambiguous title within their captured affiliation.
+Same-named projects at different companies remain distinct unless they share a
+resolved destination. Unknown affiliations do not bridge ambiguous names.
+Shared LinkedIn viewer URLs do not identify a unique project.
 
 `project_filter` applies after consolidation and deduplication. By default, only
 projects linking to `github.com` appear. The filter uses Python `re.search` on each
@@ -524,6 +535,39 @@ are case-sensitive unless they include `(?i)`; invalid regexes fail configuratio
 validation. Filtering leaves the snapshot and inline links in role/post narrative
 intact. Excluded project entries contribute no media, skill weights, or Codex
 summary evidence. It does not change the visibility of other sections.
+
+To select individual projects, set `projects.include`:
+
+```yaml
+projects:
+  include:
+    - name: resumeme
+    - name: Deployment platform
+      affiliation: Example Company
+```
+
+Each selector requires the exact **displayed project name**. Add `affiliation` to
+select one company or organization when multiple projects have the same name.
+Names and affiliations ignore case and repeated whitespace; affiliation matching
+also ignores a trailing period, consistent with company-logo matching. These are
+literal matches, not substring searches or regexes. For example, `Deployment
+platform` does not match `Deployment platform v2`.
+
+Both fields in a selector must match. Any matching selector includes the project;
+the existing project order is preserved. `include: null` (the default) adds no
+name restriction. `include: []` selects no project tiles. `project_filter` still
+applies: set it to `null` when selecting projects without GitHub or source links.
+Projects must also remain enabled in `section_order`.
+
+Selection runs after consolidation, so it covers native Projects, attachments
+from visible jobs, and previews from enabled Featured posts. Affiliations come
+from captured `Associated with COMPANY` metadata or the company associated with
+an extracted role. Mentions in descriptions do not establish an affiliation.
+When several companies reference the same resolved URL, they share one project
+tile; matching any of its affiliations retains that tile and its complete context.
+If the affiliation was not captured, a selector requiring it does not match.
+Excluded tiles contribute no media, skill weights, or summary evidence; captured
+inputs and ordinary job/post narrative remain intact.
 
 Company names in Projects link to their associated role in Experience. When a
 project names multiple roles, the company name targets the first matching role

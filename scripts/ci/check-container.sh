@@ -36,3 +36,9 @@ docker run "${options[@]}" --user "$(id -u):$(id -g)" \
 test "$(head -c 5 "$project/resume.pdf")" = '%PDF-'
 test -s "$project/tex/skills.weights.json"
 test -s "$project/.cache/build/pdflatex-2.log"
+
+# Check actual line placement with optional profile fields on and off, using the same installed template and PDF backend.
+docker run "${options[@]}" --user "$(id -u):$(id -g)" \
+    --mount "type=bind,source=$project,target=/workspace" \
+    --mount "type=bind,source=$PWD/scripts/validation/check-profile-layout.py,target=/checks/check-profile-layout.py,readonly" \
+    --entrypoint python "$image" /checks/check-profile-layout.py
