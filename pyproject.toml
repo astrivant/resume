@@ -1,7 +1,7 @@
 [project]
 name = "resume"
 version = "0.1.0"
-description = "Build, sign, and publish your LinkedIn resume with GitHub Actions"
+description = "Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
 authors = [{name = "Emma Doyle"}]
 readme = "README.md"
 license = "GPL-3.0-only"

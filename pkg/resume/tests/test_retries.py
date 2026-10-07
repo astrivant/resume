@@ -29,12 +29,15 @@ def test_exponential_backoff_caps_and_stops(monkeypatch: MonkeyPatch) -> None:
     Returns:
         None: Attempts and delay sequence match the bounded exponential contract.
     """
+
     # Record requested waits instead of sleeping so exact backoff behavior is deterministic and fast to verify.
     delays: list[float] = []
     monkeypatch.setattr("resume.linkedin.retrying.time.sleep", delays.append)
     operation = MagicMock(side_effect=TimeoutError("transient"))
+
     with pytest.raises(TimeoutError):
         retry(operation, attempts=8, backoff=10, max_backoff=300, exceptions=(TimeoutError,))
+
     assert operation.call_count == 8
     assert delays == [10, 20, 40, 80, 160, 300, 300]
 
@@ -52,8 +55,10 @@ def test_permanent_errors_are_not_retried(monkeypatch: MonkeyPatch) -> None:
     sleep = MagicMock()
     monkeypatch.setattr("resume.linkedin.retrying.time.sleep", sleep)
     operation = MagicMock(side_effect=ValueError("invalid profile"))
+
     with pytest.raises(ValueError):
         retry(operation, attempts=5, backoff=10, exceptions=(TimeoutError,))
+
     operation.assert_called_once()
     sleep.assert_not_called()
 
@@ -95,6 +100,7 @@ def test_login_waits_for_browser_state_without_a_deadline(monkeypatch: MonkeyPat
     browser = MagicMock()
     browser.window_handles = ["login"]
     browser.current_url = "https://www.linkedin.com/feed/"
+
     # A long sequence of unauthenticated observations must still complete once browser state indicates successful login.
     browser.get_cookie.side_effect = [None] * 1000 + [{"name": "li_at", "value": "fixture"}]
     _wait_for_login(browser)
@@ -144,6 +150,7 @@ def test_login_wait_is_interruptible(monkeypatch: MonkeyPatch) -> None:
     browser = MagicMock()
     browser.window_handles = ["login"]
     browser.current_url = "https://www.linkedin.com/login"
+
     with pytest.raises(KeyboardInterrupt):
         _wait_for_login(browser)
 
@@ -157,5 +164,6 @@ def test_closing_login_window_cancels_waiting() -> None:
     """
     browser = MagicMock()
     browser.window_handles = []
+
     with pytest.raises(NoSuchWindowException):
         _wait_for_login(browser)

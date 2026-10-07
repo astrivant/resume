@@ -8,14 +8,17 @@ trap 'rm -f "$notes"' EXIT
 
 # Re-read release state on every retry so a successful create or edit with a lost response cannot duplicate the section.
 exists=true
+
 if body=$(gh release view "$RELEASE_TAG" --json body --jq .body 2>"$notes"); then
     :
 else
     error=$(cat "$notes")
+
     if [[ "$error" != *'release not found'* && "$error" != *'HTTP 404'* ]]; then
         printf '%s\n' "$error" >&2
         exit 1
     fi
+
     exists=false
     body=''
 fi
@@ -26,10 +29,12 @@ end='<!-- resume:container:end -->'
 section=$(
     printf '%s\n\n## Container image\n\n' "$begin"
     printf 'Pull the published GHCR image using either alias (linux/amd64):\n\n```bash\n'
+
     while IFS= read -r reference; do
         [[ -n "$reference" ]] || continue
         printf 'docker pull --platform linux/amd64 %s\n' "$reference"
     done <<<"$IMAGE_TAGS"
+
     printf '```\n\n%s\n' "$end"
 )
 
@@ -44,9 +49,11 @@ elif [[ -n "$body" ]]; then
 else
     updated="$section"
 fi
+
 if [[ "$exists" == true && "$body" == "$updated" ]]; then
     exit 0
 fi
+
 printf '%s\n' "$updated" >"$notes"
 
 # Editing notes preserves assets and draft status; new container releases do not displace the latest signed PDF release.

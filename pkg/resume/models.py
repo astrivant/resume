@@ -148,14 +148,17 @@ def load_profile(path: Path, username: str) -> Profile:
         ValueError: The snapshot belongs to another username.
         jsonschema.ValidationError: The snapshot does not satisfy the schema.
     """
+
     # The snapshot is a portable interchange format; reject malformed fields before constructing typed records.
     raw = json.loads(path.read_text(encoding="utf-8"))
     schema = json.loads(files("resume").joinpath("resources/profile.schema.json").read_text(encoding="utf-8"))
     Draft202012Validator(schema).validate(raw)
     profile = _converter.structure(raw, Profile)
+
     # Ownership is independent of schema validity: a valid snapshot can still belong to the upstream fork.
     if profile.username.casefold() != username.casefold():
         raise ValueError("Snapshot username differs from configuration. Run `resume capture` for the new owner.")
+
     return profile
 
 
@@ -171,6 +174,7 @@ def save_profile(profile: Profile, path: Path) -> None:
         None: The serialized snapshot is written to disk.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
+
     # Publish with a same-directory rename so interrupted serialization cannot truncate the accepted snapshot.
     pending = path.with_suffix(".pending.json")
     pending.write_text(json.dumps(_converter.unstructure(profile), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

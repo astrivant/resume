@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 __all__ = ["SkillScore", "render_skill_cloud", "skill_scores"]
 
 _HASHTAG = re.compile(r"(?<!\w)#([^\W\d]\w*)", re.UNICODE)
+_MAX_CLOUD_SKILLS = 20
 
 
 @frozen
@@ -81,6 +82,7 @@ def _word_color(*args: object, colors: tuple[str, ...], **kwargs: object) -> str
     Returns:
         str: Hexadecimal color selected deterministically from the word's spelling.
     """
+
     # A stable digest avoids Python's process-randomized hash and keeps a color-only change from rearranging words.
     word = str(args[0] if args else kwargs.get("word", ""))
     index = int.from_bytes(hashlib.sha256(word.encode("utf-8")).digest()[:4], "big") % len(colors)
@@ -101,48 +103,65 @@ def skill_scores(profile: Profile) -> dict[str, SkillScore]:
     Returns:
         dict[str, SkillScore]: Display labels and auditable scores, sorted by descending weight then name.
     """
+
     # Treat Skills entries as declarations and other visible entries as evidence; duplicate declarations should not inflate frequency.
     blocks: list[tuple[list[str], list[Skill]]] = [(profile.intro, [])]
     declarations: dict[str, Skill] = {}
+
     for section in profile.sections:
         for entry in section.entries:
             if section_key(section.key) == "skills":
                 skills = entry.skills or ([Skill(entry.title, endorsement_count(entry.paragraphs))] if entry.title.strip() else [])
+
                 for skill in skills:
                     key = _normalized(skill.name)
                     previous = declarations.get(key)
+
                     if previous is None or skill.endorsements > previous.endorsements:
                         declarations[key] = skill
+
                 continue
+
             # Link labels often repeat card text; count only labels that add otherwise absent wording.
             lines = [entry.title, *entry.paragraphs]
             text = _normalized(" ".join(lines))
             lines.extend(link.label for link in entry.links if link.label != link.url and _normalized(link.label) not in text)
             blocks.append((lines, entry.skills))
+
     blocks.extend(([skill.name], [skill]) for skill in declarations.values())
+
     # Build the vocabulary from explicit skills and hashtags, retaining display spelling and the largest observed endorsement total.
     labels: dict[str, str] = {}
     endorsements: dict[str, int] = {}
+
     for lines, skills in blocks:
         for skill in [*skills, *(Skill(match[1]) for line in lines for match in _HASHTAG.finditer(line))]:
             key = _normalized(skill.name)
+
             if key:
                 labels.setdefault(key, skill.name.strip())
                 endorsements[key] = max(endorsements.get(key, 0), skill.endorsements)
+
     if not labels:
         return {}
+
     # Match longer phrases first so a compound skill is not split into shorter labels; preserve punctuation in C++, C#, and similar names.
     alternatives = "|".join(re.escape(key) for key in sorted(labels, key=lambda key: (-len(key), key)))
     pattern = re.compile(r"(?<![\w+])(?:" + alternatives + r")(?![\w+#])")
     references: Counter[str] = Counter()
+
     for lines, skills in blocks:
         found = Counter(match[0] for match in pattern.finditer(_normalized(" ".join(lines))))
+
         # A structured job tag supplies one reference only when the same skill is not already mentioned in that entry's text.
         for key in {_normalized(skill.name) for skill in skills}:
             if key:
                 found[key] = max(found[key], 1)
+
         references.update(found)
+
     scores = {labels[key]: SkillScore(references[key], endorsements.get(key, 0)) for key in labels}
+
     # Stable tie-breaking keeps manifests and the seeded layout reproducible when multiple skills have equal weights.
     return dict(sorted(scores.items(), key=lambda item: (-item[1].weight, _normalized(item[0]))))
 
@@ -151,13 +170,14 @@ def render_skill_cloud(
     scores: dict[str, SkillScore], directory: Path, *, colors: tuple[str, ...] = ("0A66C2",), background: str = "FFFFFF"
 ) -> str | None:
     """
-    Write a deterministic PNG and score manifest beside generated LaTeX.
+    Draw the twenty highest-weighted skills and write all scores beside generated LaTeX.
 
     Square-root scaling and a minimum visual weight keep rarely mentioned skills
-    legible beside skills with large endorsement totals. The manifest keeps raw scores.
+    legible beside skills with large endorsement totals. Ties use normalized names.
+    The manifest keeps raw scores for every skill, including those outside the cloud.
 
     Args:
-        scores (dict[str, SkillScore]): Nonnegative counts for each displayed label.
+        scores (dict[str, SkillScore]): Nonnegative counts for each known label, in any order.
         directory (Path): Generated TeX directory with an assets subdirectory.
         colors (tuple[str, ...]): Nonempty theme palette of six-digit hexadecimal text colors.
         background (str): Six-digit hexadecimal page color, shared by the PNG canvas.
@@ -166,12 +186,14 @@ def render_skill_cloud(
         str | None: Relative PNG path, or None when no skills are present.
 
     Raises:
-        ValueError: The palette is empty or the available canvas cannot display every skill legibly.
+        ValueError: The palette is empty or the available canvas cannot display every selected skill legibly.
     """
     manifest = directory / "skills.weights.json"
+
     # Remove stale generated clouds even when skills are now disabled; keep captured assets outside this cleanup.
     for previous in (directory / "assets").glob("skills-*.png"):
         previous.unlink()
+
     # Preserve raw counts for auditability; visual scaling below affects readability, not the scoring formula.
     manifest.write_text(
         json.dumps(
@@ -185,13 +207,20 @@ def render_skill_cloud(
         + "\n",
         encoding="utf-8",
     )
+
     if not scores:
         return None
+
     if not colors:
         raise ValueError("The skill cloud requires at least one theme color.")
+
+    # Select before scaling so the cloud stays readable; equal weights use the same stable name ordering as the score manifest.
+    selected = dict(sorted(scores.items(), key=lambda item: (-item[1].weight, _normalized(item[0])))[:_MAX_CLOUD_SKILLS])
+
     # Compress the visual range and give low-frequency labels a floor so heavily endorsed skills cannot make other labels unreadable.
-    maximum = max(score.weight for score in scores.values())
-    frequencies = {name: 0.25 + 0.75 * sqrt(score.weight / maximum) for name, score in scores.items()}
+    maximum = max(score.weight for score in selected.values())
+    frequencies = {name: 0.25 + 0.75 * sqrt(score.weight / maximum) for name, score in selected.items()}
+
     # Increase canvas height instead of silently accepting WordCloud's omission of labels that do not fit.
     for attempt in range(3):
         cloud = WordCloud(
@@ -201,19 +230,24 @@ def render_skill_cloud(
             height=800 * (attempt + 1),
             background_color="#" + background,
             color_func=partial(_word_color, colors=colors),
-            max_words=len(scores),
+            max_words=_MAX_CLOUD_SKILLS,
             min_font_size=28,
             max_font_size=140,
             prefer_horizontal=1.0,
             relative_scaling=0.5,
             random_state=0,
         ).generate_from_frequencies(frequencies)
-        if len(cloud.layout_) == len(scores):
+
+        if len(cloud.layout_) == len(selected):
             output = BytesIO()
             cloud.to_image().save(output, format="PNG")
             data = output.getvalue()
+
             # Content-derived filenames change only when the rendered cloud changes, making generated asset diffs easier to interpret.
             name = "skills-" + hashlib.sha256(data).hexdigest() + ".png"
             (directory / "assets" / name).write_bytes(data)
             return f"assets/{name}"
-    raise ValueError("The skill cloud could not fit every label. Set style.skills_word_cloud: false to render the complete text list.")
+
+    raise ValueError(
+        "The skill cloud could not fit every selected label. Set style.skills_word_cloud: false to render the complete text list."
+    )

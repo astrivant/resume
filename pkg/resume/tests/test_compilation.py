@@ -35,6 +35,7 @@ def test_compiler_backends_publish_after_both_passes(tmp_path: Path, monkeypatch
     source.parent.mkdir()
     source.write_text("Test input", encoding="utf-8")
     destination = tmp_path / "resume.pdf"
+
     # Seed a published document so the fake compiler can assert it remains untouched throughout both passes.
     destination.write_bytes(b"previous PDF")
     monkeypatch.setenv("RESUME_TEX_BACKEND", backend)
@@ -59,12 +60,15 @@ def test_compiler_backends_publish_after_both_passes(tmp_path: Path, monkeypatch
         assert isinstance(environment, dict)
         assert environment["SOURCE_DATE_EPOCH"] == "946684800"
         assert environment["FORCE_SOURCE_DATE"] == "1"
+
         # Fonts must be discoverable without a host installation, global font-map update, or compiler network access.
         font_tree = environment["TEXMFHOME"]
         assert isinstance(font_tree, str)
         assert font_tree.endswith("/texmf")
+
         if backend == "docker":
             assert "TEXMFHOME=/output/texmf" in command
+
         assert kwargs["timeout"] == 120
         assert destination.read_bytes() == b"previous PDF"
         calls.append(command)
@@ -117,17 +121,23 @@ def test_failed_local_compilation_preserves_existing_pdf(tmp_path: Path, monkeyp
         """
         nonlocal calls
         calls += 1
+
         if calls == 2 and failure == "timeout":
             raise subprocess.TimeoutExpired(command, 120)
+
         output = next(path for path in (tmp_path / ".cache/build").iterdir() if path.is_dir())
+
         if failure != "missing":
             (output / "resume.pdf").write_bytes(b"corrupt" if failure == "invalid" else b"%PDF-partial")
+
         return subprocess.CompletedProcess(command, int(calls == 2 and failure == "exit"), stdout="", stderr="compiler diagnostic")
 
     monkeypatch.setattr("resume.latex.compilation.subprocess.run", run)
+
     # Check failure at the publication boundary, not just the subprocess result: no partial document may replace the prior PDF.
     with pytest.raises(subprocess.TimeoutExpired if failure == "timeout" else RuntimeError):
         compile_pdf(source, Config(LinkedIn("example-person")), tmp_path)
+
     assert destination.read_bytes() == b"previous PDF"
     assert not destination.with_suffix(".pending.pdf").exists()
 
@@ -144,5 +154,6 @@ def test_unknown_compiler_backend_is_rejected(tmp_path: Path, monkeypatch: Monke
         None: Invalid configuration fails before executing a compiler.
     """
     monkeypatch.setenv("RESUME_TEX_BACKEND", "typo")
+
     with pytest.raises(ValueError, match="RESUME_TEX_BACKEND"):
         compile_pdf(tmp_path / "resume.tex", Config(LinkedIn("example-person")), tmp_path)

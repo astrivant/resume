@@ -1,15 +1,18 @@
 # resume
 
-**Build and release your résumé like software.** Turn your LinkedIn profile into an
-illustrated PDF with versioned content, reproducible builds, and signed GitHub
-releases. Fork the project, set your username, capture your profile, and let a push
-to `main` handle the publishing.
+**Your résumé deserves better than LinkedIn's PDF export.** Skip the clunky
+formatting and the copy-paste routine of maintaining a second résumé. `resume`
+turns your profile into a polished, illustrated PDF you'll actually want to send.
+
+Build and release your résumé like software: fork the project, set your username,
+capture your profile, and let a push to `main` build, sign, and publish it.
 
 **[View the résumé (PDF)](resume.pdf)** · [Fork this project](https://github.com/astrivant/resume/fork)
 
 ## Contents
 
 - [Quick start](#quick-start)
+- [Use with an AI agent](#use-with-an-ai-agent)
 - [Fork environment variables](#fork-environment-variables)
 - [Why use resume?](#why-use-resume)
 - [How it works](#how-it-works)
@@ -22,6 +25,20 @@ to `main` handle the publishing.
 In your fork's local checkout, install the package. Local capture requires
 Python 3.13+, Poetry 2.1.3, and Firefox. GitHub Actions handles PDF compilation;
 Docker is needed only for a local PDF preview.
+
+On macOS with [Homebrew](https://brew.sh) installed, bootstrap host tools from the
+[Brewfile](Brewfile) and install the project's pinned Poetry version:
+
+```bash
+brew bundle install
+pipx install --python "$(brew --prefix python@3.13)/bin/python3.13" "poetry==2.1.3"
+export PATH="${PIPX_BIN_DIR:-$HOME/.local/bin}:$PATH"
+poetry env use "$(brew --prefix python@3.13)/bin/python3.13"
+```
+
+Run `brew bundle check` to verify host dependencies. Start Docker Desktop before
+building a PDF locally. Homebrew supplies current host tools; CI keeps its existing
+version pins, and Python dependencies and linters install from `poetry.lock`.
 
 ```bash
 poetry install --only main
@@ -63,6 +80,19 @@ After the pipeline succeeds, your fork contains **`resume.pdf` on `main`** and a
 GitHub release with the PDF, signatures, SHA-256 hashes, and signing-key fingerprint.
 The [PDF link at the top of this README](resume.pdf) stays relative to the repository,
 so it points to your résumé in your fork.
+
+## Use with an AI agent
+
+Open your checkout in an agent with terminal access and give it this prompt:
+
+> Read `SKILL.md` and generate my résumé PDF from LinkedIn username `YOUR-USERNAME`.
+> Handle setup, capture, validation, and the build. Let me sign in to Firefox,
+> then give me the finished PDF.
+
+The portable [agent skill](SKILL.md) covers first-run setup, the browser login
+handoff, retries, saved-profile rebuilds, and optional GitHub publication. For
+layout changes, tell the agent to reuse the saved profile. Add “publish through
+my fork's GitHub Actions workflow” when you also want a signed release.
 
 ## Fork environment variables
 
@@ -167,7 +197,7 @@ missing dates remain visible. Defaults keep all jobs (`disable: []`,
 The cover/background photo is hidden by default in `resume.config.yaml`. Set
 `style.show_header_photo` to `true` to display it again; the portrait stays visible.
 
-Skills appear as a word cloud scored by **references + 2 × endorsements**.
+The top 20 skills appear as a word cloud scored by **references + 2 × endorsements**.
 Disabled sections contribute no references. Set `style.skills_word_cloud: false`
 for the text list, or add `skills` to `disable` to hide it. Profiles with no optional
 sections also work. See the [profile schema and scoring rules](docs/profile-schema.md).

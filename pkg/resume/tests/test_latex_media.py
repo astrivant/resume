@@ -49,5 +49,6 @@ def test_image_role_preserves_visual_hierarchy(image: Media, header: bool, expec
     Returns:
         None: Blank labels, overlapping URL markers, and preview destinations retain their intended role.
     """
+
     # Organization marks and portraits both arrive as 100-pixel downloads; their role must survive that ambiguity.
     assert image_role(image, header=header) == expected

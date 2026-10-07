@@ -1,6 +1,6 @@
 repository:
   name: resume
-  description: Build, sign, and publish your LinkedIn resume with GitHub Actions
+  description: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions
   has_issues: true
   has_projects: false
   has_wiki: false

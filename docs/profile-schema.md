@@ -122,12 +122,13 @@ entry's text. Mirrored link labels do not count again. Unknown aliases are not
 inferred, and ordinary prose is not promoted into a skill vocabulary.
 
 The [wordcloud package](https://pypi.org/project/wordcloud/) generates the image with
-Pillow and Matplotlib support. A fixed random seed and bundled font make the layout
+Pillow and Matplotlib support. It displays at most 20 skills, ranked by combined
+weight with case-insensitive alphabetical tie-breaking. A fixed random seed and bundled font make the layout
 repeatable for the same inputs and dependency versions. Font sizes use square-root
 scaling with a minimum visual weight so a large endorsement count cannot make
 other skills unreadable. Raw reference, endorsement, and combined counts are saved
-in `tex/skills.weights.json`. All labels must fit; generation fails visibly rather
-than silently dropping lower-ranked skills.
+in `tex/skills.weights.json` for every scored skill, including those outside the
+top 20. All selected labels must fit; generation fails visibly if they do not.
 
 `style.skills_word_cloud: true` replaces the Skills list with the cloud. Explicit
 tags can produce a Skills card even when there is no separate captured Skills

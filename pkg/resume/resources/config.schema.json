@@ -130,7 +130,7 @@
           "type": "boolean"
         },
         "skills_word_cloud": {
-          "description": "Display a skill cloud weighted by references plus twice each endorsement; disable skills to hide it.",
+          "description": "Display the top 20 skills weighted by references plus twice each endorsement; disable skills to hide the cloud.",
           "type": "boolean"
         },
         "ink": {

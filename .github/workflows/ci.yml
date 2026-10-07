@@ -14,6 +14,7 @@ defaults:
   run:
     shell: bash
 jobs:
+
   # Resolve once so every reusable stage consumes the same commit even if the branch advances during the run.
   source:
     name: Resolve pipeline source
@@ -42,6 +43,7 @@ jobs:
     secrets:
       COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
       COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
   # Run the gate after failures too; a skipped or cancelled upstream stage must never look like successful verification.
   verified:
     name: CI verification
@@ -54,6 +56,7 @@ jobs:
         env:
           RESULTS_JSON: ${{ toJSON(needs) }}
         run: jq -e 'all(.[]; .result == "success")' <<<"$RESULTS_JSON"
+
   # PDF publication owns repository writes and only runs for main, after the common verification gate.
   deploy-stage:
     name: Publish PDF
@@ -64,6 +67,7 @@ jobs:
       contents: write
     with:
       sha: ${{ needs.source.outputs.sha }}
+
   # Tag publication owns registry writes and container release notes; branch and PR builds only exercise the image.
   container-stage:
     name: Publish container

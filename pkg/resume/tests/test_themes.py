@@ -84,6 +84,7 @@ def test_inline_themes_share_base_style_validation(tmp_path: Path, override: dic
     path.write_text(
         yaml.safe_dump({"linkedin": {"username": "example-person"}, "style": {"themes": {"custom": override}}}), encoding="utf-8"
     )
+
     with pytest.raises(ValidationError):
         load_config(path)
 
@@ -100,8 +101,10 @@ def test_unknown_theme_fails_before_rendering(tmp_path: Path) -> None:
     """
     path = tmp_path / "resume.config.yaml"
     path.write_text("linkedin:\n  username: example-person\nstyle:\n  theme: missing\n", encoding="utf-8")
+
     with pytest.raises(ValueError, match="Unknown style.theme"):
         load_config(path)
+
     with pytest.raises(ValueError, match="Unknown style.theme"):
         resolve_style(Style(theme="missing"))
 
@@ -133,6 +136,7 @@ def test_theme_visibility_and_custom_template_use_effective_style(tmp_path: Path
     assert "Python" in text and "skills-" not in text
     assert not list((source.parent / "assets").iterdir())
     assert profile.images[0].path == "" and config.style.show_header_photo is True
+
     # A custom template must see exactly the same resolved values and filtered profile as the packaged template.
     (tmp_path / "custom.tex.j2").write_text("((( style.accent )))|((( style.paper )))|((( profile.images|length )))", encoding="utf-8")
     custom = render_profile(profile, evolve(config, template="custom.tex.j2"), tmp_path)
@@ -153,13 +157,17 @@ def test_cloud_palette_changes_colors_without_changing_layout_or_scores(tmp_path
     scores = {"Python": SkillScore(4, 3), "Kubernetes": SkillScore(2, 1), "Terraform": SkillScore(1, 0)}
     original_path = render_skill_cloud(scores, tmp_path)
     assert original_path is not None
+
     with Image.open(tmp_path / original_path) as image:
         original = image.convert("RGB")
+
     manifest = (tmp_path / "skills.weights.json").read_bytes()
     themed_path = render_skill_cloud(scores, tmp_path, colors=("6B2737", "C44A11"))
     assert themed_path is not None and themed_path != original_path
+
     with Image.open(tmp_path / themed_path) as image:
         themed = image.convert("RGB")
+
     # Every palette channel stays below white, so the white-pixel mask captures geometry independently of hue.
     white = Image.new("RGB", original.size, "white")
     original_mask = ImageChops.difference(original, white).convert("L").point(lambda value: 255 if value else 0)
@@ -170,5 +178,6 @@ def test_cloud_palette_changes_colors_without_changing_layout_or_scores(tmp_path
     assert render_skill_cloud(scores, tmp_path, colors=("6B2737", "C44A11")) == themed_path
     colored_path = render_skill_cloud(scores, tmp_path, colors=("6B2737",), background="FFF8F0")
     assert colored_path is not None
+
     with Image.open(tmp_path / colored_path) as image:
         assert image.getpixel((0, 0)) == (255, 248, 240)

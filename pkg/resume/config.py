@@ -206,10 +206,13 @@ def project_path(root: Path, value: str) -> Path:
     Raises:
         ValueError: The path is absolute, points at the root, or escapes it.
     """
+
     # Resolve symlinks before checking containment; lexical '..' checks alone would allow existing links to escape.
     target = (root / value).resolve()
+
     if Path(value).is_absolute() or target == root.resolve() or not target.is_relative_to(root.resolve()):
         raise ValueError(f"Expected a path within the configuration directory: {value}")
+
     return target
 
 
@@ -227,19 +230,26 @@ def load_config(path: Path) -> Config:
         jsonschema.ValidationError: A value is invalid or a field is unknown.
         ValueError: A path escapes the project directory or the selected theme is not defined.
     """
+
     # Validate raw types before cattrs can coerce them, including real calendar dates for the job window.
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     schema = json.loads(files("resume").joinpath("resources/config.schema.json").read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
+
     # Reject selector typos even for validation-only commands; themes are user-defined, not a hard-coded registry.
     if config.style.theme is not None and config.style.theme not in config.style.themes:
         raise ValueError(f"Unknown style.theme {config.style.theme!r}; define it under style.themes or use null.")
+
     # Inputs, templates, and outputs share one root but must never resolve to the same file or directory.
     paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf]
+
     if config.template:
         paths.append(config.template)
+
     resolved = [project_path(path.resolve().parent, value) for value in paths]
+
     if len(resolved) != len(set(resolved)):
         raise ValueError("Input, output, and template paths must be distinct.")
+
     return config

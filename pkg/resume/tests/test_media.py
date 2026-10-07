@@ -32,6 +32,7 @@ def test_private_network_media_is_rejected() -> None:
     Returns:
         None: The request is rejected before HTTP transport.
     """
+
     with requests.Session() as session, pytest.raises(ValueError, match="private networks"):
         fetch_public(session, "http://127.0.0.1/internal", 1)
 
@@ -59,6 +60,7 @@ def test_redirects_are_revalidated_and_cookies_cleared(monkeypatch: MonkeyPatch)
             None: The initial public URL is accepted.
         """
         checked.append(url)
+
         if "127.0.0.1" in url:
             raise ValueError("private networks")
 
@@ -69,8 +71,10 @@ def test_redirects_are_revalidated_and_cookies_cleared(monkeypatch: MonkeyPatch)
     session = MagicMock(spec=requests.Session)
     session.cookies = Mock()
     session.get.return_value.__enter__.return_value = response
+
     with pytest.raises(ValueError, match="private networks"):
         fetch_public(session, "https://example.org/image.png", 1)
+
     assert checked == ["https://example.org/image.png", "http://127.0.0.1/private"]
     session.get.assert_called_once()
     session.cookies.clear.assert_called_once()
@@ -104,8 +108,10 @@ def test_images_become_portable_pngs(tmp_path: Path, monkeypatch: MonkeyPatch) -
         """
         assert session.trust_env is False
         assert timeout > 0
+
         if url.endswith("broken"):
             raise requests.HTTPError("unavailable")
+
         return buffer.getvalue(), url
 
     monkeypatch.setattr("resume.linkedin.media.fetch_public", fetch)

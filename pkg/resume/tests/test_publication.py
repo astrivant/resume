@@ -26,6 +26,7 @@ def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, ma
     Returns:
         None: Publishing never rebuilds an image or pushes a mismatched source revision.
     """
+
     # Replace Docker at the command boundary so publication sequencing is tested without contacting a daemon or registry.
     docker = tmp_path / "docker"
     docker.write_text(
@@ -57,6 +58,7 @@ def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, ma
     calls = (tmp_path / "calls").read_text().splitlines()
     assert calls[0] == "load --input .cache/container/resume.tar.gz"
     assert not any(call.startswith("build") for call in calls)
+
     if matching_revision:
         assert result.returncode == 0
         assert [call for call in calls if call.startswith("push ")] == [f"push {tag}" for tag in tags]
@@ -93,6 +95,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     Returns:
         None: Reruns neither create duplicate PDF commits nor release obsolete source.
     """
+
     # Use a real local remote to exercise fast-forward and rerun behavior without granting tests access to GitHub writes.
     root = tmp_path / "checkout"
     remote = tmp_path / "remote.git"
@@ -105,10 +108,12 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     _git(root, "config", "commit.gpgsign", "false")
     _git(root, "remote", "add", "origin", str(remote))
     project = Path(__file__).resolve().parents[3]
+
     for relative in ["scripts/ci/publish.sh", "scripts/ci/restore-pdf.py", "scripts/tooling/retry.sh"]:
         destination = root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(project / relative, destination)
+
     (root / "resume.config.yaml").write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
     _git(root, "add", ".")
     _git(root, "commit", "-m", "source")
@@ -136,12 +141,14 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     published = _git(remote, "rev-parse", "main")
     assert published != source
     assert output.read_text() == f"published-sha={published}\n"
+
     # Model a new user commit arriving after the first PDF publication; a retry must not publish that older build as current.
     if advanced:
         (root / "source-change.txt").write_text("New source invalidates the previous artifact.", encoding="utf-8")
         _git(root, "add", "source-change.txt")
         _git(root, "commit", "-m", "new source")
         _git(root, "push", "origin", "HEAD:main")
+
     expected_head = _git(remote, "rev-parse", "main")
     _git(root, "checkout", "--detach", source)
     output.write_text("", encoding="utf-8")
@@ -214,6 +221,7 @@ def test_container_notes_preserve_content_and_recover_lost_responses(tmp_path: P
     Returns:
         None: New and existing releases retain one current container section after retries.
     """
+
     # Model GitHub persisting a write but losing its response; the retry must read the committed body before writing again.
     command = tmp_path / "gh"
     command.write_text(
@@ -244,6 +252,7 @@ exit 2
     state = tmp_path / "body.md"
     before = "Existing notes with `backticks` and $(literal).\n\nSignature instructions."
     after = "\n\nMaintainer's trailing notes."
+
     if existing == "manual":
         state.write_text(before, encoding="utf-8")
     elif existing == "managed":
@@ -251,6 +260,7 @@ exit 2
             f"{before}\n\n<!-- resume:container:start -->\nStale pull command.\n<!-- resume:container:end -->{after}",
             encoding="utf-8",
         )
+
     # Keep the original Git tag distinct from its normalized Docker alias, as metadata-action does for unsupported characters.
     tags = ["ghcr.io/example/resume:release-v1.0.0", f"ghcr.io/example/resume:sha-{'a' * 40}"]
     writes = tmp_path / "writes"
@@ -271,18 +281,23 @@ exit 2
         text=True,
         check=True,
     )
+
     # Each alias appears exactly once, and a retry that observes the successful write performs no further mutation.
     notes = state.read_text()
     assert notes.count("## Container image") == 1
+
     for tag in tags:
         assert notes.count(f"docker pull --platform linux/amd64 {tag}\n") == 1
+
     calls = writes.read_text().splitlines()
     assert len(calls) == 1
+
     if existing == "missing":
         assert calls[0].startswith("release create release/v1.0.0 --verify-tag --latest=false --title release/v1.0.0 --notes-file ")
     else:
         assert calls[0].startswith("release edit release/v1.0.0 --notes-file ")
         assert notes.startswith(before + "\n\n")
+
     if existing == "managed":
         assert "Stale pull command." not in notes
         assert notes.endswith(after + "\n")
@@ -300,6 +315,7 @@ def test_container_notes_do_not_create_releases_after_failed_lookups(tmp_path: P
     Returns:
         None: Failed lookups never create or edit a release, even across transient retries.
     """
+
     # A lookup failure leaves release ownership unknown, so record every attempted command and deny all reads.
     command = tmp_path / "gh"
     command.write_text(

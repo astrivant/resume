@@ -40,24 +40,33 @@ def image_role(image: Media, *, header: bool = False) -> Literal["cover", "portr
     Returns:
         Literal["cover", "portrait", "logo", "icon", "preview"]: Presentation role; body images default to uncropped previews.
     """
+
     # LinkedIn serves logos and portraits at the same resolution; natural pixel size cannot establish their importance.
     path = urlsplit(image.url).path.casefold()
     label = image.alt.casefold().strip()
+
     if is_header_photo(image):
         return "cover"
+
     # Favicon paths often contain "logos", so recognize these small site icons before organization branding.
     if "favicon" in path or "apple-touch-icon" in path or label in {"favicon", "site icon"}:
         return "icon"
+
     if "profile-displayphoto" in path or label in {"profile photo", "profile picture", "portrait"}:
         return "portrait"
+
     if any(marker in path for marker in ("company-logo", "school-logo", "organization-logo")):
         return "logo"
+
     # A preview may depict a logo or link to a company; its attachment role still takes precedence over that destination.
     if label.startswith("thumbnail") or any(marker in path for marker in ("articleshare", "profile-treasury", "feedshare")):
         return "preview"
+
     if label == "logo" or label.endswith(" logo") or path.rsplit("/", 1)[-1].startswith("logo."):
         return "logo"
+
     if urlsplit(image.link).path.casefold().startswith(("/company/", "/school/")):
         return "logo"
+
     # Older captures lack explicit portrait labels; retain the header fallback after excluding known secondary images.
     return "portrait" if header else "preview"

@@ -37,18 +37,23 @@ def latex_escape(value: str) -> str:
     Returns:
         str: Text suitable for a LaTeX argument.
     """
+
     # Split emoji sequences from ordinary text so generated TeX commands are never escaped a second time.
     parts: list[str] = []
     offset = 0
+
     for match in _EMOJI.finditer(value):
         parts.append("".join(_ESCAPES.get(character, character) for character in value[offset : match.start()]))
         emoji = match.group()
+
         # Twemoji filenames omit presentation selectors on simple emoji but retain them inside joined sequences.
         if "\u200d" not in emoji:
             emoji = emoji.replace("\ufe0f", "")
+
         code = "-".join(f"{ord(character):x}" for character in emoji)
         parts.append(r"\texttwemoji{" + code + "}")
         offset = match.end()
+
     parts.append("".join(_ESCAPES.get(character, character) for character in value[offset:]))
     return "".join(parts)
 
@@ -63,5 +68,6 @@ def latex_url(value: str) -> str:
     Returns:
         str: Escaped hyperlink argument.
     """
+
     # URL validation already rejected structural TeX characters; escape remaining hyperref-sensitive characters without rewriting the URL.
     return "".join({"%": r"\%", "#": r"\#", "&": r"\&", "_": r"\_"}.get(character, character) for character in value)

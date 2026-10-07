@@ -89,8 +89,8 @@ The reference config hides the cover/background photo with
 build. This applies to packaged and custom templates, keeps the portrait and section
 images visible, and retains the captured photo so re-enabling it needs no recapture.
 
-The Skills cloud scores each label as **references + 2 × endorsements**, using only
-enabled sections. `disable: [skills]` hides it entirely. Set
+The Skills cloud shows at most 20 labels, ranked by **references + 2 × endorsements**,
+using only enabled sections. `disable: [skills]` hides it entirely. Set
 `style.skills_word_cloud: false` to restore the captured Skills list. The PNG and
 `tex/skills.weights.json` are regenerated with the TeX. See the
 [profile schema and scoring rules](profile-schema.md) for supported sections,

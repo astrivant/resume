@@ -30,10 +30,13 @@ def tex_image() -> str:
     Returns:
         str: Docker image with its content digest.
     """
+
     # Package the compiler reference with the wheel so installed CLIs and source checkouts select the same toolchain.
     value: object = json.loads(files("resume.latex").joinpath("resources/toolchain.json").read_text(encoding="utf-8"))["tex_image"]
+
     if not isinstance(value, str):
         raise ValueError("The packaged TeX image reference is invalid.")
+
     return value
 
 
@@ -54,21 +57,28 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
         ValueError: RESUME_TEX_BACKEND is neither docker nor local.
         subprocess.TimeoutExpired: A compiler pass exceeds two minutes.
     """
+
     # Host installs launch the isolated compiler image; the runtime container invokes its bundled binary without nested Docker.
     backend = os.environ.get("RESUME_TEX_BACKEND", "docker")
+
     if backend not in {"docker", "local"}:
         raise ValueError("RESUME_TEX_BACKEND must be docker or local.")
+
     source = source.resolve()
     destination = project_path(root, config.output.pdf)
     cache = root / ".cache/build"
     cache.mkdir(parents=True, exist_ok=True)
+
     # Keep intermediate output separate from the published PDF until both passes have completed successfully.
     with tempfile.TemporaryDirectory(dir=cache) as directory:
         output = Path(directory).resolve()
+
         # Ship the exact font files with the package: neither compiler backend needs a network or host font installation.
         font_archive = files("resume.latex").joinpath("resources/fonts/ebgaramond-texmf.zip").read_bytes()
+
         with ZipFile(BytesIO(font_archive)) as fonts:
             fonts.extractall(output / "texmf")
+
         command = (
             ["pdflatex"]
             if backend == "local"
@@ -100,6 +110,7 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
                 tex_image(),
             ]
         )
+
         # Share compiler behavior across backends, including disabled shell escape and noninteractive failure reporting.
         command.extend(
             [
@@ -111,20 +122,27 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
                 source.name,
             ]
         )
+
         # Fix embedded dates and run twice so references settle without introducing wall-clock differences into the PDF.
         environment = dict(os.environ, SOURCE_DATE_EPOCH="946684800", FORCE_SOURCE_DATE="1", TEXMFHOME=str(output / "texmf"))
+
         for number in (1, 2):
             result = subprocess.run(command, cwd=source.parent, env=environment, capture_output=True, text=True, timeout=120, check=False)
             log = cache / f"pdflatex-{number}.log"
             log.write_text(result.stdout + result.stderr, encoding="utf-8")
+
             if result.returncode:
                 raise RuntimeError(f"PDF compilation failed; inspect {log}.")
+
         # A successful process exit alone is not enough; validate the expected artifact before atomically replacing the destination.
         compiled = output / source.with_suffix(".pdf").name
+
         if not compiled.is_file() or not compiled.read_bytes().startswith(b"%PDF-"):
             raise RuntimeError("The compiler did not produce a PDF.")
+
         destination.parent.mkdir(parents=True, exist_ok=True)
         pending = destination.with_suffix(".pending.pdf")
         shutil.copyfile(compiled, pending)
         pending.replace(destination)
+
     return destination

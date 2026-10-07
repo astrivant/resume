@@ -13,10 +13,13 @@ from resume.config import load_config, project_path
 # Resolve the destination from this source commit's config, while consuming the stable cross-job artifact filename.
 config = load_config(Path("resume.config.yaml"))
 artifact = Path(".cache/publication/resume.pdf")
+
 if not artifact.read_bytes().startswith(b"%PDF-"):
     raise ValueError("The downloaded artifact is not a PDF.")
+
 destination = project_path(Path.cwd(), config.output.pdf)
 destination.parent.mkdir(parents=True, exist_ok=True)
 shutil.copyfile(artifact, destination)
+
 # Restrict the bot commit to the generated PDF; cached assets and incidental workspace changes are not publication inputs.
 subprocess.run(["git", "add", "--", config.output.pdf], check=True)

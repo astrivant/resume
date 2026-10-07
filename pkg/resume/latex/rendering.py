@@ -46,9 +46,11 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     Raises:
         ValueError: Capture warnings or missing assets prevent a complete résumé.
     """
+
     # Rendering must not silently promote a diagnostic capture into an apparently complete, publishable resume.
     if profile.warnings and not allow_incomplete:
         raise ValueError("Capture is incomplete: " + "; ".join(profile.warnings))
+
     # Resolve before filtering or drawing: themes may change visibility and page settings as well as colors.
     style = resolve_style(config.style)
     target = project_path(root, config.output.tex)
@@ -67,21 +69,28 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
             list[Media]: References relative to the generated TeX file.
         """
         result: list[Media] = []
+
         for item in items:
             # Missing media is an explicit incomplete-build choice; normal CI must fail instead of dropping illustrations.
             if not item.path:
                 if allow_incomplete:
                     continue
+
                 raise ValueError(f"Image was not downloaded: {item.alt or item.url}")
+
             source = project_path(root, item.path)
+
             if not source.is_file() or source.suffix.lower() != ".png":
                 if allow_incomplete:
                     continue
+
                 raise ValueError(f"Expected a captured PNG asset: {item.path}")
+
             # Give templates stable relative paths and reuse the same filename for identical captured bytes.
             name = hashlib.sha256(source.read_bytes()).hexdigest() + ".png"
             shutil.copyfile(source, asset_directory / name)
             result.append(evolve(item, path=f"assets/{name}"))
+
         return result
 
     # Filter before scoring or staging so hidden sections and jobs contribute neither cloud weights nor referenced assets.
@@ -100,9 +109,11 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
             if section_key(section.key) not in disabled
         ],
     )
+
     # Job tags can generate a Skills card even when LinkedIn did not provide a separate Skills section.
     scores = skill_scores(visible) if style.skills_word_cloud and "skills" not in disabled else {}
     skill_cloud = render_skill_cloud(scores, target.parent, colors=style.skill_colors, background=style.background)
+
     if skill_cloud and not any(section.key == "skills" for section in visible.sections):
         visible = evolve(visible, sections=[*visible.sections, Section("skills", "Skills")])
 
@@ -132,6 +143,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
             if section.entries or (skill_cloud and section.key == "skills")
         ],
     )
+
     # Use delimiters that do not collide with TeX braces; missing fields fail, and explicit filters own TeX escaping.
     environment = Environment(
         undefined=StrictUndefined,
@@ -148,11 +160,13 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     environment.filters["url"] = latex_url
     environment.tests["header_photo"] = is_header_photo
     environment.filters["image_role"] = image_role
+
     # Custom templates receive the same filtered view as the packaged template, so presentation cannot bypass exclusions.
     if config.template:
         template = project_path(root, config.template).read_text(encoding="utf-8")
     else:
         template = files("resume.latex").joinpath("resources/resume.tex.j2").read_text(encoding="utf-8")
+
     content = environment.from_string(template).render(profile=prepared, style=style, skill_cloud=skill_cloud)
     target.write_text(content, encoding="utf-8")
     return target

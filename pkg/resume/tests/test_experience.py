@@ -143,19 +143,24 @@ def test_grouped_roles_filter_before_templates_assets_and_skills(tmp_path: Path,
     profile = Profile("example-person", "Alex", sections=[section])
     snapshot = tmp_path / "profile.json"
     save_profile(profile, snapshot)
+
     # Compare the persisted input after rendering as well as the output, since filters must remain reversible without recapture.
     original = snapshot.read_bytes()
     assert load_profile(snapshot, profile.username) == profile
     config = Config(LinkedIn(profile.username), experience=Experience(last_years=5, as_of="2026-10-07"))
+
     if custom_template:
         (tmp_path / "custom.tex.j2").write_text("((( profile )))", encoding="utf-8")
         config = evolve(config, template="custom.tex.j2")
+
     rendered = render_profile(profile, config, tmp_path).read_text()
     assert "Staff Engineer" in rendered
     assert "Example Systems" in rendered
+
     # Assert across text, URLs, dates, and skill metadata so a hidden role cannot survive through another template field.
     for hidden in ("Senior Engineer", "Removed", "removed", "Python", "Sep 2021"):
         assert hidden not in rendered
+
     assert json.loads((tmp_path / "tex/skills.weights.json").read_text()) == {"Rust": {"references": 1, "endorsements": 0, "weight": 1}}
     assert all(asset.name.startswith("skills-") for asset in (tmp_path / "tex/assets").iterdir())
     assert snapshot.read_bytes() == original
@@ -174,10 +179,13 @@ def test_old_grouped_snapshots_do_not_silently_leak_excluded_roles() -> None:
     group = Entry("Example", ["Staff", "2020 - Present", "Current description", "Junior", "2010 - 2019", "Old description"])
     assert filter_experience([group], Experience()) == [group]
     assert filter_experience([group], Experience(disable=[JobSelector(company="Example")])) == []
+
     with pytest.raises(ValueError, match="Run `resume capture`"):
         filter_experience([group], Experience(last_years=5, as_of="2026-10-07"))
+
     with pytest.raises(ValueError, match="Run `resume capture`"):
         filter_experience([group], Experience(disable=[JobSelector(title="Junior", company="Example")]))
+
     historical = evolve(group, paragraphs=["Staff", "2018 - 2020", "Junior", "2010 - 2018"])
     assert filter_experience([historical], Experience(last_years=5, as_of="2026-10-07")) == []
 
@@ -258,6 +266,7 @@ def test_experience_config_rejects_invalid_filters(tmp_path: Path, settings: str
     """
     path = tmp_path / "resume.config.yaml"
     path.write_text(f"linkedin:\n  username: example-person\nexperience: {settings}\n", encoding="utf-8")
+
     with pytest.raises(ValidationError):
         load_config(path)
 
@@ -275,6 +284,8 @@ def test_experience_config_defaults_and_roundtrip(tmp_path: Path) -> None:
     path = tmp_path / "resume.config.yaml"
     path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
     assert load_config(path).experience == Experience()
+
     with path.open("a", encoding="utf-8") as stream:
         stream.write("experience:\n  disable: [{title: DevOps Engineer, company: HqO}]\n  last_years: 5\n  as_of: '2026-10-07'\n")
+
     assert load_config(path).experience == Experience([JobSelector("DevOps Engineer", "HqO")], 5, "2026-10-07")

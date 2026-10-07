@@ -198,7 +198,52 @@ def test_cloud_pixels_and_scores_are_reproducible(tmp_path: Path) -> None:
     original = (tmp_path / image_path).read_bytes()
     assert render_skill_cloud(scores, tmp_path) == image_path
     assert (tmp_path / image_path).read_bytes() == original
+
     with Image.open(tmp_path / image_path) as image:
         assert image.size == (1800, 800)
         assert image.getextrema() != ((255, 255), (255, 255), (255, 255))
+
     assert json.loads((tmp_path / "skills.weights.json").read_text())["Python"]["weight"] == 10
+
+
+def test_cloud_limits_display_to_twenty_skills_and_preserves_all_scores(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """
+    Select the strongest twenty labels with stable ties while retaining the complete audit manifest.
+
+    Args:
+        tmp_path (Path): Temporary TeX directory.
+        monkeypatch (MonkeyPatch): Replaces the layout engine to inspect its selected labels.
+
+    Returns:
+        None: Endorsements affect selection, input order does not break ties, and omitted scores remain available.
+    """
+
+    # Reverse the input names and append the strongest skills so selection cannot depend on insertion order.
+    scores = {f"Skill {index:02}": SkillScore(1, 0) for index in reversed(range(25))}
+    scores["Endorsed"] = SkillScore(1, 2)
+    scores["Referenced"] = SkillScore(4, 0)
+    original = scores.copy()
+    expected = ["Endorsed", "Referenced", *(f"Skill {index:02}" for index in range(18))]
+    (tmp_path / "assets").mkdir()
+
+    # Report a complete twenty-label layout; the renderer must accept it without retrying for the seven intentionally omitted skills.
+    factory = MagicMock()
+    cloud = factory.return_value
+    cloud.generate_from_frequencies.return_value = cloud
+    cloud.layout_ = [object() for _ in expected]
+    cloud.to_image.return_value = Image.new("RGB", (1800, 800), "white")
+    monkeypatch.setattr("resume.visualization.skills.WordCloud", factory)
+    image_path = render_skill_cloud(scores, tmp_path)
+    assert image_path is not None
+    assert (tmp_path / image_path).is_file()
+    factory.assert_called_once()
+    cloud.generate_from_frequencies.assert_called_once()
+    assert factory.call_args.kwargs["max_words"] == 20
+    assert list(cloud.generate_from_frequencies.call_args.args[0]) == expected
+    assert scores == original
+
+    # Capping the visual must not discard evidence or change the scoring formula in the sidecar.
+    manifest = json.loads((tmp_path / "skills.weights.json").read_text())
+    assert set(manifest) == set(scores)
+    assert manifest["Endorsed"]["weight"] == 5
+    assert manifest["Skill 24"] == {"references": 1, "endorsements": 0, "weight": 1}

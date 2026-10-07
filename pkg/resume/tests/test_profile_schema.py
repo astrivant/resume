@@ -34,6 +34,7 @@ def test_profile_extremes_roundtrip_and_render(tmp_path: Path, filename: str) ->
     html = Path(__file__).with_name("fixtures").joinpath(filename).read_text(encoding="utf-8")
     profile = parse_profile(merge_profile_html([html]), "example-person")
     assert profile.name == "Alex Example"
+
     if filename == "profile-minimal.html":
         assert profile.sections == []
         assert profile.intro == []
@@ -47,6 +48,7 @@ def test_profile_extremes_roundtrip_and_render(tmp_path: Path, filename: str) ->
         assert all("+3 skills" not in paragraph for paragraph in job.paragraphs)
         assert "Senior Engineer" in job.paragraphs
         assert "Unrelated Person" not in str(profile)
+
     Image.new("RGB", (10, 10), "blue").save(tmp_path / "image.png")
     profile = evolve(
         profile,
@@ -64,6 +66,7 @@ def test_profile_extremes_roundtrip_and_render(tmp_path: Path, filename: str) ->
     assert load_profile(snapshot, "example-person") == profile
     rendered = render_profile(profile, Config(LinkedIn("example-person")), tmp_path).read_text(encoding="utf-8")
     assert "Alex Example" in rendered
+
     if filename == "profile-minimal.html":
         assert r"\sectiontitle{" not in rendered.split(r"\begin{document}", 1)[1]
         assert json.loads((tmp_path / "tex/skills.weights.json").read_text()) == {}
@@ -108,6 +111,7 @@ def test_endorsement_schema_rejects_invalid_counts(tmp_path: Path, value: int | 
     raw = json.loads(path.read_text())
     raw["sections"][0]["entries"][0]["skills"][0]["endorsements"] = value
     path.write_text(json.dumps(raw), encoding="utf-8")
+
     with pytest.raises(ValidationError):
         load_profile(path, "example-person")
 
@@ -121,6 +125,7 @@ def test_explicit_empty_detail_state_is_valid() -> None:
     """
     html = '<main><h2>Recommendations</h2><div class="artdeco-empty-state">No recommendations yet</div></main>'
     assert parse_detail(html, "recommendations", "Recommendations").entries == []
+
     with pytest.raises(ValueError):
         parse_detail("<main><h2>Recommendations</h2></main>", "recommendations", "Recommendations")
 

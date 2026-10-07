@@ -111,6 +111,7 @@ def test_unsupported_pages_fail_instead_of_saving_empty_profile(html: str) -> No
     Returns:
         None: Parsing fails visibly.
     """
+
     with pytest.raises(ValueError):
         parse_profile(html, "example-person")
 
@@ -122,6 +123,7 @@ def test_detail_page_rejects_empty_lists() -> None:
     Returns:
         None: Missing detail content produces an actionable error.
     """
+
     with pytest.raises(ValueError, match="No detail entries"):
         parse_detail("<main><h2>Experience</h2></main>", "experience", "Experience")
 
@@ -247,6 +249,7 @@ def test_config_defaults_and_unknown_fields(tmp_path: Path) -> None:
     assert config.style.paper == "letter"
     assert config.style.background == "FFFFFF"
     path.write_text("linkedin:\n  username: example-person\n  password: forbidden\n", encoding="utf-8")
+
     with pytest.raises(ValidationError):
         load_config(path)
 
@@ -266,6 +269,7 @@ def test_opening_columns_respect_section_visibility(tmp_path: Path, disabled: li
     path = tmp_path / "resume.config.yaml"
     path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
     config = evolve(load_config(path), disable=disabled)
+
     # Capture order is deliberately different from presentation order; filtering still owns what reaches either column.
     profile = Profile(
         "example-person",
@@ -277,15 +281,19 @@ def test_opening_columns_respect_section_visibility(tmp_path: Path, disabled: li
         ],
     )
     rendered = render_profile(profile, config, tmp_path).read_text(encoding="utf-8").split(r"\begin{document}", 1)[1]
+
     for key in ("about", "contact", "projects"):
         assert (f"\\sectiontitle{{{key.title()}}}" in rendered) == (key not in disabled)
+
     if "projects" in disabled:
         assert "\\framebreak" not in rendered
         return
+
     before, after = rendered.split("\\framebreak", 1)
     assert ("Contact example" in before) == ("contact" not in disabled)
     assert "Contact example" not in after
     assert "Project example" in after
+
     if "about" not in disabled:
         assert after.index("About example") < after.index("Project example")
 
@@ -304,6 +312,7 @@ def test_disable_rejects_invalid_section_lists(tmp_path: Path, value: str) -> No
     """
     config = tmp_path / "resume.config.yaml"
     config.write_text(f"linkedin:\n  username: example-person\ndisable: {value}\n", encoding="utf-8")
+
     with pytest.raises(ValidationError):
         load_config(config)
 
@@ -322,10 +331,13 @@ def test_disabled_sections_are_omitted_without_changing_capture(tmp_path: Path, 
     """
     config = tmp_path / "resume.config.yaml"
     config.write_text("linkedin:\n  username: example-person\ndisable: [skills, independent-studies]\n", encoding="utf-8")
+
     if custom_template:
         with config.open("a", encoding="utf-8") as stream:
             stream.write("template: custom.tex.j2\n")
+
         (tmp_path / "custom.tex.j2").write_text("((( profile )))", encoding="utf-8")
+
     Image.new("RGB", (20, 20), "blue").save(tmp_path / "hidden.png")
     profile = Profile(
         "example-person",
@@ -355,11 +367,14 @@ def test_disabled_sections_are_omitted_without_changing_capture(tmp_path: Path, 
     assert main(["--config", str(config), "render"]) == 0
     rendered = (tmp_path / "tex/resume.tex").read_text(encoding="utf-8")
     assert "Visible narrative" in rendered
+
     for hidden in ["Skills", "Independent studies", "Hidden", "https://example.org/hidden", "hidden.png"]:
         assert hidden not in rendered
+
     assert not list((tmp_path / "tex/assets").iterdir())
     assert snapshot.read_bytes() == original
     assert load_profile(snapshot, "example-person") == profile
+
     # Re-enabling the sections restores the requirement to resolve their missing images.
     with pytest.raises(ValueError, match="not downloaded"):
         render_profile(profile, evolve(load_config(config), disable=[]), tmp_path)
@@ -405,11 +420,14 @@ def test_header_photo_visibility_preserves_other_images_and_snapshot(
         encoding="utf-8",
     )
     config = load_config(config_path)
+
     if custom_template:
         (tmp_path / "custom.tex.j2").write_text("((( profile )))", encoding="utf-8")
         config = evolve(config, template="custom.tex.j2")
+
     for name, color in [("cover", "red"), ("portrait", "blue"), ("logo", "green")]:
         Image.new("RGB", (20, 20), color).save(tmp_path / f"{name}.png")
+
     profile = Profile(
         "example-person",
         "Alex Example",
@@ -429,16 +447,21 @@ def test_header_photo_visibility_preserves_other_images_and_snapshot(
     source = render_profile(profile, config, tmp_path)
     rendered = source.read_text(encoding="utf-8")
     expected_assets = set()
+
     for name in ["cover", "portrait", "logo"]:
         data = (tmp_path / f"{name}.png").read_bytes()
         asset = hashlib.sha256(data).hexdigest() + ".png"
         visible = name != "cover" or show_header_photo
         assert (f"assets/{asset}" in rendered) == visible
+
         if visible:
             expected_assets.add(asset)
+
     assert {asset.name for asset in (source.parent / "assets").iterdir()} == expected_assets
+
     if not custom_template:
         assert rendered.count(r"\includegraphics[width=\linewidth]") == (3 if show_header_photo else 0)
+
     assert "Alex Example" in rendered
     assert "Engineer" in rendered
     assert snapshot.read_bytes() == original
@@ -459,6 +482,7 @@ def test_header_photo_visibility_rejects_non_boolean_values(tmp_path: Path, valu
     """
     config = tmp_path / "resume.config.yaml"
     config.write_text(f"linkedin:\n  username: example-person\nstyle:\n  show_header_photo: {value}\n", encoding="utf-8")
+
     with pytest.raises(ValidationError):
         load_config(config)
 
@@ -477,6 +501,7 @@ def test_hidden_header_photo_does_not_require_a_download(tmp_path: Path) -> None
     config = Config(LinkedIn("example-person"))
     hidden = evolve(config, style=evolve(config.style, show_header_photo=False))
     assert render_profile(profile, hidden, tmp_path).exists()
+
     with pytest.raises(ValueError, match="not downloaded"):
         render_profile(profile, config, tmp_path)
 
@@ -491,9 +516,12 @@ def test_paths_reject_parent_traversal_and_symlinks(tmp_path: Path) -> None:
     Returns:
         None: Direct and symlink-mediated escapes are rejected.
     """
+
     with pytest.raises(ValueError):
         project_path(tmp_path, "../outside.pdf")
+
     (tmp_path / "outside").symlink_to(tmp_path.parent, target_is_directory=True)
+
     with pytest.raises(ValueError):
         project_path(tmp_path, "outside/unrelated.pdf")
 
@@ -513,6 +541,7 @@ def test_snapshot_roundtrip_and_owner_binding(tmp_path: Path, html: str) -> None
     path = tmp_path / "data/profile.json"
     save_profile(profile, path)
     assert load_profile(path, "example-person") == profile
+
     with pytest.raises(ValueError, match="Snapshot username"):
         load_profile(path, "someone-else")
 
@@ -546,8 +575,10 @@ def test_render_requires_explicit_acceptance_of_missing_images(tmp_path: Path) -
     """
     profile = Profile("example-person", "Alex Example", images=[Media("https://example.org/missing.png")])
     config = Config(LinkedIn("example-person"))
+
     with pytest.raises(ValueError, match="not downloaded"):
         render_profile(profile, config, tmp_path)
+
     assert render_profile(profile, config, tmp_path, allow_incomplete=True).exists()
 
 

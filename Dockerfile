@@ -2,6 +2,7 @@
 FROM drpsychick/texlive-pdflatex@sha256:55b4bef7344394c0aafcd69b1796280f64b871ee2d2f2c3115e8f93ec9fea6ea AS texlive
 
 FROM python:3.13.16-slim-bookworm@sha256:a1165e272e578941b84abc79e4ab38a0305cd12803a5c4247979ac7655f4d641 AS runtime
+
 # The upstream TeX binaries use musl; Python wheels use Debian's glibc.
 RUN apt-get update \
     && apt-get install --no-install-recommends -y firefox-esr musl \
@@ -9,8 +10,10 @@ RUN apt-get update \
     && useradd --create-home --uid 10001 resume \
     && mkdir /workspace \
     && chown resume:resume /workspace
+
 # Carry TeX into the runtime so document generation never needs a host Docker socket or a nested daemon.
 COPY --from=texlive /usr/local/texlive /usr/local/texlive
+
 # Keep transient caches writable under an arbitrary caller UID while mounted workspace files retain caller ownership.
 ENV PATH="/opt/venv/bin:/usr/local/texlive/bin/x86_64-linuxmusl:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -24,6 +27,7 @@ ENTRYPOINT ["resume"]
 CMD ["--help"]
 
 FROM runtime AS builder
+
 # Build tooling lives outside the runtime venv, letting the final stage copy application dependencies without Poetry.
 RUN python -m pip install --no-cache-dir poetry==2.1.3 \
     && python -m venv /opt/venv
@@ -32,6 +36,7 @@ ENV VIRTUAL_ENV=/opt/venv \
     POETRY_KEYRING_ENABLED=false \
     POETRY_INSTALLER_RE_RESOLVE=false
 WORKDIR /opt/build
+
 # Cache the locked dependency layer independently of Python source edits, and install the application as a distributable wheel.
 COPY pyproject.toml poetry.lock README.md LICENSE ./
 RUN poetry check --lock \
@@ -41,6 +46,7 @@ RUN poetry build --format wheel \
     && python -m pip install --no-cache-dir --no-deps dist/*.whl
 
 FROM builder AS development
+
 # Development keeps source and validation tools; it is a separate target and is never the image published by CI.
 RUN apt-get update \
     && apt-get install --no-install-recommends -y git \
@@ -52,6 +58,7 @@ RUN poetry install --with dev --no-interaction --no-ansi \
 USER 10001:10001
 
 FROM runtime AS production
+
 # Copy only the installed environment; build context files, tests, and development tools stay out of production layers.
 COPY --from=builder /opt/venv /opt/venv
 LABEL org.opencontainers.image.title="resume" \

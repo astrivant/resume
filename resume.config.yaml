@@ -1,15 +1,19 @@
 # yaml-language-server: $schema=./pkg/resume/resources/config.schema.json
 linkedin:
   username: emmeowzing
+
 # Hide sections in the generated resume using their keys from data/profile.json.
 # Example: [featured, interests, recommendations]
 disable: [recommendations, interests]
 experience:
+
   # Match a job title, company, or both (case-insensitive).
   # Example: [{title: DevOps Engineer, company: HqO}]
   disable: []
+
   # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
   last_years: null
+
   # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
   # null uses today's UTC date. Keep explicit dates quoted.
   as_of: null
@@ -27,21 +31,27 @@ output:
   tex: tex/resume.tex
   pdf: resume.pdf
 style:
+
   # null uses the base style below; set tiger to apply the matching overrides in themes.
   theme: null
+
   # US Letter (8.5 x 11 inches); set a4 for ISO A4.
   paper: letter
   accent: '0A66C2'
   background: FFFFFF
   font_size: 10
+
   # Set true to display the cover/background photo; the portrait stays visible.
   show_header_photo: false
-  # Aggregate visible skill references plus twice each observed endorsement.
+
+  # Show the top 20 skills by visible references plus twice each observed endorsement.
   skills_word_cloud: true
+
   # Each named theme can override any presentation field above, or the text/cloud colors below.
   # Theme fields win over base style fields; omitted fields keep their base values.
   themes:
     tiger:
+
       # Tiger Lily Plants CSS oranges and warm ink, with a complementary burgundy.
       # Source and palette roles: docs/themes.md
       accent: 'A44813'
@@ -50,5 +60,6 @@ style:
       heading_color: 'C44A11'
       entry_color: '8F2E08'
       skill_colors: ['6B2737', '8F2E08', 'A44813', 'C44A11', '86543B']
+
 # Optional exact template override; otherwise the package template is used.
 template: null

@@ -27,9 +27,12 @@ def resolve_style(style: Style) -> Style:
     Raises:
         ValueError: The selected name is absent from style.themes, including configs constructed directly in Python.
     """
+
     if style.theme is None:
         return style
+
     if style.theme not in style.themes:
         raise ValueError(f"Unknown style.theme {style.theme!r}; define it under style.themes or use null.")
+
     # Apply overrides by key presence so False remains meaningful; theme/themes themselves cannot be overridden.
     return evolve(style, **style.themes[style.theme])

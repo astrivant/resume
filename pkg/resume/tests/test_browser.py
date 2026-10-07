@@ -31,6 +31,7 @@ def test_macos_profile_survives_retries_locally(tmp_path: Path, monkeypatch: Mon
     Returns:
         None: The private absolute profile stays inside the ignored local cache.
     """
+
     # Exercise the macOS launch contract on any test host without opening an application or needing a LinkedIn login.
     monkeypatch.setattr("resume.linkedin.browser.sys.platform", "darwin")
     monkeypatch.setattr("resume.linkedin.browser._listen_port", lambda: 2829)
@@ -42,6 +43,7 @@ def test_macos_profile_survives_retries_locally(tmp_path: Path, monkeypatch: Mon
     driver.__enter__.return_value = driver
     monkeypatch.setattr("resume.linkedin.browser.webdriver.Firefox", MagicMock(return_value=driver))
     monkeypatch.setattr("resume.linkedin.browser.Service", MagicMock())
+
     with _firefox(tmp_path, None) as captured:
         assert captured is driver
         arguments = factory.call_args.args[0]
@@ -50,6 +52,7 @@ def test_macos_profile_survives_retries_locally(tmp_path: Path, monkeypatch: Mon
         assert profile.is_dir()
         assert 'user_pref("marionette.port", 2829)' in (profile / "user.js").read_text(encoding="utf-8")
         browser.open.assert_called_once_with("https://www.linkedin.com/login")
+
     # The driver session ends, but the persistent profile and its private permissions must survive for the next attempt.
     assert profile == tmp_path / ".cache/firefox"
     assert profile.is_dir()
