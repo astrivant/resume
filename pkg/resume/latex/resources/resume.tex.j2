@@ -1,0 +1,92 @@
+\documentclass[((( style.font_size )))pt,((( style.paper )))paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=17mm]{geometry}
+\usepackage{helvet}
+\usepackage{xcolor,graphicx}
+\usepackage{needspace}
+\usepackage{twemojis}
+\usepackage[breakable,skins]{tcolorbox}
+\usepackage[unicode,breaklinks=true]{hyperref}
+\renewcommand{\familydefault}{\sfdefault}
+\definecolor{accent}{HTML}{((( style.accent )))}
+\definecolor{canvas}{HTML}{((( style.background )))}
+\definecolor{ink}{HTML}{191919}
+\definecolor{muted}{HTML}{666666}
+\definecolor{border}{HTML}{D9D9D9}
+\hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) — Resume}}
+\hypersetup{pdfsubject={Emoji graphics: Twemoji, copyright Twitter and contributors, CC BY 4.0, https://github.com/twitter/twemoji}}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\pagecolor{canvas}
+\color{ink}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\fboxsep}{12pt}
+\setlength{\fboxrule}{0.4pt}
+\newtcolorbox{profilecard}{enhanced,breakable,colback=white,colframe=border,
+  arc=3mm,boxrule=0.4pt,left=4mm,right=4mm,top=4mm,bottom=4mm,
+  before skip=8pt,after skip=8pt}
+\newcommand{\entrytitle}[1]{{\large\bfseries #1}\par\nopagebreak}
+\newcommand{\sectiontitle}[1]{{\Large\bfseries #1}\par\nopagebreak\vspace{4pt}}
+\urlstyle{same}
+\begin{document}
+\begin{profilecard}
+{\color{accent}\rule{\linewidth}{5pt}}\par
+((* for image in profile.images *))
+((* if image is header_photo *))
+\includegraphics[width=\linewidth]{((( image.path )))}\par
+((* else *))
+\includegraphics[width=22mm,height=28mm,keepaspectratio]{((( image.path )))}\quad
+((* endif *))
+((* endfor *))
+\par\vspace{5pt}
+{\fontsize{25}{29}\selectfont\bfseries ((( profile.name|tex )))}\par
+((* for line in profile.intro *))
+((( line|tex )))\par
+((* endfor *))
+\href{https://www.linkedin.com/in/((( profile.username|url )))/}{\textbf{LinkedIn profile}}\par
+((* for link in profile.links *))
+((* if link.label == link.url *))
+\url{((( link.url )))}\par
+((* else *))
+\href{((( link.url|url )))}{((( link.label|tex )))}\par
+((* endif *))
+((* endfor *))
+\end{profilecard}
+((* for section in profile.sections *))
+\Needspace{8\baselineskip}
+\begin{profilecard}
+\sectiontitle{((( section.title|tex )))}
+((* for entry in section.entries *))
+((* if not loop.first *))
+\vspace{8pt}{\color{border}\hrule}\vspace{8pt}
+((* endif *))
+((* if section.key == 'about' *))
+((( entry.title|tex )))\par
+((* else *))
+\entrytitle{((( entry.title|tex )))}
+((* endif *))
+((* for paragraph in entry.paragraphs *))
+((( paragraph|tex )))\par
+((* endfor *))
+((* for image in entry.images *))
+((* set logo = '/company/' in image.link or '/school/' in image.link or 'logo' in image.alt|lower *))
+((* if image.link *))\href{((( image.link|url )))}{((* endif *))%
+\includegraphics[width=((* if logo *))14mm((* else *))0.42\linewidth((* endif *)),height=((* if logo *))14mm((* else *))32mm((* endif *)),keepaspectratio]{((( image.path )))}%
+((* if image.link *))}((* endif *))\quad
+((* endfor *))
+((* if entry.images *))\par((* endif *))
+((* for link in entry.links *))
+((* if link.label == link.url *))
+{\small\url{((( link.url )))}}\par
+((* else *))
+{\small\href{((( link.url|url )))}{((( link.label|tex )))}}\par
+((* endif *))
+((* endfor *))
+((* endfor *))
+\end{profilecard}
+((* endfor *))
+\end{document}

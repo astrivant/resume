@@ -1,0 +1,62 @@
+name: Resume pipeline
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: resume-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+defaults:
+  run:
+    shell: bash
+jobs:
+  source:
+    name: Resolve pipeline source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - id: source
+        run: bash scripts/ci/source.sh
+  test-stage:
+    name: Test
+    needs: source
+    uses: ./.github/workflows/stage-test.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+  build-stage:
+    name: Build
+    needs: source
+    uses: ./.github/workflows/stage-build.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+  verified:
+    name: CI verification
+    if: always()
+    needs: [source, test-stage, build-stage]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require all stages to succeed
+        env:
+          RESULTS_JSON: ${{ toJSON(needs) }}
+        run: jq -e 'all(.[]; .result == "success")' <<<"$RESULTS_JSON"
+  deploy-stage:
+    name: Publish PDF
+    needs: [source, verified]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    uses: ./.github/workflows/stage-deploy.yml
+    permissions:
+      contents: write
+    with:
+      sha: ${{ needs.source.outputs.sha }}

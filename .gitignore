@@ -10,9 +10,12 @@ dist/
 *.egg-info/
 .DS_Store
 .env
+cosign.key
+*.key
 *.cookies
 tex/*.aux
 tex/*.log
 tex/*.out
 tex/*.pdf
 tex/resume.tex
+tex/assets/

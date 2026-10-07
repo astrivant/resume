@@ -1,0 +1,42 @@
+default_language_version:
+  python: python3.13
+repos:
+  - repo: local
+    hooks:
+      - id: pydocstyle
+        name: Google docstring style
+        entry: bash scripts/tooling/project-python.sh -m pydocstyle --config=pyproject.toml
+        language: system
+        types: [python]
+      - id: pydoclint
+        name: Typed docstring contracts
+        entry: bash scripts/tooling/project-python.sh -m pydoclint.main --config=pyproject.toml
+        language: system
+        types: [python]
+      - id: ruff-check
+        name: Ruff lint
+        entry: bash scripts/tooling/project-python.sh -m ruff check
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: Ruff format
+        entry: bash scripts/tooling/project-python.sh -m ruff format --check
+        language: system
+        types: [python]
+      - id: mypy
+        name: Strict mypy
+        entry: bash scripts/tooling/project-python.sh -m mypy
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: shellcheck
+        name: ShellCheck and shfmt
+        entry: bash scripts/validation/check-shell.sh
+        language: system
+        types: [shell]
+      - id: schemas
+        name: Configuration and profile schemas
+        entry: bash scripts/tooling/project-python.sh scripts/validation/check-data.py
+        language: system
+        pass_filenames: false
+        files: '(\.json$|\.yaml$|\.yml$|^pkg/resume/(models|config)\.py$)'

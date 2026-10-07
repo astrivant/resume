@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Sign the PDF and checksum manifest using a private key held only in the environment.
+set -euo pipefail
+if [[ -z "${COSIGN_PRIVATE_KEY:-}" ]]; then
+    echo 'Set the COSIGN_PRIVATE_KEY Actions secret to the PEM-encoded Cosign private key.' >&2
+    exit 1
+fi
+export COSIGN_PASSWORD="${COSIGN_PASSWORD:-}"
+artifact_dir="${1:-.cache/publication}"
+test -s "$artifact_dir/resume.pdf"
+cosign public-key --key env://COSIGN_PRIVATE_KEY >"$artifact_dir/cosign.pub"
+python scripts/release/metadata.py "$artifact_dir"
+bash scripts/tooling/retry.sh cosign sign-blob --yes --key env://COSIGN_PRIVATE_KEY \
+    --bundle "$artifact_dir/resume.pdf.sigstore.json" "$artifact_dir/resume.pdf"
+python scripts/release/checksums.py "$artifact_dir"
+bash scripts/tooling/retry.sh cosign sign-blob --yes --key env://COSIGN_PRIVATE_KEY \
+    --bundle "$artifact_dir/SHA256SUMS.sigstore.json" "$artifact_dir/SHA256SUMS"
+bash scripts/release/verify.sh "$artifact_dir"

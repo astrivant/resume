@@ -1,12 +1,17 @@
 # yaml-language-server: $schema=./pkg/resume/resources/config.schema.json
 linkedin:
   username: emmeowzing
+# Hide sections in the generated resume using their keys from data/profile.json.
+# Example: [featured, interests, recommendations]
+disable: [recommendations, interests]
 capture:
-  login_timeout_seconds: 300
   page_timeout_seconds: 30
   max_scrolls: 60
   max_pages_per_section: 30
   fetch_link_previews: true
+  retry_attempts: 5
+  retry_backoff_seconds: 10
+  retry_max_backoff_seconds: 300
 output:
   profile: data/profile.json
   assets: data/assets
@@ -16,6 +21,8 @@ style:
   paper: a4
   accent: '0A66C2'
   background: F3F2EF
-  font_size: 11
+  font_size: 10
+  # Set true to display the cover/background photo; the portrait stays visible.
+  show_header_photo: false
 # Optional exact template override; otherwise the package template is used.
 template: null

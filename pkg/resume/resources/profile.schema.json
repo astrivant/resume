@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Resume profile",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "username": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,99}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "intro": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "pattern": "^https?://[^\\s{}\\\\]+$"
+          },
+          "alt": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_./-]*$"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^https?://[^\\s{}\\\\]+$"
+              },
+              {
+                "const": ""
+              }
+            ]
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://[^\\s{}\\\\]+$"
+          }
+        },
+        "required": [
+          "label",
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "paragraphs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "links": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string",
+                        "pattern": "^https?://[^\\s{}\\\\]+$"
+                      }
+                    },
+                    "required": [
+                      "label",
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "images": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "pattern": "^https?://[^\\s{}\\\\]+$"
+                      },
+                      "alt": {
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_./-]*$"
+                      },
+                      "link": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^https?://[^\\s{}\\\\]+$"
+                          },
+                          {
+                            "const": ""
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "title"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "entries"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "captured_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "username",
+    "name",
+    "sections"
+  ],
+  "additionalProperties": false
+}

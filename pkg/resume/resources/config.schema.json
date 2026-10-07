@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Resume config",
+  "type": "object",
+  "properties": {
+    "disable": {
+      "description": "Section keys omitted from rendered output. Capture and the saved profile remain unchanged.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      }
+    },
+    "linkedin": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,99}$"
+        }
+      },
+      "required": [
+        "username"
+      ],
+      "additionalProperties": false
+    },
+    "capture": {
+      "type": "object",
+      "properties": {
+        "page_timeout_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 180
+        },
+        "max_scrolls": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "max_pages_per_section": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "fetch_link_previews": {
+          "type": "boolean"
+        },
+        "retry_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "retry_backoff_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 300
+        },
+        "retry_max_backoff_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "assets": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "tex": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "pdf": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "paper": {
+          "enum": [
+            "a4",
+            "letter"
+          ]
+        },
+        "accent": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "background": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "font_size": {
+          "enum": [
+            10,
+            11,
+            12
+          ]
+        },
+        "show_header_photo": {
+          "description": "Display the cover/background photo while retaining the portrait and section images.",
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "template": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "linkedin"
+  ],
+  "additionalProperties": false
+}

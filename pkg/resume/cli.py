@@ -1,0 +1,94 @@
+"""
+Provide explicit capture, validation, rendering, and PDF build commands.
+"""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import yaml
+from jsonschema import ValidationError
+from selenium.common.exceptions import NoSuchWindowException, TimeoutException, WebDriverException
+
+from resume.config import load_config, project_path
+from resume.latex.compilation import compile_pdf
+from resume.latex.rendering import render_profile
+from resume.linkedin.browser import capture_profile
+from resume.models import load_profile, save_profile
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__ = ["main"]
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """
+    Run one pipeline stage and report actionable errors without credential output.
+
+    Args:
+        argv (Sequence[str] | None): Arguments, defaulting to the process command line.
+
+    Returns:
+        int: Zero on success, two on invalid input or a failed stage.
+    """
+    parser = argparse.ArgumentParser(description="Capture your LinkedIn profile and build an illustrated PDF résumé.")
+    parser.add_argument(
+        "--config", type=Path, default=Path("resume.reference.yaml"), help="Configuration file (default: resume.reference.yaml)"
+    )
+    commands = parser.add_subparsers(dest="command", required=True)
+    for name, help_text in (
+        ("capture", "Open Firefox, wait for login, and save your expanded profile and images"),
+        ("validate", "Validate configuration and snapshot ownership"),
+        ("render", "Generate tex/resume.tex from the saved profile"),
+        ("build", "Render LaTeX and compile resume.pdf using Docker"),
+    ):
+        command = commands.add_parser(name, help=help_text)
+        command.add_argument(
+            "--allow-incomplete", action="store_true", help="Explicitly accept recorded capture warnings or missing images"
+        )
+        if name == "capture":
+            command.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
+    args = parser.parse_args(argv)
+    try:
+        config = load_config(args.config)
+        root = args.config.resolve().parent
+        snapshot = project_path(root, config.output.profile)
+        if args.command == "capture":
+            profile = capture_profile(config, root, args.connect_port)
+            if profile.warnings and not args.allow_incomplete:
+                diagnostic = root / ".cache/capture/profile.json"
+                save_profile(profile, diagnostic)
+                raise ValueError(f"Capture needs review at {diagnostic}: " + "; ".join(profile.warnings))
+            save_profile(profile, snapshot)
+            print(f"Saved {snapshot}")
+            return 0
+        profile = load_profile(snapshot, config.linkedin.username)
+        if args.command == "validate":
+            if profile.warnings and not args.allow_incomplete:
+                raise ValueError("Capture warnings: " + "; ".join(profile.warnings))
+            print(f"Valid profile: {profile.name} ({len(profile.sections)} sections)")
+            return 0
+        source = render_profile(profile, config, root, allow_incomplete=args.allow_incomplete)
+        result = compile_pdf(source, config, root) if args.command == "build" else source
+        print(result)
+    except KeyboardInterrupt:
+        print("\nresume: Capture cancelled; the local browser login is retained for next time.", file=sys.stderr)
+        return 130
+    except NoSuchWindowException:
+        print(
+            "resume: The capture window was closed. Run `resume capture` again and leave Firefox open until capture finishes.",
+            file=sys.stderr,
+        )
+        return 2
+    except TimeoutException:
+        print("resume: LinkedIn page loading timed out. Retry capture; increase capture.page_timeout_seconds if needed.", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, RuntimeError, ValidationError, yaml.YAMLError, WebDriverException, subprocess.TimeoutExpired) as error:
+        print(f"resume: {error}", file=sys.stderr)
+        return 2
+    return 0

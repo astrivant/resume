@@ -1,0 +1,20 @@
+"""
+Restore the verified artifact to the configured destination and stage only that file.
+"""
+
+from __future__ import annotations
+
+import shutil
+import subprocess
+from pathlib import Path
+
+from resume.config import load_config, project_path
+
+config = load_config(Path("resume.reference.yaml"))
+artifact = Path(".cache/publication/resume.pdf")
+if not artifact.read_bytes().startswith(b"%PDF-"):
+    raise ValueError("The downloaded artifact is not a PDF.")
+destination = project_path(Path.cwd(), config.output.pdf)
+destination.parent.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(artifact, destination)
+subprocess.run(["git", "add", "--", config.output.pdf], check=True)

@@ -1,7 +1,7 @@
 [project]
 name = "resume"
 version = "0.1.0"
-description = "Turn an expanded LinkedIn profile into a reproducible, illustrated PDF resume"
+description = "Build, sign, and publish your LinkedIn resume with GitHub Actions"
 authors = [{name = "Emma Doyle"}]
 readme = "README.md"
 license = "GPL-3.0-only"
@@ -10,6 +10,7 @@ requires-python = ">=3.13,<4.0"
 classifiers = ["Programming Language :: Python :: 3 :: Only", "Typing :: Typed"]
 dependencies = [
     "requests>=2.32.5,<3",
+    "urllib3>=2.8,<3",
     "selenium>=4.40,<5",
     "beautifulsoup4>=4.14,<5",
     "PyYAML>=6,<7",
@@ -25,7 +26,10 @@ resume = "resume.cli:main"
 
 [tool.poetry]
 packages = [{include = "resume", from = "pkg"}]
-include = [{path = "pkg/resume/resources/**/*", format = ["sdist", "wheel"]}]
+include = [
+    {path = "pkg/resume/resources/**/*", format = ["sdist", "wheel"]},
+    {path = "pkg/resume/latex/resources/**/*", format = ["sdist", "wheel"]},
+]
 exclude = ["pkg/resume/tests"]
 
 [tool.poetry.group.dev.dependencies]
