@@ -6,7 +6,8 @@ previews, runs the existing validation and PDF build, and commits the complete
 snapshot, referenced assets, and PDF to `main` together. Ordinary pushes rebuild
 the saved inputs. Neither path creates a release.
 
-Every generated résumé commit also gives the [project logo](assets/branding/resumeme-logo.png)
+Forks publish a [personal README and PDF preview](#personal-readme) in that same
+commit. Repositories retaining the project README also give the [project logo](assets/branding/resumeme-logo.png)
 a fresh coffee stain. CI varies its orientation, proportions, placement, and
 density using the verified source commit as a seed. Retries reproduce the same
 logo; unchanged PDFs and profile inputs produce no extra commit. This uses the
@@ -31,12 +32,62 @@ gh secret set LINKEDIN_PASSWORD
 - `OPENAI_API_KEY`: needed only if `codex.enabled` is true; monthly builds then
   regenerate the About and portrait summaries from that same fresh capture.
 - `COSIGN_PRIVATE_KEY` and optional `COSIGN_PASSWORD`: needed when publishing a
-  signed tag release, not for monthly refreshes.
+  signed tag release, not for monthly refreshes. The private-key secret contains
+  the entire Cosign PEM, including its header, footer, and newlines; the password
+  is required only for encrypted keys.
+- `GH_TOKEN` / `GITHUB_TOKEN`: supplied by Actions; no personal access token is
+  needed. The workflow uses `contents: write` for generated commits and releases,
+  and `packages: write` for the container. Repository rules must permit those writes.
+- `PYPI_API_TOKEN`: package maintainers only. Version-tag releases map the organization,
+  repository, or `pypi` environment secret to `POETRY_PYPI_TOKEN_PYPI`. Resume-only
+  forks do not need it; see [package publication](development.md#publish-to-pypi).
 
 The runner uses headless Firefox. Browser state and diagnostics stay in its
 temporary workspace; only the profile and referenced downloaded media are
 transferred to downstream jobs. No browser cookies or passwords enter commits
 or uploaded capture artifacts.
+
+## Personal README
+
+On a fork's first successful publication to `main`, CI replaces the inherited logo
+and project instructions with the owner's name, a short introduction, a first-page
+image linked to the complete PDF, and LinkedIn, optional GitHub, and release links.
+The preview is committed at `docs/assets/resume-preview.png`. The PDF link follows
+`output.pdf`; release links always target the publishing repository. The page count
+comes from the actual PDF, and the name comes from the matching captured profile.
+Hidden headline and contact fields are not copied into the introduction.
+
+```yaml
+readme:
+  mode: auto
+  introduction: null
+```
+
+| Setting | Behavior |
+| --- | --- |
+| `mode: auto` | Default: generate on repositories GitHub identifies as forks; preserve the upstream project README |
+| `mode: resume` | Generate a personal page even in a standalone repository |
+| `mode: project` | Preserve the existing README, including manual customizations |
+| `introduction: null` | Use the shared résumé introduction |
+| `introduction: "Platform engineer building reliable developer infrastructure."` | Replace the introduction with plain text; Markdown and HTML are escaped |
+
+Names, profile links, and PDF paths are parameterized automatically. After changing
+owners, capture the new owner's profile before pushing; a username mismatch fails
+the build. A profile with only a name is sufficient. Set `github.username` to your
+own account or `null` to omit that link.
+
+Every PDF publication refreshes the README and preview together, including monthly
+captures and ordinary pushes. CI renders page one with Ghostscript from the pinned
+TeX image, then passes it with the PDF to deploy. No extra credentials or host
+packages are needed. The preview retains the PDF's paper proportions and colors.
+Retries produce identical output, and unchanged artifacts do not create extra commits.
+Preview failures block publication; stale runs cannot overwrite newer `main` commits.
+
+Generated README edits are overwritten on the next publication. Set `mode: project`
+before maintaining your own page; the current README and preview remain in place.
+Tag releases, pull requests, and non-main branches never replace the tracked README.
+Configuration and operation instructions remain available in [the documentation](README.md),
+including [installation](README.md#install) and the [agent workflow](../SKILL.md).
 
 ## Run or adjust the schedule
 

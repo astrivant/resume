@@ -18,10 +18,11 @@ fi
 
 # Tree comparison below recognizes an identical publication from a previous attempt, including refreshed inputs.
 poetry run python scripts/ci/restore-pdf.py
+readme_mode="$(poetry run python scripts/ci/readme-artifact.py restore)"
 
 # A fresh coffee stain accompanies real resume changes; unchanged builds must not create logo-only bot commits.
 # Use the source revision so a retry reconstructs the exact tree of a successful earlier publication.
-if ! git diff --cached --quiet; then
+if [[ "$readme_mode" == project ]] && ! git diff --cached --quiet; then
     poetry run python scripts/ci/refresh-logo.py --seed "$SOURCE_SHA"
     git add -- docs/assets/branding/resumeme-logo.png
 fi
@@ -48,7 +49,7 @@ if git diff --cached --quiet; then
     exit 0
 fi
 
-git commit -m 'docs: update resume, captured profile, and coffee stain'
+git commit -m 'docs: update resume and repository presentation'
 
 # An intervening push rejects this normal fast-forward update; never force or rebase stale output.
 bash scripts/tooling/retry.sh git push origin HEAD:refs/heads/main

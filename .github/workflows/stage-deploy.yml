@@ -45,4 +45,5 @@ jobs:
         env:
           SOURCE_SHA: ${{ inputs.sha }}
           REFRESH_PROFILE: ${{ inputs.refresh }}
+          RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
         run: bash scripts/ci/publish.sh

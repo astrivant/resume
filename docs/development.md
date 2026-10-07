@@ -69,7 +69,7 @@ resumeme --help
 ```
 
 Firefox and the PDF toolchain are still required for capture and compilation; see
-the [runtime prerequisites](../README.md#quick-start).
+the [runtime prerequisites](README.md#install).
 
 ## Document checks
 

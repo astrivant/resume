@@ -107,11 +107,14 @@ git push origin main
 ```
 
 After the pipeline succeeds, your fork contains **`resume.pdf` on `main`**.
+Its README becomes a personal résumé page: your name, a clickable first-page
+preview, and links to the full PDF, profiles, and releases. CI refreshes the page
+and preview in the same commit as the PDF. Set `readme.mode: project` to keep your
+own README, or customize `readme.introduction`; see [README publication](docs/automation.md#personal-readme).
 Configure LinkedIn secrets for automatic monthly refreshes. When ready to share,
 tag the updated commit to create a release with signatures, hashes, and the key
 fingerprint; see [monthly refresh and release](docs/automation.md).
-The [PDF link at the top of this README](resume.pdf) stays relative to the repository,
-so it points to your résumé in your fork.
+The PDF and preview links stay relative to your fork and follow `output.pdf`.
 
 ### Use with an AI agent
 

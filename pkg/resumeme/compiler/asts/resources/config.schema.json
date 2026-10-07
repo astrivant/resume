@@ -3,6 +3,23 @@
   "title": "Resumeme config",
   "type": "object",
   "properties": {
+    "readme": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": ["auto", "project", "resume"],
+          "default": "auto",
+          "description": "Auto generates a personal README on GitHub forks; project preserves it; resume always generates."
+        },
+        "introduction": {
+          "type": ["string", "null"],
+          "pattern": "\\S",
+          "default": null,
+          "description": "Optional plain-text introduction for the personal README."
+        }
+      }
+    },
     "linkedin": {
       "type": "object",
       "properties": {

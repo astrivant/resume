@@ -118,7 +118,10 @@ def release_footer(pdf: bytes, release_url: str, fingerprint: str | None = None)
     if FOOTER_NAME not in objects:
         contents = page.get_contents()
         invocation = DecodedStreamObject()
-        invocation.set_data((contents.get_data() if contents is not None else b"") + f"\nq {FOOTER_NAME} Do Q\n".encode("ascii"))
+
+        # A final image can leave the page translated or clipped; restore the page coordinate system before placing the footer.
+        body = contents.get_data() if contents is not None else b""
+        invocation.set_data(b"q\n" + body + f"\nQ\nq {FOOTER_NAME} Do Q\n".encode("ascii"))
         page.replace_contents(ContentStream(invocation, writer))
 
     # PDF streams must be indirect objects; the named resource avoids painting over stale text on later releases.

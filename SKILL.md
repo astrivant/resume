@@ -51,7 +51,7 @@ Choose the appropriate starting point:
 
 Use Python 3.13+, Poetry 2.5.1, Firefox for capture, and a running Docker daemon
 for the default local PDF build. On macOS, follow the
-[Homebrew bootstrap](README.md#quick-start); `Brewfile` supplies host tools, and
+[Homebrew bootstrap](docs/README.md#install); `Brewfile` supplies host tools, and
 the bootstrap installs the pinned Poetry version. On other hosts, use equivalent
 tools and a graphical session for Firefox. Reuse an existing working environment.
 
@@ -132,7 +132,7 @@ missing capability and the next runnable command instead of claiming completion.
 ## Publish when requested
 
 For an authorized push or signed release, continue with the
-[fork setup](README.md#fork-environment-variables) and
+[fork setup](docs/automation.md#configure-a-fork) and
 [signed release workflow](docs/README.md#signed-releases). Reuse authorization
 already given in the conversation; local PDF generation alone does not require
 GitHub setup or publication.

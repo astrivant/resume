@@ -141,6 +141,49 @@ def test_footer_preserves_content_navigation_and_paper(pages: int, paper: tuple[
     assert release_footer(signed, url, fingerprint) == signed
 
 
+def test_footer_after_a_final_image_uses_page_coordinates() -> None:
+    """
+    Keep the footer at the page bottom when the document ends with translated graphics.
+
+    Returns:
+        None: Final artwork cannot translate the provenance outside its link annotation.
+    """
+    writer = PdfWriter(clone_from=BytesIO(_document(1)))
+    page = writer.pages[-1]
+    contents = page.get_contents()
+    assert contents is not None
+    artwork = DecodedStreamObject()
+
+    # pdfLaTeX can leave this translation after an image when no subsequent text resets its graphics coordinates.
+    artwork.set_data(contents.get_data() + b"\n1 0 0 1 117 275 cm\n")
+    page.replace_contents(ContentStream(artwork, writer))
+    output = BytesIO()
+    writer.write(output)
+    reader = PdfReader(BytesIO(release_footer(output.getvalue(), "https://example.org/releases")))
+    matrices: list[list[float]] = []
+
+    def locate(text: str, cm: list[float], tm: list[float], font: DictionaryObject | None, size: float) -> None:
+        """
+        Record the effective graphics coordinates used by the working-copy footer.
+
+        Args:
+            text (str): Extracted text fragment.
+            cm (list[float]): Current graphics transformation matrix.
+            tm (list[float]): Text transformation matrix.
+            font (DictionaryObject | None): Resolved font resources.
+            size (float): Font size in points.
+
+        Returns:
+            None: Footer matrices are collected for the placement assertion.
+        """
+        if "Unsigned working copy" in text:
+            matrices.append(cm)
+
+    reader.pages[-1].extract_text(visitor_text=locate)
+    assert matrices
+    assert all(matrix == [1, 0, 0, 1, 0, 0] for matrix in matrices)
+
+
 def test_key_rotation_replaces_old_footer() -> None:
     """
     Remove the prior release identity rather than painting a new key over hidden text.

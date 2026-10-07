@@ -4,6 +4,7 @@ Exercise publication retries against isolated local Git repositories without Git
 
 from __future__ import annotations
 
+import hashlib
 import os
 import shlex
 import shutil
@@ -12,6 +13,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Media, Profile, Section, save_profile
 
@@ -87,7 +89,8 @@ def _git(root: Path, *arguments: str) -> str:
 
 @pytest.mark.parametrize("advanced", [False, True])
 @pytest.mark.parametrize("refresh", [False, True])
-def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: Path, advanced: bool, refresh: bool) -> None:
+@pytest.mark.parametrize("fork", [False, True])
+def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: Path, advanced: bool, refresh: bool, fork: bool) -> None:
     """
     Reproduce a PDF and logo publication on retries while rejecting unrelated source changes.
 
@@ -95,6 +98,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         tmp_path (Path): Isolated repository and bare remote directory.
         advanced (bool): Whether a source change supersedes the completed PDF commit.
         refresh (bool): Whether publication also includes a newly captured profile and media.
+        fork (bool): Whether the generated README replaces project branding on this repository.
 
     Returns:
         None: Reruns preserve the published tree; only changed resume inputs create a fresh logo and commit.
@@ -116,6 +120,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     for relative in [
         "scripts/ci/publish.sh",
         "scripts/ci/restore-pdf.py",
+        "scripts/ci/readme-artifact.py",
         "scripts/ci/profile-artifact.py",
         "scripts/ci/refresh-logo.py",
         "scripts/tooling/retry.sh",
@@ -134,6 +139,15 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     artifact = root / ".cache/publication/resume.pdf"
     artifact.parent.mkdir(parents=True)
     artifact.write_bytes(b"%PDF-1.7\nfixture")
+
+    # Build artifacts arrive together; publication must stage only the prepared README and image on forks.
+    if fork:
+        bundle = artifact.parent / "readme"
+        bundle.mkdir()
+        (bundle / "README.md").write_text("# Fresh owner · Résumé\n", encoding="utf-8")
+        (bundle / "pdf.sha256").write_text(hashlib.sha256(artifact.read_bytes()).hexdigest())
+        Image.new("RGB", (20, 30), "white").save(bundle / "resume-preview.png")
+
     snapshot = root / "data/profile.json"
     image = root / "data/assets/logo.png"
     profile = Profile(
@@ -165,6 +179,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         GITHUB_REF="refs/heads/main",
         GITHUB_EVENT_NAME="push",
         REFRESH_PROFILE=str(refresh).lower(),
+        RESUMEME_REPOSITORY_FORK=str(fork).lower(),
         RETRY_BACKOFF_SECONDS="0",
     )
     subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
@@ -172,9 +187,11 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     assert published != source
     assert output.read_text() == f"published-sha={published}\n"
     files = _git(remote, "diff-tree", "--no-commit-id", "--name-only", "-r", published).splitlines()
-    expected_files = ["docs/assets/branding/resumeme-logo.png", "resume.pdf"]
-    assert files == (["data/assets/logo.png", "data/profile.json", *expected_files] if refresh else expected_files)
-    logo = root / "docs/assets/branding/resumeme-logo.png"
+    expected_files = (
+        ["README.md", "docs/assets/resume-preview.png", "resume.pdf"] if fork else ["docs/assets/branding/resumeme-logo.png", "resume.pdf"]
+    )
+    assert files == sorted(["data/assets/logo.png", "data/profile.json", *expected_files] if refresh else expected_files)
+    logo = root / ("docs/assets/resume-preview.png" if fork else "docs/assets/branding/resumeme-logo.png")
     published_logo = logo.read_bytes()
 
     # Model a new user commit arriving after the first PDF publication; a retry must not publish that older build as current.
@@ -210,6 +227,11 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
 
         # A subsequent accepted PDF earns a new stain in the same atomic publication commit.
         artifact.write_bytes(b"%PDF-1.7\nupdated fixture")
+
+        if fork:
+            (bundle / "pdf.sha256").write_text(hashlib.sha256(artifact.read_bytes()).hexdigest())
+            Image.new("RGB", (20, 30), "green").save(bundle / "resume-preview.png")
+
         subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
         assert _git(remote, "rev-parse", "main") != published
         assert logo.read_bytes() != published_logo

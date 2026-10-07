@@ -2,6 +2,7 @@
 
 ## Contents
 
+- [Install](#install)
 - [Configuration](#configuration)
 - [Job filtering](#job-filtering)
 - [Education filtering](#education-filtering)
@@ -18,6 +19,28 @@
 - [Development](development.md)
 - [Capture limits and recovery](#capture-limits-and-recovery)
 
+## Install
+
+In your fork's checkout, use Python 3.13+, Poetry 2.5.1, and Firefox for capture.
+Docker is required for local PDF builds; Actions supplies its own toolchain.
+
+```bash
+poetry install --only main
+poetry run resumeme --help
+```
+
+On macOS, install the host tools from [Brewfile](../Brewfile) and select Python:
+
+```bash
+brew bundle install
+pipx install --python "$(brew --prefix python@3.13)/bin/python3.13" "poetry==2.5.1"
+export PATH="${PIPX_BIN_DIR:-$HOME/.local/bin}:$PATH"
+poetry env use "$(brew --prefix python@3.13)/bin/python3.13"
+```
+
+Set `linkedin.username` in [resumeme.config.yaml](../resumeme.config.yaml),
+[capture your profile](#local-capture), then follow [fork publication setup](automation.md#configure-a-fork).
+
 ## Configuration
 
 `resumeme.config.yaml` is the single user-maintained configuration file. A new
@@ -29,6 +52,8 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | Setting | Default | Purpose |
 | --- | --- | --- |
 | `linkedin.username` | `emmeowzing` | Profile slug from `/in/<username>/` |
+| `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
+| `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
 | `linkedin.ownership.update_about` | `false` | Update live About with the public signing fingerprint after a signed release |
 | `linkedin.ownership.repository` | `null` | Release repository (`OWNER/REPO`); defaults to Actions context or local origin |
 | `linkedin.ownership.releases_url` | `null` | Optional HTTPS short link; otherwise use the repository releases page |
@@ -330,7 +355,7 @@ reliably. No profile text is discarded by these presentation settings.
 
 ## Environment variables
 
-Start with the [fork environment variable list](../README.md#fork-environment-variables)
+Start with the [fork environment variable list](automation.md#configure-a-fork)
 for the signing secrets and automatically supplied GitHub token. No additional
 environment variables are required for ordinary capture, builds, or publication.
 
@@ -526,7 +551,7 @@ with attribution in PDF metadata. Unsupported Unicode characters fail compilatio
 ## Signed releases
 
 User-created tag releases require `COSIGN_PRIVATE_KEY` and, for an encrypted key,
-`COSIGN_PASSWORD`. See the [fork environment variable list](../README.md#fork-environment-variables)
+`COSIGN_PASSWORD`. See the [fork environment variable list](automation.md#configure-a-fork)
 for their exact values and the automatically supplied publication token.
 
 With Cosign installed, generate and configure your key outside the source tree.
@@ -595,7 +620,8 @@ trusted fingerprint establishes whose key they are trusting.
 CI resolves one immutable source commit. Monthly and requested manual refreshes
 capture LinkedIn first; each consumer restores the same complete capture artifact.
 Test and build stages run in parallel and are required by `CI verification`.
-PDF publication commits the PDF and any refreshed inputs together only on `main`.
+PDF publication commits the PDF, any refreshed inputs, and the fork's personal
+README and first-page preview together only on `main`.
 Pushed tags publish the tested runtime
 container through a separate stage with `packages: write` and `contents: write`
 for the tag release's pull instructions; see

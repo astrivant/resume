@@ -27,6 +27,14 @@ github:
     # null uses today's UTC date. Pin a quoted ISO date when rebuilding saved calendar JSON offline.
     as_of: null
 
+# Forks replace the project README with a personal landing page and a clickable first-page PDF preview.
+# project preserves your README; resume enables generation even outside a GitHub fork.
+readme:
+  mode: auto
+
+  # Optional plain-text introduction; null uses the shared boilerplate. The heading uses your captured name.
+  introduction: null
+
 # Optional Codex-generated About and portrait summary. Set OPENAI_API_KEY as an Actions secret before enabling.
 codex:
   enabled: false

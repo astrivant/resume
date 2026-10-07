@@ -32,6 +32,7 @@ __all__ = [
     "LinkedIn",
     "Output",
     "Ownership",
+    "Readme",
     "Style",
     "StyleOverrides",
     "load_config",
@@ -99,6 +100,20 @@ class GitHub:
 
     username: str | None = None
     contributions: GitHubContributions = field(factory=GitHubContributions)
+
+
+@frozen
+class Readme:
+    """
+    Choose whether CI publishes a personal resume landing page.
+
+    Attributes:
+        mode (Literal["auto", "project", "resume"]): Auto generates on forks, project preserves the README, resume always generates.
+        introduction (str | None): Optional plain-text introduction; None uses the shared resume introduction.
+    """
+
+    mode: Literal["auto", "project", "resume"] = "auto"
+    introduction: str | None = None
 
 
 @frozen
@@ -337,6 +352,7 @@ class Config:
         section_order (list[str]): Enabled section keys in display order; omitted keys stay hidden.
         project_filter (str | None): Source URL regex selecting Projects entries, or None to retain every project.
         education (Education): School, degree, and major exclusions.
+        readme (Readme): Automatic personal README publication on forks.
     """
 
     linkedin: LinkedIn
@@ -350,6 +366,7 @@ class Config:
     section_order: list[str] = field(factory=lambda: list(DEFAULT_SECTION_ORDER))
     project_filter: str | None = DEFAULT_PROJECT_FILTER
     education: Education = field(factory=Education)
+    readme: Readme = field(factory=Readme)
 
 
 def project_path(root: Path, value: str) -> Path:

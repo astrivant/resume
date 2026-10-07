@@ -149,7 +149,7 @@
 ((* if section.key == 'skills' and skill_cloud *))\begin{minipage}{\linewidth}((* endif *))
 ((* if not tiled *))((( section_heading(section, anchor) )))((* endif *))
 ((* if section.key == 'skills' and skill_cloud *))
-% Center the cloud and its compact caption together, keeping the section heading aligned with other sections.
+% Center the cloud, keeping the section heading aligned with other sections.
 \begingroup\centering
 ((* if style.skill_colors|length > 1 *))
 % Place the compact vertical scale in the left margin without shifting the centered cloud.
@@ -163,7 +163,6 @@
 ((* endif -*))
 % Scale both bounds to 75% of the original display size without changing the cloud's proportions or weights.
 \raisebox{-0.5\height}{\includegraphics[width=0.75\linewidth,height=0.4125\textheight,keepaspectratio]{((( skill_cloud )))}}\par
-{\footnotesize\itshape Top skills}\par
 \endgroup
 \end{minipage}
 ((* elif tiled *))
