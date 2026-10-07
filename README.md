@@ -255,6 +255,11 @@ poetry run pytest --cov --cov-report=term-missing
 poetry build
 ```
 
+Tests run in parallel by default using pytest-xdist, with coverage combined across
+workers. Local runs and CI use the same settings in `pyproject.toml`. Use
+`poetry run pytest -n 4` to choose a worker count or `poetry run pytest -n 0`
+to debug in a single process.
+
 Implementation and tests live in `pkg/resume/`: `linkedin/` handles capture and
 media, and `latex/` handles escaping, Jinja rendering, and PDF compilation.
 Configuration and profile models are shared at the package root. See

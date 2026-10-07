@@ -138,14 +138,14 @@
             {
               "label": "https://lnkd.in/ektqstTY",
               "url": "https://lnkd.in/ektqstTY",
-              "resolved_url": "https://lnkd.in/ektqstTY",
-              "title": "LinkedIn"
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm/",
+              "title": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts"
             },
             {
               "label": "https://lnkd.in/eqZRNAqJ",
               "url": "https://lnkd.in/eqZRNAqJ",
-              "resolved_url": "https://lnkd.in/eqZRNAqJ",
-              "title": "LinkedIn"
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm/blob/main/docs/reports/bitnami.pdf",
+              "title": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm"
             }
           ],
           "images": [
@@ -156,15 +156,15 @@
               "link": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/"
             },
             {
-              "url": "https://static.licdn.com/scds/common/u/images/logos/favicons/v1/favicon.ico",
-              "alt": "https://lnkd.in/ektqstTY",
-              "path": "data/assets/05c551260d291438dfbd2a618561a75ed044ef66b5728bd20bf456e7c00661df.png",
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
+              "path": "data/assets/81ec35dd8fb147479968f2821e659e753d6389945662c5542eafec8bb9453645.png",
               "link": "https://lnkd.in/ektqstTY"
             },
             {
-              "url": "https://static.licdn.com/scds/common/u/images/logos/favicons/v1/favicon.ico",
-              "alt": "https://lnkd.in/eqZRNAqJ",
-              "path": "data/assets/05c551260d291438dfbd2a618561a75ed044ef66b5728bd20bf456e7c00661df.png",
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm",
+              "path": "data/assets/81ec35dd8fb147479968f2821e659e753d6389945662c5542eafec8bb9453645.png",
               "link": "https://lnkd.in/eqZRNAqJ"
             }
           ],
@@ -209,26 +209,26 @@
             {
               "label": "https://lnkd.in/edjues52",
               "url": "https://lnkd.in/edjues52",
-              "resolved_url": "https://lnkd.in/edjues52",
-              "title": "LinkedIn"
+              "resolved_url": "https://github.com/astrivant/polyad",
+              "title": "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand."
             },
             {
               "label": "https://lnkd.in/ep4n-NpJ",
               "url": "https://lnkd.in/ep4n-NpJ",
-              "resolved_url": "https://lnkd.in/ep4n-NpJ",
-              "title": "LinkedIn"
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/pkg/polyad-sdk",
+              "title": "polyad/pkg/polyad-sdk at main · astrivant/polyad"
             },
             {
               "label": "https://lnkd.in/enpeacGx",
               "url": "https://lnkd.in/enpeacGx",
-              "resolved_url": "https://lnkd.in/enpeacGx",
-              "title": "LinkedIn"
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/studies/soul",
+              "title": "polyad/studies/soul at main · astrivant/polyad"
             },
             {
               "label": "https://lnkd.in/ew2XgdAX",
               "url": "https://lnkd.in/ew2XgdAX",
-              "resolved_url": "https://lnkd.in/ew2XgdAX",
-              "title": "LinkedIn"
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/studies/nature",
+              "title": "polyad/studies/nature at main · astrivant/polyad"
             }
           ],
           "images": [
@@ -239,27 +239,27 @@
               "link": "https://www.linkedin.com/feed/update/urn:li:activity:7507271032412704768/"
             },
             {
-              "url": "https://static.licdn.com/scds/common/u/images/logos/favicons/v1/favicon.ico",
-              "alt": "https://lnkd.in/edjues52",
-              "path": "data/assets/05c551260d291438dfbd2a618561a75ed044ef66b5728bd20bf456e7c00661df.png",
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand.",
+              "path": "data/assets/6f8bc8a1590987dde7570d934e0f5887676e33b131594dcacf8b72bd549784d4.png",
               "link": "https://lnkd.in/edjues52"
             },
             {
-              "url": "https://static.licdn.com/scds/common/u/images/logos/favicons/v1/favicon.ico",
-              "alt": "https://lnkd.in/ep4n-NpJ",
-              "path": "data/assets/05c551260d291438dfbd2a618561a75ed044ef66b5728bd20bf456e7c00661df.png",
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/pkg/polyad-sdk at main · astrivant/polyad",
+              "path": "data/assets/6f8bc8a1590987dde7570d934e0f5887676e33b131594dcacf8b72bd549784d4.png",
               "link": "https://lnkd.in/ep4n-NpJ"
             },
             {
-              "url": "https://static.licdn.com/scds/common/u/images/logos/favicons/v1/favicon.ico",
-              "alt": "https://lnkd.in/enpeacGx",
-              "path": "data/assets/05c551260d291438dfbd2a618561a75ed044ef66b5728bd20bf456e7c00661df.png",
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/studies/soul at main · astrivant/polyad",
+              "path": "data/assets/6f8bc8a1590987dde7570d934e0f5887676e33b131594dcacf8b72bd549784d4.png",
               "link": "https://lnkd.in/enpeacGx"
             },
             {
-              "url": "https://static.licdn.com/scds/common/u/images/logos/favicons/v1/favicon.ico",
-              "alt": "https://lnkd.in/ew2XgdAX",
-              "path": "data/assets/05c551260d291438dfbd2a618561a75ed044ef66b5728bd20bf456e7c00661df.png",
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/studies/nature at main · astrivant/polyad",
+              "path": "data/assets/6f8bc8a1590987dde7570d934e0f5887676e33b131594dcacf8b72bd549784d4.png",
               "link": "https://lnkd.in/ew2XgdAX"
             }
           ],

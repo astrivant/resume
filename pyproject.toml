@@ -36,6 +36,7 @@ exclude = ["pkg/resume/tests"]
 [tool.poetry.group.dev.dependencies]
 pytest = ">=9,<10"
 pytest-cov = ">=7,<8"
+pytest-xdist = ">=3.8,<4"
 hypothesis = ">=6.131,<7"
 ruff = "^0.15"
 mypy = "^1.15"
@@ -55,7 +56,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["pkg/resume/tests"]
-addopts = "-ra"
+
+# Share CPU-based worker selection between local runs and CI; use -n 0 when debugging a single process.
+addopts = "-ra -n auto"
 
 [tool.coverage.run]
 relative_files = true
