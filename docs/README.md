@@ -506,6 +506,10 @@ Descriptions associated with an attachment move with it; role narrative and
 Featured post text remain in their source sections. Disabling Projects also hides
 these consolidated attachments.
 
+Project tiles omit standalone skills, tags, and skill-association links. Those
+skills still contribute to the central Skills section; there is no tile-visibility
+toggle. Project descriptions retain ordinary references to technologies.
+
 Deduplication uses resolved URLs, falling back to captured URLs. Fragments and
 trailing slashes are ignored; paths and query strings are significant. Unlinked
 attachments can match an unambiguous title within their captured affiliation.

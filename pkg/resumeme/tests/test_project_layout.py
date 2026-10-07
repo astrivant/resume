@@ -4,15 +4,19 @@ Verify inline project branding and reference deduplication without losing projec
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
+import pytest
 from PIL import Image
 
-from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, Skill
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.project_layout import CompanyAffiliation, project_layout
+from resumeme.compiler.passes.skills import without_project_skill_rows
 from resumeme.compiler.pipeline import render_profile
-from resumeme.config import Config, LinkedIn
+from resumeme.config import Config, LinkedIn, Style
+from resumeme.visualization.skills import SkillScore, skill_scores
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -153,3 +157,122 @@ def test_project_company_logos_render_inline_and_references_remain_clickable(tmp
     without_jobs = without_jobs.split(r"\projectrow[", 1)[1]
     assert r"\projectcompany{" not in without_jobs
     assert "Associated with Engineer at Example Co." in without_jobs
+
+
+@pytest.mark.parametrize(
+    "tags",
+    [
+        "Python and Graph Theory",
+        "Python, Graph Theory",
+        "Python, and Graph Theory",
+        "PYTHON\u00a0& Graph Theory",
+        "Python \u00b7 Graph Theory",
+        "Python; Graph Theory",
+        "Skills: Unlisted technology",
+        "Tags: Unlisted technology",
+        "Python and +2 skills",
+        "+2 skills",
+        "#Python #GraphTheory",
+        "Python",
+    ],
+)
+def test_project_skill_rows_never_render_even_without_skills_section(tags: str) -> None:
+    """
+    Remove complete tag rows and repeated link labels without discarding project prose or captured evidence.
+
+    Args:
+        tags (str): Captured skill summary, expanded list, or standalone hashtag row.
+
+    Returns:
+        None: Visible projects omit tags regardless of Skills visibility; source data and ordinary links survive.
+    """
+    description = "Built a Python service for Graph Theory research."
+    guide = Link("Documentation", "https://example.org/guide")
+    project_url = "https://github.com/example/python"
+    source = Profile(
+        "example-person",
+        "Alex",
+        sections=[Section("skills", "Skills", [Entry("Python"), Entry("Graph Theory")])],
+    )
+    entry = Entry(
+        "Research",
+        ["Associated with Example", f"{description}\n\n{tags}", "Used +2 skills in a workshop."],
+        links=[
+            Link(tags, "https://example.org/skill-summary"),
+            Link("Show all", "https://www.linkedin.com/in/example/skill-associations-details/123"),
+            Link("Show all", "https://lnkd.in/tags", "https://www.linkedin.com/in/example/skill-associations/123"),
+            Link(project_url, project_url, title=tags),
+            guide,
+        ],
+    )
+    visible = Profile(source.username, source.name, sections=[Section("projects", "Projects", [entry])])
+    cleaned = without_project_skill_rows(visible, source=source)
+    project = cleaned.sections[0].entries[0]
+    assert project.title == entry.title
+    assert project.paragraphs == ["Associated with Example", description + "\n", "Used +2 skills in a workshop."]
+    assert project.links == [Link(project_url, project_url), guide]
+    assert project_layout(project, companies={}).title_url == project_url
+    assert len(entry.links) == 5
+    assert tags in entry.paragraphs[1]
+    assert cleaned.sections[0].key == "projects"
+    assert len(cleaned.sections) == 1
+    assert without_project_skill_rows(cleaned, source=source) == cleaned
+
+
+def test_project_named_after_a_skill_keeps_its_identity_link() -> None:
+    """
+    Preserve a real project title and its destination when the same name is also a known skill.
+
+    Returns:
+        None: Skill-association links disappear while the project's own name and URL remain clickable.
+    """
+    link = Link("Python", "https://github.com/python/cpython", title="Python")
+    entry = Entry(
+        "Python",
+        links=[Link("Python", "https://www.linkedin.com/in/example/skill-associations/123"), link],
+        skills=[Skill("Python")],
+    )
+    profile = Profile("example-person", "Alex", sections=[Section("projects", "Projects", [entry])])
+    cleaned = without_project_skill_rows(profile, source=profile).sections[0].entries[0]
+    assert cleaned.title == "Python"
+    assert cleaned.links == [link]
+    assert cleaned.skills == entry.skills
+
+
+@pytest.mark.parametrize("cloud", [True, False])
+def test_project_tags_stay_in_central_skills_with_prose_and_endorsements_retained(tmp_path: Path, cloud: bool) -> None:
+    """
+    Keep tile presentation independent of the Skills section's cloud or text-list style.
+
+    Args:
+        tmp_path (Path): Isolated generated source and score manifest directory.
+        cloud (bool): Whether Skills displays its word cloud or original list.
+
+    Returns:
+        None: Tags contribute their full weight and remain in Skills while project descriptions retain technology references.
+    """
+    tags = "Python, Graph Theory"
+    description = "Built a Python service for graph research."
+    project = Entry("Research", [tags, description], skills=[Skill("Python", 3), Skill("Graph Theory", 2)])
+    profile = Profile(
+        "example-person",
+        "Alex",
+        sections=[
+            Section("projects", "Projects", [project]),
+            Section("skills", "Skills", [Entry("Python"), Entry("Graph Theory")]),
+        ],
+    )
+    config = Config(LinkedIn(profile.username), project_filter=None, style=Style(skills_word_cloud=cloud))
+    path = render_profile(profile, config, tmp_path)
+    rendered = path.read_text()
+    assert tags not in rendered
+    assert description in rendered
+    assert project.paragraphs == [tags, description]
+    assert skill_scores(profile)["Python"] == SkillScore(3, 3)
+
+    if cloud:
+        scores = json.loads(path.with_name("skills.weights.json").read_text())
+        assert scores["Python"] == {"references": 3, "endorsements": 3, "weight": 9}
+        assert scores["Graph Theory"] == {"references": 2, "endorsements": 2, "weight": 6}
+    else:
+        assert r"\entrytitle{Graph Theory}" in rendered

@@ -154,7 +154,7 @@ def test_pipeline_expands_before_scoring_and_honors_visibility(tmp_path: Path) -
         tmp_path (Path): Isolated output directory for rendered source and score manifests.
 
     Returns:
-        None: Expanded names render and count once per declaration or project; hidden sections remain excluded.
+        None: Expanded names contribute to the cloud without appearing in tiles; hidden sections remain excluded.
     """
     profile = Profile(
         "example-person",
@@ -171,7 +171,7 @@ def test_pipeline_expands_before_scoring_and_honors_visibility(tmp_path: Path) -
         project_filter=None,
     )
     source = render_profile(profile, config, tmp_path)
-    assert "Python, Testing" in source.read_text()
+    assert "Python, Testing" not in source.read_text()
     assert "+1 skill" not in source.read_text()
     scores = json.loads((source.parent / "skills.weights.json").read_text())
     assert scores["Testing"] == {"references": 2, "endorsements": 0, "weight": 2}
@@ -185,5 +185,5 @@ def test_pipeline_expands_before_scoring_and_honors_visibility(tmp_path: Path) -
         project_filter=None,
     )
     source = render_profile(profile, config, tmp_path)
-    assert "Python and +1 skill" in source.read_text()
+    assert "Python and +1 skill" not in source.read_text()
     assert "Testing" not in source.read_text()

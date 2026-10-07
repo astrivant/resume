@@ -61,19 +61,26 @@ def render_logo(assets: Path, output: Path, seed: str) -> None:
     stain = stain.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
     stain = stain.crop(stain.getbbox())
 
-    # Independent scales suggest different cup impressions while leaving enough margin for every rotated droplet.
-    width = round(_SIZE * (0.75 + 0.16 * digest[3] / 255))
-    height = round(_SIZE * (0.75 + 0.16 * digest[4] / 255))
+    # A slightly smaller cup impression leaves room for a clear offset without clipping the ring or its droplets.
+    width = round(_SIZE * (0.65 + 0.08 * digest[3] / 255))
+    height = round(_SIZE * (0.65 + 0.08 * digest[4] / 255))
     stain = stain.resize((width, height), Image.Resampling.LANCZOS)
     stain = ImageEnhance.Color(stain).enhance(0.7 + 0.3 * digest[5] / 255)
     stain = ImageEnhance.Brightness(stain).enhance(0.8 + 0.2 * digest[6] / 255)
     opacity = 0.65 + 0.25 * digest[7] / 255
     stain.putalpha(stain.getchannel("A").point([round(value * opacity) for value in range(256)]))
 
-    # Keep a fixed safety margin on all sides instead of clipping stains shifted away from the center.
+    # Choose a corner with a little positional variation; keep the ring off center so it reads as a stain rather than a border.
     margin = round(_SIZE * 0.025)
-    x = margin + round((_SIZE - width - 2 * margin) * digest[8] / 255)
-    y = margin + round((_SIZE - height - 2 * margin) * digest[9] / 255)
+    x = margin + round((_SIZE - width - 2 * margin) * 0.1 * digest[8] / 255)
+    y = margin + round((_SIZE - height - 2 * margin) * 0.1 * digest[9] / 255)
+
+    if digest[10] & 1:
+        x = _SIZE - width - x
+
+    if digest[10] & 2:
+        y = _SIZE - height - y
+
     base.alpha_composite(stain, (x, y))
 
     # Record the input revision without timestamps; locked Pillow versions produce byte-identical retry artifacts.

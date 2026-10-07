@@ -8,8 +8,9 @@ image-generation tool; no Overleaf package files or artwork were copied.
 
 CI renders a new composition only when it has a changed résumé or profile to
 commit. The verified source SHA controls the stain's rotation, reflection,
-proportions, position, saturation, brightness, and opacity. The blue mark stays
-fixed. A retry uses the same seed and locked Pillow dependency, and reproduces
+proportions, position, saturation, brightness, and opacity. The ring sits off
+center toward a corner, with room for its entire outline and droplets. The blue
+mark stays fixed. A retry uses the same seed and locked Pillow dependency, and reproduces
 the same PNG bytes. No API key, network request, clock, or run counter is involved.
 
 Preview a revision locally from the repository root:
@@ -47,4 +48,3 @@ Use case: precise-object-edit. Edit target: the supplied coffee-stained LinkedIn
 ### Coffee overlay
 
 Use case: precise-object-edit. Edit target: the supplied coffee-stained LinkedIn project logo. Isolate just its irregular broken coffee-cup ring and a few small droplets as a reusable transparent overlay. Delete the blue square and ALL white lettering completely; the interior of the ring must be fully transparent, as must the background outside the ring. Replace portions of the ring previously contaminated by blue with natural warm espresso-brown coffee hues. Keep the asymmetric approximately 270-degree organic ring, absorbent ragged edges, subtle translucent brown washes, and two or three small natural splashes. Keep the ring delicately stained and uneven, like the Overleaf LaTeX Coffee Stains example. Center the whole stain inside a square canvas with at least 15% transparent margins so it can be rotated without clipping. No letters, blue areas, mugs, paper, shadows, checkerboard pattern, or any other objects. True transparent alpha background and ring interior.
-

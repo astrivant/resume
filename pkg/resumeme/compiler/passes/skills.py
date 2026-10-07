@@ -5,16 +5,25 @@ Expand collapsed skill summaries using captured entry tags and reverse associati
 from __future__ import annotations
 
 import logging
+import re
 import unicodedata
 from collections import Counter
 from typing import TYPE_CHECKING
+from urllib.parse import urlsplit
 
 from attrs import evolve
 
 from resumeme.compiler.asts.profile import Skill
 from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.asts.skills import endorsement_count, skill_labels
-from resumeme.compiler.constants.skills import COLLAPSED_SKILLS, SKILL_PREFIX
+from resumeme.compiler.constants.skills import (
+    COLLAPSED_SKILLS,
+    SKILL_ASSOCIATION_PATH,
+    SKILL_PREFIX,
+    SKILL_ROW_SEPARATOR,
+    TAG_PREFIX,
+    TAG_ROW,
+)
 from resumeme.compiler.passes.experience import regroup_positions
 
 if TYPE_CHECKING:
@@ -22,7 +31,7 @@ if TYPE_CHECKING:
 
     from resumeme.compiler.asts.profile import Entry, Profile
 
-__all__ = ["expand_skill_summaries"]
+__all__ = ["expand_skill_summaries", "without_project_skill_rows"]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -213,6 +222,107 @@ def expand_skill_summaries(profile: Profile) -> Profile:
                     _expand_entry(entry, associations, hide_rows=section_key(section.key) == "experience") for entry in section.entries
                 ],
             )
+            for section in profile.sections
+        ],
+    )
+
+
+def without_project_skill_rows(profile: Profile, *, source: Profile) -> Profile:
+    """
+    Remove standalone project skill lists and association links after Skills-section scoring.
+
+    Args:
+        profile (Profile): Display copy with expanded skill summaries and consolidated projects.
+        source (Profile): Original capture supplying known labels even when the Skills section is hidden.
+
+    Returns:
+        Profile: Presentation copy retaining structured tags and narrative descriptions; neither input is mutated.
+    """
+
+    # Source labels classify legacy plain-text lists only; hidden sections never supply displayed content or cloud weights.
+    names = {
+        _key(skill.name)
+        for snapshot in (source, profile)
+        for section in snapshot.sections
+        for entry in section.entries
+        for child in _entries(entry)
+        for skill in child.skills
+        if skill.name.strip()
+    }
+    names.update(
+        _key(entry.title)
+        for section in source.sections
+        if section_key(section.key) == "skills"
+        for entry in section.entries
+        if entry.title.strip()
+    )
+    alternatives = "|".join(re.escape(name) for name in sorted(names, key=lambda name: (-len(name), name))) or r"(?!)"
+    label = rf"(?:{alternatives})"
+    skill_row = re.compile(rf"{label}(?:{SKILL_ROW_SEPARATOR}{label})*")
+
+    def clean_text(value: str) -> str:
+        """
+        Drop complete tag rows while preserving prose, paragraph breaks, and inline technology references.
+
+        Args:
+            value (str): Project paragraph or accessible link caption.
+
+        Returns:
+            str: Retained lines in their original spelling and order.
+        """
+        lines: list[str] = []
+
+        for line in value.split("\n"):
+            normalized = _key(line)
+
+            # Whole-row matching keeps descriptions such as "Built a Python service" distinct from a skill inventory.
+            if (
+                TAG_PREFIX.match(normalized)
+                or COLLAPSED_SKILLS.search(normalized)
+                or TAG_ROW.fullmatch(normalized)
+                or skill_row.fullmatch(normalized)
+            ):
+                continue
+
+            lines.append(line)
+
+        return "\n".join(lines)
+
+    def clean_entry(entry: Entry) -> Entry:
+        """
+        Filter tag links before project layout can promote their captions into descriptions or linked headings.
+
+        Args:
+            entry (Entry): Consolidated project whose title and structured skills remain intact.
+
+        Returns:
+            Entry: Independently owned text and references for template rendering.
+        """
+        links = []
+
+        for link in entry.links:
+            if any(SKILL_ASSOCIATION_PATH.search(urlsplit(url).path) for url in (link.url, link.resolved_url) if url):
+                continue
+
+            # A project can itself be named after a technology; its identity link is not a tag association.
+            label = link.label if _key(link.label) == _key(entry.title) else clean_text(link.label)
+            title = link.title if _key(link.title) == _key(entry.title) else clean_text(link.title)
+
+            if label.strip() or not link.label.strip():
+                links.append(evolve(link, label=label, title=title))
+
+        return evolve(
+            entry,
+            paragraphs=[text for value in entry.paragraphs if (text := clean_text(value)).strip()],
+            links=links,
+        )
+
+    return evolve(
+        profile,
+        sections=[
+            evolve(section, entries=[clean_entry(entry) for entry in section.entries])
+            if section_key(section.key) == "projects"
+            else section
             for section in profile.sections
         ],
     )

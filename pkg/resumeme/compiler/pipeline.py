@@ -41,7 +41,7 @@ from resumeme.compiler.passes.ordering import order_sections
 from resumeme.compiler.passes.progression import experience_layout
 from resumeme.compiler.passes.project_layout import company_logos, project_layout
 from resumeme.compiler.passes.projects import consolidate_projects
-from resumeme.compiler.passes.skills import expand_skill_summaries
+from resumeme.compiler.passes.skills import expand_skill_summaries, without_project_skill_rows
 from resumeme.compiler.passes.summary import apply_summary, summary_digest
 from resumeme.compiler.passes.themes import resolve_style
 from resumeme.compiler.passes.visibility import visible_profile
@@ -192,6 +192,9 @@ def render_profile(
 
     if skill_cloud and not any(section.key == "skills" for section in visible.sections):
         visible = evolve(visible, sections=[*visible.sections, Section("skills", "Skills")])
+
+    # Project tags belong exclusively in Skills; remove their display rows after scoring, including for custom templates.
+    visible = without_project_skill_rows(visible, source=profile)
 
     def stage_entry(entry: Entry, *, cloud: bool = False) -> Entry:
         """
