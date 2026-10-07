@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 import tempfile
 from importlib.resources import files
@@ -15,8 +14,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from zipfile import ZipFile
 
+from resumeme.compiler.backends.pdf import release_footer
 from resumeme.compiler.constants.backend import COMPILER_TIMEOUT_SECONDS, FONT_ARCHIVE, LATEX_PACKAGE, SOURCE_DATE_EPOCH, TOOLCHAIN
 from resumeme.config import project_path
+from resumeme.linkedin.identity import release_destination
 
 if TYPE_CHECKING:
     from resumeme.config import Config
@@ -145,7 +146,10 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
 
         destination.parent.mkdir(parents=True, exist_ok=True)
         pending = destination.with_suffix(".pending.pdf")
-        shutil.copyfile(compiled, pending)
+
+        # Working builds cannot claim a signing identity; the tag stage replaces this footer before Cosign sees the PDF.
+        releases = release_destination(config.linkedin.ownership, root, allow_missing=True)
+        pending.write_bytes(release_footer(compiled.read_bytes(), releases))
         pending.replace(destination)
 
     return destination

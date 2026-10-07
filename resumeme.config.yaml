@@ -16,6 +16,17 @@ linkedin:
 github:
   username: emmeowzing
 
+  # Optional public activity; uses GitHub's light-theme greens and clickable day links without an API token.
+  contributions:
+    enabled: true
+    months: 1
+
+    # profile follows the profile column; appendix adds a separate final page.
+    placement: profile
+
+    # null uses today's UTC date. Pin a quoted ISO date when rebuilding saved calendar JSON offline.
+    as_of: null
+
 # Optional Codex-generated About and portrait summary. Set OPENAI_API_KEY as an Actions secret before enabling.
 codex:
   enabled: false
@@ -66,7 +77,7 @@ experience:
       company: PremiScale
 
   # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
-  last_years: 6
+  last_years: 5
 
   # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
   # null uses today's UTC date. Keep explicit dates quoted.
@@ -91,6 +102,16 @@ experience:
     - Highlights
     - Summary
     - Duties
+
+education:
+
+  # Match school, degree, major, or a combination; all supplied fields must match.
+  # Exact matches ignore case, repeated whitespace, and straight versus curly apostrophes.
+  # Replace [] with selectors, e.g. [{school: Example University}, {degree: "Associate's Degree", major: Mathematics}].
+  # Omit education from section_order to hide the entire section.
+  disable:
+    - school: Rochester Institute of Technology
+
 capture:
   page_timeout_seconds: 30
   max_scrolls: 60

@@ -15,10 +15,12 @@ from jsonschema import ValidationError
 from selenium.common.exceptions import NoSuchWindowException, TimeoutException, WebDriverException
 
 from resumeme.codex.request import prepare_summary
+from resumeme.compiler.asts.contributions import load_calendar
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import load_config, project_path
+from resumeme.github.contributions import fetch_calendar
 from resumeme.linkedin.browser import capture_profile
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.ownership import publish_ownership
@@ -66,6 +68,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if name in {"render", "build"}:
             command.add_argument("--summary", type=Path, help="Generated summary JSON relative to the configuration directory")
+            command.add_argument(
+                "--github-calendar", type=Path, help="Reuse captured calendar JSON instead of fetching GitHub; match github.contributions.as_of"
+            )
 
     ownership = commands.add_parser("publish-ownership", help="Update live LinkedIn About with a signed release's public key identity")
     ownership.add_argument("--public-key", type=Path, required=True, help="Release cosign.pub path relative to the current directory")
@@ -120,6 +125,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Valid profile: {profile.name} ({len(profile.sections)} sections)")
             return 0
 
+        # Optional public activity is acquired once before the offline compiler; explicit snapshots support repeatable builds.
+        contributions = None
+
+        if args.github_calendar:
+            if not config.github.contributions.enabled:
+                raise ValueError("Enable github.contributions before supplying --github-calendar.")
+
+            contributions = load_calendar(project_path(root, str(args.github_calendar)))
+        elif config.github.contributions.enabled:
+            contributions = fetch_calendar(config)
+
         # Rendering owns content selection; compilation only consumes the resulting TeX and staged assets.
         source = render_profile(
             profile,
@@ -127,6 +143,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             root,
             allow_incomplete=args.allow_incomplete,
             summary_path=project_path(root, str(args.summary)) if args.summary else None,
+            contributions=contributions,
         )
         result = compile_pdf(source, config, root) if args.command == "build" else source
         print(result)

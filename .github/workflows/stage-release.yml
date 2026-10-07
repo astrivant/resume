@@ -37,7 +37,7 @@ jobs:
         with:
           groups: main
 
-      # Sign the exact PDF selected by the tag, including any Codex copy already committed by the monthly build.
+      # Preserve the tagged PDF's body, including generated summaries; add release provenance before signing.
       - name: Stage the committed PDF
         run: poetry run python scripts/ci/stage-pdf.py
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
@@ -48,6 +48,7 @@ jobs:
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           SOURCE_SHA: ${{ inputs.sha }}
+          RELEASE_TAG: ${{ github.ref_name }}
         run: poetry run bash scripts/release/sign.sh
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:

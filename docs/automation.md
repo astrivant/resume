@@ -87,8 +87,10 @@ git tag resume-2026-10
 git push origin resume-2026-10
 ```
 
-After verification, the tag workflow signs the **PDF already committed at that
-revision**, preserving the selected content and generated summaries. It releases
+After verification, the tag workflow takes the **PDF already committed at that
+revision** and adds a light-gray footer on its last page with the exact release
+link and signing key fingerprint. It preserves the selected content, layout, and
+generated summaries, then signs the PDF including that footer. It releases
 the PDF, Cosign signature bundles, public key, SHA-256 manifest, key fingerprint,
 and source revision. The container stage then appends its pull instructions to
 the same release. See [signature verification](README.md#signed-releases).

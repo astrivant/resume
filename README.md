@@ -31,6 +31,7 @@ version you want to share to get a signed release.
   - [Customize your résumé](#customize-your-résumé)
     - [Sections and projects](#sections-and-projects)
     - [Job history](#job-history)
+    - [Education](#education)
     - [Profile header and contact information](#profile-header-and-contact-information)
     - [Skills](#skills)
     - [Codex summaries](#codex-summaries)
@@ -134,8 +135,9 @@ Jinja translates those inputs and your YAML configuration into `tex/resume.tex`.
 The digest-pinned `drpsychick/texlive-pdflatex` image compiles the PDF. CI installs
 from the Poetry lockfile. Ordinary pushes rebuild committed inputs; monthly runs
 capture LinkedIn first. After validation, main-branch publication commits the PDF
-and any refreshed inputs together. User-created tags sign the committed PDF and
-publish a release. Pull requests validate without publishing or signing in.
+and any refreshed inputs together. User-created tags add a release link and key
+fingerprint to the committed PDF's footer, sign it, and publish a release.
+Pull requests validate without publishing or signing in.
 
 See [configuration, architecture, and capture limits](docs/README.md) for the details.
 
@@ -246,6 +248,23 @@ missing dates remain visible. Defaults keep all jobs (`disable: []`,
 `last_years: null`). `as_of: null` uses today's UTC date; set a quoted date such as
 `as_of: '2026-10-07'` to keep builds anchored to the same window. See
 [job filtering](docs/README.md#job-filtering) for grouped roles and date precision.
+
+### Education
+
+Use `education.disable` to exclude entries by `school`, `degree`, `major`, or a
+combination. All fields in a selector must match; any matching selector hides the
+entry. The default is `[]`. For example:
+
+```yaml
+education:
+  disable:
+    - school: Example University
+    - degree: Associate's Degree
+      major: Mathematics
+```
+
+Comment out `education` in `section_order` to hide the entire section. See
+[education filtering](docs/README.md#education-filtering) for matching rules.
 
 ### Profile header and contact information
 

@@ -4,29 +4,9 @@
     "endorsements": 6,
     "weight": 13
   },
-  "DevOps": {
-    "references": 9,
-    "endorsements": 0,
-    "weight": 9
-  },
   "Python": {
-    "references": 4,
+    "references": 2,
     "endorsements": 2,
-    "weight": 8
-  },
-  "Kubernetes": {
-    "references": 7,
-    "endorsements": 0,
-    "weight": 7
-  },
-  "CircleCI": {
-    "references": 6,
-    "endorsements": 0,
-    "weight": 6
-  },
-  "Terraform": {
-    "references": 6,
-    "endorsements": 0,
     "weight": 6
   },
   "Amazon Web Services (AWS)": {
@@ -34,12 +14,12 @@
     "endorsements": 2,
     "weight": 5
   },
-  "Git": {
-    "references": 3,
-    "endorsements": 1,
+  "DevOps": {
+    "references": 5,
+    "endorsements": 0,
     "weight": 5
   },
-  "Linux": {
+  "Kubernetes": {
     "references": 5,
     "endorsements": 0,
     "weight": 5
@@ -49,7 +29,12 @@
     "endorsements": 2,
     "weight": 5
   },
-  "AWS": {
+  "Git": {
+    "references": 2,
+    "endorsements": 1,
+    "weight": 4
+  },
+  "Terraform": {
     "references": 4,
     "endorsements": 0,
     "weight": 4
@@ -59,24 +44,9 @@
     "endorsements": 1,
     "weight": 3
   },
-  "Bash": {
-    "references": 3,
-    "endorsements": 0,
-    "weight": 3
-  },
   "Cloud Computing": {
     "references": 1,
     "endorsements": 1,
-    "weight": 3
-  },
-  "GitHub": {
-    "references": 3,
-    "endorsements": 0,
-    "weight": 3
-  },
-  "HashiCorp": {
-    "references": 3,
-    "endorsements": 0,
     "weight": 3
   },
   "Helm Charts": {
@@ -99,27 +69,7 @@
     "endorsements": 0,
     "weight": 3
   },
-  "Troubleshooting": {
-    "references": 3,
-    "endorsements": 0,
-    "weight": 3
-  },
-  "Vault": {
-    "references": 3,
-    "endorsements": 0,
-    "weight": 3
-  },
-  "Windows": {
-    "references": 3,
-    "endorsements": 0,
-    "weight": 3
-  },
-  "Argo CD": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "Artifactory": {
+  "AWS": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -129,7 +79,7 @@
     "endorsements": 0,
     "weight": 2
   },
-  "Flask": {
+  "GitHub": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -139,12 +89,17 @@
     "endorsements": 0,
     "weight": 2
   },
+  "HashiCorp": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
   "Hypothesis Testing": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
   },
-  "Infracost": {
+  "Linux": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -154,12 +109,17 @@
     "endorsements": 0,
     "weight": 2
   },
-  "Powershell": {
+  "secrets management": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
   },
-  "secrets management": {
+  "Troubleshooting": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Vault": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -184,6 +144,16 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Argo CD": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Artifactory": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "AWS Command Line Interface (CLI)": {
     "references": 1,
     "endorsements": 0,
@@ -194,7 +164,17 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Bash": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "Business Ownership": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "CircleCI": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -234,6 +214,11 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Flask": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "GitOps": {
     "references": 1,
     "endorsements": 0,
@@ -260,6 +245,11 @@
     "weight": 1
   },
   "Information Security": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Infracost": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -304,6 +294,11 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Powershell": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "SaaS Development": {
     "references": 1,
     "endorsements": 0,
@@ -335,6 +330,11 @@
     "weight": 1
   },
   "Website Building": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Windows": {
     "references": 1,
     "endorsements": 0,
     "weight": 1

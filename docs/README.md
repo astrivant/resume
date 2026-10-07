@@ -4,6 +4,7 @@
 
 - [Configuration](#configuration)
 - [Job filtering](#job-filtering)
+- [Education filtering](#education-filtering)
 - [Job text and subheadings](#job-text-and-subheadings)
 - [Environment variables](#environment-variables)
 - [Profile schema and skill clouds](profile-schema.md)
@@ -37,6 +38,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `experience.as_of` | `null` | Quoted ISO date fixing the window endpoint; null uses today's UTC date |
 | `experience.reflow_soft_breaks` | `true` | Join wrapped job prose and bullet continuations; false retains captured line boundaries |
 | `experience.subheadings` | Built-in job labels | Complete standalone subsection labels; a supplied list replaces the defaults and `[]` disables recognition |
+| `education.disable` | `[]` | Selectors with `school`, `degree`, `major`, or a combination; matching education entries are omitted |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
 | `capture.max_scrolls` | `60` | Maximum expansion iterations per page |
 | `capture.max_pages_per_section` | `30` | Bound on section pagination |
@@ -123,7 +125,7 @@ generated Projects and Skills sections.
 
 The former top-level `disable` key is no longer accepted. To migrate an older
 config, remove it and comment out those keys in `section_order` instead.
-`experience.disable` remains the independent control for individual jobs.
+`experience.disable` and `education.disable` control individual jobs and education entries.
 
 Contact info occupies the first-page identity column when it leads the visible
 order. Move `contact` later in the array to place it among the body sections.
@@ -203,6 +205,34 @@ recognizable. Partial job filtering still requires structured positions; run
 Omitting `experience` from `section_order` hides all jobs. Excluded roles cannot contribute
 project attachments or skill references. Independently captured Projects and Skills
 entries remain subject to their own section settings.
+
+## Education filtering
+
+Exclude individual schools or qualifications under `education`:
+
+```yaml
+education:
+  disable:
+    - school: Example University
+    - degree: Associate's Degree
+      major: Mathematics
+```
+
+All fields within a selector must match; any matching selector removes the entire
+entry. School-only selectors exclude every entry for that school. Degree-only or
+major-only selectors apply across schools. Matches are exact, ignoring case,
+repeated whitespace, and straight versus curly apostrophes.
+
+Copy the school from the Education entry's `title` in `data/profile.json`. The first
+qualification row usually contains `Degree, Major`: `degree` matches the portion
+before the first comma or the complete row; `major` matches the remainder. If only
+one qualification value is present, either field can match that complete value.
+Dates and later descriptive paragraphs are not searched for qualification matches.
+
+The default `disable: []` keeps every entry. Comment out `education` in
+`section_order` to hide the entire section. Exclusions run before rendering, asset
+staging, skill scoring, and summary generation; the captured snapshot is unchanged.
+An empty education list produces no section heading or contents link.
 
 ## Job text and subheadings
 
@@ -462,12 +492,25 @@ Keep the private key in your own secure storage. `*.key` is ignored as a precaut
 the signing workflow reads the secret using `env://COSIGN_PRIVATE_KEY` without
 writing it to the workspace or passing its contents as a command argument.
 
-The tag release signs the PDF committed at the tagged revision with pinned Cosign
-3.1.3, creates a SHA-256 manifest, signs that manifest, and verifies both signatures
+The tag release adds provenance to the PDF committed at the tagged revision,
+then signs it with pinned Cosign 3.1.3, creates a SHA-256 manifest, signs that manifest, and verifies both signatures
 before uploading the signed artifacts. Monthly and ordinary builds upload unsigned
 working PDFs for verification and publication to `main`.
 Cosign uses Sigstore's transparency services and includes verification material in
 its bundles. Pull requests and branch builds do not receive the signing secret.
+
+The last page has a light-gray footer to the right of its centered page number,
+linking to the release and displaying the full public-key fingerprint (`SHA256:`
+followed by the DER digest, wrapped across two lines). The fingerprint
+matches `key-fingerprint.txt` and identifies the release's `cosign.pub`; the detached
+signature verifies the PDF, including its footer. The release step preserves the
+tagged document's body and layout without rerendering it.
+
+Local and monthly builds show a releases link and **Unsigned working copy** instead
+of a signing identity. They use `linkedin.ownership.releases_url` or `.repository`,
+then the Actions repository or local GitHub origin. Outside a checkout, the link
+is omitted if no repository is configured. Signed releases always link to the
+actual publishing repository and tag, independent of the About short link.
 
 After verification succeeds, the tag workflow uses the GitHub CLI to publish on
 the user-selected tag. Assets are uploaded to a draft before it becomes public.
@@ -478,7 +521,7 @@ See [monthly refresh and choosing a release](automation.md). Release assets are:
 - `resume.pdf.sigstore.json`: complete PDF verification bundle.
 - `cosign.pub`: public signing key.
 - `key-fingerprint.txt`: SHA-256 fingerprint of the DER-encoded public key.
-- `source.json`: source commit, compiler image digest, and public-key fingerprint.
+- `source.json`: source commit, compiler image digest, public-key fingerprint, and release URL.
 - `SHA256SUMS`: SHA-256 hashes of the PDF and its verification metadata.
 - `SHA256SUMS.sigstore.json`: signature bundle authenticating the manifest.
 

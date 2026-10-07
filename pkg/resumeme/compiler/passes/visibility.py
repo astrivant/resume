@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from attrs import evolve
 
 from resumeme.compiler.asts.sections import section_key
+from resumeme.compiler.passes.education import filter_education
 from resumeme.compiler.passes.experience import clean_experience, filter_experience
 
 if TYPE_CHECKING:
@@ -20,14 +21,14 @@ __all__ = ["visible_profile"]
 
 def visible_profile(profile: Profile, config: Config) -> Profile:
     """
-    Apply section and employment exclusions without modifying the captured snapshot.
+    Apply section, employment, and education exclusions without modifying the captured snapshot.
 
     Args:
         profile (Profile): Validated profile snapshot.
-        config (Config): Enabled section keys, excluded roles, and inclusive employment window.
+        config (Config): Enabled sections, job and education exclusions, and inclusive employment window.
 
     Returns:
-        Profile: Retained sections and jobs in capture order.
+        Profile: Retained sections and entries in capture order.
     """
     enabled = {section_key(key) for key in config.section_order}
 
@@ -40,6 +41,8 @@ def visible_profile(profile: Profile, config: Config) -> Profile:
                 key=section_key(section.key),
                 entries=[clean_experience(entry) for entry in filter_experience(section.entries, config.experience)]
                 if section_key(section.key) == "experience"
+                else filter_education(section.entries, config.education)
+                if section_key(section.key) == "education"
                 else section.entries,
             )
             for section in profile.sections

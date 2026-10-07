@@ -368,6 +368,38 @@
       },
       "additionalProperties": false
     },
+    "education": {
+      "description": "Filter displayed schools and qualifications without altering the captured snapshot.",
+      "type": "object",
+      "properties": {
+        "disable": {
+          "description": "Exclude an entry when all fields of any selector match. Matches ignore case, repeated whitespace, and typographic apostrophes.",
+          "type": "array",
+          "default": [],
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "school": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "degree": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "major": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "github": {
       "type": "object",
       "properties": {
@@ -379,6 +411,34 @@
           "maxLength": 39,
           "pattern": "^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$",
           "description": "Public GitHub username, or null to omit the header link."
+        },
+        "contributions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "months": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "default": 1,
+              "description": "Trailing calendar months, inclusive of both endpoints."
+            },
+            "placement": {
+              "type": "string",
+              "enum": ["profile", "appendix"],
+              "default": "profile"
+            },
+            "as_of": {
+              "type": ["string", "null"],
+              "format": "date",
+              "default": null,
+              "description": "Quoted ISO end date; null uses today's UTC date."
+            }
+          }
         }
       },
       "additionalProperties": false

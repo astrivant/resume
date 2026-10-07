@@ -23,16 +23,17 @@ _MANAGED = re.compile(r"^resume signature: SHA256:[a-f0-9]{64}\r?\nreleases: htt
 _LABEL = re.compile(r"^(?:resume signature|releases):", re.MULTILINE | re.IGNORECASE)
 
 
-def release_destination(settings: Ownership, root: Path) -> str:
+def release_destination(settings: Ownership, root: Path, *, allow_missing: bool = False) -> str:
     """
     Resolve the fork's release URL without inferring repository ownership from a profile name.
 
     Args:
         settings (Ownership): Repository override and optional user-managed short link.
         root (Path): Checkout used to discover origin outside Actions.
+        allow_missing (bool): Permit ordinary local builds without a configured repository.
 
     Returns:
-        str: HTTPS URL suitable for one line of public About text.
+        str: HTTPS destination, or an empty string when discovery is optional and no repository exists.
 
     Raises:
         ValueError: No GitHub repository can be identified or the URL is unsafe for plain text.
@@ -62,6 +63,9 @@ def release_destination(settings: Ownership, root: Path) -> str:
         origin = result.stdout.strip()
         match = re.fullmatch(r"(?:git@github\.com:|https://github\.com/|ssh://git@github\.com/)([^\s]+)", origin)
         repository = match.group(1).removesuffix(".git") if result.returncode == 0 and match else ""
+
+    if not repository and allow_missing:
+        return ""
 
     if not _REPOSITORY.fullmatch(repository) or repository.split("/")[-1] in {".", ".."}:
         raise ValueError("Set linkedin.ownership.repository to OWNER/REPO, or configure a GitHub origin remote.")

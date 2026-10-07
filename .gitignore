@@ -18,4 +18,5 @@ tex/*.log
 tex/*.out
 tex/*.pdf
 tex/resume.tex
+tex/github-contributions.json
 tex/assets/

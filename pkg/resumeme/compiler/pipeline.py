@@ -14,6 +14,7 @@ from attrs import evolve
 from jinja2 import Environment, StrictUndefined
 
 from resumeme.compiler.asts.links import discover_profile_links
+from resumeme.compiler.asts.contributions import calendar_window, save_calendar, validate_calendar
 from resumeme.compiler.asts.profile import Section
 from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.asts.summary import load_summary
@@ -28,6 +29,7 @@ from resumeme.compiler.constants.backend import (
     VARIABLE_END,
     VARIABLE_START,
 )
+from resumeme.compiler.constants.contributions import CONTRIBUTION_COLORS
 from resumeme.compiler.passes.contact import without_birthday
 from resumeme.compiler.passes.header import is_pronouns, prepare_header, prepare_header_logos
 from resumeme.compiler.passes.headings import distinct_heading, is_body_heading
@@ -49,6 +51,7 @@ from resumeme.visualization.skills import render_skill_cloud, skill_scores
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from resumeme.compiler.asts.contributions import ContributionCalendar
     from resumeme.compiler.asts.profile import Entry, Link, Media, Profile
     from resumeme.config import Config
 
@@ -56,7 +59,13 @@ __all__ = ["render_profile"]
 
 
 def render_profile(
-    profile: Profile, config: Config, root: Path, *, allow_incomplete: bool = False, summary_path: Path | None = None
+    profile: Profile,
+    config: Config,
+    root: Path,
+    *,
+    allow_incomplete: bool = False,
+    summary_path: Path | None = None,
+    contributions: ContributionCalendar | None = None,
 ) -> Path:
     """
     Render enabled sections and stage their referenced images alongside the TeX source.
@@ -67,6 +76,7 @@ def render_profile(
         root (Path): Configuration directory.
         allow_incomplete (bool): Explicitly accept capture warnings or missing assets.
         summary_path (Path | None): Explicit generated-copy artifact, validated against this capture and configuration.
+        contributions (ContributionCalendar | None): Acquired public activity for the optional GitHub graph; rendering performs no requests.
 
     Returns:
         Path: Generated LaTeX source.
@@ -93,6 +103,17 @@ def render_profile(
     style = resolve_style(config.style)
     target = project_path(root, config.output.tex)
     target.parent.mkdir(parents=True, exist_ok=True)
+
+    # Validate external activity before publishing generated source, and retain the exact observations beside that source.
+    if config.github.contributions.enabled:
+        if contributions is None or config.github.username is None:
+            raise ValueError("Enabled GitHub contributions require a captured calendar and github.username.")
+
+        validate_calendar(contributions, config.github.username, *calendar_window(config.github.contributions))
+        save_calendar(contributions, target.parent / "github-contributions.json")
+    elif contributions is not None:
+        raise ValueError("Enable github.contributions before supplying a calendar.")
+
     asset_directory = target.parent / "assets"
     asset_directory.mkdir(exist_ok=True)
 
@@ -266,6 +287,9 @@ def render_profile(
         connection_count=connection_count,
         connection_url=connection_url,
         github_username=config.github.username,
+        contributions=contributions,
+        contribution_colors=CONTRIBUTION_COLORS,
+        contribution_placement=config.github.contributions.placement,
         section_navigation=section_navigation,
     )
     target.write_text(content, encoding="utf-8")

@@ -20,6 +20,7 @@ dependencies = [
     "jsonschema>=4.26,<5",
     "Pillow>=12,<13",
     "wordcloud>=1.9.6,<2",
+    "pypdf>=6.19,<7",
 ]
 
 [project.scripts]
@@ -53,7 +54,6 @@ types-PyYAML = ">=6,<7"
 types-jsonschema = ">=4.26,<5"
 shellcheck-py = "0.11.0.1"
 shfmt-py = "3.12.0.2"
-pypdf = ">=6,<7"
 
 [build-system]
 requires = ["poetry-core==2.5.0"]

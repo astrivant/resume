@@ -23,8 +23,11 @@ __all__ = [
     "Capture",
     "Codex",
     "Config",
+    "Education",
+    "EducationSelector",
     "Experience",
     "GitHub",
+    "GitHubContributions",
     "JobSelector",
     "LinkedIn",
     "Output",
@@ -67,15 +70,35 @@ class LinkedIn:
 
 
 @frozen
+class GitHubContributions:
+    """
+    Configure an optional public contribution calendar in the resume.
+
+    Attributes:
+        enabled (bool): Fetch and display public contribution activity during rendering.
+        months (int): Trailing calendar months to display, from one through twelve.
+        placement (Literal["profile", "appendix"]): Below the GitHub profile link or on a separate final page.
+        as_of (str | None): Inclusive ISO end date; None uses today's UTC date.
+    """
+
+    enabled: bool = False
+    months: int = 1
+    placement: Literal["profile", "appendix"] = "profile"
+    as_of: str | None = None
+
+
+@frozen
 class GitHub:
     """
     Configure an optional public GitHub profile link without credentials.
 
     Attributes:
         username (str | None): GitHub account name, or None to omit the header link.
+        contributions (GitHubContributions): Optional public activity calendar.
     """
 
     username: str | None = None
+    contributions: GitHubContributions = field(factory=GitHubContributions)
 
 
 @frozen
@@ -154,6 +177,34 @@ class Experience:
     as_of: str | None = None
     subheadings: list[str] = field(factory=lambda: list(BODY_HEADINGS))
     reflow_soft_breaks: bool = True
+
+
+@frozen
+class EducationSelector:
+    """
+    Match education by school, qualification, field of study, or a combination.
+
+    Attributes:
+        school (str | None): Exact school name, or any school when omitted.
+        degree (str | None): Degree or complete qualification row, or any degree when omitted.
+        major (str | None): Field of study, or any major when omitted.
+    """
+
+    school: str | None = None
+    degree: str | None = None
+    major: str | None = None
+
+
+@frozen
+class Education:
+    """
+    Exclude education entries without modifying the captured academic history.
+
+    Attributes:
+        disable (list[EducationSelector]): Alternative selectors whose supplied fields must all match.
+    """
+
+    disable: list[EducationSelector] = field(factory=list)
 
 
 @frozen
@@ -285,6 +336,7 @@ class Config:
         codex (Codex): Optional generated résumé copy and user context.
         section_order (list[str]): Enabled section keys in display order; omitted keys stay hidden.
         project_filter (str | None): Source URL regex selecting Projects entries, or None to retain every project.
+        education (Education): School, degree, and major exclusions.
     """
 
     linkedin: LinkedIn
@@ -297,6 +349,7 @@ class Config:
     codex: Codex = field(factory=Codex)
     section_order: list[str] = field(factory=lambda: list(DEFAULT_SECTION_ORDER))
     project_filter: str | None = DEFAULT_PROJECT_FILTER
+    education: Education = field(factory=Education)
 
 
 def project_path(root: Path, value: str) -> Path:
@@ -343,6 +396,10 @@ def load_config(path: Path) -> Config:
     schema = json.loads(files(AST_PACKAGE).joinpath(CONFIG_SCHEMA).read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
+
+    # Contribution ownership is explicit: never infer a GitHub account from the LinkedIn username or a repository owner.
+    if config.github.contributions.enabled and config.github.username is None:
+        raise ValueError("Set github.username before enabling github.contributions.")
 
     # Reject selector typos even for validation-only commands; themes are user-defined, not a hard-coded registry.
     if config.style.theme is not None and config.style.theme not in config.style.themes:

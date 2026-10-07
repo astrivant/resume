@@ -13,6 +13,8 @@ test -s "$artifact_dir/resume.pdf"
 
 # Derive the public identity without writing the private key to a file or expanding it into process arguments.
 cosign public-key --key env://COSIGN_PRIVATE_KEY >"$artifact_dir/cosign.pub"
+
+# Embed the release URL and derived public fingerprint before signing; subsequent publication must preserve these bytes.
 python scripts/release/metadata.py "$artifact_dir"
 bash scripts/tooling/retry.sh cosign sign-blob --yes --key env://COSIGN_PRIVATE_KEY \
     --bundle "$artifact_dir/resume.pdf.sigstore.json" "$artifact_dir/resume.pdf"

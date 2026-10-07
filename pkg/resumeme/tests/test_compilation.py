@@ -5,12 +5,14 @@ Verify both compiler backends preserve existing PDFs until two successful passes
 from __future__ import annotations
 
 import subprocess
+from io import BytesIO
 from typing import TYPE_CHECKING
 
 import pytest
+from pypdf import PdfReader, PdfWriter
 
 from resumeme.compiler.backends.latex.compilation import compile_pdf
-from resumeme.config import Config, LinkedIn
+from resumeme.config import Config, LinkedIn, Ownership
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -75,13 +77,20 @@ def test_compiler_backends_publish_after_both_passes(tmp_path: Path, monkeypatch
         output = next(path for path in (tmp_path / ".cache/build").iterdir() if path.is_dir())
         assert (output / "texmf/tex/latex/ebgaramond/ebgaramond.sty").is_file()
         assert (output / "texmf/fonts/type1/public/ebgaramond/EBGaramond-Regular.pfb").is_file()
-        (output / "custom.pdf").write_bytes(b"%PDF-1.7\ncompiled")
+        compiled = PdfWriter()
+        compiled.add_blank_page(width=612, height=792)
+        compiled.write(output / "custom.pdf")
         return subprocess.CompletedProcess(command, 0, stdout="compiler output", stderr="")
 
     monkeypatch.setattr("resumeme.compiler.backends.latex.compilation.subprocess.run", run)
-    assert compile_pdf(source, Config(LinkedIn("example-person")), tmp_path) == destination
+    config = Config(LinkedIn("example-person", ownership=Ownership(repository="owner/resumeme")))
+    assert compile_pdf(source, config, tmp_path) == destination
     assert len(calls) == 2
-    assert destination.read_bytes() == b"%PDF-1.7\ncompiled"
+    completed = PdfReader(BytesIO(destination.read_bytes()))
+    assert len(completed.pages) == 1
+    assert "Unsigned working copy" in completed.pages[0].extract_text()
+    assert completed.metadata is not None
+    assert completed.metadata.get("/ResumemeReleaseURL") == "https://github.com/owner/resumeme/releases"
     assert (tmp_path / ".cache/build/pdflatex-2.log").read_text() == "compiler output"
 
 
