@@ -69,7 +69,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if name in {"render", "build"}:
             command.add_argument("--summary", type=Path, help="Generated summary JSON relative to the configuration directory")
             command.add_argument(
-                "--github-calendar", type=Path, help="Reuse captured calendar JSON instead of fetching GitHub; match github.contributions.as_of"
+                "--github-calendar",
+                type=Path,
+                help="Reuse captured calendar JSON instead of fetching GitHub; match github.contributions.as_of",
             )
 
     ownership = commands.add_parser("publish-ownership", help="Update live LinkedIn About with a signed release's public key identity")

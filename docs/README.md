@@ -5,6 +5,7 @@
 - [Configuration](#configuration)
 - [Job filtering](#job-filtering)
 - [Education filtering](#education-filtering)
+- [GitHub contribution graph](#github-contribution-graph)
 - [Job text and subheadings](#job-text-and-subheadings)
 - [Environment variables](#environment-variables)
 - [Profile schema and skill clouds](profile-schema.md)
@@ -39,6 +40,11 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `experience.reflow_soft_breaks` | `true` | Join wrapped job prose and bullet continuations; false retains captured line boundaries |
 | `experience.subheadings` | Built-in job labels | Complete standalone subsection labels; a supplied list replaces the defaults and `[]` disables recognition |
 | `education.disable` | `[]` | Selectors with `school`, `degree`, `major`, or a combination; matching education entries are omitted |
+| `github.username` | `null` | Public account used by the profile link and optional contribution graph |
+| `github.contributions.enabled` | `false` | Acquire public GitHub activity during `render` or `build` |
+| `github.contributions.months` | `1` | Trailing calendar months, from 1 through 12, including both boundary dates |
+| `github.contributions.placement` | `profile` | Below the GitHub link in the profile column, or `appendix` for a separate final page |
+| `github.contributions.as_of` | `null` | Quoted ISO end date; null uses today's UTC date |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
 | `capture.max_scrolls` | `60` | Maximum expansion iterations per page |
 | `capture.max_pages_per_section` | `30` | Bound on section pagination |
@@ -234,6 +240,48 @@ The default `disable: []` keeps every entry. Comment out `education` in
 staging, skill scoring, and summary generation; the captured snapshot is unchanged.
 An empty education list produces no section heading or contents link.
 
+## GitHub contribution graph
+
+```yaml
+github:
+  username: your-github-account
+  contributions:
+    enabled: true
+    months: 1
+    placement: profile
+    as_of: null
+```
+
+`profile` fills the profile column beneath its GitHub link, following
+`style.profile_column_side`. `appendix` adds a separate final page and a contents
+link. Longer windows are easier to read in the appendix. The graph uses
+Sunday-first weeks, one clickable circle per day, and GitHub's default light-theme
+greens independently of your resume theme. Partial weeks stay blank outside the
+requested interval. Zero-activity days use the lightest shade.
+
+Each circle opens that account's GitHub overview with the same `from` and `to`
+date filters used by GitHub's calendar. Counts and intensity levels come from the
+public profile, including private activity only when its count is publicly shown.
+No API token, additional Actions secret, or LinkedIn login is needed.
+See [GitHub's contribution calendar behavior](https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/viewing-contributions-on-your-profile).
+
+When enabled, `render` and `build` fetch the calendar before compiling. HTTP reads
+use the existing `capture` timeout and exponential retry settings. An unavailable,
+incomplete, or changed calendar response fails the build instead of drawing
+invented zero-activity cells. Disabled graphs make no GitHub requests. The exact
+observations are saved beside generated TeX as `github-contributions.json` and
+included in CI's `resumeme-source` artifact.
+
+For an offline rebuild, set `as_of` to the saved JSON's `end` date, retain its
+username and month window, then supply that file explicitly:
+
+```bash
+resumeme build --github-calendar tex/github-contributions.json
+```
+
+Tag releases preserve the selected committed PDF, including its captured graph;
+they do not fetch newer contributions before signing it.
+
 ## Job text and subheadings
 
 Job descriptions retain their internal hierarchy. Standalone labels such as
@@ -377,7 +425,8 @@ poetry run resumeme build
 ```
 
 `render` reads the configured snapshot and cached assets, applies visibility rules,
-and writes LaTeX. It runs offline. `build` then compiles twice using the pinned
+and writes LaTeX. It runs offline unless the optional GitHub graph is enabled
+without `--github-calendar`. `build` then compiles twice using the pinned
 [`drpsychick/texlive-pdflatex` image](https://hub.docker.com/r/drpsychick/texlive-pdflatex).
 Docker Desktop runs its amd64 toolchain under emulation on Apple Silicon.
 
@@ -458,8 +507,9 @@ associations target the first visible company entry. Excluded or unmatched jobs
 remain plain text. Company logos retain their captured external links.
 
 Text, titles, and media use captured link destinations. `capture` and `enrich`
-resolve redirects and fetch preview metadata; rendering does not make network
-requests. Distinct references remain available even when a duplicate heading or
+resolve redirects and fetch preview metadata; rendering does not refetch those
+links. Optional GitHub calendar acquisition is a separate input stage.
+Distinct references remain available even when a duplicate heading or
 standalone URL is omitted.
 
 ### Templates and assets
@@ -575,14 +625,15 @@ an existing draft after a lost network response.
 | `compiler/passes/` | Visibility, content organization, layout, and navigation | Typed profile → display structures |
 | `compiler/backends/latex/` | Escaping, Jinja resources, fonts, PDF toolchain | Display structures → TeX → PDF |
 | `compiler/pipeline.py`, `compiler/constants/` | Pass ordering, template bindings, shared vocabularies and target settings | Configured offline compilation |
+| `github/contributions.py`, `compiler/asts/contributions.py` | Public calendar acquisition and validated day observations | Optional GitHub graph input |
 | `visualization/` | Skill scoring and endorsement colors | Visible profile → cloud + score manifest |
 | `config.py` | Validated runtime and presentation settings | YAML → typed configuration |
 | `cli.py` | Pipeline commands | `capture`, `enrich`, `validate`, `render`, `build` |
 | `scripts/` | Tooling, CI, and release automation | Workflow steps and package entry points |
 
 `data/` contains committed inputs, `tex/` contains generated source, and `.cache/`
-contains local browser state and build intermediates. Capture owns network access;
-rendering and compilation consume local inputs. See the
+contains local browser state and build intermediates. Capture and optional GitHub
+calendar acquisition own network access; compiler stages consume local inputs. See the
 [template interface](templates.md) for rendering extensions.
 See [compiler boundaries and pass order](compiler.md) for the internal interfaces.
 

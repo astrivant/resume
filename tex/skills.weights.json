@@ -4,6 +4,21 @@
     "endorsements": 6,
     "weight": 13
   },
+  "DevOps": {
+    "references": 9,
+    "endorsements": 0,
+    "weight": 9
+  },
+  "CircleCI": {
+    "references": 6,
+    "endorsements": 0,
+    "weight": 6
+  },
+  "Kubernetes": {
+    "references": 6,
+    "endorsements": 0,
+    "weight": 6
+  },
   "Python": {
     "references": 2,
     "endorsements": 2,
@@ -14,14 +29,9 @@
     "endorsements": 2,
     "weight": 5
   },
-  "DevOps": {
-    "references": 5,
-    "endorsements": 0,
-    "weight": 5
-  },
-  "Kubernetes": {
-    "references": 5,
-    "endorsements": 0,
+  "Git": {
+    "references": 3,
+    "endorsements": 1,
     "weight": 5
   },
   "Telecommunications": {
@@ -29,15 +39,10 @@
     "endorsements": 2,
     "weight": 5
   },
-  "Git": {
-    "references": 2,
-    "endorsements": 1,
-    "weight": 4
-  },
   "Terraform": {
-    "references": 4,
+    "references": 5,
     "endorsements": 0,
-    "weight": 4
+    "weight": 5
   },
   "Amazon EC2": {
     "references": 1,
@@ -49,12 +54,17 @@
     "endorsements": 1,
     "weight": 3
   },
-  "Helm Charts": {
+  "GitHub": {
     "references": 3,
     "endorsements": 0,
     "weight": 3
   },
-  "Mathematics": {
+  "HashiCorp": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Helm Charts": {
     "references": 3,
     "endorsements": 0,
     "weight": 3
@@ -69,6 +79,21 @@
     "endorsements": 0,
     "weight": 3
   },
+  "Vault": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Argo CD": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Artifactory": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
   "AWS": {
     "references": 2,
     "endorsements": 0,
@@ -79,17 +104,7 @@
     "endorsements": 0,
     "weight": 2
   },
-  "GitHub": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
   "Graph Theory": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "HashiCorp": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -99,7 +114,17 @@
     "endorsements": 0,
     "weight": 2
   },
+  "Infracost": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
   "Linux": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Mathematics": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -115,11 +140,6 @@
     "weight": 2
   },
   "Troubleshooting": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "Vault": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -144,16 +164,6 @@
     "endorsements": 0,
     "weight": 1
   },
-  "Argo CD": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "Artifactory": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
   "AWS Command Line Interface (CLI)": {
     "references": 1,
     "endorsements": 0,
@@ -170,11 +180,6 @@
     "weight": 1
   },
   "Business Ownership": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "CircleCI": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -245,11 +250,6 @@
     "weight": 1
   },
   "Information Security": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "Infracost": {
     "references": 1,
     "endorsements": 0,
     "weight": 1

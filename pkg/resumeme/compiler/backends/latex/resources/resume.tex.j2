@@ -178,6 +178,26 @@
 ((* endif *))
 \par\addvspace{10pt}
 ((* endmacro *))
+((* macro render_contributions() *))
+\par\addvspace{5pt}
+\begingroup
+% Horizontal spacing follows the containing column; fixed weekday spacing keeps a short window compact.
+\setlength{\contributionstep}{\dimexpr\linewidth/((( contributions.weeks )))\relax}
+\setlength{\contributionradius}{0.34\contributionstep}
+\ifdim\contributionradius>2mm\setlength{\contributionradius}{2mm}\fi
+\noindent\begin{tikzpicture}[x=\contributionstep,y=4.7mm]
+\path[use as bounding box] (0,0) rectangle ( ((( contributions.weeks ))),7);
+((* for day in contributions.days *))
+((* set week, weekday, destination = contributions.cell(day) *))
+\node[inner sep=0pt,outer sep=0pt] at ( ((( week + 0.5 ))), ((( 6.5 - weekday ))) ) {%
+  \href{((( destination|url )))}{\tikz[baseline=-0.5ex]\fill[githubactivity((( day.level )))] (0,0) circle[radius=\contributionradius];}%
+};
+((* endfor *))
+\end{tikzpicture}\par
+{\fontsize{7}{9}\selectfont\color{ink}((( contributions.total ))) contributions\par
+((( contributions.start|tex ))) -- ((( contributions.end|tex )))\par}
+\endgroup
+((* endmacro *))
 \documentclass[((( style.font_size )))pt,((( style.paper )))paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -199,6 +219,15 @@
 \definecolor{profilename}{HTML}{((( style.name_color )))}
 \definecolor{sectionheading}{HTML}{((( style.heading_color )))}
 \definecolor{entryheading}{HTML}{((( style.entry_color )))}
+((* if contributions *))
+% Match GitHub's default light calendar independently of the resume's selected accent theme.
+((* for color in contribution_colors *))
+\definecolor{githubactivity((( loop.index0 )))}{HTML}{((( color )))}
+((* endfor *))
+\newlength{\contributionstep}
+\newlength{\contributionradius}
+\newlength{\contributionappendixwidth}
+((* endif *))
 % A neutral tint separates project tiles without adding another accent to the theme.
 \colorlet{projectbackground}{black!3!canvas}
 ((# Use every configured stop so the legend matches the cloud's piecewise RGB interpolation. #))
@@ -551,14 +580,20 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* if github_username *))
 \href{https://github.com/((( github_username|url )))}{\makebox[1.3em][l]{\faGithub}\textbf{GitHub: ((( github_username|tex )))}}\par
 ((* endif *))
+((* if contributions and contribution_placement == 'profile' *))
+((( render_contributions() )))
+((* endif *))
 ((# A compact hierarchy links only rendered headings, including synthesized Projects and Skills sections. #))
-((* if style.show_table_of_contents and section_navigation *))
+((* if style.show_table_of_contents and (section_navigation or (contributions and contribution_placement == 'appendix')) *))
 \par\addvspace{12pt}
 \Needspace{3\baselineskip}
 {\color{sectionheading}\large\bfseries Contents}\par\nopagebreak\vspace{0.5\baselineskip}
 ((* for anchor, section in section_navigation *))
 \noindent\hangindent=0.6em\hangafter=1\hspace*{0.6em}\hyperlink{((( anchor )))}{((( section.title|tex )))}\par
 ((* endfor *))
+((* if contributions and contribution_placement == 'appendix' *))
+\noindent\hspace*{0.6em}\hyperlink{github-contributions}{GitHub contributions}\par
+((* endif *))
 \par\addvspace{6pt}
 ((* endif *))
 ((* if connection_url *))
@@ -602,5 +637,18 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* for anchor, section in body *))
 ((( render_section(section, anchor) )))
 ((* endfor *))
+((* endif *))
+((* if contributions and contribution_placement == 'appendix' *))
+% Finish every active first-page frame too, so a minimal profile still gets a separate full-width appendix.
+\par\finishthispage
+\hypertarget{github-contributions}{}
+{\color{sectionheading}\Large\bfseries GitHub contributions}\par\nopagebreak\vspace{0.5\baselineskip}
+\href{https://github.com/((( github_username|url )))}{\faGithub\enspace ((( github_username|tex )))}\par
+% Long windows use the page width; short windows retain readable spacing instead of stretching a few dots across the page.
+\setlength{\contributionappendixwidth}{((( [60, contributions.weeks * 5]|max )))mm}
+\ifdim\contributionappendixwidth>\linewidth\setlength{\contributionappendixwidth}{\linewidth}\fi
+\noindent\begin{minipage}{\contributionappendixwidth}
+((( render_contributions() )))
+\end{minipage}\par
 ((* endif *))
 \end{document}

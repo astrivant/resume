@@ -33,6 +33,7 @@ version you want to share to get a signed release.
     - [Job history](#job-history)
     - [Education](#education)
     - [Profile header and contact information](#profile-header-and-contact-information)
+    - [GitHub activity](#github-activity)
     - [Skills](#skills)
     - [Codex summaries](#codex-summaries)
   - [Publishing](#publishing)
@@ -177,7 +178,7 @@ poetry run resumeme build
 
 Capture also performs this enrichment. HTTP(S) and `www.` URLs become clickable
 within the PDF's prose. Original text and URLs stay in the snapshot alongside
-observed redirect destinations and titles; rendering remains offline.
+observed redirect destinations and titles; rendering reuses those saved references.
 `capture.fetch_link_previews: false` disables remote link inspection while keeping
 local URL discovery. Contact links remain clickable without fetching their pages.
 
@@ -286,6 +287,24 @@ Both default to `false` and can also be overridden in inline themes. Re-enable t
 separate contact block by removing `contact` from `disable`.
 The birthday stays hidden unless you also set `style.display_birthday: true`;
 this setting defaults to `false` and supports inline theme overrides.
+
+### GitHub activity
+
+Show clickable contribution circles beneath the GitHub link or in an appendix:
+
+```yaml
+github:
+  username: your-github-account
+  contributions:
+    enabled: true
+    months: 1
+    placement: profile # or appendix
+```
+
+The graph uses GitHub's light-theme greens and each day's contribution link.
+It follows the profile column's side and fills its width. No additional token or
+secret is required. Set `enabled: false` to omit it; use `months: 1` through `12`
+to choose the window. See [saved calendars and offline builds](docs/README.md#github-contribution-graph).
 
 ### Skills
 

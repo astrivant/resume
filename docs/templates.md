@@ -17,9 +17,14 @@ Rendering uses strict undefined-variable checks and these delimiters:
 | `summary_headline` | Validated generated text beneath the portrait, or an empty string |
 | `connection_count`, `connection_url` | Enabled captured values, otherwise empty strings |
 | `github_username` | Configured public account, or `None` |
+| `contributions` | Validated `ContributionCalendar` with `username`, `start`, `end`, `days`, `weeks`, and `total`, or `None` |
+| `contribution_colors` | GitHub light-theme hex colors indexed by intensity level 0 through 4 |
+| `contribution_placement` | `profile` or `appendix` |
 | `section_navigation` | `(anchor, section)` pairs in display order with unique TeX-safe anchors |
 
 Filters return presentation values without changing the captured snapshot.
+For each calendar day, `contributions.cell(day)` returns its zero-based week,
+Sunday-first weekday, and exact GitHub activity URL. Escape that URL with `url`.
 Disabled sections and jobs are excluded before templates run.
 `section_order` applies after generated and empty sections have settled, so both
 `profile.sections` and `section_navigation` have the same sequence. The packaged

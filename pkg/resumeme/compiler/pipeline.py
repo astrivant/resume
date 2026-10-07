@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING
 from attrs import evolve
 from jinja2 import Environment, StrictUndefined
 
-from resumeme.compiler.asts.links import discover_profile_links
 from resumeme.compiler.asts.contributions import calendar_window, save_calendar, validate_calendar
+from resumeme.compiler.asts.links import discover_profile_links
 from resumeme.compiler.asts.profile import Section
 from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.asts.summary import load_summary

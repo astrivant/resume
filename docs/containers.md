@@ -41,6 +41,12 @@ The container sets `RESUMEME_TEX_BACKEND=local` so both pdfLaTeX passes run insi
 the container. Shell escape stays disabled. The build command above disables
 networking as well. No nested Docker daemon or host Docker socket is required.
 
+If the optional GitHub graph is enabled, either remove `--network=none` to acquire
+public activity or append `--github-calendar tex/github-contributions.json` after
+`build` and pin `github.contributions.as_of` to that saved calendar's end date.
+The TeX compiler itself never needs network access. See
+[calendar configuration](README.md#github-contribution-graph).
+
 Only `linux/amd64` is published because the pinned TeX image contains x86-64
 binaries. Docker Desktop can emulate it on Apple Silicon. The production image
 contains neither Poetry nor development dependencies.
