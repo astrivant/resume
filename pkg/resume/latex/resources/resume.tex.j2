@@ -26,9 +26,9 @@
 \setlength{\emergencystretch}{3em}
 \setlength{\fboxsep}{12pt}
 \setlength{\fboxrule}{0.4pt}
-\newtcolorbox{profilecard}{enhanced,breakable,colback=white,colframe=border,
+\newtcolorbox{profilecard}[1][]{enhanced,breakable,colback=white,colframe=border,
   arc=3mm,boxrule=0.4pt,left=4mm,right=4mm,top=4mm,bottom=4mm,
-  before skip=8pt,after skip=8pt}
+  before skip=8pt,after skip=8pt,#1}
 \newcommand{\entrytitle}[1]{{\large\bfseries #1}\par\nopagebreak}
 \newcommand{\sectiontitle}[1]{{\Large\bfseries #1}\par\nopagebreak\vspace{4pt}}
 \urlstyle{same}
@@ -58,7 +58,7 @@
 \end{profilecard}
 ((* for section in profile.sections *))
 \Needspace{8\baselineskip}
-\begin{profilecard}
+\begin{profilecard}((* if section.key == 'skills' and skill_cloud *))[breakable=false]((* endif *))
 \sectiontitle{((( section.title|tex )))}
 ((* if section.key == 'skills' and skill_cloud *))
 \includegraphics[width=\linewidth]{((( skill_cloud )))}\par

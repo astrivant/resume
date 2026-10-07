@@ -35,6 +35,14 @@ proficiency, collaborators, descriptions, and other displayed fields. Grouped
 positions stay together. Media retains its source URL, accessible label, cached
 PNG path, and click destination.
 
+Grouped employment entries also carry optional `positions`, a list of entries
+with each role's own title, paragraphs, links, images, and skills. The parent keeps
+its flattened content for compatibility. Capture and media caching retain both;
+rendering uses the boundaries to remove individual jobs without leaking their
+references or counting their skills. Existing snapshots without this metadata
+remain valid. See [job filtering](README.md#job-filtering) for configuration and
+when an earlier grouped snapshot needs recapture.
+
 The catalog covers LinkedIn's [documented profile sections](https://www.linkedin.com/help/linkedin/answer/a564064/your-linkedin-profile?lang=en)
 and [Add profile section choices](https://www.linkedin.com/help/learning/answer/a540837/add-sections-to-your-profile?lang=en):
 

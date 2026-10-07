@@ -68,6 +68,20 @@ def _normalized(value: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", value).casefold().split())
 
 
+def _word_color(*args: object, **kwargs: object) -> str:
+    """
+    Keep every cloud label readable against the resume's white profile cards.
+
+    Args:
+        *args (object): WordCloud's word and layout arguments.
+        **kwargs (object): Additional WordCloud color callback arguments.
+
+    Returns:
+        str: High-contrast LinkedIn blue for every label.
+    """
+    return "#0A66C2"
+
+
 def skill_scores(profile: Profile) -> dict[str, SkillScore]:
     """
     Score known skills and hashtags using only the supplied, already-filtered profile.
@@ -157,7 +171,7 @@ def render_skill_cloud(scores: dict[str, SkillScore], directory: Path) -> str | 
     if not scores:
         return None
     maximum = max(score.weight for score in scores.values())
-    frequencies = {name: 0.1 + 0.9 * sqrt(score.weight / maximum) for name, score in scores.items()}
+    frequencies = {name: 0.25 + 0.75 * sqrt(score.weight / maximum) for name, score in scores.items()}
     for attempt in range(3):
         cloud = WordCloud(
             font_path=str(files("wordcloud").joinpath("DroidSansMono.ttf")),
@@ -165,11 +179,12 @@ def render_skill_cloud(scores: dict[str, SkillScore], directory: Path) -> str | 
             height=800 * (attempt + 1),
             background_color="white",
             colormap="Blues",
+            color_func=_word_color,
             max_words=len(scores),
-            min_font_size=12,
+            min_font_size=28,
             max_font_size=140,
             prefer_horizontal=1.0,
-            relative_scaling=1.0,
+            relative_scaling=0.5,
             random_state=0,
         ).generate_from_frequencies(frequencies)
         if len(cloud.layout_) == len(scores):

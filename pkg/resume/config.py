@@ -11,9 +11,9 @@ from pathlib import Path
 import cattrs
 import yaml
 from attrs import field, frozen
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 
-__all__ = ["Capture", "Config", "LinkedIn", "Output", "Style", "load_config", "project_path"]
+__all__ = ["Capture", "Config", "Experience", "JobSelector", "LinkedIn", "Output", "Style", "load_config", "project_path"]
 
 
 @frozen
@@ -50,6 +50,36 @@ class Capture:
     retry_attempts: int = 5
     retry_backoff_seconds: int = 10
     retry_max_backoff_seconds: int = 300
+
+
+@frozen
+class JobSelector:
+    """
+    Match jobs by exact title, employer, or both, ignoring case and extra whitespace.
+
+    Attributes:
+        title (str | None): Job title to match, or any title when omitted.
+        company (str | None): Employer name to match, or any employer when omitted.
+    """
+
+    title: str | None = None
+    company: str | None = None
+
+
+@frozen
+class Experience:
+    """
+    Select jobs for display without changing the captured employment history.
+
+    Attributes:
+        disable (list[JobSelector]): Exclusions applied before the date window.
+        last_years (int | None): Include jobs overlapping this many trailing calendar years, or all dates when omitted.
+        as_of (str | None): ISO date fixing the window's endpoint; otherwise use the current UTC date.
+    """
+
+    disable: list[JobSelector] = field(factory=list)
+    last_years: int | None = None
+    as_of: str | None = None
 
 
 @frozen
@@ -104,6 +134,7 @@ class Config:
         style (Style): Print presentation choices.
         template (str | None): Optional custom template path.
         disable (list[str]): Section keys omitted from rendered output while retaining the captured snapshot.
+        experience (Experience): Job exclusions and optional employment date window.
     """
 
     linkedin: LinkedIn
@@ -112,6 +143,7 @@ class Config:
     style: Style = field(factory=Style)
     template: str | None = None
     disable: list[str] = field(factory=list)
+    experience: Experience = field(factory=Experience)
 
 
 def project_path(root: Path, value: str) -> Path:
@@ -150,7 +182,7 @@ def load_config(path: Path) -> Config:
     """
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     schema = json.loads(files("resume").joinpath("resources/config.schema.json").read_text(encoding="utf-8"))
-    Draft202012Validator(schema).validate(raw)
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
     paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf]
     if config.template:

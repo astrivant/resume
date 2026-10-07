@@ -1,0 +1,278 @@
+"""
+Verify inclusive employment windows and job exclusions across capture and rendering.
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import date
+from typing import TYPE_CHECKING
+
+import pytest
+from attrs import evolve
+from jsonschema import ValidationError
+
+from resume.config import Config, Experience, JobSelector, LinkedIn, load_config
+from resume.latex.experience import filter_experience
+from resume.latex.rendering import render_profile
+from resume.linkedin.dates import EmploymentPeriod, employment_period
+from resume.linkedin.parsing import parse_detail
+from resume.models import Entry, Media, Profile, Section, load_profile, save_profile
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Jan 2010 - Present · 16 yrs", EmploymentPeriod(date(2010, 1, 1), None)),
+        ("September 2019 – Oct. 2021 · 2 yrs", EmploymentPeriod(date(2019, 9, 1), date(2021, 10, 31))),
+        ("2010—2021", EmploymentPeriod(date(2010, 1, 1), date(2021, 12, 31))),
+        ("2020-02 - 2020-02", EmploymentPeriod(date(2020, 2, 1), date(2020, 2, 29))),
+        ("2021-10-07 - 2026-10-07", EmploymentPeriod(date(2021, 10, 7), date(2026, 10, 7))),
+        ("Built services from 2010 - 2021", None),
+        ("2020 - 2010", None),
+        ("Unknown 2020 - Present", None),
+        ("2020-99 - Present", None),
+        ("0000 - Present", None),
+        ("2021-02-29 - Present", None),
+        ("Dates unavailable", None),
+    ],
+)
+def test_employment_date_precision(text: str, expected: EmploymentPeriod | None) -> None:
+    """
+    Preserve date precision and distinguish employment metadata from descriptive prose.
+
+    Args:
+        text (str): Displayed employment line.
+        expected (EmploymentPeriod | None): Inclusive bounds, or unknown when the line cannot be interpreted.
+
+    Returns:
+        None: Calendar bounds and invalid-date handling match the contract.
+    """
+    assert employment_period(text) == expected
+
+
+@pytest.mark.parametrize(
+    ("period", "included"),
+    [
+        ("2010 - Present", True),
+        ("2010 - Oct 2021", True),
+        ("2010 - 2021-10-07", True),
+        ("2010 - 2021-10-06", False),
+        ("2010 - Sep 2021", False),
+        ("2010 - 2021", True),
+        ("2026-10-07 - Present", True),
+        ("2026-10-08 - Present", False),
+        ("2027 - 2029", False),
+        ("Dates unavailable", True),
+        ("", True),
+    ],
+)
+def test_trailing_years_includes_any_overlap(period: str, included: bool) -> None:
+    """
+    Include jobs spanning the cutoff and its boundary day, without shortening their descriptions.
+
+    Args:
+        period (str): Captured date metadata, possibly absent or unsupported.
+        included (bool): Whether the job overlaps the fixed five-year window.
+
+    Returns:
+        None: Inclusion uses the whole employment interval and leaves source records unchanged.
+    """
+    job = Entry("Engineer", ["Example · Full-time", period, "Complete description"])
+    settings = Experience(last_years=5, as_of="2026-10-07")
+    assert filter_experience([job], settings) == ([job] if included else [])
+    assert job.paragraphs[-1] == "Complete description"
+
+
+def test_default_clock_override_and_leap_day() -> None:
+    """
+    Use the current date by default, accept a fixed endpoint, and handle leap anniversaries.
+
+    Returns:
+        None: Calendar-year subtraction and explicit configuration take precedence correctly.
+    """
+    jobs = [Entry("Recent", ["Example", "2020 - Feb 2023"]), Entry("Earlier", ["Example", "2020 - Jan 2023"])]
+    assert filter_experience(jobs, Experience(last_years=1), today=date(2024, 2, 29)) == jobs[:1]
+    assert filter_experience(jobs, Experience(last_years=1, as_of="2023-01-01"), today=date(2090, 1, 1)) == jobs
+    assert filter_experience(jobs, Experience(), today=date(2090, 1, 1)) == jobs
+    assert filter_experience(jobs, Experience(last_years=9999), today=date(2024, 2, 29)) == jobs
+
+
+def test_job_selectors_match_all_supplied_fields() -> None:
+    """
+    Distinguish matching titles at different employers and give exclusions precedence over dates.
+
+    Returns:
+        None: Explicit rules match normalized exact identities without substring matching.
+    """
+    jobs = [
+        Entry("DevOps Engineer", ["HqO · Full-time", "2020 - Present"]),
+        Entry("DevOps Engineer", ["Example · Full-time", "2020 - Present"]),
+        Entry("Senior DevOps Engineer", ["HqO · Full-time", "2020 - Present"]),
+    ]
+    settings = Experience(disable=[JobSelector(title=" devops   ENGINEER ", company="hqo")], last_years=5, as_of="2026-10-07")
+    assert filter_experience(jobs, settings) == jobs[1:]
+    assert filter_experience(jobs, Experience(disable=[JobSelector(company="HqO")])) == jobs[1:2]
+    assert filter_experience(jobs, Experience(disable=[JobSelector(title="DevOps Engineer")])) == jobs[2:]
+    assert filter_experience(jobs, Experience(disable=[JobSelector(title="Engineer")])) == jobs
+
+
+@pytest.mark.parametrize("custom_template", [False, True])
+def test_grouped_roles_filter_before_templates_assets_and_skills(tmp_path: Path, custom_template: bool) -> None:
+    """
+    Exclude individual roles and all their associated content while preserving the company's current role.
+
+    Args:
+        tmp_path (Path): Temporary project directory.
+        custom_template (bool): Whether to inspect the full profile supplied to a custom template.
+
+    Returns:
+        None: Removed role text, media, links, and skill tags do not reach either template or cloud input.
+    """
+    html = """<main><h2>Experience</h2><ul><li class="artdeco-list__item"><p>Example Systems</p>
+        <ul><li><p>Staff Engineer</p><p>Jan 2020 – Present</p><p>Current infrastructure.</p>
+        <a href="/in/example-person/skill-associations-details/">Rust</a></li>
+        <li><p>Senior Engineer</p><p>2010 – Sep 2021</p><p>Removed narrative.</p>
+        <a href="https://example.org/removed">Removed project</a><img src="https://example.org/removed.png" alt="Removed figure">
+        <a href="/in/example-person/skill-associations-details/">Python</a></li></ul></li></ul></main>"""
+    section = parse_detail(html, "experience", "Experience")
+    assert [position.title for position in section.entries[0].positions] == ["Staff Engineer", "Senior Engineer"]
+    profile = Profile("example-person", "Alex", sections=[section])
+    snapshot = tmp_path / "profile.json"
+    save_profile(profile, snapshot)
+    original = snapshot.read_bytes()
+    assert load_profile(snapshot, profile.username) == profile
+    config = Config(LinkedIn(profile.username), experience=Experience(last_years=5, as_of="2026-10-07"))
+    if custom_template:
+        (tmp_path / "custom.tex.j2").write_text("((( profile )))", encoding="utf-8")
+        config = evolve(config, template="custom.tex.j2")
+    rendered = render_profile(profile, config, tmp_path).read_text()
+    assert "Staff Engineer" in rendered
+    assert "Example Systems" in rendered
+    for hidden in ("Senior Engineer", "Removed", "removed", "Python", "Sep 2021"):
+        assert hidden not in rendered
+    assert json.loads((tmp_path / "tex/skills.weights.json").read_text()) == {"Rust": {"references": 1, "endorsements": 0, "weight": 1}}
+    assert all(asset.name.startswith("skills-") for asset in (tmp_path / "tex/assets").iterdir())
+    assert snapshot.read_bytes() == original
+    explicit = Experience(disable=[JobSelector(title="Senior Engineer", company="Example Systems")])
+    assert filter_experience(section.entries, explicit) == filter_experience(section.entries, config.experience)
+    assert filter_experience(section.entries, Experience(disable=[JobSelector(company="Example Systems")])) == []
+
+
+def test_old_grouped_snapshots_do_not_silently_leak_excluded_roles() -> None:
+    """
+    Support whole-group selection in old snapshots and request missing boundaries for partial selection.
+
+    Returns:
+        None: Legacy input stays valid while ambiguous role ownership fails visibly.
+    """
+    group = Entry("Example", ["Staff", "2020 - Present", "Current description", "Junior", "2010 - 2019", "Old description"])
+    assert filter_experience([group], Experience()) == [group]
+    assert filter_experience([group], Experience(disable=[JobSelector(company="Example")])) == []
+    with pytest.raises(ValueError, match="Run `resume capture`"):
+        filter_experience([group], Experience(last_years=5, as_of="2026-10-07"))
+    with pytest.raises(ValueError, match="Run `resume capture`"):
+        filter_experience([group], Experience(disable=[JobSelector(title="Junior", company="Example")]))
+    historical = evolve(group, paragraphs=["Staff", "2018 - 2020", "Junior", "2010 - 2018"])
+    assert filter_experience([historical], Experience(last_years=5, as_of="2026-10-07")) == []
+
+
+def test_grouped_roles_without_dates_remain_selectable() -> None:
+    """
+    Retain an undated sibling and allow its explicit exclusion independently of dated roles.
+
+    Returns:
+        None: Partial date metadata never causes an undated role to disappear or become company context.
+    """
+    html = """<main><ul><li class="artdeco-list__item"><p>Example</p><ul>
+        <li><p>Engineer</p><p>2020 - Present</p><p>Infrastructure</p></li>
+        <li><p>Consultant</p><p>Dates unavailable</p><p>Advice</p></li></ul></li></ul></main>"""
+    entries = parse_detail(html, "experience", "Experience").entries
+    assert [position.title for position in entries[0].positions] == ["Engineer", "Consultant"]
+    settings = Experience(disable=[JobSelector(title="Engineer")], last_years=5, as_of="2026-10-07")
+    selected = filter_experience(entries, settings)
+    assert [position.title for position in selected[0].positions] == ["Consultant"]
+    assert selected[0].paragraphs == ["Consultant", "Dates unavailable", "Advice"]
+
+
+def test_empty_profiles_and_disabled_experience(tmp_path: Path) -> None:
+    """
+    Omit empty cards and apply whole-section exclusions before per-job rules.
+
+    Args:
+        tmp_path (Path): Temporary output directory.
+
+    Returns:
+        None: Identity-only output and unrelated sections do not depend on employment metadata.
+    """
+    job = Entry("Engineer", ["Example", "2010 - 2015"], images=[Media("https://example.org/missing.png")])
+    profile = Profile(
+        "example-person",
+        "Alex",
+        sections=[Section("experience", "Experience", [job]), Section("education", "Education", [evolve(job, images=[])])],
+    )
+    config = Config(LinkedIn(profile.username), experience=Experience(last_years=5, as_of="2026-10-07"))
+    rendered = render_profile(profile, config, tmp_path).read_text()
+    assert "Alex" in rendered
+    assert r"\sectiontitle{Experience}" not in rendered
+    assert r"\sectiontitle{Education}" in rendered
+    assert "2010 - 2015" in rendered
+    assert filter_experience([], config.experience) == []
+    ambiguous = Entry("Example", ["Staff", "2020 - Present", "Junior", "2010 - 2019"])
+    hidden = evolve(profile, sections=[Section("experience", "Experience", [ambiguous])])
+    assert render_profile(hidden, evolve(config, disable=["experience"]), tmp_path).exists()
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        "{last_years: 0}",
+        "{last_years: -5}",
+        "{last_years: true}",
+        "{last_years: 1.5}",
+        "{last_years: '5'}",
+        "{disable: [Engineer]}",
+        "{disable: [{}]}",
+        "{disable: [{title: ' '}]}",
+        "{disable: [{company: null}]}",
+        "{disable: [{title: Engineer, employer: Example}]}",
+        "{as_of: '2026-02-30'}",
+        "{last_year: 5}",
+    ],
+)
+def test_experience_config_rejects_invalid_filters(tmp_path: Path, settings: str) -> None:
+    """
+    Reject ambiguous selectors, invalid dates, and nonintegral windows before rendering.
+
+    Args:
+        tmp_path (Path): Temporary configuration directory.
+        settings (str): Invalid YAML experience block.
+
+    Returns:
+        None: Configuration validation fails instead of silently widening or narrowing the job list.
+    """
+    path = tmp_path / "resume.reference.yaml"
+    path.write_text(f"linkedin:\n  username: example-person\nexperience: {settings}\n", encoding="utf-8")
+    with pytest.raises(ValidationError):
+        load_config(path)
+
+
+def test_experience_config_defaults_and_roundtrip(tmp_path: Path) -> None:
+    """
+    Structure the documented YAML example and preserve username-only configuration defaults.
+
+    Args:
+        tmp_path (Path): Temporary configuration directory.
+
+    Returns:
+        None: All jobs remain enabled by default and the documented selectors are usable.
+    """
+    path = tmp_path / "resume.reference.yaml"
+    path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
+    assert load_config(path).experience == Experience()
+    with path.open("a", encoding="utf-8") as stream:
+        stream.write("experience:\n  disable: [{title: DevOps Engineer, company: HqO}]\n  last_years: 5\n  as_of: '2026-10-07'\n")
+    assert load_config(path).experience == Experience([JobSelector("DevOps Engineer", "HqO")], 5, "2026-10-07")

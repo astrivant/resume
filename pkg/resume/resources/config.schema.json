@@ -139,6 +139,49 @@
           "type": "null"
         }
       ]
+    },
+    "experience": {
+      "description": "Filter displayed jobs without altering the captured snapshot.",
+      "type": "object",
+      "properties": {
+        "disable": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "company": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+          }
+        },
+        "last_years": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 9999,
+          "description": "Include employment overlapping the trailing calendar-year window; null includes all dates."
+        },
+        "as_of": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Quoted ISO date anchoring the window; null uses the current UTC date."
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [

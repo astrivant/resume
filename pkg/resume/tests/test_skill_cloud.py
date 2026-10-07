@@ -6,18 +6,22 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING
+from unittest.mock import MagicMock
 
 from attrs import evolve
 from PIL import Image
 
-from resume.config import Config, LinkedIn
+from resume.config import Capture, Config, LinkedIn
 from resume.latex.rendering import render_profile
+from resume.linkedin.browser import parse_detail_after_expansion
 from resume.linkedin.skills import endorsement_count
 from resume.models import Entry, Link, Profile, Section, Skill
 from resume.visualization.skills import SkillScore, render_skill_cloud, skill_scores
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from pytest import MonkeyPatch
 
 
 def test_scores_combine_references_tags_and_endorsements() -> None:
@@ -87,6 +91,26 @@ def test_endorsement_total_ignores_dates_and_uses_visible_lower_bound() -> None:
     assert endorsement_count(["2025", "4 experiences", "99+ endorsements", "99+ endorsements"]) == 99
     assert endorsement_count(["1,234 endorsements", "Endorsed by 50 colleagues"]) == 1234
     assert endorsement_count(["Endorsed by a colleague", "5 experiences"]) == 0
+
+
+def test_virtualized_skill_snapshots_keep_the_largest_endorsement_total(monkeypatch: MonkeyPatch) -> None:
+    """
+    Merge repeated skill observations without summing totals or losing an earlier count.
+
+    Args:
+        monkeypatch (MonkeyPatch): Replaces browser expansion with deterministic HTML observations.
+
+    Returns:
+        None: The merged skill retains the highest visible count across virtualized snapshots.
+    """
+    snapshots = [
+        '<main><h2>Skills</h2><li class="artdeco-list__item"><p>Python</p>'
+        f'<button aria-label="{count} endorsements">Endorse</button></li></main>'
+        for count in [5, 1]
+    ]
+    monkeypatch.setattr("resume.linkedin.browser._expand", MagicMock(return_value=snapshots))
+    section = parse_detail_after_expansion(MagicMock(), "skills", "Skills", Capture())
+    assert section.entries[0].skills == [Skill("Python", 5)]
 
 
 def test_section_exclusions_apply_before_cloud_scoring(tmp_path: Path) -> None:

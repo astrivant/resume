@@ -3,6 +3,8 @@
 ## Contents
 
 - [Configuration](#configuration)
+- [Job filtering](#job-filtering)
+- [Environment variables](#environment-variables)
 - [Profile schema and skill clouds](profile-schema.md)
 - [Local capture](#local-capture)
 - [Rendering and PDF builds](#rendering-and-pdf-builds)
@@ -22,6 +24,9 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | --- | --- | --- |
 | `linkedin.username` | `emmeowzing` | Profile slug from `/in/<username>/` |
 | `disable` | `[]` | Section keys to omit from the generated resume |
+| `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
+| `experience.last_years` | `null` | Include jobs overlapping the trailing N calendar years; null keeps all dates |
+| `experience.as_of` | `null` | Quoted ISO date fixing the window endpoint; null uses today's UTC date |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
 | `capture.max_scrolls` | `60` | Maximum expansion iterations per page |
 | `capture.max_pages_per_section` | `30` | Bound on section pagination |
@@ -78,6 +83,87 @@ enabled sections. `disable: [skills]` hides it entirely. Set
 [profile schema and scoring rules](profile-schema.md) for supported sections,
 minimal profiles, legacy snapshots, and count interpretation.
 
+## Job filtering
+
+Keep job presentation settings under `experience` in `resume.reference.yaml`:
+
+```yaml
+experience:
+  disable:
+    - title: Intern
+      company: Example Company
+    - company: Another Employer
+  last_years: 5
+  as_of: null
+```
+
+- `disable` accepts selectors with a job `title`, a `company`, or both. All supplied
+  fields must match; any matching selector excludes the role. Matches are exact
+  after ignoring case and repeated whitespace. A company-only selector hides all
+  its roles; a title-only selector hides that title at every employer. Copy titles
+  and employer names from the Experience entries in `data/profile.json`, omitting
+  the employer's `· Full-time` or similar employment-type suffix.
+- `last_years` is a positive integer, or `null` to keep all dates. Jobs are included
+  when any part of their employment overlaps the inclusive window from N calendar
+  years before `as_of` through `as_of`. A job does not have to start inside it.
+  Explicit exclusions still take precedence. Future jobs outside the window are
+  omitted; current jobs that have already started are included.
+- `as_of` is a quoted `YYYY-MM-DD` string, or `null` for the current UTC date when
+  rendering. Pin it for repeatable historical builds; with `null`, the window
+  advances over time even if the snapshot does not change. A February 29 anniversary
+  becomes February 28 in a non-leap cutoff year.
+
+For example, five years ending on `2026-10-07` includes a role held from `2018` to
+`2022` and one ending exactly on `2021-10-07`. A role ending on `2021-10-06` is
+outside the window. Recognized dates include English month names/abbreviations,
+years, and ISO dates. Month-only dates cover the entire month, and year-only dates
+cover the entire year: `Oct 2021` and `2021` end dates both overlap this cutoff.
+Missing, invalid, or unsupported date text stays visible rather than being guessed.
+
+Grouped company entries retain individual role boundaries on capture. Filtering
+removes only the excluded roles, along with their descriptions, links, images, and
+skill contributions. Retained roles keep their original text and dates; an employer
+with no retained roles disappears. Earlier snapshots may contain only flattened
+company groups: whole-group filtering works, but a partial selection asks you to
+run `resume capture` once so media and skill ownership can be separated correctly.
+
+Whole-section `disable: [experience]` takes precedence over job filters. These
+settings apply before asset staging, skill scoring, and either packaged or custom
+templates. They do not filter other sections, such as Projects or the main Skills
+list, where the same employer or skill might independently appear. Captured inputs
+stay intact, so removing a filter restores the content without another capture.
+
+## Environment variables
+
+Start with the [fork environment variable list](../README.md#fork-environment-variables)
+for the signing secrets and automatically supplied GitHub token. No additional
+environment variables are required for ordinary capture, builds, or publication.
+
+The following overrides are optional:
+
+- **`RETRY_ATTEMPTS`** — total attempts for transient failures in CI network
+  commands; defaults to `5`. Accepts an integer from `1` to `99`.
+- **`RETRY_BACKOFF_SECONDS`** — initial delay between those attempts; defaults to
+  `10` seconds. Accepts a nonnegative integer. The delay doubles after each retry,
+  up to `RETRY_MAX_BACKOFF_SECONDS`.
+- **`RETRY_MAX_BACKOFF_SECONDS`** — maximum delay for those retries; defaults to
+  `300` seconds. Accepts a positive integer.
+- **`SE_CACHE_PATH`** — local Selenium Manager cache directory; defaults to
+  `.cache/selenium/` under the configuration directory. Export an absolute path
+  before running `poetry run resume capture` to use another directory.
+- **`SE_AVOID_STATS`** — Selenium Manager statistics opt-out; defaults to `true`.
+  Export `false` before capture to allow statistics collection.
+
+Export retry overrides when running the shell scripts locally, or add them to
+the `env` mapping of the relevant job in `.github/workflows/stage-*.yml`. Repository
+Actions variables are not automatically exported: adding a repository variable
+alone has no effect because these workflows do not read `vars.RETRY_*`.
+
+Browser and image-download retries use the YAML `capture.retry_*` settings instead
+of these shell overrides. Profile selection also uses YAML (`linkedin.username`);
+`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD` are currently unsupported. Capture
+requires a local Firefox login, and CI consumes the committed snapshot.
+
 ## Local capture
 
 ```bash
@@ -131,7 +217,8 @@ packaged `resume.tex.j2` with strict undefined-variable handling. Templates use
 The image is an amd64 image; Docker Desktop uses emulation on Apple Silicon.
 Compilation has networking and shell escape disabled. Inputs are mounted read-only,
 and a failed build leaves the previous PDF intact. Logs are in `.cache/build/`.
-Fixed PDF timestamps and metadata make identical inputs reproducible.
+Fixed PDF timestamps and metadata make identical inputs reproducible. When using
+`experience.last_years`, pin `experience.as_of` to keep the date window fixed too.
 
 The layout adapts LinkedIn's profile cards, blue accents, gray canvas, sans-serif
 type, imagery, and hyperlinks to printed pages. Cards and text can continue across
@@ -144,19 +231,17 @@ unsupported Unicode characters fail compilation rather than silently disappearin
 
 ## Signed releases
 
-Main-branch publication requires these GitHub Actions secrets:
+Main-branch publication requires `COSIGN_PRIVATE_KEY` and, for an encrypted key,
+`COSIGN_PASSWORD`. See the [fork environment variable list](../README.md#fork-environment-variables)
+for their exact values and the automatically supplied publication token.
 
-| Secret | Value |
-| --- | --- |
-| `COSIGN_PRIVATE_KEY` | Complete PEM-encoded Cosign private signing key |
-| `COSIGN_PASSWORD` | Private-key password; empty for an unencrypted key |
-
-With Cosign installed, generate and configure your key outside the source tree:
+With Cosign installed, generate and configure your key outside the source tree.
+Replace `OWNER/resume` with your fork's repository name:
 
 ```bash
 cosign generate-key-pair
-gh secret set COSIGN_PRIVATE_KEY < cosign.key
-gh secret set COSIGN_PASSWORD
+gh secret set COSIGN_PRIVATE_KEY --repo OWNER/resume < cosign.key
+gh secret set COSIGN_PASSWORD --repo OWNER/resume
 ```
 
 Keep the private key in your own secure storage. `*.key` is ignored as a precaution;
@@ -222,6 +307,7 @@ The Python package separates capture from document generation:
 | `linkedin/browser.py` | Firefox lifecycle, login, and expanded profile capture |
 | `linkedin/parsing.py` | LinkedIn HTML extraction into shared profile models |
 | `linkedin/sections.py`, `linkedin/skills.py` | Section aliases, visible skill labels, and endorsement totals |
+| `linkedin/dates.py`, `latex/experience.py` | Employment date interpretation and job visibility before rendering |
 | `linkedin/media.py` | Image downloads, link previews, and portable PNG caching |
 | `linkedin/retrying.py` | Bounded exponential retries for browser operations |
 | `latex/escaping.py` | Literal text, emoji, and URL conversion for LaTeX |

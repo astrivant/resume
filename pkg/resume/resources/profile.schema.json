@@ -90,80 +90,7 @@
           "entries": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "paragraphs": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "links": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "label": {
-                        "type": "string"
-                      },
-                      "url": {
-                        "type": "string",
-                        "pattern": "^https?://[^\\s{}\\\\]+$"
-                      }
-                    },
-                    "required": [
-                      "label",
-                      "url"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "images": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "url": {
-                        "type": "string",
-                        "pattern": "^https?://[^\\s{}\\\\]+$"
-                      },
-                      "alt": {
-                        "type": "string"
-                      },
-                      "path": {
-                        "type": "string",
-                        "pattern": "^[A-Za-z0-9_./-]*$"
-                      },
-                      "link": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "pattern": "^https?://[^\\s{}\\\\]+$"
-                          },
-                          {
-                            "const": ""
-                          }
-                        ]
-                      }
-                    },
-                    "required": [
-                      "url"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "skills": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/$defs/skill"
-                  }
-                }
-              },
-              "required": [],
-              "additionalProperties": false
+              "$ref": "#/$defs/entry"
             }
           }
         },
@@ -206,6 +133,89 @@
       "required": [
         "name"
       ],
+      "additionalProperties": false
+    },
+    "entry": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "paragraphs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "pattern": "^https?://[^\\s{}\\\\]+$"
+              }
+            },
+            "required": [
+              "label",
+              "url"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "pattern": "^https?://[^\\s{}\\\\]+$"
+              },
+              "alt": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_./-]*$"
+              },
+              "link": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^https?://[^\\s{}\\\\]+$"
+                  },
+                  {
+                    "const": ""
+                  }
+                ]
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skill"
+          }
+        },
+        "positions": {
+          "description": "Nested employment records; the parent also retains their flattened content for compatibility.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        }
+      },
+      "required": [],
       "additionalProperties": false
     }
   }

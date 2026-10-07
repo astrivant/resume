@@ -136,6 +136,19 @@ def test_header_without_section_wrapper_survives_scrolling() -> None:
     assert parse_profile(merge_profile_html([html]), "example-person") == Profile("example-person", "Alex Example")
 
 
+def test_unwrapped_header_does_not_duplicate_optional_sections() -> None:
+    """
+    Keep section text out of the introduction so exclusions also remove it from skill scoring.
+
+    Returns:
+        None: A direct main heading retains only introduction text above its optional sections.
+    """
+    html = "<main><h1>Alex Example</h1><p>Engineer</p><section><h2>About</h2><p>Hidden #Rust</p></section></main>"
+    profile = parse_profile(html, "example-person")
+    assert profile.intro == ["Engineer"]
+    assert profile.sections[0].entries[0].title == "Hidden #Rust"
+
+
 def test_recommendation_toggle_controls_cannot_replace_recommendation_text() -> None:
     """
     Ignore generated toggle wrappers when meaningful recommendation cards lack stable attributes.

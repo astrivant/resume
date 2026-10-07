@@ -10,10 +10,13 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 import requests
+from attrs import evolve
 from PIL import Image
 
-from resume.config import Config, LinkedIn
+from resume.config import Config, Experience, JobSelector, LinkedIn
+from resume.latex.experience import filter_experience
 from resume.linkedin.media import cache_media, fetch_public
+from resume.linkedin.parsing import parse_detail
 from resume.models import Media, Profile
 
 if TYPE_CHECKING:
@@ -132,3 +135,50 @@ def test_download_recovery_reuses_recorded_assets(tmp_path: Path, monkeypatch: M
     assert result.images == profile.images
     assert not result.warnings
     fetch.assert_not_called()
+
+
+def test_grouped_role_media_retains_ownership_and_reuses_downloads(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """
+    Cache nested role images once and remove only media owned by an excluded role.
+
+    Args:
+        tmp_path (Path): Temporary project directory.
+        monkeypatch (MonkeyPatch): Scoped replacement for network fetching.
+
+    Returns:
+        None: Parent and role image paths agree and shared illustrations survive filtering.
+    """
+    buffer = BytesIO()
+    Image.new("RGB", (20, 20), "blue").save(buffer, format="PNG")
+    fetched: list[str] = []
+
+    def fetch(session: requests.Session, url: str, timeout: int) -> tuple[bytes, str]:
+        """
+        Return deterministic media while counting actual requests.
+
+        Args:
+            session (requests.Session): Dedicated media client.
+            url (str): Image source.
+            timeout (int): Bounded request timeout.
+
+        Returns:
+            tuple[bytes, str]: Synthetic PNG bytes and source URL.
+        """
+        fetched.append(url)
+        return buffer.getvalue(), url
+
+    monkeypatch.setattr("resume.linkedin.media.fetch_public", fetch)
+    html = """<main><ul><li class="artdeco-list__item"><p>Example</p><ul>
+        <li><p>Staff</p><p>2020 - Present</p><img src="https://example.org/shared.png"></li>
+        <li><p>Junior</p><p>2010 - 2019</p><img src="https://example.org/shared.png">
+        <img src="https://example.org/old.png"></li></ul></li></ul></main>"""
+    profile = Profile("example-person", "Alex", sections=[parse_detail(html, "experience", "Experience")])
+    config = Config(LinkedIn(profile.username))
+    result = cache_media(profile, evolve(config, capture=evolve(config.capture, fetch_link_previews=False)), tmp_path)
+    assert fetched == ["https://example.org/shared.png", "https://example.org/old.png"]
+    group = result.sections[0].entries[0]
+    assert group.images[0].path == group.positions[0].images[0].path == group.positions[1].images[0].path
+    assert (tmp_path / group.positions[0].images[0].path).is_file()
+    selected = filter_experience([group], Experience(disable=[JobSelector(title="Junior")]))[0]
+    assert [image.url for image in selected.images] == ["https://example.org/shared.png"]
+    assert selected.positions == group.positions[:1]

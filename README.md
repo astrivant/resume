@@ -10,6 +10,7 @@ to `main` handle the publishing.
 ## Contents
 
 - [Quick start](#quick-start)
+- [Fork environment variables](#fork-environment-variables)
 - [Why use resume?](#why-use-resume)
 - [How it works](#how-it-works)
 - [Update your résumé](#update-your-résumé)
@@ -45,9 +46,8 @@ to finish signing in, then saves your profile and images locally. **A username
 change alone does not fetch a profile in CI:** Actions builds the snapshot you push.
 
 Before your first push, enable Actions in your fork, allow it to write repository
-contents, and configure `COSIGN_PRIVATE_KEY` and `COSIGN_PASSWORD` using the
-[signing setup](docs/README.md#signed-releases). Branch rules must allow the bot's
-PDF commit. This setup is required once per fork.
+contents, and configure the [fork environment variables](#fork-environment-variables).
+Branch rules must allow the bot's PDF commit. This setup is required once per fork.
 
 Review `data/profile.json` and `data/assets/`, including the contact fields that will
 appear in the PDF, then publish:
@@ -62,6 +62,41 @@ After the pipeline succeeds, your fork contains **`resume.pdf` on `main`** and a
 GitHub release with the PDF, signatures, SHA-256 hashes, and signing-key fingerprint.
 The [PDF link at the top of this README](resume.pdf) stays relative to the repository,
 so it points to your résumé in your fork.
+
+## Fork environment variables
+
+For signed main-branch releases, configure the Cosign values below as **GitHub
+Actions repository secrets in your own fork**. The workflow passes them to the
+signing step as environment variables; GitHub supplies the publication token:
+
+- **`COSIGN_PRIVATE_KEY` — required for signed releases.** Set this to the complete
+  PEM contents of your own Cosign private key, including the header, footer, and
+  newlines. The value is the key itself, not a filename.
+- **`COSIGN_PASSWORD` — required for an encrypted signing key.** Set this to that
+  key's password. Leave it unset for an unencrypted key; the signing script defaults
+  to an empty password.
+- **`GH_TOKEN` / `GITHUB_TOKEN` — supplied automatically; no secret to create.**
+  Actions generates the repository token, and the deploy workflow passes it to the
+  GitHub CLI as `GH_TOKEN`. It uses `contents: write` to commit `resume.pdf` and
+  publish releases. No personal access token is needed; repository and branch rules
+  must permit those writes.
+
+From your fork's checkout, with the GitHub CLI authenticated:
+
+```bash
+gh secret set COSIGN_PRIVATE_KEY < /secure/path/cosign.key
+gh secret set COSIGN_PASSWORD
+```
+
+Run the password command only for an encrypted key. See [signing setup](docs/README.md#signed-releases)
+to generate a key and [optional environment overrides](docs/README.md#environment-variables)
+to adjust retry or local browser settings.
+
+**LinkedIn login currently has no environment-variable configuration:**
+`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD` are not read by the package or workflows.
+Set the profile slug in `resume.reference.yaml` under `linkedin.username`, sign in
+locally with `resume capture`, and push the resulting snapshot and assets. Actions
+builds those committed inputs without signing in to LinkedIn.
 
 ## Why use resume?
 
@@ -104,6 +139,26 @@ disable: [featured, interests, recommendations]
 
 This changes the generated resume while retaining the captured data. See
 [configuration](docs/README.md#configuration) for section keys and other options.
+
+Filter individual jobs in the same file:
+
+```yaml
+experience:
+  disable:
+    - title: Intern
+      company: Example Company
+  last_years: 5
+  as_of: null
+```
+
+Exclusions match the exact job title, company, or both, ignoring case and extra
+whitespace. `last_years: 5` includes any job overlapping the last five years,
+including jobs that began earlier and ongoing roles. The boundary is inclusive;
+the full description and original dates stay intact. Jobs with unreadable or
+missing dates remain visible. Defaults keep all jobs (`disable: []`,
+`last_years: null`). `as_of: null` uses today's UTC date; set a quoted date such as
+`as_of: '2026-10-07'` to keep builds anchored to the same window. See
+[job filtering](docs/README.md#job-filtering) for grouped roles and date precision.
 
 The cover/background photo is hidden by default in `resume.reference.yaml`. Set
 `style.show_header_photo` to `true` to display it again; the portrait stays visible.

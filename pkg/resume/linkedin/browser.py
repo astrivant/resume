@@ -403,7 +403,12 @@ def parse_detail_after_expansion(driver: WebDriver, key: str, title: str, settin
                 entry,
                 images=list({item.url: item for item in [*previous.images, *entry.images]}.values()),
                 links=list({item.url: item for item in [*previous.links, *entry.links]}.values()),
-                skills=list({item.name.casefold(): item for item in [*previous.skills, *entry.skills]}.values()),
+                skills=list(
+                    {
+                        item.name.casefold(): item
+                        for item in sorted([*previous.skills, *entry.skills], key=lambda skill: skill.endorsements)
+                    }.values()
+                ),
             )
     return evolve(combined, entries=list(entries.values()))
 

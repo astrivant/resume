@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, unquote, urljoin, urlsplit
 
 from bs4 import BeautifulSoup, Tag
 
+from resume.linkedin.dates import employment_period
 from resume.linkedin.sections import section_key
 from resume.linkedin.skills import endorsement_count, skill_labels
 from resume.models import Entry, Link, Media, Profile, Section, Skill
@@ -153,7 +154,40 @@ def _entry(node: Tag, *, strip_skills: bool = False, skills_section: bool = Fals
     if skills_section and lines:
         labels = [*node.stripped_strings, *(str(item.get("aria-label", "")) for item in node.select("[aria-label]"))]
         skills = [Skill(lines[0], endorsements=endorsement_count(labels))]
-    return Entry(title=lines[0] if lines else "", paragraphs=lines[1:], links=_links(cleaned), images=_images(cleaned), skills=skills)
+    return Entry(
+        title=lines[0] if lines else "",
+        paragraphs=lines[1:],
+        links=_links(cleaned),
+        images=_images(cleaned),
+        skills=skills,
+        positions=_positions(node) if strip_skills else [],
+    )
+
+
+def _positions(node: Tag) -> list[Entry]:
+    """
+    Retain role boundaries inside company groups for independent job filtering.
+
+    Args:
+        node (Tag): Employment entry whose full flattened content is retained separately.
+
+    Returns:
+        list[Entry]: Nested roles with their own descriptions, links, images, and skill associations.
+    """
+    candidates = [
+        item
+        for item in node.select("li, [role='listitem'], [data-resume-entry], [componentkey^='entity-collection-item-']")
+        if any(employment_period(line) for line in _lines(_clean(item))[1:4])
+    ]
+    identities = {id(item) for item in candidates}
+    roots = [item for item in candidates if not any(id(parent) in identities for parent in item.parents)]
+    # Keep undated siblings selectable instead of treating them as company context.
+    parents = {id(item.parent) for item in roots}
+    return [
+        _entry(item, strip_skills=True)
+        for item in node.select("li, [role='listitem'], [data-resume-entry], [componentkey^='entity-collection-item-']")
+        if id(item.parent) in parents
+    ]
 
 
 def _entries(node: Tag, *, strip_skills: bool = False, skills_section: bool = False) -> list[Entry]:
@@ -282,6 +316,9 @@ def parse_profile(html: str, username: str) -> Profile:
     if not isinstance(intro_node, Tag) or not name or name.casefold() in {"sign in", "join linkedin", "security verification"}:
         raise ValueError("The profile intro is missing.")
     intro = _clean(intro_node)
+    if intro_node is main:
+        for section in intro.select("main section, section section"):
+            section.decompose()
     for item in intro.select("h1, h2, [data-testid='carousel']"):
         item.decompose()
     sections: list[Section] = []
@@ -325,7 +362,7 @@ def parse_detail(html: str, key: str, title: str) -> Section:
     if main is None:
         raise ValueError(f"No detail entries found for {title}; refusing to discard its preview.")
     key = section_key(key)
-    if main.select_one(".artdeco-empty-state, [data-view-name*='empty-state'], [data-test-empty-state]"):
+    if _clean(main).select_one(".artdeco-empty-state, [data-view-name*='empty-state'], [data-test-empty-state]"):
         return Section(key=key, title=title)
     heading = main.find(["h1", "h2", "p"])
     if heading is not None and heading.get_text(" ", strip=True).casefold() == title.casefold():

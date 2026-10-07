@@ -251,7 +251,11 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
                             previews[link.url] = ""
                     if previews[link.url]:
                         candidates.append(Media(url=previews[link.url], alt=link.label, link=link.url))
-            return evolve(entry, images=images(candidates))
+            return evolve(
+                entry,
+                images=images(candidates),
+                positions=[entry_media(position, previews_enabled) for position in entry.positions],
+            )
 
         intro_images = images(profile.images)
         sections = [

@@ -75,6 +75,7 @@ class Entry:
         links (list[Link]): References associated with this entry.
         images (list[Media]): Logos, figures, and linked project previews.
         skills (list[Skill]): Structured skill declarations or associations, including hidden job tags.
+        positions (list[Entry]): Individual roles within grouped employment; the parent retains the complete flattened content.
     """
 
     title: str = ""
@@ -82,6 +83,7 @@ class Entry:
     links: list[Link] = field(factory=list)
     images: list[Media] = field(factory=list)
     skills: list[Skill] = field(factory=list)
+    positions: list[Entry] = field(factory=list)
 
 
 @frozen

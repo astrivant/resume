@@ -4,6 +4,15 @@ linkedin:
 # Hide sections in the generated resume using their keys from data/profile.json.
 # Example: [featured, interests, recommendations]
 disable: [recommendations, interests]
+experience:
+  # Match a job title, company, or both (case-insensitive).
+  # Example: [{title: DevOps Engineer, company: HqO}]
+  disable: []
+  # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
+  last_years: null
+  # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
+  # null uses today's UTC date. Keep explicit dates quoted.
+  as_of: null
 capture:
   page_timeout_seconds: 30
   max_scrolls: 60
