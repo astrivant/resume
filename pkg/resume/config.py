@@ -38,7 +38,7 @@ class Capture:
         page_timeout_seconds (int): Browser and HTTP request timeout.
         max_scrolls (int): Maximum expansion iterations per page.
         max_pages_per_section (int): Maximum detail pages before capture fails.
-        fetch_link_previews (bool): Whether to request external project previews.
+        fetch_link_previews (bool): Whether to inspect external destinations, page titles, and project previews.
         retry_attempts (int): Total attempts for transient browser and HTTP failures.
         retry_backoff_seconds (int): Initial retry delay, doubled after every failed attempt.
         retry_max_backoff_seconds (int): Maximum exponential retry delay.

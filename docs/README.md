@@ -207,7 +207,9 @@ project previews. Both HTML anchors and HTTP(S)/`www.` URLs found in intro text,
 entry titles, descriptions, and grouped roles participate in link discovery.
 Inspection records the final HTTP redirect destination and Open Graph, Twitter,
 or HTML page title, then resolves preview images relative to that page or its HTML
-base URL. It does not crawl the page's outgoing links. Direct binary downloads
+base URL. LinkedIn short-link exit pages are followed through their explicit
+external-site control, with a bounded hop count and the same public-address checks.
+It does not crawl the page's outgoing links. Direct binary downloads
 retain their destination without inventing an image preview.
 
 Run `poetry run resume enrich` to apply this to an existing snapshot without

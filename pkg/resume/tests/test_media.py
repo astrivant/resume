@@ -250,6 +250,73 @@ def test_link_inspection_reuses_metadata_and_previews_across_profile_blocks(tmp_
     assert not result.warnings
 
 
+@pytest.mark.parametrize("cycle", [False, True])
+def test_linkedin_exit_pages_resolve_explicit_destinations_and_replace_placeholder_icons(
+    tmp_path: Path, monkeypatch: MonkeyPatch, cycle: bool
+) -> None:
+    """
+    Follow LinkedIn's HTTP-200 short-link exit control while bounding loops and upgrading legacy previews.
+
+    Args:
+        tmp_path (Path): Temporary image cache.
+        monkeypatch (MonkeyPatch): Replaces HTTP responses with public exit-page markup.
+        cycle (bool): Whether the exit control points back to itself.
+
+    Returns:
+        None: External pages supply titles and icons, while cyclic links remain unresolved with a warning.
+    """
+    original = "https://lnkd.in/example"
+    destination = "https://example.org/tool"
+    buffer = BytesIO()
+    Image.new("RGB", (20, 20), "blue").save(buffer, format="PNG")
+    Image.new("RGB", (20, 20), "red").save(tmp_path / "placeholder.png")
+    fetched: list[str] = []
+
+    def fetch(session: requests.Session, url: str, timeout: int) -> tuple[bytes, str]:
+        """
+        Serve an exit page, the target HTML, and its explicit relative icon.
+
+        Args:
+            session (requests.Session): Unauthenticated request client.
+            url (str): Requested URL.
+            timeout (int): Configured request bound.
+
+        Returns:
+            tuple[bytes, str]: Synthetic response bytes and observed URL.
+        """
+        fetched.append(url)
+
+        if url == original:
+            target = original if cycle else destination
+            return (
+                f'<html><head><title>LinkedIn</title></head><body><a data-tracking-control-name="external_url_click" href="{target}">'
+                'Continue</a><a href="https://www.linkedin.com/help">Help</a></body></html>'
+            ).encode(), url
+
+        if url == destination:
+            return b'<html><head><title>Actual project</title><link rel="icon" href="/icon.png"></head></html>', url
+
+        assert url == "https://example.org/icon.png"
+        return buffer.getvalue(), url
+
+    monkeypatch.setattr("resume.linkedin.media.fetch_public", fetch)
+    placeholder = Media("https://static.licdn.com/icon.png", original, "placeholder.png", original)
+    profile = Profile("example-person", "Alex", intro=[original], images=[placeholder])
+    result = cache_media(profile, Config(LinkedIn(profile.username)), tmp_path)
+
+    if cycle:
+        assert fetched == [original]
+        assert result.links == [Link(original, original)]
+        assert result.images == [placeholder]
+        assert len(result.warnings) == 1
+    else:
+        assert fetched == [original, destination, "https://example.org/icon.png"]
+        assert result.links == [Link(original, original, destination, "Actual project")]
+        assert len(result.images) == 1
+        assert result.images[0].url == "https://example.org/icon.png"
+        assert not result.warnings
+
+
 @pytest.mark.parametrize("previews_enabled", [False, True])
 def test_contact_links_and_disabled_previews_do_not_trigger_inspection(
     tmp_path: Path, monkeypatch: MonkeyPatch, previews_enabled: bool

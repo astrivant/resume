@@ -190,13 +190,36 @@ def _preview(url: str, session: requests.Session, timeout: int) -> tuple[str, st
     Returns:
         tuple[str, str, str]: Final URL, observed page title, and absolute preview image URL; unavailable metadata is empty.
     """
-    content, destination = fetch_public(session, url, timeout)
+    visited: set[str] = set()
 
-    # Direct downloads can resolve successfully without being web pages; do not parse binary data or invent preview requests for them.
-    if not re.search(rb"<(?:!doctype\s+html|html|head|meta|title|link)\b", content[:4096], re.IGNORECASE):
-        return destination, "", ""
+    # LinkedIn short links can return an HTTP-200 exit page rather than a redirect; follow only its explicit external-site control.
+    for _ in range(6):
+        if url in visited:
+            raise ValueError("LinkedIn short link points to a previously visited page.")
 
-    soup = BeautifulSoup(content, "html.parser")
+        visited.add(url)
+        content, destination = fetch_public(session, url, timeout)
+
+        # Direct downloads can resolve successfully without being web pages; avoid parsing binary data or inventing preview requests.
+        if not re.search(rb"<(?:!doctype\s+html|html|head|meta|title|link)\b", content[:4096], re.IGNORECASE):
+            return destination, "", ""
+
+        soup = BeautifulSoup(content, "html.parser")
+        host = urlsplit(destination).hostname or ""
+        external = soup.select_one('a[data-tracking-control-name="external_url_click"][href]')
+
+        if (host in {"lnkd.in", "linkedin.com"} or host.endswith(".linkedin.com")) and external:
+            url = safe_url(str(external.get("href", "")), destination)
+
+            if not url:
+                raise ValueError("LinkedIn short link has an invalid external destination.")
+
+            continue
+
+        break
+    else:
+        raise ValueError("LinkedIn short link exceeded five exit pages.")
+
     title_meta = soup.select_one('meta[property="og:title"]') or soup.select_one('meta[name="twitter:title"]')
     title = str(title_meta.get("content", "")).strip() if title_meta else ""
 
@@ -320,6 +343,14 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
                     if metadata is not None:
                         destination, title, image_url = metadata
                         links[index] = evolve(link, resolved_url=destination, title=title)
+
+                        # Replace legacy previews that captured LinkedIn's exit-page icon instead of the actual project.
+                        if host == "lnkd.in" and destination != link.url:
+                            candidates = [
+                                item
+                                for item in candidates
+                                if not (item.link == link.url and urlsplit(item.url).hostname == "static.licdn.com")
+                            ]
 
                         # Retain original associations for grouped-job filtering and reuse an illustration already captured for this link.
                         if image_url and not any(item.link == link.url for item in candidates):
