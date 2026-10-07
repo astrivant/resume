@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+from resumeme.compiler.asts.profile import Entry, Media, Profile, Section, save_profile
+
 
 @pytest.mark.parametrize("matching_revision", [False, True])
 def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, matching_revision: bool) -> None:
@@ -84,16 +86,18 @@ def _git(root: Path, *arguments: str) -> str:
 
 
 @pytest.mark.parametrize("advanced", [False, True])
-def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: Path, advanced: bool) -> None:
+@pytest.mark.parametrize("refresh", [False, True])
+def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: Path, advanced: bool, refresh: bool) -> None:
     """
-    Resume a release after a successful PDF push while rejecting unrelated source changes.
+    Reproduce a PDF and logo publication on retries while rejecting unrelated source changes.
 
     Args:
         tmp_path (Path): Isolated repository and bare remote directory.
         advanced (bool): Whether a source change supersedes the completed PDF commit.
+        refresh (bool): Whether publication also includes a newly captured profile and media.
 
     Returns:
-        None: Reruns neither create duplicate PDF commits nor release obsolete source.
+        None: Reruns preserve the published tree; only changed resume inputs create a fresh logo and commit.
     """
 
     # Use a real local remote to exercise fast-forward and rerun behavior without granting tests access to GitHub writes.
@@ -109,7 +113,15 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     _git(root, "remote", "add", "origin", str(remote))
     project = Path(__file__).resolve().parents[3]
 
-    for relative in ["scripts/ci/publish.sh", "scripts/ci/restore-pdf.py", "scripts/tooling/retry.sh"]:
+    for relative in [
+        "scripts/ci/publish.sh",
+        "scripts/ci/restore-pdf.py",
+        "scripts/ci/profile-artifact.py",
+        "scripts/ci/refresh-logo.py",
+        "scripts/tooling/retry.sh",
+        "docs/assets/branding/linkedin-base.png",
+        "docs/assets/branding/coffee-ring.png",
+    ]:
         destination = root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(project / relative, destination)
@@ -122,6 +134,23 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     artifact = root / ".cache/publication/resume.pdf"
     artifact.parent.mkdir(parents=True)
     artifact.write_bytes(b"%PDF-1.7\nfixture")
+    snapshot = root / "data/profile.json"
+    image = root / "data/assets/logo.png"
+    profile = Profile(
+        "example-person",
+        "Fresh owner",
+        sections=[
+            Section("experience", "Experience", [Entry(images=[Media("https://example.org/logo.png", path="data/assets/logo.png")])])
+        ],
+    )
+
+    if refresh:
+        save_profile(profile, snapshot)
+        image.parent.mkdir(parents=True)
+        image.write_bytes(b"captured image")
+
+    # Unrelated browser state must never be staged along with the monthly capture.
+    (root / ".cache/cookies.sqlite").write_bytes(b"private browser state")
     bin_directory = tmp_path / "bin"
     bin_directory.mkdir()
     poetry = bin_directory / "poetry"
@@ -135,12 +164,18 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         GITHUB_OUTPUT=str(output),
         GITHUB_REF="refs/heads/main",
         GITHUB_EVENT_NAME="push",
+        REFRESH_PROFILE=str(refresh).lower(),
         RETRY_BACKOFF_SECONDS="0",
     )
     subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
     published = _git(remote, "rev-parse", "main")
     assert published != source
     assert output.read_text() == f"published-sha={published}\n"
+    files = _git(remote, "diff-tree", "--no-commit-id", "--name-only", "-r", published).splitlines()
+    expected_files = ["docs/assets/branding/resumeme-logo.png", "resume.pdf"]
+    assert files == (["data/assets/logo.png", "data/profile.json", *expected_files] if refresh else expected_files)
+    logo = root / "docs/assets/branding/resumeme-logo.png"
+    published_logo = logo.read_bytes()
 
     # Model a new user commit arriving after the first PDF publication; a retry must not publish that older build as current.
     if advanced:
@@ -151,10 +186,33 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
 
     expected_head = _git(remote, "rev-parse", "main")
     _git(root, "checkout", "--detach", source)
+
+    if refresh:
+        save_profile(profile, snapshot)
+        image.parent.mkdir(parents=True, exist_ok=True)
+        image.write_bytes(b"captured image")
+
     output.write_text("", encoding="utf-8")
     subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
     assert _git(remote, "rev-parse", "main") == expected_head
     assert output.read_text() == ("" if advanced else f"published-sha={published}\n")
+    assert logo.read_bytes() == published_logo
+
+    if not advanced:
+        # Rebuilding the just-published revision with identical inputs must not make a logo-only commit.
+        _git(root, "checkout", "--detach", published)
+        environment["SOURCE_SHA"] = published
+        output.write_text("", encoding="utf-8")
+        subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
+        assert _git(remote, "rev-parse", "main") == published
+        assert output.read_text() == f"published-sha={published}\n"
+        assert logo.read_bytes() == published_logo
+
+        # A subsequent accepted PDF earns a new stain in the same atomic publication commit.
+        artifact.write_bytes(b"%PDF-1.7\nupdated fixture")
+        subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
+        assert _git(remote, "rev-parse", "main") != published
+        assert logo.read_bytes() != published_logo
 
 
 def test_draft_creation_recovers_a_lost_success_response(tmp_path: Path) -> None:
@@ -195,7 +253,6 @@ exit 2
         PATH=f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
         DRAFT_STATE=str(state),
         SOURCE_SHA="a" * 40,
-        PUBLISHED_SHA="b" * 40,
         RETRY_BACKOFF_SECONDS="0",
     )
     subprocess.run(
@@ -207,6 +264,99 @@ exit 2
         check=True,
     )
     assert state.read_text() == "created\n"
+
+
+@pytest.mark.parametrize("matching_tag", [False, True])
+def test_signed_release_uses_only_the_existing_selected_tag(tmp_path: Path, matching_tag: bool) -> None:
+    """
+    Publish on the user's tag and reject a tag that points to a different source revision.
+
+    Args:
+        tmp_path (Path): Local checkout, synthetic signing payload, and recording GitHub CLI.
+        matching_tag (bool): Whether the chosen tag selects the verified source commit.
+
+    Returns:
+        None: The selected release receives the complete payload without creating an automatic source-SHA tag.
+    """
+    root = tmp_path / "checkout"
+    root.mkdir()
+    _git(root, "init", "--initial-branch=main")
+    _git(root, "config", "user.name", "Fixture")
+    _git(root, "config", "user.email", "fixture@example.org")
+    _git(root, "config", "commit.gpgsign", "false")
+    (root / "source.txt").write_text("selected source")
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "selected source")
+    # Synthetic tags must not invoke a developer's globally configured signing agent.
+    _git(root, "tag", "--no-sign", "resume-selected")
+
+    if not matching_tag:
+        (root / "source.txt").write_text("different source")
+        _git(root, "commit", "-am", "advance source")
+
+    source = _git(root, "rev-parse", "HEAD")
+    repository = Path(__file__).resolve().parents[3]
+
+    for relative in ("scripts/release/publish.sh", "scripts/release/create-draft.sh", "scripts/tooling/retry.sh"):
+        destination = root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(repository / relative, destination)
+
+    # Cryptographic verification is a separate boundary; this test exercises tag selection and release publication sequencing.
+    (root / "scripts/release/verify.sh").write_text("#!/usr/bin/env bash\nexit 0\n")
+    artifacts = root / ".cache/publication"
+    artifacts.mkdir(parents=True)
+    filenames = [
+        "resume.pdf",
+        "resume.pdf.sig",
+        "resume.pdf.sigstore.json",
+        "cosign.pub",
+        "key-fingerprint.txt",
+        "source.json",
+        "SHA256SUMS",
+        "SHA256SUMS.sigstore.json",
+    ]
+
+    for filename in filenames:
+        (artifacts / filename).write_text("synthetic verified artifact")
+
+    command = tmp_path / "gh"
+    command.write_text(
+        "#!/usr/bin/env bash\n"
+        'printf "%s\\n" "$*" >>"$GH_CALLS"\n'
+        'if [[ "$1 $2" == "release view" ]]; then echo "release not found" >&2; exit 1; fi\n'
+        "exit 0\n"
+    )
+    command.chmod(0o700)
+    calls = tmp_path / "calls"
+    result = subprocess.run(
+        ["bash", "scripts/release/publish.sh"],
+        cwd=root,
+        env=dict(
+            os.environ,
+            PATH=f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
+            SOURCE_SHA=source,
+            RELEASE_TAG="resume-selected",
+            RUNNER_TEMP=str(tmp_path),
+            GH_CALLS=str(calls),
+            RETRY_BACKOFF_SECONDS="0",
+        ),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert (result.returncode == 0) is matching_tag
+
+    if not matching_tag:
+        assert not calls.exists()
+        return
+
+    operations = calls.read_text().splitlines()
+    assert operations[2].startswith("release create resume-selected --draft --verify-tag ")
+    assert operations[3].startswith("release upload resume-selected ")
+    assert all(f".cache/publication/{filename}" in operations[3] for filename in filenames)
+    assert operations[4].startswith("release edit resume-selected --draft=false ")
+    assert all(f"resume-{source}" not in operation for operation in operations)
 
 
 @pytest.mark.parametrize("existing", ["missing", "manual", "managed"])

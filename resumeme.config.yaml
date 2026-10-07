@@ -43,6 +43,10 @@ section_order:
   # - interests
   # - causes
 
+# Keep Projects whose resolved source URL matches this Python regex; null includes all projects, even without a URL.
+# Single quotes preserve regex backslashes. The default matches github.com, ignoring case.
+project_filter: '(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
+
 experience:
 
   # Match a job title, company, or both (case-insensitive).
@@ -57,6 +61,26 @@ experience:
   # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
   # null uses today's UTC date. Keep explicit dates quoted.
   as_of: '2020-06-01'
+
+  # Reflow single line breaks inside job prose and bullets. False retains captured line boundaries.
+  # Blank lines, new bullets, metadata, and the labels below remain boundaries either way.
+  reflow_soft_breaks: true
+
+  # Whole standalone labels only, ignoring case, spacing, and a trailing colon; these are literal text, not regexes.
+  # Replace this list to tune recognition, add your own labels (e.g. Impact or Deliverables), or use [] to disable it.
+  # Styling is controlled separately by style.highlight_job_subheadings; turning it off does not hide any text.
+  subheadings:
+    - Responsibilities
+    - Key responsibilities
+    - Technologies
+    - Projects
+    - Skills
+    - Achievements
+    - Key achievements
+    - Accomplishments
+    - Highlights
+    - Summary
+    - Duties
 capture:
   page_timeout_seconds: 30
   max_scrolls: 60
@@ -94,6 +118,9 @@ style:
 
   # Link visible sections beneath the LinkedIn profile link in the first-page left column.
   show_table_of_contents: true
+
+  # Bold job subsection labels with a small gap above them. False displays those labels as ordinary text.
+  highlight_job_subheadings: true
 
   # Optional connection metadata below the LinkedIn profile link. Enable either or both.
   show_connection_count: false

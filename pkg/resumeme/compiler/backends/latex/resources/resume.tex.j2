@@ -1,6 +1,7 @@
 ((# Shared entry rendering keeps project cards and ordinary sections on the same escaping and image rules. #))
-((* macro render_text(paragraphs, links, locations={}, affiliations={}, badges={}, link_jobs=false) *))
-((* for block in paragraphs|text_blocks *))
+((* macro render_text(paragraphs, links, locations={}, affiliations={}, badges={}, link_jobs=false, job_text=false) *))
+((* set blocks = paragraphs|job_text_blocks if job_text else paragraphs|text_blocks *))
+((* for block in blocks *))
 ((* set association = block.text|job_association if link_jobs else none *))
 ((* if block.depth is not none *))
 \profilebullet{((( block.depth )))}{((( block.text|tex_links(links) )))}
@@ -17,6 +18,8 @@
 ((* elif block.text in locations *))
 ((* set location = locations[block.text] *))
 \profileparagraph{\href{((( location.url|url )))}{((( location.label|tex )))}((( block.text[location.label|length:]|tex_links(links) )))}
+((* elif job_text and style.highlight_job_subheadings and block.text|body_heading *))
+\profilesubheading{((( block.text|tex )))}
 ((* else *))
 \profileparagraph{((( block.text|tex_links(links) )))}
 ((* endif *))
@@ -82,9 +85,9 @@
 ((* endfor *))
 ((* elif badge and badge[0] == 0 *))
 ((( company_name(badge, entry.paragraphs[0], entry.links) )))
-((( render_text(entry.paragraphs[1:], entry.links, locations) )))
+((( render_text(entry.paragraphs[1:], entry.links, locations, job_text=section.key == 'experience') )))
 ((* else *))
-((( render_text(entry.paragraphs, text_links, locations, project.affiliations if project else {}) )))
+((( render_text(entry.paragraphs, text_links, locations, project.affiliations if project else {}, job_text=section.key == 'experience') )))
 ((* endif *))
 ((# Match the source hierarchy: featured illustrations, compact attachments, organization logos, then tiny site icons. #))
 ((* set gallery = entry.images|reject('equalto', badge[1])|list if badge else entry.images *))
@@ -294,6 +297,13 @@ color( ((( 36 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \fi
   \fi
   #1\par
+}
+% Plain LinkedIn labels such as Projects introduce subsections, rather than continuing the preceding bullet.
+% Give them subordinate emphasis and keep room for the first line of their following content.
+\newcommand{\profilesubheading}[1]{%
+  \par\addvspace{0.35\baselineskip}%
+  \Needspace{2.5\baselineskip}%
+  \profileparagraph{{\color{entryheading}\bfseries #1}}%
 }
 % Keep a company's linked logo beside its name, allowing long employer names to wrap within the remaining width.
 \newcommand{\companyline}[2]{%

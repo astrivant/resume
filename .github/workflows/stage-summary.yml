@@ -6,6 +6,10 @@ on:
         description: Immutable source commit used for summary evidence
         type: string
         required: true
+      refresh:
+        description: Consume the fresh LinkedIn capture from this run
+        type: boolean
+        default: false
     secrets:
       OPENAI_API_KEY:
         description: OpenAI API key for the optional Codex summary
@@ -34,6 +38,9 @@ jobs:
       - uses: ./.github/actions/setup-project
         with:
           groups: main
+      - uses: ./.github/actions/restore-profile
+        with:
+          refresh: ${{ inputs.refresh }}
       - name: Prepare filtered profile evidence and output schema
         id: prepare
         env:

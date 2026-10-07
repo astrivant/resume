@@ -106,7 +106,7 @@ def test_configured_order_controls_body_contents_and_generated_sections(tmp_path
         order.remove("contact")
         order.insert(0, "contact")
 
-    config = Config(LinkedIn(profile.username), section_order=order)
+    config = Config(LinkedIn(profile.username), section_order=order, project_filter=None)
     text = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     titles = ["Projects", "Skills", "Experience", "Contact info", "About", "Custom"]
 
@@ -125,7 +125,7 @@ def test_configured_order_controls_body_contents_and_generated_sections(tmp_path
     # Custom templates consume the same order rather than accidentally reverting to capture order.
     template = tmp_path / "ordered.j2"
     template.write_text("((* for section in profile.sections *))((( section.title )))|((* endfor *))")
-    custom = Config(LinkedIn(profile.username), section_order=order, template=template.name)
+    custom = Config(LinkedIn(profile.username), section_order=order, template=template.name, project_filter=None)
     assert render_profile(profile, custom, tmp_path).read_text() == "|".join(titles) + "|"
 
 
@@ -145,7 +145,7 @@ def test_featured_uses_project_tiles_without_enabling_hidden_posts(tmp_path: Pat
     profile = Profile(
         "example-person", "Alex", sections=[Section("featured", "Featured", posts), Section("projects", "Projects", [Entry("Tool")])]
     )
-    config = Config(LinkedIn(profile.username), section_order=["projects"] if disabled else ["featured", "projects"])
+    config = Config(LinkedIn(profile.username), section_order=["projects"] if disabled else ["featured", "projects"], project_filter=None)
     text = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert text.count(r"\projectrow[") == (1 if disabled else 3)
     assert (r"\sectiontitle{Featured}" in text) is not disabled

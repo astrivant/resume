@@ -5,17 +5,23 @@ Extract profile content from rendered LinkedIn HTML without relying on private A
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 from urllib.parse import parse_qs, unquote, urlsplit
 
 from bs4 import BeautifulSoup, Tag
+from bs4.element import NavigableString
 
 from resumeme.compiler.asts.dates import employment_period
 from resumeme.compiler.asts.links import merge_text_links, safe_url
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, Skill
 from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.asts.skills import endorsement_count, skill_labels
+from resumeme.compiler.constants.parsing import BLOCK_TAGS, PARAGRAPH_BREAK
 from resumeme.compiler.constants.parsing import IGNORED_SECTIONS as _IGNORED_SECTIONS
 from resumeme.compiler.constants.parsing import UI_TEXT as _UI_TEXT
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 __all__ = ["detail_links", "merge_profile_html", "parse_contact", "parse_detail", "parse_profile", "safe_url"]
 
@@ -49,17 +55,47 @@ def _clean(node: Tag) -> Tag:
     return cleaned
 
 
+def _text_fragments(node: Tag) -> Iterator[str]:
+    """
+    Retain HTML block boundaries without inserting breaks around inline text.
+
+    Args:
+        node (Tag): Cleaned content node.
+
+    Yields:
+        str: Literal text, soft line breaks, or semantic paragraph separators in document order.
+    """
+    if node.name == "br":
+        yield "\n"
+        return
+
+    block = node.name in BLOCK_TAGS or node.get("role") in {"heading", "listitem"}
+
+    if block:
+        yield PARAGRAPH_BREAK
+
+    # Preserve source whitespace between inline nodes, including punctuation immediately after a link or emphasis.
+    for child in node.children:
+        if isinstance(child, Tag):
+            yield from _text_fragments(child)
+        elif type(child) is NavigableString and not _UI_TEXT.match(str(child).strip()):
+            yield str(child)
+
+    if block:
+        yield PARAGRAPH_BREAK
+
+
 def _lines(node: Tag) -> list[str]:
     """
-    Preserve text lines and paragraphs while discarding expansion labels.
+    Extract semantic text blocks while retaining explicit line breaks inside body paragraphs.
 
     Args:
         node (Tag): Cleaned content node.
 
     Returns:
-        list[str]: Full nonempty text in source order.
+        list[str]: Nonempty blocks in source order, with inline links and formatting joined to their surrounding prose.
     """
-    return [line for raw in node.get_text("\n").splitlines() if (line := raw.strip()) and not _UI_TEXT.match(line)]
+    return [text for fragment in "".join(_text_fragments(node)).split(PARAGRAPH_BREAK) if (text := fragment.strip())]
 
 
 def _links(node: Tag) -> list[Link]:

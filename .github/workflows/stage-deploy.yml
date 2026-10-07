@@ -6,6 +6,10 @@ on:
         description: Verified source commit whose PDF may be published
         type: string
         required: true
+      refresh:
+        description: Commit the verified capture and referenced assets with the PDF
+        type: boolean
+        default: false
 permissions:
   contents: write
 defaults:
@@ -29,26 +33,16 @@ jobs:
       - uses: ./.github/actions/setup-project
         with:
           groups: main
+      - uses: ./.github/actions/restore-profile
+        with:
+          refresh: ${{ inputs.refresh }}
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: signed-resume
+          name: resume-pdf
           path: .cache/publication/
-      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-        with:
-          cosign-release: v3.1.3
-
-      # Revalidate after the artifact crosses jobs, before granting it a place on main or in a public release.
-      - name: Verify downloaded signatures and hashes
-        run: bash scripts/release/verify.sh
       - name: Publish only if main has not advanced
         id: publish
         env:
           SOURCE_SHA: ${{ inputs.sha }}
+          REFRESH_PROFILE: ${{ inputs.refresh }}
         run: bash scripts/ci/publish.sh
-      - name: Release signed PDF and verification material
-        if: steps.publish.outputs.published-sha != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_SHA: ${{ inputs.sha }}
-          PUBLISHED_SHA: ${{ steps.publish.outputs.published-sha }}
-        run: bash scripts/release/publish.sh

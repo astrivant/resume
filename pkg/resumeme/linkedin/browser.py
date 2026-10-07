@@ -1,5 +1,5 @@
 """
-Collect a profile through a visible, local Firefox session owned by the user.
+Collect a profile through interactive Firefox or an explicitly unattended authenticated session.
 """
 
 from __future__ import annotations
@@ -100,13 +100,14 @@ def _wait_for_browser(port: int) -> None:
 
 
 @contextmanager
-def _firefox(root: Path, connect_port: int | None) -> Iterator[WebDriver]:
+def _firefox(root: Path, connect_port: int | None, *, headless: bool = False) -> Iterator[WebDriver]:
     """
     Launch macOS Firefox through the Python browser client with a live profile path.
 
     Args:
         root (Path): Configuration directory holding the ignored local browser profile.
         connect_port (int | None): Explicit port of a manually launched local Firefox.
+        headless (bool): Launch without a visible window for unattended capture.
 
     Yields:
         WebDriver: Browser whose local profile survives retries without exporting credentials.
@@ -119,7 +120,10 @@ def _firefox(root: Path, connect_port: int | None) -> Iterator[WebDriver]:
     diagnostics.mkdir(parents=True, exist_ok=True)
     options = Options()
     options.set_preference("intl.accept_languages", "en-US,en")
-    owns_process = sys.platform == "darwin" and connect_port is None
+    owns_process = sys.platform == "darwin" and connect_port is None and not headless
+
+    if headless:
+        options.add_argument("-headless")
 
     if sys.platform == "darwin":
         options.binary_location = "/Applications/Firefox.app/Contents/MacOS/firefox"
@@ -130,7 +134,7 @@ def _firefox(root: Path, connect_port: int | None) -> Iterator[WebDriver]:
     profile.chmod(0o700)
 
     if connect_port is None:
-        if sys.platform == "darwin":
+        if owns_process:
             # Launch through macOS application services, then attach Selenium to this dedicated Firefox process.
             connect_port = _listen_port()
             (profile / "user.js").write_text(
@@ -211,6 +215,73 @@ def _navigate(driver: WebDriver, url: str, settings: Capture) -> None:
     )
 
 
+def _authenticated(driver: WebDriver) -> bool:
+    """
+    Require both a LinkedIn session cookie and a completed authentication redirect.
+
+    Args:
+        driver (WebDriver): Browser on the tab being checked.
+
+    Returns:
+        bool: The current LinkedIn tab has finished authentication.
+    """
+    location = urlsplit(driver.current_url)
+    host = location.hostname or ""
+    path = location.path.casefold().strip("/").split("/", 1)[0]
+    authenticating = path in {"login", "signup", "checkpoint", "challenge", "authwall", "uas"}
+    return (host == "linkedin.com" or host.endswith(".linkedin.com")) and not authenticating and driver.get_cookie("li_at") is not None
+
+
+def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
+    """
+    Submit configured credentials once, then observe authentication without retrying a password submission.
+
+    Args:
+        driver (WebDriver): Browser on LinkedIn's login page or an authenticated tab.
+        settings (Capture): Existing page timeout for unattended authentication.
+        headless (bool): Fail when interactive intervention is needed rather than waiting for an absent user.
+
+    Returns:
+        None: Authentication succeeded, including any manually completed challenge in interactive mode.
+
+    Raises:
+        ValueError: Credentials are incomplete or unattended authentication requires intervention.
+    """
+    username = os.environ.get("LINKEDIN_USERNAME", "")
+    password = os.environ.get("LINKEDIN_PASSWORD", "")
+
+    if bool(username) != bool(password) or (headless and not username):
+        raise ValueError("Set both LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD for unattended capture.")
+
+    if username and not _authenticated(driver):
+        # Submit only on LinkedIn's HTTPS login origin; redirects to unrelated sites never receive credentials.
+        location = urlsplit(driver.current_url)
+
+        if location.scheme != "https" or location.hostname not in {"linkedin.com", "www.linkedin.com"}:
+            raise ValueError("LinkedIn login redirected to an unexpected origin.")
+
+        field = WebDriverWait(driver, settings.page_timeout_seconds).until(lambda page: page.find_element(By.ID, "username"))
+        field.clear()
+        field.send_keys(username)
+        field = driver.find_element(By.ID, "password")
+        field.clear()
+        field.send_keys(password)
+        driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
+
+    if not headless:
+        _wait_for_login(driver)
+        return
+
+    # Interactive capture still waits indefinitely; an unattended runner cannot complete MFA, CAPTCHA, or account challenges.
+    try:
+        WebDriverWait(driver, settings.page_timeout_seconds).until(_authenticated)
+    except TimeoutException as error:
+        raise ValueError(
+            "Unattended LinkedIn login did not complete. Check the LinkedIn secrets or complete the account challenge in Firefox; "
+            "run local capture and commit its inputs if LinkedIn requires interactive authentication. Main was not updated."
+        ) from error
+
+
 def _wait_for_login(driver: WebDriver) -> None:
     """
     Monitor the interactive browser until authentication succeeds or the user cancels.
@@ -237,17 +308,8 @@ def _wait_for_login(driver: WebDriver) -> None:
         for handle in handles:
             try:
                 driver.switch_to.window(handle)
-                location = urlsplit(driver.current_url)
-                host = location.hostname or ""
-                path = location.path.casefold().strip("/").split("/", 1)[0]
-                authenticating = path in {"login", "signup", "checkpoint", "challenge", "authwall", "uas"}
 
-                # Require both an authenticated cookie and a completed redirect; either signal alone can be premature.
-                if (
-                    (host == "linkedin.com" or host.endswith(".linkedin.com"))
-                    and not authenticating
-                    and driver.get_cookie("li_at") is not None
-                ):
+                if _authenticated(driver):
                     return
             except NoSuchWindowException:
                 continue
@@ -512,7 +574,7 @@ def _contact(driver: WebDriver, username: str, settings: Capture) -> Section:
     return parse_contact(driver.page_source)
 
 
-def capture_profile(config: Config, root: Path, connect_port: int | None = None) -> Profile:
+def capture_profile(config: Config, root: Path, connect_port: int | None = None, *, headless: bool = False) -> Profile:
     """
     Open Firefox for manual login, collect the owner profile, and cache its images.
 
@@ -520,6 +582,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None)
         config (Config): Profile and capture settings.
         root (Path): Configuration directory for caches and output assets.
         connect_port (int | None): Existing local Firefox Marionette port, if explicitly requested.
+        headless (bool): Use environment credentials without opening an interactive window.
 
     Returns:
         Profile: Captured profile without exported browser credentials.
@@ -528,18 +591,25 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None)
         TimeoutException: A page did not load after bounded retries.
         ValueError: The profile is missing, redirected, or cannot be fully expanded.
     """
-    print("Opening Firefox. Sign in to LinkedIn there; capture starts after login.", flush=True)
+    if headless and connect_port is not None:
+        raise ValueError("Headless capture cannot attach to an interactive Firefox session.")
+
+    # Missing secrets fail before a browser is started; interactive users keep their unlimited login wait.
+    if headless and not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD")):
+        raise ValueError("Headless capture requires LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD.")
+
+    print("Opening headless Firefox for LinkedIn capture." if headless else "Opening Firefox. Sign in to LinkedIn there.", flush=True)
     warnings: list[str] = []
 
     # Own one browser lifecycle across login, profile expansion, detail pages, and contact capture.
-    with _firefox(root, connect_port) as driver:
+    with _firefox(root, connect_port, headless=headless) as driver:
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)
         driver.set_window_size(1440, 1000)
 
         if connect_port is None:
             _navigate(driver, "https://www.linkedin.com/login", config.capture)
 
-        _wait_for_login(driver)
+        _login(driver, config.capture, headless=headless)
         print("Login detected. Loading your profile…", flush=True)
         username = config.linkedin.username
         _navigate(driver, f"https://www.linkedin.com/in/{username}/", config.capture)

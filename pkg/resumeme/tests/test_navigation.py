@@ -73,6 +73,7 @@ def test_projects_link_only_to_visible_employment(tmp_path: Path, disabled: str)
         LinkedIn(profile.username),
         section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["experience"] if disabled == "section" else [])],
         experience=Experience(disable=selectors),
+        project_filter=None,
     )
     source = render_profile(profile, config, tmp_path).read_text()
     projects = source.split(r"\projectrow[", 1)[1]
@@ -110,7 +111,7 @@ def test_repeated_titles_and_suppressed_headings_keep_unique_destinations(tmp_pa
         "Alex",
         sections=[Section("experience", "Experience", [*roles, group]), Section("projects", "Projects", [project])],
     )
-    source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
+    source = render_profile(profile, Config(LinkedIn(profile.username), project_filter=None), tmp_path).read_text()
     projects = source.split(r"\projectrow[", 1)[1]
     assert r"\hyperlink{resumeme-section-0-job-2}{Experience}" in projects
     assert r"\hyperlink{resumeme-section-0-job-1}{Two}" in projects

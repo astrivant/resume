@@ -1,11 +1,14 @@
 # resumeme
 
+<img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="160" align="right">
+
 **Your résumé deserves better than LinkedIn's PDF export.** Skip the clunky
 formatting and the copy-paste routine of maintaining a second résumé. `resumeme`
 turns your profile into a polished, illustrated PDF you'll actually want to send.
 
 Build and release your résumé like software: fork the project, set your username,
-capture your profile, and let a push to `main` build, sign, and publish it.
+capture your profile, and keep `main` current with monthly refreshes. Tag the
+version you want to share to get a signed release.
 
 **[View the résumé (PDF)](resume.pdf)** · [Fork this project](https://github.com/astrivant/resume/fork)
 
@@ -101,8 +104,10 @@ git commit -m "Update resume profile"
 git push origin main
 ```
 
-After the pipeline succeeds, your fork contains **`resume.pdf` on `main`** and a
-GitHub release with the PDF, signatures, SHA-256 hashes, and signing-key fingerprint.
+After the pipeline succeeds, your fork contains **`resume.pdf` on `main`**.
+Configure LinkedIn secrets for automatic monthly refreshes. When ready to share,
+tag the updated commit to create a release with signatures, hashes, and the key
+fingerprint; see [monthly refresh and release](docs/automation.md).
 The [PDF link at the top of this README](resume.pdf) stays relative to the repository,
 so it points to your résumé in your fork.
 
@@ -127,9 +132,10 @@ profile. The portable inputs are `data/profile.json` and `data/assets/`.
 
 Jinja translates those inputs and your YAML configuration into `tex/resume.tex`.
 The digest-pinned `drpsychick/texlive-pdflatex` image compiles the PDF. CI installs
-from the Poetry lockfile and rebuilds committed inputs without contacting LinkedIn.
-Main-branch builds are signed and verified before upload; publication waits for
-both test and build checks. Pull requests run those checks without publishing.
+from the Poetry lockfile. Ordinary pushes rebuild committed inputs; monthly runs
+capture LinkedIn first. After validation, main-branch publication commits the PDF
+and any refreshed inputs together. User-created tags sign the committed PDF and
+publish a release. Pull requests validate without publishing or signing in.
 
 See [configuration, architecture, and capture limits](docs/README.md) for the details.
 
@@ -140,8 +146,8 @@ See [configuration, architecture, and capture limits](docs/README.md) for the de
 - **Keep the engineering detail.** Expanded descriptions, project links, company
   logos, and illustrations flow across plain US Letter pages in Garamond, with a
   two-column first page for your profile, contact information, and About section.
-- **Make publishing a build step.** Push reviewed inputs; CI validates, renders,
-  signs, commits the PDF, and publishes a release through the GitHub CLI.
+- **Keep it current and release deliberately.** Monthly CI refreshes LinkedIn and
+  commits the PDF. Tag a revision to publish its signed PDF through the GitHub CLI.
 - **Share verifiable output.** Cosign signatures, verification bundles, checksums,
   and a public-key fingerprint accompany each release.
 - **Own the presentation.** Adjust paper size, colors, or text size in YAML, or
@@ -215,6 +221,10 @@ appear below the project's image or logo; role narrative stays with the job.
 Post text and inline links stay in Featured. Commenting out `projects` also hides
 the relocated project cards.
 
+`project_filter` selects projects by source URL using a Python regex and defaults
+to GitHub URLs. Set it to `null` to include all projects. See
+[project filtering](docs/README.md#project-consolidation-and-links) for examples.
+
 ### Job history
 
 Filter individual jobs in the same file:
@@ -280,10 +290,13 @@ See [Codex setup and local previews](docs/codex.md).
 
 ### Fork environment variables
 
-For signed main-branch releases, configure the Cosign values below as **GitHub
-Actions repository secrets in your own fork**. The workflow passes them to the
-signing step as environment variables; GitHub supplies the publication token:
+Configure these **GitHub Actions repository secrets in your own fork** for the
+features you use. GitHub supplies the publication token:
 
+- **`LINKEDIN_USERNAME` — required for monthly refresh.** Your LinkedIn login email
+  or account identifier; this is separate from `linkedin.username`, the profile slug.
+- **`LINKEDIN_PASSWORD` — required for monthly refresh.** The login password. These
+  two secrets reach only the capture step on scheduled or manual refresh runs.
 - **`OPENAI_API_KEY` — required only when `codex.enabled: true`.** An API key from
   your OpenAI project, stored as an Actions repository secret. The Codex summary
   job receives it; ordinary builds and pull-request checks do not. API usage is
@@ -300,6 +313,11 @@ signing step as environment variables; GitHub supplies the publication token:
   publish releases. No personal access token is needed; repository and branch rules
   must permit those writes. Tag publication also uses the built-in token with
   `packages: write` to push the tool's container image to GHCR.
+- **`PYPI_API_TOKEN` — package maintainers only.** Grant the repository access to
+  this organization secret, or define it as a repository/`pypi` environment secret.
+  Version-tag releases expose it to Poetry as `POETRY_PYPI_TOKEN_PYPI` and upload
+  `resumeme` to PyPI. Forks that only generate resumes do not need it. See
+  [package releases](docs/development.md#publish-to-pypi).
 
 #### Configure signing secrets
 
@@ -316,15 +334,17 @@ to adjust retry or local browser settings.
 
 #### LinkedIn authentication
 
-LinkedIn login currently has no environment-variable configuration:
-`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD` are not read by the package or workflows.
-Set the profile slug in `resumeme.config.yaml` under `linkedin.username`, sign in
-locally with `resumeme capture`, and push the resulting snapshot and assets. Actions
-builds those committed inputs without signing in to LinkedIn.
+Set the public profile slug under `linkedin.username` in `resumeme.config.yaml`.
+Local `resumeme capture` opens Firefox and waits for you to finish signing in.
+When both login environment variables are present, it submits them automatically;
+interactive capture still waits for you to complete MFA. Scheduled runs use
+`capture --headless` and fail without updating `main` if authentication requires
+interaction. See [automation setup and recovery](docs/automation.md).
 
 ## Documentation
 
 - [Configuration and operation](docs/README.md): capture, job filters, rendering, and signed releases.
+- [Monthly refresh and release](docs/automation.md): LinkedIn secrets, scheduling, and shareable signed PDFs.
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
 - [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR.
 - [Development](docs/development.md): setup, parallel tests, tooling, and document checks.

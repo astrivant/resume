@@ -15,6 +15,8 @@ from attrs import field, frozen
 from jsonschema import Draft202012Validator, FormatChecker
 
 from resumeme.compiler.constants.backend import AST_PACKAGE, CONFIG_SCHEMA
+from resumeme.compiler.constants.links import DEFAULT_PROJECT_FILTER
+from resumeme.compiler.constants.lists import BODY_HEADINGS
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 
 __all__ = [
@@ -118,17 +120,21 @@ class JobSelector:
 @frozen
 class Experience:
     """
-    Select jobs for display without changing the captured employment history.
+    Select jobs and normalize their display text without changing captured employment history.
 
     Attributes:
         disable (list[JobSelector]): Exclusions applied before the date window.
         last_years (int | None): Include jobs overlapping this many trailing calendar years, or all dates when omitted.
         as_of (str | None): ISO date fixing the window's endpoint; otherwise use the current UTC date.
+        subheadings (list[str]): Standalone job subsection labels, matched in full without case or a trailing colon.
+        reflow_soft_breaks (bool): Join soft line breaks within job text; False retains captured line boundaries.
     """
 
     disable: list[JobSelector] = field(factory=list)
     last_years: int | None = None
     as_of: str | None = None
+    subheadings: list[str] = field(factory=lambda: list(BODY_HEADINGS))
+    reflow_soft_breaks: bool = True
 
 
 @frozen
@@ -161,6 +167,7 @@ class StyleOverrides(TypedDict, total=False):
         show_header_photo (bool): Whether to display the profile cover photo.
         show_headline (bool): Whether to display the captured headline beneath the portrait.
         show_table_of_contents (bool): Whether to link visible sections beneath the LinkedIn profile link.
+        highlight_job_subheadings (bool): Whether to emphasize recognized job subsection labels; False keeps their text plain.
         show_connection_count (bool): Whether to display the captured connection count below the profile link.
         show_connection_link (bool): Whether to link to the captured connections page.
         display_birthday (bool): Whether to display the birthday field in enabled contact information.
@@ -179,6 +186,7 @@ class StyleOverrides(TypedDict, total=False):
     show_header_photo: bool
     show_headline: bool
     show_table_of_contents: bool
+    highlight_job_subheadings: bool
     show_connection_count: bool
     show_connection_link: bool
     display_birthday: bool
@@ -203,6 +211,7 @@ class Style:
         show_header_photo (bool): Whether to display the profile's cover/background photo.
         show_headline (bool): Display the captured headline beneath the portrait; hidden by default.
         show_table_of_contents (bool): Link visible sections beneath the LinkedIn profile link in the identity column.
+        highlight_job_subheadings (bool): Emphasize recognized job subsection labels; False keeps their text plain.
         show_connection_count (bool): Display the captured connection count below the profile link.
         show_connection_link (bool): Link the count or a concise Connections label to its captured destination.
         display_birthday (bool): Display the birthday field when contact information is enabled.
@@ -223,6 +232,7 @@ class Style:
     show_header_photo: bool = True
     show_headline: bool = False
     show_table_of_contents: bool = True
+    highlight_job_subheadings: bool = True
     show_connection_count: bool = False
     show_connection_link: bool = False
     display_birthday: bool = False
@@ -247,10 +257,11 @@ class Config:
         output (Output): Paths relative to the configuration directory.
         style (Style): Print presentation choices.
         template (str | None): Optional custom template path.
-        experience (Experience): Job exclusions and optional employment date window.
+        experience (Experience): Job exclusions, date window, and description text rules.
         github (GitHub): Optional public account linked beneath the LinkedIn profile.
         codex (Codex): Optional generated résumé copy and user context.
         section_order (list[str]): Enabled section keys in display order; omitted keys stay hidden.
+        project_filter (str | None): Source URL regex selecting Projects entries, or None to retain every project.
     """
 
     linkedin: LinkedIn
@@ -262,6 +273,7 @@ class Config:
     github: GitHub = field(factory=GitHub)
     codex: Codex = field(factory=Codex)
     section_order: list[str] = field(factory=lambda: list(DEFAULT_SECTION_ORDER))
+    project_filter: str | None = DEFAULT_PROJECT_FILTER
 
 
 def project_path(root: Path, value: str) -> Path:

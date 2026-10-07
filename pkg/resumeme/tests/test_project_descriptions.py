@@ -137,7 +137,7 @@ def test_project_description_follows_media_and_stays_out_of_experience(tmp_path:
     preview = Media("https://example.org/preview.png", alt="Thumbnail for Tool", path="preview.png", link=url)
     role = Entry("Engineer", ["Built the platform.", "Tool", description], [Link("Tool", url)], [preview] if illustrated else [])
     profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [role])])
-    source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
+    source = render_profile(profile, Config(LinkedIn(profile.username), project_filter=None), tmp_path).read_text()
     experience, projects = source.split(r"\projectrow[", 1)
     assert "Built the platform." in experience
     assert "for the architecture." not in experience

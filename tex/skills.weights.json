@@ -14,15 +14,15 @@
     "endorsements": 0,
     "weight": 9
   },
-  "Kubernetes": {
-    "references": 8,
-    "endorsements": 0,
-    "weight": 8
-  },
   "Linux": {
     "references": 8,
     "endorsements": 0,
     "weight": 8
+  },
+  "Kubernetes": {
+    "references": 7,
+    "endorsements": 0,
+    "weight": 7
   },
   "CircleCI": {
     "references": 6,
@@ -42,11 +42,6 @@
   "Git": {
     "references": 3,
     "endorsements": 1,
-    "weight": 5
-  },
-  "Python (Programming Language)": {
-    "references": 5,
-    "endorsements": 0,
     "weight": 5
   },
   "Telecommunications": {
@@ -69,19 +64,14 @@
     "endorsements": 0,
     "weight": 4
   },
-  "Bash": {
-    "references": 4,
-    "endorsements": 0,
-    "weight": 4
-  },
-  "GitHub": {
-    "references": 4,
-    "endorsements": 0,
-    "weight": 4
-  },
   "Amazon EC2": {
     "references": 1,
     "endorsements": 1,
+    "weight": 3
+  },
+  "Bash": {
+    "references": 3,
+    "endorsements": 0,
     "weight": 3
   },
   "Cloud Computing": {
@@ -90,6 +80,11 @@
     "weight": 3
   },
   "Disaster Recovery": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "GitHub": {
     "references": 3,
     "endorsements": 0,
     "weight": 3
@@ -112,6 +107,11 @@
   "Postman": {
     "references": 1,
     "endorsements": 1,
+    "weight": 3
+  },
+  "Python (Programming Language)": {
+    "references": 3,
+    "endorsements": 0,
     "weight": 3
   },
   "Technical Support": {
@@ -139,11 +139,6 @@
     "endorsements": 0,
     "weight": 2
   },
-  "Docker Products": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
   "Flask": {
     "references": 2,
     "endorsements": 0,
@@ -154,22 +149,12 @@
     "endorsements": 0,
     "weight": 2
   },
-  "Hydroponics": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
   "Hyper-V": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
   },
   "Hypothesis Testing": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "Information Security": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -205,11 +190,6 @@
     "weight": 2
   },
   "secrets management": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "Terrariums": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -264,6 +244,11 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Docker Products": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "Electrical Troubleshooting": {
     "references": 1,
     "endorsements": 0,
@@ -285,6 +270,16 @@
     "weight": 1
   },
   "Google Kubernetes Engine (GKE)": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Hydroponics": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Information Security": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -330,6 +325,11 @@
     "weight": 1
   },
   "Software Infrastructure": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Terrariums": {
     "references": 1,
     "endorsements": 0,
     "weight": 1

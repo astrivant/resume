@@ -269,7 +269,7 @@ def test_opening_columns_respect_section_visibility(tmp_path: Path, disabled: li
     """
     path = tmp_path / "resumeme.config.yaml"
     path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
-    config = evolve(load_config(path), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (disabled)])
+    config = evolve(load_config(path), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (disabled)], project_filter=None)
 
     # Capture order is deliberately different from presentation order; filtering still owns what reaches either column.
     profile = Profile(

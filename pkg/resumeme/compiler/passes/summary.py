@@ -54,7 +54,9 @@ def summary_evidence(profile: Profile, config: Config) -> dict[str, object]:
         dict[str, object]: Professional evidence without contact blocks, remote assets, or credentials.
     """
     visible = visible_profile(profile, config)
-    visible, _ = consolidate_projects(visible, enabled="projects" in {section_key(key) for key in config.section_order})
+    visible, _ = consolidate_projects(
+        visible, enabled="projects" in {section_key(key) for key in config.section_order}, project_filter=config.project_filter
+    )
 
     # Company groups retain their role boundaries without repeating each child's description in the parent.
     # Skills contribute labels only: reverse association rows can mention roles hidden by the employment filter.

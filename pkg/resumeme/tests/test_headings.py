@@ -72,7 +72,7 @@ def test_duplicate_headings_keep_body_images_and_links(tmp_path: Path, key: str)
     paragraphs = ["Retained details", title, "- Useful bullet"]
     entry = Entry(title, paragraphs, links=[Link("More details", url)], images=[media])
     profile = Profile("example-person", "Alex", sections=[Section(key, title, [entry])])
-    config = Config(LinkedIn(profile.username), style=Style(show_table_of_contents=False))
+    config = Config(LinkedIn(profile.username), style=Style(show_table_of_contents=False), project_filter=None)
     text = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert text.count(rf"\sectiontitle{{{title}}}") == 1
     assert r"\entrytitle{" not in text
@@ -99,7 +99,11 @@ def test_suppressed_project_heading_retains_destination_without_preview(tmp_path
     url = "https://example.org/portfolio"
     project = Entry("Projects", ["A collection of tools"], links=[Link("Portfolio", url)])
     profile = Profile("example-person", "Alex", sections=[Section("projects", "Projects", [project])])
-    text = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text().split(r"\begin{document}", 1)[1]
+    text = (
+        render_profile(profile, Config(LinkedIn(profile.username), project_filter=None), tmp_path)
+        .read_text()
+        .split(r"\begin{document}", 1)[1]
+    )
     assert r"\entrytitle{" not in text
     assert rf"\href{{{url}}}{{Portfolio}}" in text
     assert "A collection of tools" in text

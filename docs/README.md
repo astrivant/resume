@@ -4,6 +4,7 @@
 
 - [Configuration](#configuration)
 - [Job filtering](#job-filtering)
+- [Job text and subheadings](#job-text-and-subheadings)
 - [Environment variables](#environment-variables)
 - [Profile schema and skill clouds](profile-schema.md)
 - [Local capture](#local-capture)
@@ -26,9 +27,12 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | --- | --- | --- |
 | `linkedin.username` | `emmeowzing` | Profile slug from `/in/<username>/` |
 | `section_order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
+| `project_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
 | `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
 | `experience.last_years` | `null` | Include jobs overlapping the trailing N calendar years; null keeps all dates |
 | `experience.as_of` | `null` | Quoted ISO date fixing the window endpoint; null uses today's UTC date |
+| `experience.reflow_soft_breaks` | `true` | Join wrapped job prose and bullet continuations; false retains captured line boundaries |
+| `experience.subheadings` | Built-in job labels | Complete standalone subsection labels; a supplied list replaces the defaults and `[]` disables recognition |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
 | `capture.max_scrolls` | `60` | Maximum expansion iterations per page |
 | `capture.max_pages_per_section` | `30` | Bound on section pagination |
@@ -51,6 +55,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; set to `false` in the reference config |
 | `style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page left column |
+| `style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
 | `style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |
 | `style.show_connection_link` | `false` | Link the count, or a concise Connections label, to the captured connections page |
 | `style.display_birthday` | `false` | Show the birthday field when Contact info is enabled |
@@ -183,6 +188,52 @@ Omitting `experience` from `section_order` hides all jobs. Excluded roles cannot
 project attachments or skill references. Independently captured Projects and Skills
 entries remain subject to their own section settings.
 
+## Job text and subheadings
+
+Job descriptions retain their internal hierarchy. Standalone labels such as
+“Responsibilities,” “Projects,” and “Technologies” use bold body-sized text with a
+small preceding gap. Disable that emphasis without hiding the labels:
+
+```yaml
+style:
+  highlight_job_subheadings: false
+```
+
+The default is `true`, and inline themes can override it. Customize recognition
+and line reflow under `experience`:
+
+```yaml
+experience:
+  reflow_soft_breaks: true
+  subheadings:
+    - Responsibilities
+    - Projects
+    - Technologies
+    - Impact
+    - Deliverables
+```
+
+This list replaces the defaults shown in `resumeme.config.yaml`. Matching uses the
+entire standalone text block, with Unicode normalization, case folding, collapsed
+whitespace, and an optional trailing colon. Labels are literal text. “Projects
+improved reliability” remains ordinary prose. Adding a label also preserves its
+boundary during reflow, including when highlighting is disabled. Use `[]` to turn
+off label recognition, or remove individual labels to avoid unwanted emphasis.
+These settings apply to standalone jobs and nested roles; they preserve the saved
+profile, employer metadata, job titles, and bullet content.
+
+Capture joins text inside inline HTML spans, emphasis, and links. HTML block
+elements remain separate paragraphs. Within a captured paragraph, a single `<br>`
+or newline can reflow into a space; blank lines, list markers, dates, and recognized
+subheadings preserve boundaries. `reflow_soft_breaks: false` keeps those captured
+line boundaries for jobs. Normal page-width wrapping still happens in LaTeX.
+
+Older snapshots flattened HTML breaks into independent rows. They retain a
+conservative continuation rule for indented bullet fragments and lowercase continuations
+after a comma or semicolon.
+A fresh capture records the paragraph ownership needed to reflow other soft breaks
+reliably. No profile text is discarded by these presentation settings.
+
 ## Environment variables
 
 Start with the [fork environment variable list](../README.md#fork-environment-variables)
@@ -214,8 +265,10 @@ alone has no effect because these workflows do not read `vars.RETRY_*`.
 
 Browser and image-download retries use the YAML `capture.retry_*` settings instead
 of these shell overrides. Profile selection also uses YAML (`linkedin.username`);
-`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD` are currently unsupported. Capture
-requires a local Firefox login, and CI consumes the committed snapshot.
+`LINKEDIN_USERNAME` (login email/account identifier) and `LINKEDIN_PASSWORD` supply
+credentials for automated login. Scheduled and requested manual refreshes use
+`capture --headless`; ordinary builds consume committed snapshots. See
+[monthly authentication setup](automation.md#configure-a-fork).
 
 ## Local capture
 
@@ -328,6 +381,30 @@ trailing slashes are ignored; paths and query strings are significant. Unlinked
 attachments can match an unambiguous title. Shared LinkedIn viewer URLs do not
 identify a unique project.
 
+`project_filter` applies after consolidation and deduplication. By default, only
+projects linking to `github.com` appear. The filter uses Python `re.search` on each
+resolved destination, falling back to its captured URL when unresolved. Image click
+targets count as source URLs; image download URLs, titles, and descriptions do not.
+Any matching source URL retains the combined entry. Unlinked projects are omitted
+unless the filter is `null`.
+
+```yaml
+# Default: github.com and www.github.com, case-insensitive.
+project_filter: '(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
+
+# To limit projects to one GitHub account:
+# project_filter: '(?i)^https?://github\.com/emmeowzing/'
+
+# To include every project, including entries without a source URL:
+# project_filter: null
+```
+
+Use single-quoted YAML strings to preserve regex backslashes. Custom expressions
+are case-sensitive unless they include `(?i)`; invalid regexes fail configuration
+validation. Filtering leaves the snapshot and inline links in role/post narrative
+intact. Excluded project entries contribute no media, skill weights, or Codex
+summary evidence. It does not change the visibility of other sections.
+
 Company names in Projects link to their associated role in Experience. When a
 project names multiple roles, the company name targets the first matching role
 in document order; each role label also links to its own position. Company-only
@@ -352,7 +429,7 @@ with attribution in PDF metadata. Unsupported Unicode characters fail compilatio
 
 ## Signed releases
 
-Main-branch publication requires `COSIGN_PRIVATE_KEY` and, for an encrypted key,
+User-created tag releases require `COSIGN_PRIVATE_KEY` and, for an encrypted key,
 `COSIGN_PASSWORD`. See the [fork environment variable list](../README.md#fork-environment-variables)
 for their exact values and the automatically supplied publication token.
 
@@ -369,15 +446,16 @@ Keep the private key in your own secure storage. `*.key` is ignored as a precaut
 the signing workflow reads the secret using `env://COSIGN_PRIVATE_KEY` without
 writing it to the workspace or passing its contents as a command argument.
 
-The build signs `resume.pdf` with pinned Cosign 3.1.3, creates a SHA-256 manifest,
-signs that manifest, and verifies both signatures before uploading any PDF artifact.
+The tag release signs the PDF committed at the tagged revision with pinned Cosign
+3.1.3, creates a SHA-256 manifest, signs that manifest, and verifies both signatures
+before uploading the signed artifacts. Monthly and ordinary builds upload unsigned
+working PDFs for verification and publication to `main`.
 Cosign uses Sigstore's transparency services and includes verification material in
-its bundles. Pull requests and non-main branches compile the PDF but do not receive
-the signing secret in a step or upload an unsigned PDF.
+its bundles. Pull requests and branch builds do not receive the signing secret.
 
-After every verification stage succeeds, deploy verifies the downloaded artifacts,
-commits the PDF to `main`, and uses the GitHub CLI to create a release named
-`resume-<source commit SHA>`. Assets are uploaded to a draft before it becomes public:
+After verification succeeds, the tag workflow uses the GitHub CLI to publish on
+the user-selected tag. Assets are uploaded to a draft before it becomes public.
+See [monthly refresh and choosing a release](automation.md). Release assets are:
 
 - `resume.pdf`: signed document.
 - `resume.pdf.sig`: detached base64 signature.
@@ -405,24 +483,31 @@ trusted fingerprint establishes whose key they are trusting.
 
 ## Pipeline and ownership
 
-CI resolves one immutable source commit, runs test and build stages in parallel,
-and requires both in `CI verification`. PDF publication runs only from `main`.
+CI resolves one immutable source commit. Monthly and requested manual refreshes
+capture LinkedIn first; each consumer restores the same complete capture artifact.
+Test and build stages run in parallel and are required by `CI verification`.
+PDF publication commits the PDF and any refreshed inputs together only on `main`.
 Pushed tags publish the tested runtime
 container through a separate stage with `packages: write` and `contents: write`
 for the tag release's pull instructions; see
 [container publication](containers.md#publish-on-a-tag). Test and build jobs have read-only repository access.
-Only the PDF and container publication jobs have `contents: write`. Every external action is pinned by SHA,
+Only the PDF commit, signed release, and container publication jobs have `contents: write`. Every external action is pinned by SHA,
 Poetry installs from the lockfile, and development tools stay out of runtime installs.
+
+Version tags matching the committed package version also publish `resumeme` to
+PyPI through `stage-pypi.yml`, using `PYPI_API_TOKEN` from the organization,
+repository, or `pypi` environment. This stage uploads the verified distributions
+with read-only repository access. See [package releases](development.md#publish-to-pypi).
 
 Fork owners must enable Actions and permit `GITHUB_TOKEN` writes. Branch protection
 must permit the bot's PDF commit. Publication fetches `main` and requires it still
 to match the built source. If another commit arrives, the stale run skips publication;
 a concurrent push after that check rejects the ordinary fast-forward update. It
 never force-pushes or rebases an obsolete PDF. The bot uses `GITHUB_TOKEN`, so its
-generated commit does not start a recursive workflow run. If a run committed the
-PDF but failed during release publication, rerunning it recognizes that exact
-generated commit and resumes the release. Draft creation also reconciles an
-existing draft before retrying after a lost network response.
+generated commit does not start a recursive workflow run. A publication retry
+recognizes an identical generated commit instead of writing it again. User-created
+tags separately sign and release the committed PDF. Draft creation reconciles
+an existing draft after a lost network response.
 
 | Component | Responsibility | Interface |
 | --- | --- | --- |
@@ -473,9 +558,10 @@ absolute profile directory before opening Firefox and retains it across retries.
 the profile lock while preserving the local login. If the capture window is closed during login, retry and leave it open.
 Authentication challenges remain interactive; the collector does not bypass them.
 
-Refresh expired or unavailable image references with another local capture. Updating
-your LinkedIn profile does not automatically update the snapshot: capture again,
-review the changes, and commit the new inputs. CI then builds a new signed release.
+Refresh expired or unavailable image references with another local capture or a
+manual CI refresh. With LinkedIn secrets configured, the monthly schedule captures
+profile changes and updates `main`. Create a tag when ready to publish a signed
+version. See [automation and authentication recovery](automation.md).
 
 Retries use exponential delays: 10, 20, 40, 80, 160, then at most 300 seconds,
 with the default five attempts using the first four delays. HTTP 429 and transient 5xx responses honor Retry-After within

@@ -148,6 +148,7 @@ def test_consolidated_projects_respect_sections_and_grouped_job_exclusions(tmp_p
         LinkedIn(profile.username),
         section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (disabled)],
         experience=Experience(disable=[JobSelector(title="Intern")]),
+        project_filter=None,
     )
     source = render_profile(profile, config, tmp_path).read_text()
     assert "Hidden" not in source

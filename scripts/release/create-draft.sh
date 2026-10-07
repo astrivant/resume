@@ -20,5 +20,5 @@ if [[ "$result" != *'release not found'* && "$result" != *'HTTP 404'* ]]; then
     exit 1
 fi
 
-gh release create "$tag" --draft --target "$PUBLISHED_SHA" \
-    --title "Resume ${SOURCE_SHA:0:12}" --notes-file "$notes"
+gh release create "$tag" --draft --verify-tag \
+    --title "Resume $tag" --notes-file "$notes"

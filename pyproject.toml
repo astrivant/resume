@@ -25,6 +25,11 @@ dependencies = [
 [project.scripts]
 resumeme = "resumeme.cli:main"
 
+[project.urls]
+Repository = "https://github.com/astrivant/resume"
+Documentation = "https://github.com/astrivant/resume/blob/main/docs/README.md"
+Issues = "https://github.com/astrivant/resume/issues"
+
 [tool.poetry]
 packages = [{include = "resumeme", from = "pkg"}]
 include = [

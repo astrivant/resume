@@ -125,6 +125,11 @@
           "type": "boolean",
           "default": true
         },
+        "highlight_job_subheadings": {
+          "description": "Emphasize standalone labels in experience.subheadings; false retains their text without highlighting.",
+          "type": "boolean",
+          "default": true
+        },
         "skills_word_cloud": {
           "description": "Display the top 20 skills weighted by references plus twice each endorsement; disable skills to hide the cloud.",
           "type": "boolean"
@@ -185,6 +190,9 @@
               },
               "show_table_of_contents": {
                 "$ref": "#/properties/style/properties/show_table_of_contents"
+              },
+              "highlight_job_subheadings": {
+                "$ref": "#/properties/style/properties/highlight_job_subheadings"
               },
               "skills_word_cloud": {
                 "$ref": "#/properties/style/properties/skills_word_cloud"
@@ -258,6 +266,33 @@
       "description": "Filter displayed jobs without altering the captured snapshot.",
       "type": "object",
       "properties": {
+        "reflow_soft_breaks": {
+          "description": "Reflow soft line breaks within job prose and bullets; false preserves captured line boundaries.",
+          "type": "boolean",
+          "default": true
+        },
+        "subheadings": {
+          "description": "Complete standalone job labels, matched without case, excess whitespace, or a trailing colon. Replaces defaults; [] disables recognition.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[^\\r\\n\\u2028\\u2029]*\\S[^\\r\\n\\u2028\\u2029]*$"
+          },
+          "default": [
+            "Responsibilities",
+            "Key responsibilities",
+            "Technologies",
+            "Projects",
+            "Skills",
+            "Achievements",
+            "Key achievements",
+            "Accomplishments",
+            "Highlights",
+            "Summary",
+            "Duties"
+          ]
+        },
         "disable": {
           "type": "array",
           "uniqueItems": true,
@@ -342,6 +377,12 @@
           "maximum": 40
         }
       }
+    },
+    "project_filter": {
+      "description": "Python regex searched against resolved project source URLs, falling back to captured URLs. Null includes all projects, including unlinked entries.",
+      "type": ["string", "null"],
+      "format": "regex",
+      "default": "(?i)^https?://(?:www\\.)?github\\.com(?:[/?#]|$)"
     },
     "section_order": {
       "description": "Enabled section keys in PDF and contents order. Comment out or remove a key to hide it; an empty array renders only the profile header.",

@@ -165,7 +165,11 @@ def test_pipeline_expands_before_scoring_and_honors_visibility(tmp_path: Path) -
             Section("certifications", "Certifications", [Entry("Private", ["Python and +1 skill"], skills=[Skill("Private skill", 100)])]),
         ],
     )
-    config = Config(LinkedIn("example-person"), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["certifications"])])
+    config = Config(
+        LinkedIn("example-person"),
+        section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["certifications"])],
+        project_filter=None,
+    )
     source = render_profile(profile, config, tmp_path)
     assert "Python, Testing" in source.read_text()
     assert "+1 skill" not in source.read_text()
@@ -178,6 +182,7 @@ def test_pipeline_expands_before_scoring_and_honors_visibility(tmp_path: Path) -
         LinkedIn("example-person"),
         section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["skills", "certifications"])],
         style=Style(skills_word_cloud=False),
+        project_filter=None,
     )
     source = render_profile(profile, config, tmp_path)
     assert "Python and +1 skill" in source.read_text()

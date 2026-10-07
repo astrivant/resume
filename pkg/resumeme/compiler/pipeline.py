@@ -30,7 +30,7 @@ from resumeme.compiler.constants.backend import (
 )
 from resumeme.compiler.passes.contact import without_birthday
 from resumeme.compiler.passes.header import is_pronouns, prepare_header, prepare_header_logos
-from resumeme.compiler.passes.headings import distinct_heading
+from resumeme.compiler.passes.headings import distinct_heading, is_body_heading
 from resumeme.compiler.passes.lists import text_blocks
 from resumeme.compiler.passes.locations import job_locations
 from resumeme.compiler.passes.media import employer_badge, image_role, is_header_photo
@@ -155,7 +155,7 @@ def render_profile(
         )
 
     # Consolidate only retained roles and posts, so exclusions cannot leak project cards back into the document.
-    visible, project_links = consolidate_projects(visible, enabled="projects" in enabled)
+    visible, project_links = consolidate_projects(visible, enabled="projects" in enabled, project_filter=config.project_filter)
 
     # LinkedIn's collapsed counts refer to captured tags or reverse Skills associations, not printable skill names.
     visible = expand_skill_summaries(visible)
@@ -235,7 +235,11 @@ def render_profile(
     environment.filters["image_role"] = image_role
     environment.filters["employer_badge"] = employer_badge
     environment.filters["text_blocks"] = text_blocks
+    environment.filters["job_text_blocks"] = partial(
+        text_blocks, reflow_soft_breaks=config.experience.reflow_soft_breaks, subheadings=config.experience.subheadings
+    )
     environment.filters["distinct_heading"] = distinct_heading
+    environment.filters["body_heading"] = partial(is_body_heading, labels=config.experience.subheadings)
     environment.filters["experience_layout"] = experience_layout
     environment.filters["job_locations"] = job_locations
     companies = company_logos(prepared)

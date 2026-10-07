@@ -1,6 +1,7 @@
 repository:
   name: resumeme
   description: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions
+  homepage: https://pypi.org/project/resumeme/
   has_issues: true
   has_projects: false
   has_wiki: false

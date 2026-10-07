@@ -6,7 +6,22 @@ from __future__ import annotations
 
 import re
 
-__all__ = ["GLYPHS", "MARKER"]
+__all__ = ["BODY_HEADINGS", "GLYPHS", "MARKER"]
+
+# Authors often place these labels beside bullets with a single <br>, rather than a separate heading element.
+BODY_HEADINGS = (
+    "Responsibilities",
+    "Key responsibilities",
+    "Technologies",
+    "Projects",
+    "Skills",
+    "Achievements",
+    "Key achievements",
+    "Accomplishments",
+    "Highlights",
+    "Summary",
+    "Duties",
+)
 
 GLYPHS = (
     "\u2022\u2023\u2043\u204c\u204d\u2219\u00b7\u25a0-\u25a3\u25aa\u25ab"

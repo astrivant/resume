@@ -2,8 +2,11 @@
 # Build distributable packages and stage the configured PDF for publication.
 set -euo pipefail
 
-# Build distributable code and the configured document before handing a stable PDF path to the signing stage.
-poetry build
+# Require version tags to match the committed metadata, keeping the wheel, source archive, and container version aligned.
+bash scripts/release/package-version.sh
+
+# Clean stale distributions before building the exact wheel and source archive that PyPI publication will consume.
+poetry build --clean
 
 # A requested artifact must exist and validate; a missing file must never silently fall back to captured prose.
 summary_args=()

@@ -121,7 +121,7 @@ def test_discovered_role_links_respect_job_exclusions(tmp_path: Path) -> None:
     roles = [Entry("Staff", ["https://example.org/kept"]), Entry("Intern", ["https://example.org/hidden"])]
     group = Entry("Company", [line for role in roles for line in [role.title, *role.paragraphs]], positions=roles)
     profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [group])])
-    config = Config(LinkedIn(profile.username), experience=Experience(disable=[JobSelector(title="Intern")]))
+    config = Config(LinkedIn(profile.username), experience=Experience(disable=[JobSelector(title="Intern")]), project_filter=None)
     source = render_profile(profile, config, tmp_path).read_text()
     assert "https://example.org/kept" in source
     assert "hidden" not in source

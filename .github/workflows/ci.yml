@@ -4,7 +4,15 @@ on:
     branches: ['**']
     tags: ['**']
   pull_request:
+  schedule:
+    # Refresh on the first of each month at 06:17 UTC, away from the busiest start-of-hour queue.
+    - cron: '17 6 1 * *'
   workflow_dispatch:
+    inputs:
+      refresh:
+        description: Capture LinkedIn again before rebuilding main
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -19,21 +27,48 @@ jobs:
   source:
     name: Resolve pipeline source
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 30
     outputs:
       sha: ${{ steps.source.outputs.sha }}
+      refresh: ${{ steps.source.outputs.refresh }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
       - id: source
+        env:
+          REFRESH_PROFILE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) }}
         run: bash scripts/ci/source.sh
+      - uses: ./.github/actions/setup-project
+        if: steps.source.outputs.refresh == 'true'
+        with:
+          groups: main
+
+      # Hosted Ubuntu includes Firefox and geckodriver. Only this step receives LinkedIn authentication secrets.
+      - name: Refresh LinkedIn profile and downloaded media
+        if: steps.source.outputs.refresh == 'true'
+        env:
+          LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
+          LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+        run: poetry run resumeme capture --headless
+      - name: Export complete capture for downstream stages
+        if: steps.source.outputs.refresh == 'true'
+        run: poetry run python scripts/ci/profile-artifact.py export
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: steps.source.outputs.refresh == 'true'
+        with:
+          name: resumeme-profile
+          path: .cache/refresh/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
   summary-stage:
     name: Summarize
     needs: source
     uses: ./.github/workflows/stage-summary.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
+      refresh: ${{ needs.source.outputs.refresh == 'true' }}
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   test-stage:
@@ -42,6 +77,7 @@ jobs:
     uses: ./.github/workflows/stage-test.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
+      refresh: ${{ needs.source.outputs.refresh == 'true' }}
       summary: ${{ needs.summary-stage.outputs.generated == 'true' }}
   build-stage:
     name: Build
@@ -49,10 +85,8 @@ jobs:
     uses: ./.github/workflows/stage-build.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
+      refresh: ${{ needs.source.outputs.refresh == 'true' }}
       summary: ${{ needs.summary-stage.outputs.generated == 'true' }}
-    secrets:
-      COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
 
   # Run the gate after failures too; a skipped or cancelled upstream stage must never look like successful verification.
   verified:
@@ -77,11 +111,37 @@ jobs:
       contents: write
     with:
       sha: ${{ needs.source.outputs.sha }}
+      refresh: ${{ needs.source.outputs.refresh == 'true' }}
+
+  # A user-created tag chooses the committed PDF to sign and share; monthly and main-branch runs create no release.
+  release-stage:
+    name: Release signed PDF
+    needs: [source, verified]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    uses: ./.github/workflows/stage-release.yml
+    permissions:
+      contents: write
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+  # Version tags publish the verified Python distributions; the PyPI credential reaches only this stage.
+  pypi-stage:
+    name: Publish Python package
+    needs: [source, verified]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    uses: ./.github/workflows/stage-pypi.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
   # Tag publication owns registry writes and container release notes; branch and PR builds only exercise the image.
   container-stage:
     name: Publish container
-    needs: [source, verified]
+    needs: [source, verified, release-stage]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-container.yml
     permissions:

@@ -97,6 +97,20 @@ def _name(label: str, url: str = "") -> str:
     return match.group(1) if match else label or url or "Project attachment"
 
 
+def _sources(entry: Entry) -> set[str]:
+    """
+    Select observed project destinations without treating downloaded image assets as source pages.
+
+    Args:
+        entry (Entry): Explicit project or extracted attachment.
+
+    Returns:
+        set[str]: Resolved destinations where available, otherwise original links including image click targets.
+    """
+    destinations = {link.url: link.resolved_url or link.url for link in entry.links}
+    return {url for url in [*destinations.values(), *(destinations.get(image.link, image.link) for image in entry.images)] if url}
+
+
 def _keys(entry: Entry) -> set[str]:
     """
     Collect observed external identities for one project.
@@ -107,12 +121,7 @@ def _keys(entry: Entry) -> set[str]:
     Returns:
         set[str]: Canonical destinations, excluding shared LinkedIn viewers.
     """
-    destinations = {link.url: link.resolved_url or link.url for link in entry.links}
-    return {
-        key
-        for url in [*(destinations.values()), *(destinations.get(image.link, image.link) for image in entry.images)]
-        if (key := _destination(url))
-    }
+    return {key for url in _sources(entry) if (key := _destination(url))}
 
 
 def _merge(left: Entry, right: Entry) -> Entry:
@@ -141,7 +150,8 @@ def _merge(left: Entry, right: Entry) -> Entry:
         key = key or image.path or image.url
 
         if key not in images or (not images[key].path and image.path):
-            images[key] = image
+            # Preserve redirect resolution even if deduplication retains a different link alias for this image.
+            images[key] = evolve(image, link=destinations.get(image.link, image.link))
 
     # Deduplicating a destination must not discard different descriptions captured beside it in different roles.
     displayed = {left.title.casefold(), *(link.label.casefold() for link in links.values())}
@@ -156,7 +166,7 @@ def _merge(left: Entry, right: Entry) -> Entry:
     )
 
 
-def consolidate_projects(profile: Profile, *, enabled: bool) -> tuple[Profile, list[Link]]:
+def consolidate_projects(profile: Profile, *, enabled: bool, project_filter: str | None = None) -> tuple[Profile, list[Link]]:
     """
     Move role and Featured project attachments into one deduplicated display section.
 
@@ -166,10 +176,15 @@ def consolidate_projects(profile: Profile, *, enabled: bool) -> tuple[Profile, l
     Args:
         profile (Profile): Visible profile after employment and section filtering.
         enabled (bool): Whether the Projects section is enabled; false still removes relocated cards.
+        project_filter (str | None): Python regex searched against source URLs after deduplication; None includes unlinked projects too.
 
     Returns:
         tuple[Profile, list[Link]]: Display profile and moved source references for inline hyperlink resolution.
+
+    Raises:
+        re.PatternError: The source URL filter is not a valid Python regular expression.
     """
+    pattern = re.compile(project_filter) if project_filter is not None else None
     candidates = [entry for section in profile.sections if section.key == "projects" for entry in section.entries]
     references: list[Link] = []
 
@@ -305,13 +320,16 @@ def consolidate_projects(profile: Profile, *, enabled: bool) -> tuple[Profile, l
         for index in reversed(matches[1:]):
             del merged[index]
 
-    projects = Section("projects", "Projects", [entry for _, entry in merged])
+    # Merge first so an unlinked explicit entry can inherit its observed attachment's destination before filtering.
+    # Keep moved references available for hyperlinks in retained role narrative and Featured post text.
+    entries = [entry for _, entry in merged if pattern is None or any(pattern.search(url) for url in _sources(entry))]
+    projects = Section("projects", "Projects", entries)
     result: list[Section] = []
 
     for section in sections:
         if section.key != "projects":
             result.append(section)
-        elif enabled and not any(item.key == "projects" for item in result):
+        elif enabled and projects.entries and not any(item.key == "projects" for item in result):
             result.append(projects)
 
     if enabled and projects.entries and not any(section.key == "projects" for section in result):

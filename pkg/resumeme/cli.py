@@ -61,6 +61,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if name == "capture":
             command.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
+            command.add_argument("--headless", action="store_true", help="Capture unattended using LINKEDIN_USERNAME and LINKEDIN_PASSWORD")
 
         if name in {"render", "build"}:
             command.add_argument("--summary", type=Path, help="Generated summary JSON relative to the configuration directory")
@@ -75,7 +76,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if args.command in {"capture", "enrich"}:
             profile = (
-                capture_profile(config, root, args.connect_port)
+                capture_profile(config, root, args.connect_port, headless=args.headless)
                 if args.command == "capture"
                 else cache_media(load_profile(snapshot, config.linkedin.username), config, root)
             )

@@ -86,6 +86,7 @@ def test_contents_include_generated_sections_only_when_visible(tmp_path: Path, d
     config = Config(
         LinkedIn(profile.username),
         section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["projects", "skills"] if disabled else [])],
+        project_filter=None,
     )
     text = render_profile(profile, config, tmp_path).read_text()
     labels = re.findall(r"\\hyperlink\{resumeme-section-\d+\}\{([^}]*)\}", text)

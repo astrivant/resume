@@ -12,5 +12,10 @@ from resumeme.config import load_config, project_path
 # Decouple user-configurable output paths from the artifact name expected by signing and deploy stages.
 config = load_config(Path("resumeme.config.yaml"))
 artifact = Path(".cache/publication/resume.pdf")
+source = project_path(Path.cwd(), config.output.pdf)
+
+if not source.read_bytes().startswith(b"%PDF-"):
+    raise ValueError("The selected document is not a PDF. Build and commit the PDF before creating a release tag.")
+
 artifact.parent.mkdir(parents=True, exist_ok=True)
-shutil.copyfile(project_path(Path.cwd(), config.output.pdf), artifact)
+shutil.copyfile(source, artifact)

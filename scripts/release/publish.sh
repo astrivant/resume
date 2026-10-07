@@ -6,12 +6,14 @@ artifact_dir="${1:-.cache/publication}"
 # Verify again at the publication boundary, after artifacts have crossed job storage and download boundaries.
 bash scripts/release/verify.sh "$artifact_dir"
 
-# Key releases by source revision so reruns can reconcile the same release rather than create duplicates.
-tag="resume-${SOURCE_SHA}"
+# The caller selects an existing Git tag; releases never invent an automatic tag during monthly publication.
+tag="${RELEASE_TAG:?Set RELEASE_TAG to the user-created Git tag}"
+test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+test "$(git rev-parse "refs/tags/$tag^{commit}")" = "$SOURCE_SHA"
 notes="$RUNNER_TEMP/resume-release-notes.md"
 
 {
-    printf 'Resume built from source commit %s.\n\n' "$SOURCE_SHA"
+    printf 'Resume selected from tag %s at commit %s.\n\n' "$tag" "$SOURCE_SHA"
     printf 'Signing key fingerprint (SHA-256 of DER public key): %s.\n\n' "$(cat "$artifact_dir/key-fingerprint.txt")"
     printf 'PDF SHA-256: %s.\n\n' "$(shasum -a 256 "$artifact_dir/resume.pdf" | cut -d ' ' -f 1)"
     printf 'Verify the fingerprint against a trusted copy of the signing key, then run:\n\n'

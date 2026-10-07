@@ -110,7 +110,7 @@ after both the test and build stages succeed:
 2. The build stage installs the wheel in the production image, smoke-tests it,
    and uploads the tested image archive for tag runs.
 3. The verification gate checks all required stage results.
-4. The container publication stage loads that archive, checks its source revision,
+4. After the tag's signed PDF release succeeds, the container publication stage loads that archive, checks its source revision,
    and pushes it to GHCR with exponential retries. It does not rebuild the image.
 5. After both aliases are uploaded, the stage creates or updates the Git tag's
    GitHub release notes with the exact image paths and copyable `docker pull`
@@ -123,9 +123,9 @@ also adds `sha-<full-commit-sha>`. No moving `latest` tag is published. OCI labe
 record the source repository and commit. Publication references appear in the
 workflow summary and tag release notes. Reruns replace only the generated container
 section, preserving other notes, assets, and an existing release's draft status.
-New container releases use [`gh release create --latest=false`](https://cli.github.com/manual/gh_release_create)
-to keep signed PDF releases as the latest release. Signed PDF publication continues
-on `main` independently.
+The pipeline appends container instructions after the signed PDF release is
+published on the same tag. Main-branch and monthly runs update the working PDF
+without creating a release; see [monthly refresh and release](automation.md).
 
 The publication job uses the automatic `GITHUB_TOKEN` with `packages: write` for
 GHCR and `contents: write` for release notes; no PAT or extra repository secret is

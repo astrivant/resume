@@ -84,8 +84,10 @@ Once Firefox opens, tell the user to sign in there, complete any MFA, and leave
 the window open. The command detects login completion automatically and has no
 login deadline. Keep the process running while the user finds their password;
 poll its status without imposing a short overall command timeout or starting
-duplicate captures. Login credentials are entered in Firefox. The package does
-not read `LINKEDIN_USERNAME` or `LINKEDIN_PASSWORD` environment variables.
+duplicate captures. Login credentials can be entered in Firefox or supplied using
+`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD`; never request or print secret values
+in chat. Interactive capture still waits for manual MFA. The explicit `--headless`
+mode is for unattended CI and fails when an account challenge requires interaction.
 
 Wait for capture to finish successfully before validating or building. It saves
 the snapshot and downloaded media at the configured paths, normally
@@ -142,8 +144,10 @@ keys outside commits. Configure the fork's `COSIGN_PRIVATE_KEY` and, for an
 encrypted key, `COSIGN_PASSWORD` through GitHub secrets without printing their
 contents. Actions supplies the publication token.
 
-A push to `main` builds the committed snapshot, signs the PDF, commits it back,
-and publishes its verification artifacts. CI does not log into LinkedIn. Report
-hosted success only after the corresponding pipeline completes, and link the
-release. Container publication is a separate tag workflow; follow
-[container publication](docs/containers.md#publish-on-a-tag) only when requested.
+A push to `main` builds the committed snapshot and commits the PDF back. Monthly
+or manually requested refreshes authenticate to LinkedIn with Actions secrets and
+commit fresh inputs alongside the PDF after verification. User-created tags sign
+the PDF already committed at that revision and publish its verification artifacts.
+Follow [monthly refresh and release](docs/automation.md); report hosted success
+only after the corresponding pipeline completes. Container publication follows
+the signed release on the same tag.
