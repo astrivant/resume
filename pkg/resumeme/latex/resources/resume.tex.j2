@@ -41,7 +41,8 @@
 ((* if section.key == 'about' *))
 ((( render_text([heading], entry.links) )))
 ((* elif heading *))
-\Needspace{((* if entry.positions *))12((* elif section.key == 'education' *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
+((# Keep a company with its first role, and short jobs with their descriptions, when reflow approaches a page boundary. #))
+\Needspace{((* if entry.positions or (badge and entry.paragraphs|length <= 5) *))12((* elif section.key == 'education' *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
 ((* if badge and badge[0] == -1 *))
 ((( company_name(badge, heading, entry.links, heading=true) )))
 ((* elif project and project.title_url *))
@@ -178,6 +179,8 @@
 \newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{3pt}}
 % A left rule connects roles within a company and continues on subsequent pages without boxing the whole history.
 \newenvironment{roleprogression}{%
+  % Framed centers continuation pieces by default; keep the bar at the left when the next flow frame is wider.
+  \let\centerline\leftline
   \def\FrameCommand##1{\hspace{3mm}{\color{ink!25}\vrule width0.6pt}\hspace{3mm}##1}%
   \MakeFramed{\advance\hsize-\width\FrameRestore}%
 }{\endMakeFramed}

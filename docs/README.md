@@ -357,9 +357,9 @@ trusted fingerprint establishes whose key they are trusting.
 
 ## Pipeline and ownership
 
-The workflow follows Polyad's stage architecture: resolve one immutable source
-commit; run independent test and build stages; require both in `CI verification`;
-then publish the PDF only from `main`. Pushed tags publish the tested runtime
+CI resolves one immutable source commit, runs test and build stages in parallel,
+and requires both in `CI verification`. PDF publication runs only from `main`.
+Pushed tags publish the tested runtime
 container through a separate stage with `packages: write` and `contents: write`
 for the tag release's pull instructions; see
 [container publication](containers.md#publish-on-a-tag). Test and build jobs have read-only repository access.
@@ -376,41 +376,19 @@ PDF but failed during release publication, rerunning it recognizes that exact
 generated commit and resumes the release. Draft creation also reconciles an
 existing draft before retrying after a lost network response.
 
-The Python package separates capture from document generation:
+| Component | Responsibility | Interface |
+| --- | --- | --- |
+| `linkedin/` | Browser capture, parsing, link resolution, asset caching | `Profile` and cached PNGs |
+| `latex/` | Visibility, content organization, layout, compilation | Profile + config → TeX + PDF |
+| `visualization/` | Skill scoring and endorsement colors | Visible profile → cloud + score manifest |
+| `config.py`, `models.py`, `resources/` | Typed data contracts and JSON Schemas | YAML configuration and versioned JSON snapshot |
+| `cli.py` | Pipeline commands | `capture`, `enrich`, `validate`, `render`, `build` |
+| `scripts/` | Tooling, CI, and release automation | Workflow steps and package entry points |
 
-| Path under `pkg/resumeme/` | Responsibility |
-| --- | --- |
-| `linkedin/browser.py` | Firefox lifecycle, login, and expanded profile capture |
-| `linkedin/parsing.py` | LinkedIn HTML extraction into shared profile models |
-| `linkedin/links.py` | Safe URL normalization and prose link discovery without network access |
-| `linkedin/sections.py`, `linkedin/skills.py` | Section aliases, visible skill labels, and endorsement totals |
-| `linkedin/dates.py`, `latex/experience.py` | Employment date interpretation and job visibility before rendering |
-| `linkedin/media.py` | Link destination/title inspection, image previews, and portable PNG caching |
-| `linkedin/retrying.py` | Bounded exponential retries for browser operations |
-| `latex/escaping.py` | Literal text, emoji, and URL conversion for LaTeX |
-| `latex/header.py` | Concise identity text and optional connection counts and links |
-| `latex/headings.py` | Immediate parent/child heading comparison without changing captured content |
-| `latex/progression.py` | Company context and nested employment role views |
-| `latex/lists.py` | List-marker recognition, indentation, and literal prose blocks for rendering |
-| `latex/locations.py` | Job location metadata and Google Maps destinations |
-| `latex/projects.py` | Consolidated project cards, resolved-link deduplication, and retained role associations |
-| `latex/project_descriptions.py`, `latex/project_layout.py` | Attachment description ownership and project text/media ordering |
-| `latex/rendering.py` | Visibility filtering, asset staging, and strict Jinja rendering |
-| `latex/compilation.py` | Two-pass PDF compilation using the pinned TeX Live container |
-| `latex/resources/` | Packaged Jinja template and compiler image manifest |
-| `visualization/skills.py` | Skill scoring, deterministic word clouds, and score manifests |
-| `config.py`, `models.py`, `resources/` | Shared configuration, profile records, persistence, and schemas |
-| `cli.py` | Command orchestration across capture, validation, rendering, and compilation |
-| `tests/` | Package-local unit tests and pipeline integration tests |
-
-Capture produces a `Profile` snapshot and cached images. Rendering consumes those
-inputs without contacting LinkedIn and passes escaped values to Jinja; Jinja owns
-template parsing. Compilation consumes the generated TeX and staged images to
-produce the PDF. Both domains use the shared configuration and profile models.
-
-`scripts/` contains repository tooling, CI transport, and release orchestration.
-`tex/` holds generated source; `data/` holds owner inputs; `.cache/` holds temporary
-browser, test, build, and signing data. The reference projects are not dependencies.
+`data/` contains committed inputs, `tex/` contains generated source, and `.cache/`
+contains local browser state and build intermediates. Capture owns network access;
+rendering and compilation consume local inputs. See the
+[template interface](templates.md) for rendering extensions.
 
 ### Document review
 
