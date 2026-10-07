@@ -1,0 +1,104 @@
+[project]
+name = "resume"
+version = "0.1.0"
+description = "Turn an expanded LinkedIn profile into a reproducible, illustrated PDF resume"
+authors = [{name = "Emma Doyle"}]
+readme = "README.md"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+requires-python = ">=3.13,<4.0"
+classifiers = ["Programming Language :: Python :: 3 :: Only", "Typing :: Typed"]
+dependencies = [
+    "requests>=2.32.5,<3",
+    "selenium>=4.40,<5",
+    "beautifulsoup4>=4.14,<5",
+    "PyYAML>=6,<7",
+    "attrs>=25,<27",
+    "cattrs>=25,<27",
+    "Jinja2>=3.1.6,<4",
+    "jsonschema>=4.26,<5",
+    "Pillow>=12,<13",
+]
+
+[project.scripts]
+resume = "resume.cli:main"
+
+[tool.poetry]
+packages = [{include = "resume", from = "pkg"}]
+include = [{path = "pkg/resume/resources/**/*", format = ["sdist", "wheel"]}]
+exclude = ["pkg/resume/tests"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=9,<10"
+pytest-cov = ">=7,<8"
+hypothesis = ">=6.131,<7"
+ruff = "^0.15"
+mypy = "^1.15"
+pre-commit = "4.6.0"
+pydocstyle = "6.3.0"
+pydoclint = "0.6.6"
+types-requests = ">=2.32,<3"
+types-PyYAML = ">=6,<7"
+types-jsonschema = ">=4.26,<5"
+shellcheck-py = "0.11.0.1"
+shfmt-py = "3.12.0.2"
+pypdf = ">=6,<7"
+
+[build-system]
+requires = ["poetry-core==2.2.1"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["pkg/resume/tests"]
+addopts = "-ra"
+
+[tool.coverage.run]
+relative_files = true
+source = ["pkg/resume"]
+omit = ["*/tests/*"]
+data_file = ".cache/coverage/.coverage"
+
+[tool.ruff]
+src = ["pkg"]
+line-length = 140
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "D", "TC"]
+ignore = ["D200", "D202", "D212"]
+extend-select = ["D213"]
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.lint.flake8-type-checking]
+strict = true
+exempt-modules = []
+runtime-evaluated-decorators = ["attrs.define", "attrs.frozen"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["pkg", "scripts"]
+disallow_any_explicit = true
+disallow_any_unimported = true
+
+[tool.pydocstyle]
+convention = "google"
+add-ignore = ["D200", "D202", "D212"]
+add-select = ["D213"]
+match = ".*\\.py"
+
+[tool.pydoclint]
+style = "google"
+skip-checking-short-docstrings = false
+arg-type-hints-in-docstring = true
+arg-type-hints-in-signature = true
+check-return-types = true
+check-arg-order = true
+allow-init-docstring = true
+require-return-section-when-returning-nothing = true
+skip-checking-raises = true
