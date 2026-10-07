@@ -32,6 +32,8 @@ __all__ = [
     "LinkedIn",
     "Output",
     "Ownership",
+    "ProjectSelector",
+    "Projects",
     "Readme",
     "Style",
     "StyleOverrides",
@@ -223,6 +225,32 @@ class Education:
 
 
 @frozen
+class ProjectSelector:
+    """
+    Select a displayed project by name and optional captured affiliation.
+
+    Attributes:
+        name (str): Exact displayed project name, ignoring case and repeated whitespace.
+        affiliation (str | None): Captured company or organization, or any affiliation when omitted.
+    """
+
+    name: str
+    affiliation: str | None = None
+
+
+@frozen
+class Projects:
+    """
+    Restrict consolidated project tiles without altering the saved profile.
+
+    Attributes:
+        include (list[ProjectSelector] | None): Alternative selectors; None allows all names, while an empty list selects none.
+    """
+
+    include: list[ProjectSelector] | None = None
+
+
+@frozen
 class Output:
     """
     Keep portable inputs and generated outputs beneath the configuration root.
@@ -353,6 +381,7 @@ class Config:
         project_filter (str | None): Source URL regex selecting Projects entries, or None to retain every project.
         education (Education): School, degree, and major exclusions.
         readme (Readme): Automatic personal README publication on forks.
+        projects (Projects): Optional project names and affiliations to include alongside the source URL filter.
     """
 
     linkedin: LinkedIn
@@ -367,6 +396,7 @@ class Config:
     project_filter: str | None = DEFAULT_PROJECT_FILTER
     education: Education = field(factory=Education)
     readme: Readme = field(factory=Readme)
+    projects: Projects = field(factory=Projects)
 
 
 def project_path(root: Path, value: str) -> Path:

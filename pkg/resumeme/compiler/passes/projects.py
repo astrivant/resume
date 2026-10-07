@@ -11,6 +11,7 @@ from urllib.parse import urlsplit, urlunsplit
 from attrs import evolve
 
 from resumeme.compiler.asts.dates import employment_period
+from resumeme.compiler.asts.names import company_key
 from resumeme.compiler.asts.profile import Entry, Link, Section
 from resumeme.compiler.passes.experience import regroup_positions
 from resumeme.compiler.passes.media import image_role
@@ -18,8 +19,51 @@ from resumeme.compiler.passes.project_descriptions import partition_descriptions
 
 if TYPE_CHECKING:
     from resumeme.compiler.asts.profile import Media, Profile
+    from resumeme.config import ProjectSelector
 
 __all__ = ["consolidate_projects"]
+
+type _ProjectKey = str | tuple[str, str]
+
+
+def _name_key(value: str) -> str:
+    """
+    Compare literal project names independently of display case and spacing.
+
+    Args:
+        value (str): Displayed name or configured selector.
+
+    Returns:
+        str: Case-folded name with collapsed whitespace.
+    """
+    return " ".join(value.split()).casefold()
+
+
+def _affiliations(entry: Entry) -> set[str]:
+    """
+    Read organizations from explicit associations and extracted role provenance.
+
+    Args:
+        entry (Entry): Project containing captured or generated association rows.
+
+    Returns:
+        set[str]: Normalized affiliations, excluding arbitrary description mentions.
+    """
+    result: set[str] = set()
+
+    for paragraph in entry.paragraphs:
+        for line in paragraph.splitlines():
+            label = " ".join(line.split())
+
+            # Extracted roles use 'Associated with ROLE at COMPANY'; native projects name their organization directly.
+            if label.casefold().startswith("associated with "):
+                association = label[len("Associated with ") :]
+                company = re.split(r" at ", association, flags=re.IGNORECASE)[-1]
+
+                if company_key(company):
+                    result.add(company_key(company))
+
+    return result
 
 
 def _association(entry: Entry) -> str:
@@ -166,7 +210,9 @@ def _merge(left: Entry, right: Entry) -> Entry:
     )
 
 
-def consolidate_projects(profile: Profile, *, enabled: bool, project_filter: str | None = None) -> tuple[Profile, list[Link]]:
+def consolidate_projects(
+    profile: Profile, *, enabled: bool, project_filter: str | None = None, include: list[ProjectSelector] | None = None
+) -> tuple[Profile, list[Link]]:
     """
     Move role and Featured project attachments into one deduplicated display section.
 
@@ -177,6 +223,7 @@ def consolidate_projects(profile: Profile, *, enabled: bool, project_filter: str
         profile (Profile): Visible profile after employment and section filtering.
         enabled (bool): Whether the Projects section is enabled; false still removes relocated cards.
         project_filter (str | None): Python regex searched against source URLs after deduplication; None includes unlinked projects too.
+        include (list[ProjectSelector] | None): Alternative name/affiliation selectors applied after consolidation; None keeps all names.
 
     Returns:
         tuple[Profile, list[Link]]: Display profile and moved source references for inline hyperlink resolution.
@@ -285,20 +332,36 @@ def consolidate_projects(profile: Profile, *, enabled: bool, project_filter: str
 
         sections.append(section)
 
-    # Only an unambiguous title can connect a URL-less project to its observed attachment; conflicting URLs remain distinct.
+    # Associate URL-less descriptions only with unambiguous names within their captured organization.
+    # An unknown affiliation cannot bridge same-named projects at different companies.
     named: dict[str, set[str]] = {}
+    affiliated: dict[tuple[str, str], set[str]] = {}
+    companies: dict[str, set[str]] = {}
 
     for entry in candidates:
-        named.setdefault(entry.title.casefold(), set()).update(_keys(entry))
+        name = _name_key(entry.title)
+        named.setdefault(name, set()).update(_keys(entry))
+        affiliations = _affiliations(entry)
+        companies.setdefault(name, set()).update(affiliations)
 
-    merged: list[tuple[set[str], Entry]] = []
+        for affiliation in affiliations:
+            affiliated.setdefault((name, affiliation), set()).update(_keys(entry))
+
+    merged: list[tuple[set[_ProjectKey], Entry]] = []
 
     for entry in candidates:
-        keys = _keys(entry)
-        name = entry.title.casefold()
+        keys: set[_ProjectKey] = set(_keys(entry))
+        name = _name_key(entry.title)
+        affiliations = _affiliations(entry)
 
-        if len(named[name]) <= 1:
-            keys.add(f"name:{name}")
+        if len(named[name]) <= 1 and len(companies[name]) <= 1:
+            keys.add((name, ""))
+
+        # A multi-affiliation record is not evidence that two different URLs identify the same project.
+        destinations = {url for affiliation in affiliations for url in affiliated[(name, affiliation)]}
+
+        if len(destinations) <= 1:
+            keys.update((name, affiliation) for affiliation in affiliations)
 
         matches = [index for index, (existing, _) in enumerate(merged) if keys & existing]
 
@@ -322,7 +385,19 @@ def consolidate_projects(profile: Profile, *, enabled: bool, project_filter: str
 
     # Merge first so an unlinked explicit entry can inherit its observed attachment's destination before filtering.
     # Keep moved references available for hyperlinks in retained role narrative and Featured post text.
-    entries = [entry for _, entry in merged if pattern is None or any(pattern.search(url) for url in _sources(entry))]
+    entries = [
+        entry
+        for _, entry in merged
+        if (pattern is None or any(pattern.search(url) for url in _sources(entry)))
+        and (
+            include is None
+            or any(
+                _name_key(selector.name) == _name_key(entry.title)
+                and (selector.affiliation is None or company_key(selector.affiliation) in _affiliations(entry))
+                for selector in include
+            )
+        )
+    ]
     projects = Section("projects", "Projects", entries)
     result: list[Section] = []
 

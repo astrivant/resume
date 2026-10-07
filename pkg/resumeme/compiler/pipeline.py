@@ -176,7 +176,9 @@ def render_profile(
         )
 
     # Consolidate only retained roles and posts, so exclusions cannot leak project cards back into the document.
-    visible, project_links = consolidate_projects(visible, enabled="projects" in enabled, project_filter=config.project_filter)
+    visible, project_links = consolidate_projects(
+        visible, enabled="projects" in enabled, project_filter=config.project_filter, include=config.projects.include
+    )
 
     # LinkedIn's collapsed counts refer to captured tags or reverse Skills associations, not printable skill names.
     visible = expand_skill_summaries(visible)

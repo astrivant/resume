@@ -76,6 +76,17 @@ section_order:
 # Single quotes preserve regex backslashes. The default matches github.com, ignoring case.
 project_filter: '(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
 
+projects:
+
+  # null keeps all names allowed by project_filter; [] hides every project tile.
+  # Select by displayed name, with an optional company/organization to distinguish same-named projects.
+  # Matching ignores case and repeated spaces. The source URL filter above still applies.
+  include: null
+  # include:
+  #   - name: resumeme
+  #   - name: Deployment platform
+  #     affiliation: Example Company
+
 experience:
 
   # Match a job title, company, or both (case-insensitive).

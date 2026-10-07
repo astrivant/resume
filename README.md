@@ -11,9 +11,25 @@ version you want to share to get a signed release.
 
 **[View the résumé (PDF)](resume.pdf)** · [Fork this project](https://github.com/astrivant/resume/fork)
 
+## Why use resumeme?
+
+- **Review your résumé in Git.** Profile text, images, configuration, and templates
+  live in your repository. Changes have diffs and history.
+- **Keep the engineering detail.** Expanded descriptions, project links, company
+  logos, and illustrations flow across plain US Letter pages in Garamond, with a
+  two-column first page for your profile, contact information, and About section.
+- **Keep it current and release deliberately.** Monthly CI refreshes LinkedIn and
+  commits the PDF. Tag a revision to publish its signed PDF through the GitHub CLI.
+- **Share verifiable output.** Cosign signatures, verification bundles, checksums,
+  and a public-key fingerprint accompany each release.
+- **Own the presentation.** Adjust paper size, colors, or text size in YAML, or
+  select an [inline theme](docs/themes.md), including the autumn-colored `tiger`
+  option. Custom LaTeX templates can change the layout without changing the collector.
+
 ## Contents
 
 - [resumeme](#resumeme)
+  - [Why use resumeme?](#why-use-resumeme)
   - [Contents](#contents)
   - [Quick start](#quick-start)
     - [1. Install](#1-install)
@@ -22,7 +38,6 @@ version you want to share to get a signed release.
     - [3. Publish](#3-publish)
     - [Use with an AI agent](#use-with-an-ai-agent)
   - [How it works](#how-it-works)
-    - [Why use resumeme?](#why-use-resumeme)
   - [Update your résumé](#update-your-résumé)
     - [Refresh your profile](#refresh-your-profile)
     - [Refresh links and previews](#refresh-links-and-previews)
@@ -143,21 +158,6 @@ fingerprint to the committed PDF's footer, sign it, and publish a release.
 Pull requests validate without publishing or signing in.
 
 See [configuration, architecture, and capture limits](docs/README.md) for the details.
-
-### Why use resumeme?
-
-- **Review your résumé in Git.** Profile text, images, configuration, and templates
-  live in your repository. Changes have diffs and history.
-- **Keep the engineering detail.** Expanded descriptions, project links, company
-  logos, and illustrations flow across plain US Letter pages in Garamond, with a
-  two-column first page for your profile, contact information, and About section.
-- **Keep it current and release deliberately.** Monthly CI refreshes LinkedIn and
-  commits the PDF. Tag a revision to publish its signed PDF through the GitHub CLI.
-- **Share verifiable output.** Cosign signatures, verification bundles, checksums,
-  and a public-key fingerprint accompany each release.
-- **Own the presentation.** Adjust paper size, colors, or text size in YAML, or
-  select an [inline theme](docs/themes.md), including the autumn-colored `tiger`
-  option. Custom LaTeX templates can change the layout without changing the collector.
 
 ## Update your résumé
 

@@ -55,7 +55,10 @@ def summary_evidence(profile: Profile, config: Config) -> dict[str, object]:
     """
     visible = visible_profile(profile, config)
     visible, _ = consolidate_projects(
-        visible, enabled="projects" in {section_key(key) for key in config.section_order}, project_filter=config.project_filter
+        visible,
+        enabled="projects" in {section_key(key) for key in config.section_order},
+        project_filter=config.project_filter,
+        include=config.projects.include,
     )
 
     # Company groups retain their role boundaries without repeating each child's description in the parent.

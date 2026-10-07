@@ -491,6 +491,26 @@
         }
       }
     },
+    "projects": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include": {
+          "type": ["array", "null"],
+          "default": null,
+          "description": "Project names and optional affiliations to display. Null keeps all names; [] selects none. The source URL filter still applies.",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string", "pattern": "\\S"},
+              "affiliation": {"type": "string", "pattern": "\\S"}
+            }
+          }
+        }
+      }
+    },
     "project_filter": {
       "description": "Python regex searched against resolved project source URLs, falling back to captured URLs. Null includes all projects, including unlinked entries.",
       "type": [
