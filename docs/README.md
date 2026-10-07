@@ -61,7 +61,8 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `project_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
 | `projects.include` | `null` | Project selectors requiring `name` with optional `affiliation`; `null` keeps all names, `[]` selects none |
 | `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
-| `experience.last_years` | `null` | Include jobs overlapping the trailing N calendar years; null keeps all dates |
+| `experience.last_years` | `null` | Trailing N calendar years when `since` is unset; null keeps all dates |
+| `experience.since` | `null` | Inclusive fixed start date; overrides `last_years` when set |
 | `experience.as_of` | `null` | Quoted ISO date fixing the window endpoint; null uses today's UTC date |
 | `experience.reflow_soft_breaks` | `true` | Join wrapped job prose and bullet continuations; false retains captured line boundaries |
 | `experience.subheadings` | Built-in job labels | Complete standalone subsection labels; a supplied list replaces the defaults and `[]` disables recognition |
@@ -200,6 +201,7 @@ experience:
       company: Example Company
     - company: Another Employer
   last_years: 5
+  since: null
   as_of: null
 ```
 
@@ -209,15 +211,20 @@ experience:
   its roles; a title-only selector hides that title at every employer. Copy titles
   and employer names from the Experience entries in `data/profile.json`, omitting
   the employer's middle-dot separator and `Full-time` or similar employment-type suffix.
-- `last_years` is a positive integer, or `null` to keep all dates. Jobs are included
+- `last_years` is a positive integer, or `null` to keep all dates when `since` is unset. Jobs are included
   when any part of their employment overlaps the inclusive window from N calendar
   years before `as_of` through `as_of`. A job does not have to start inside it.
   Explicit exclusions still take precedence. Future jobs outside the window are
   omitted; current jobs that have already started are included.
+- `since` is a quoted `YYYY-MM-DD` string defining a fixed inclusive start, or
+  `null` to use `last_years`. When set, it overrides `last_years` and must be on or
+  before the effective `as_of` date. For example, `since: '2020-06-01'` with
+  `as_of: null` keeps jobs overlapping June 1, 2020 through today, including jobs
+  that started earlier and ended on or after that date. The start never advances.
 - `as_of` is a quoted `YYYY-MM-DD` string, or `null` for the current UTC date when
-  rendering. Pin it for repeatable historical builds; with `null`, the window
-  advances over time even if the snapshot does not change. A February 29 anniversary
-  becomes February 28 in a non-leap cutoff year.
+  rendering. Pin it for repeatable historical builds; with `null`, the endpoint
+  advances over time even if the snapshot does not change. When using `last_years`,
+  a February 29 anniversary becomes February 28 in a non-leap cutoff year.
 
 For example, five years ending on `2026-10-07` includes a role held from `2018` to
 `2022` and one ending exactly on `2021-10-07`. A role ending on `2021-10-06` is

@@ -97,6 +97,7 @@ def test_employment_date_precision(text: str, expected: EmploymentPeriod | None)
     assert employment_period(text) == expected
 
 
+@pytest.mark.parametrize("fixed_start", [False, True])
 @pytest.mark.parametrize(
     ("period", "included"),
     [
@@ -113,19 +114,20 @@ def test_employment_date_precision(text: str, expected: EmploymentPeriod | None)
         ("", True),
     ],
 )
-def test_trailing_years_includes_any_overlap(period: str, included: bool) -> None:
+def test_employment_window_includes_any_overlap(period: str, included: bool, fixed_start: bool) -> None:
     """
     Include jobs spanning the cutoff and its boundary day, without shortening their descriptions.
 
     Args:
         period (str): Captured date metadata, possibly absent or unsupported.
         included (bool): Whether the job overlaps the fixed five-year window.
+        fixed_start (bool): Whether an explicit start replaces the equivalent trailing-year cutoff.
 
     Returns:
         None: Inclusion uses the whole employment interval and leaves source records unchanged.
     """
     job = Entry("Engineer", ["Example \u00b7 Full-time", period, "Complete description"])
-    settings = Experience(last_years=5, as_of="2026-10-07")
+    settings = Experience(last_years=None if fixed_start else 5, since="2021-10-07" if fixed_start else None, as_of="2026-10-07")
     assert filter_experience([job], settings) == ([job] if included else [])
     assert job.paragraphs[-1] == "Complete description"
 
@@ -142,6 +144,41 @@ def test_default_clock_override_and_leap_day() -> None:
     assert filter_experience(jobs, Experience(last_years=1, as_of="2023-01-01"), today=date(2090, 1, 1)) == jobs
     assert filter_experience(jobs, Experience(), today=date(2090, 1, 1)) == jobs
     assert filter_experience(jobs, Experience(last_years=9999), today=date(2024, 2, 29)) == jobs
+
+
+def test_since_stays_fixed_and_overrides_trailing_years() -> None:
+    """
+    Keep the inclusive start fixed across later builds without requiring users to clear last_years.
+
+    Returns:
+        None: Boundary-day roles survive, earlier roles stay excluded, and explicit job exclusions still apply.
+    """
+    earlier = Entry("Earlier", ["Example", "2018 - 2020-05-31"])
+    boundary = Entry("Boundary", ["Example", "2018 - 2020-06-01"])
+    ongoing = Entry("Ongoing", ["Example", "2018 - Present"])
+    jobs = [earlier, boundary, ongoing]
+    settings = Experience(since="2020-06-01", last_years=5)
+
+    for today in (date(2026, 10, 7), date(2035, 10, 7)):
+        assert filter_experience(jobs, settings, today=today) == [boundary, ongoing]
+
+    assert filter_experience(jobs, evolve(settings, as_of="2020-06-01")) == [boundary, ongoing]
+    assert filter_experience(jobs, evolve(settings, disable=[JobSelector(title="Boundary")])) == [ongoing]
+
+
+@pytest.mark.parametrize("as_of", [None, "2020-05-31"])
+def test_since_rejects_reversed_window(as_of: str | None) -> None:
+    """
+    Reject fixed starts after either an explicit endpoint or the current UTC date.
+
+    Args:
+        as_of (str | None): Pinned endpoint or clock-selected endpoint.
+
+    Returns:
+        None: Invalid windows fail with the configuration keys needed to correct them.
+    """
+    with pytest.raises(ValueError, match=r"experience.since.*experience.as_of"):
+        filter_experience([], Experience(since="2020-06-01", as_of=as_of), today=date(2020, 5, 31))
 
 
 def test_job_selectors_match_all_supplied_fields() -> None:
@@ -164,13 +201,15 @@ def test_job_selectors_match_all_supplied_fields() -> None:
 
 
 @pytest.mark.parametrize("custom_template", [False, True])
-def test_grouped_roles_filter_before_templates_assets_and_skills(tmp_path: Path, custom_template: bool) -> None:
+@pytest.mark.parametrize("fixed_start", [False, True])
+def test_grouped_roles_filter_before_templates_assets_and_skills(tmp_path: Path, custom_template: bool, fixed_start: bool) -> None:
     """
     Exclude individual roles and all their associated content while preserving the company's current role.
 
     Args:
         tmp_path (Path): Temporary project directory.
         custom_template (bool): Whether to inspect the full profile supplied to a custom template.
+        fixed_start (bool): Whether the role cutoff uses an explicit date rather than trailing years.
 
     Returns:
         None: Removed role text, media, links, and skill tags do not reach either template or cloud input.
@@ -190,7 +229,8 @@ def test_grouped_roles_filter_before_templates_assets_and_skills(tmp_path: Path,
     # Compare the persisted input after rendering as well as the output, since filters must remain reversible without recapture.
     original = snapshot.read_bytes()
     assert load_profile(snapshot, profile.username) == profile
-    config = Config(LinkedIn(profile.username), experience=Experience(last_years=5, as_of="2026-10-07"))
+    settings = Experience(last_years=None if fixed_start else 5, since="2021-10-07" if fixed_start else None, as_of="2026-10-07")
+    config = Config(LinkedIn(profile.username), experience=settings)
 
     if custom_template:
         (tmp_path / "custom.tex.j2").write_text("((( profile )))", encoding="utf-8")
@@ -295,6 +335,10 @@ def test_empty_profiles_and_disabled_experience(tmp_path: Path) -> None:
         "{disable: [{company: null}]}",
         "{disable: [{title: Engineer, employer: Example}]}",
         "{as_of: '2026-02-30'}",
+        "{since: '2020-02-30'}",
+        "{since: '06/01/2020'}",
+        "{since: 2020-06-01}",
+        "{since: true}",
         "{last_year: 5}",
     ],
 )
@@ -334,3 +378,29 @@ def test_experience_config_defaults_and_roundtrip(tmp_path: Path) -> None:
         stream.write("experience:\n  disable: [{title: DevOps Engineer, company: HqO}]\n  last_years: 5\n  as_of: '2026-10-07'\n")
 
     assert load_config(path).experience == Experience([JobSelector("DevOps Engineer", "HqO")], 5, "2026-10-07")
+
+    # The fixed start is independently optional and takes precedence over an existing relative window.
+    with path.open("a", encoding="utf-8") as stream:
+        stream.write("  since: '2020-06-01'\n")
+
+    settings = load_config(path).experience
+    assert settings.since == "2020-06-01"
+    assert settings.last_years == 5
+    assert settings.as_of == "2026-10-07"
+
+
+def test_config_rejects_reversed_explicit_dates(tmp_path: Path) -> None:
+    """
+    Validate explicit interval ordering before capture or rendering begins.
+
+    Args:
+        tmp_path (Path): Temporary configuration directory.
+
+    Returns:
+        None: Two valid dates cannot silently form an empty reversed interval.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text("linkedin:\n  username: example-person\nexperience: {since: '2020-06-01', as_of: '2020-05-31'}\n")
+
+    with pytest.raises(ValueError, match=r"experience.since.*experience.as_of"):
+        load_config(path)

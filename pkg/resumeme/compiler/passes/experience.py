@@ -246,24 +246,31 @@ def filter_experience(entries: list[Entry], settings: Experience, *, today: date
 
     Args:
         entries (list[Entry]): Experience entries in display order.
-        settings (Experience): Job exclusions and optional trailing calendar-year window.
+        settings (Experience): Job exclusions and an optional fixed or trailing calendar-year window.
         today (date | None): Explicit current UTC date for deterministic callers; defaults to the clock.
 
     Returns:
         list[Entry]: Selected jobs with original descriptions and dates intact.
+
+    Raises:
+        ValueError: The fixed start is after the effective endpoint, or a legacy group cannot be safely separated.
     """
 
     # Preserve the original records when filtering is disabled, including legacy groups without role boundaries.
-    if not settings.disable and settings.last_years is None:
+    if not settings.disable and settings.last_years is None and settings.since is None:
         return entries
 
     # A pinned endpoint makes rebuilds repeatable; otherwise use one UTC date consistently for every job in this call.
     as_of = date.fromisoformat(settings.as_of) if settings.as_of else today or datetime.now(UTC).date()
-    cutoff = None
+    cutoff = date.fromisoformat(settings.since) if settings.since else None
 
-    if settings.last_years is not None:
+    # A fixed start stays put as the endpoint advances; users need not clear last_years when switching to it.
+    if cutoff is None and settings.last_years is not None:
         # Subtract calendar years, not 365-day intervals, and clamp leap-day anniversaries to an existing date.
         year = as_of.year - settings.last_years
         cutoff = date(year, as_of.month, min(as_of.day, calendar.monthrange(year, as_of.month)[1])) if year > 0 else date.min
+
+    if cutoff is not None and cutoff > as_of:
+        raise ValueError(f"experience.since must be on or before the effective experience.as_of ({as_of.isoformat()}).")
 
     return [selected for entry in entries if (selected := _select(entry, settings, cutoff, as_of)) is not None]

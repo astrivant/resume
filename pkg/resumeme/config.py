@@ -223,10 +223,11 @@ class Experience:
 
     Attributes:
         disable (list[JobSelector]): Exclusions applied before the date window.
-        last_years (int | None): Include jobs overlapping this many trailing calendar years, or all dates when omitted.
+        last_years (int | None): Trailing calendar-year window when since is unset; None keeps all dates.
         as_of (str | None): ISO date fixing the window's endpoint; otherwise use the current UTC date.
         subheadings (list[str]): Standalone job subsection labels, matched in full without case or a trailing colon.
         reflow_soft_breaks (bool): Join soft line breaks within job text; False retains captured line boundaries.
+        since (str | None): Inclusive ISO start date, taking precedence over last_years when set.
     """
 
     disable: list[JobSelector] = field(factory=list)
@@ -234,6 +235,7 @@ class Experience:
     as_of: str | None = None
     subheadings: list[str] = field(factory=lambda: list(BODY_HEADINGS))
     reflow_soft_breaks: bool = True
+    since: str | None = None
 
 
 @frozen
@@ -475,7 +477,7 @@ def load_config(path: Path) -> Config:
 
     Raises:
         jsonschema.ValidationError: A value is invalid or a field is unknown.
-        ValueError: A path escapes the project directory or the selected theme is not defined.
+        ValueError: A configured date window, identity, theme, or project path is inconsistent.
     """
 
     # Validate raw types before cattrs can coerce them, including real calendar dates for the job window.
@@ -483,6 +485,10 @@ def load_config(path: Path) -> Config:
     schema = json.loads(files(AST_PACKAGE).joinpath(CONFIG_SCHEMA).read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
+
+    # Validated ISO dates sort chronologically; reject reversed explicit bounds before any capture or rendering work.
+    if config.experience.since and config.experience.as_of and config.experience.since > config.experience.as_of:
+        raise ValueError("experience.since must be on or before experience.as_of.")
 
     # Distinct URLs for the same LinkedIn job can differ only in tracking parameters; never let them overwrite one output.
     company_keys = [company.key for company in config.codex.companies]

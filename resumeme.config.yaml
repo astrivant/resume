@@ -105,7 +105,12 @@ experience:
       company: PremiScale
 
   # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
+  # Used only when since is null.
   last_years: 5
+
+  # Optional fixed inclusive start, e.g. '2020-06-01'; overrides last_years and stays fixed as time advances.
+  # Jobs that started earlier are included if they overlap this date or any later part of the window.
+  since: '2021-08-01'
 
   # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
   # null uses today's UTC date. Keep explicit dates quoted.
