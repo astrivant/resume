@@ -25,11 +25,15 @@ class Link:
 
     Attributes:
         label (str): Text displayed beside the destination.
-        url (str): Absolute HTTP(S) destination.
+        url (str): Original absolute HTTP(S) destination retained for provenance and text matching.
+        resolved_url (str): Final destination observed during optional link inspection, empty when not inspected.
+        title (str): Page title observed during inspection, empty when unavailable.
     """
 
     label: str
     url: str
+    resolved_url: str = ""
+    title: str = ""
 
 
 @frozen

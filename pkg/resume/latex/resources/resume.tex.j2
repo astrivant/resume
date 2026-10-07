@@ -11,13 +11,13 @@
 ((* for entry in section.entries *))
 ((* if not loop.first *))\par\addvspace{9pt}((* endif *))
 ((* if section.key == 'about' *))
-\profileparagraph{((( entry.title|tex )))}
+\profileparagraph{((( entry.title|tex_links(entry.links) )))}
 ((* else *))
 \Needspace{3\baselineskip}
-\entrytitle{((( entry.title|tex )))}
+\entrytitle{((( entry.title|tex_links(entry.links) )))}
 ((* endif *))
 ((* for paragraph in entry.paragraphs *))
-\profileparagraph{((( paragraph|tex )))}
+\profileparagraph{((( paragraph|tex_links(entry.links) )))}
 ((* endfor *))
 ((# Match the source hierarchy: featured illustrations, compact attachments, organization logos, then tiny site icons. #))
 ((* if entry.images *))\profileparagraph{((* endif *))
@@ -39,10 +39,10 @@
 ((* endfor -*))
 ((* if entry.images *))}((* endif *))
 ((* for link in entry.links *))
-((* if link.label == link.url *))
-\profileparagraph{{\small\url{((( link.url )))}}}
+((* if link.label == link.url and not link.title *))
+\profileparagraph{{\small ((( link.label|tex_links([link]) )))}}
 ((* else *))
-\profileparagraph{{\small\href{((( link.url|url )))}{((( link.label|tex )))}}}
+\profileparagraph{{\small\href{((( (link.resolved_url or link.url)|url )))}{((( (link.title if link.label == link.url else link.label)|tex )))}}}
 ((* endif *))
 ((* endfor *))
 ((* endfor *))
@@ -143,14 +143,14 @@
 ((* endif *))
 ((* endfor *))
 ((* for line in profile.intro *))
-((( line|tex )))\par
+((( line|tex_links(profile.links) )))\par
 ((* endfor *))
 \href{https://www.linkedin.com/in/((( profile.username|url )))/}{\textbf{LinkedIn profile}}\par
 ((* for link in profile.links *))
-((* if link.label == link.url *))
-\url{((( link.url )))}\par
+((* if link.label == link.url and not link.title *))
+((( link.label|tex_links([link]) )))\par
 ((* else *))
-\href{((( link.url|url )))}{((( link.label|tex )))}\par
+\href{((( (link.resolved_url or link.url)|url )))}{((( (link.title if link.label == link.url else link.label)|tex )))}\par
 ((* endif *))
 ((* endfor *))
 \par\addvspace{12pt}

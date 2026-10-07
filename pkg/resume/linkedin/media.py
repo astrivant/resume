@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import re
 import socket
 import sys
 import time
@@ -21,7 +22,8 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from resume.config import project_path
-from resume.linkedin.parsing import safe_url
+from resume.linkedin.links import discover_profile_links, safe_url
+from resume.models import Entry, Media
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -29,7 +31,7 @@ if TYPE_CHECKING:
     from urllib3.response import BaseHTTPResponse
 
     from resume.config import Config
-    from resume.models import Entry, Media, Profile
+    from resume.models import Profile
 
 __all__ = ["cache_media", "fetch_public"]
 
@@ -176,9 +178,9 @@ def _download(image: Media, session: requests.Session, root: Path, config: Confi
     return evolve(image, path=path.relative_to(root).as_posix())
 
 
-def _preview(url: str, session: requests.Session, timeout: int) -> str:
+def _preview(url: str, session: requests.Session, timeout: int) -> tuple[str, str, str]:
     """
-    Find a project's Open Graph image or site icon without recursively crawling.
+    Inspect a final destination, page title, and preview image without recursively crawling.
 
     Args:
         url (str): Linked project destination.
@@ -186,24 +188,42 @@ def _preview(url: str, session: requests.Session, timeout: int) -> str:
         timeout (int): Request timeout.
 
     Returns:
-        str: Resolved preview image or conventional favicon URL.
+        tuple[str, str, str]: Final URL, observed page title, and absolute preview image URL; unavailable metadata is empty.
     """
     content, destination = fetch_public(session, url, timeout)
+
+    # Direct downloads can resolve successfully without being web pages; do not parse binary data or invent preview requests for them.
+    if not re.search(rb"<(?:!doctype\s+html|html|head|meta|title|link)\b", content[:4096], re.IGNORECASE):
+        return destination, "", ""
+
     soup = BeautifulSoup(content, "html.parser")
+    title_meta = soup.select_one('meta[property="og:title"]') or soup.select_one('meta[name="twitter:title"]')
+    title = str(title_meta.get("content", "")).strip() if title_meta else ""
+
+    if not title and soup.title:
+        title = soup.title.get_text(" ", strip=True)
+
+    # Relative metadata belongs to the redirected page, including its explicit HTML base when present.
+    base_node = soup.select_one("base[href]")
+    base = safe_url(str(base_node.get("href", "")), destination) if base_node else destination
+    base = base or destination
 
     # Prefer a project's own preview image, then its icon; stop at this page instead of recursively crawling links.
-    meta = soup.select_one('meta[property="og:image"], meta[name="twitter:image"]')
+    for selector in ('meta[property="og:image"]', 'meta[name="twitter:image"]', 'link[rel~="icon"]'):
+        meta = soup.select_one(selector)
 
-    if meta:
-        return safe_url(str(meta.get("content", "")), destination)
+        if meta:
+            image = safe_url(str(meta.get("href" if meta.name == "link" else "content", "")), base)
 
-    icon = soup.select_one('link[rel~="icon"]')
-    return safe_url(str(icon.get("href", "/favicon.ico")) if icon else "/favicon.ico", destination)
+            if image:
+                return destination, " ".join(title.split()), image
+
+    return destination, " ".join(title.split()), safe_url("/favicon.ico", destination)
 
 
 def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
     """
-    Download profile images and linked previews, retaining failures as warnings.
+    Discover prose links, inspect their destinations, and cache illustrations with explicit failure warnings.
 
     Args:
         profile (Profile): Captured content with remote image references.
@@ -211,15 +231,16 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
         root (Path): Configuration directory.
 
     Returns:
-        Profile: Snapshot with local assets and explicit incompleteness warnings.
+        Profile: Snapshot retaining original text and URLs, observed link metadata, local assets, and incompleteness warnings.
     """
-    from resume.models import Media
 
+    # Apply the same discovery to new captures and existing snapshots, including role-level ownership for later job exclusions.
+    profile = discover_profile_links(profile)
     warnings = list(profile.warnings)
 
     # Cache outcomes across the whole capture because logos and project links recur in several sections and grouped roles.
     downloaded: dict[str, Media] = {}
-    previews: dict[str, str] = {}
+    previews: dict[str, tuple[str, str, str] | None] = {}
 
     with requests.Session() as session:
         # Never inherit .netrc credentials, browser cookies, or environment proxies.
@@ -277,13 +298,14 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
                 Entry: Entry with locally cached media.
             """
             candidates = list(entry.images)
+            links = list(entry.links)
 
             if previews_enabled and config.capture.fetch_link_previews:
-                for link in entry.links:
-                    # Skip LinkedIn navigation and links already illustrated by captured media.
+                for index, link in enumerate(links):
+                    # Keep LinkedIn navigation out of unauthenticated requests; external short links remain eligible for resolution.
                     host = urlsplit(link.url).hostname or ""
 
-                    if host == "linkedin.com" or host.endswith(".linkedin.com") or any(item.link == link.url for item in candidates):
+                    if host == "linkedin.com" or host.endswith(".linkedin.com"):
                         continue
 
                     if link.url not in previews:
@@ -291,19 +313,27 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
                             previews[link.url] = _preview(link.url, session, config.capture.page_timeout_seconds)
                         except (requests.RequestException, OSError, ValueError) as error:
                             warnings.append(f"Link preview unavailable ({link.label}): {type(error).__name__}")
-                            previews[link.url] = ""
+                            previews[link.url] = None
 
-                    if previews[link.url]:
-                        candidates.append(Media(url=previews[link.url], alt=link.label, link=link.url))
+                    metadata = previews[link.url]
+
+                    if metadata is not None:
+                        destination, title, image_url = metadata
+                        links[index] = evolve(link, resolved_url=destination, title=title)
+
+                        # Retain original associations for grouped-job filtering and reuse an illustration already captured for this link.
+                        if image_url and not any(item.link == link.url for item in candidates):
+                            candidates.append(Media(url=image_url, alt=title or link.label, link=link.url))
 
             # Record assets on individual roles too, so later exclusions can remove their media without losing shared logos.
             return evolve(
                 entry,
+                links=links,
                 images=images(candidates),
                 positions=[entry_media(position, previews_enabled) for position in entry.positions],
             )
 
-        intro_images = images(profile.images)
+        intro = entry_media(Entry(paragraphs=profile.intro, links=profile.links, images=profile.images), True)
 
         # Contact URLs remain clickable references; fetching previews for them would turn contact metadata into extra browsing.
         sections = [
@@ -311,4 +341,4 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
             for section in profile.sections
         ]
 
-    return evolve(profile, images=intro_images, sections=sections, warnings=warnings)
+    return evolve(profile, links=intro.links, images=intro.images, sections=sections, warnings=warnings)

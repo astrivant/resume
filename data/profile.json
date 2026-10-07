@@ -34,11 +34,15 @@
   "links": [
     {
       "label": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-      "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true"
+      "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+      "resolved_url": "",
+      "title": ""
     },
     {
       "label": "214 connections",
-      "url": "https://www.linkedin.com/mynetwork/invite-connect/connections/"
+      "url": "https://www.linkedin.com/mynetwork/invite-connect/connections/",
+      "resolved_url": "",
+      "title": ""
     }
   ],
   "sections": [
@@ -62,14 +66,20 @@
           "links": [
             {
               "label": "linkedin.com/in/emmeowzing",
-              "url": "https://www.linkedin.com/in/emmeowzing/"
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "linktr.ee",
-              "url": "https://linktr.ee/emmeowzing"
+              "url": "https://linktr.ee/emmeowzing",
+              "resolved_url": "",
+              "title": ""
             }
           ],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -81,7 +91,9 @@
           "title": "Owner @ Tiger Lily Plants 🪴",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -119,15 +131,21 @@
           "links": [
             {
               "label": "Post I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for: https://lnkd.in/ektqstTY Most Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values. That leaves many classes of bugs among structural complexities, unaddressed before release: - One value change can have downstream effects across multiple rendered resources. - Individually valid settings can fail when combined. - configurable fields exist only in templates and aren’t documented in values.yaml. - values paths are effectively dead and never change rendered output. - Different values within the same type constraints can still produce structurally different behavior. And all of these cases could pass a static 'helm lint'. hypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution. The pipeline is roughly: coalesce values -> pre-filter -> sort -> post-filter -> test -> validate The tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have. I’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory. I’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself: https://lnkd.in/eqZRNAqJ This example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures. GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm github.com 2, number of reactions 2 2 comments",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/"
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "https://lnkd.in/ektqstTY",
-              "url": "https://lnkd.in/ektqstTY"
+              "url": "https://lnkd.in/ektqstTY",
+              "resolved_url": "https://lnkd.in/ektqstTY",
+              "title": "LinkedIn"
             },
             {
               "label": "https://lnkd.in/eqZRNAqJ",
-              "url": "https://lnkd.in/eqZRNAqJ"
+              "url": "https://lnkd.in/eqZRNAqJ",
+              "resolved_url": "https://lnkd.in/eqZRNAqJ",
+              "title": "LinkedIn"
             }
           ],
           "images": [
@@ -149,7 +167,9 @@
               "path": "data/assets/05c551260d291438dfbd2a618561a75ed044ef66b5728bd20bf456e7c00661df.png",
               "link": "https://lnkd.in/eqZRNAqJ"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Post",
@@ -182,23 +202,33 @@
           "links": [
             {
               "label": "Post What if a microservice could change how it works, not just how many replicas it runs? I've been working on Polyad, a Kubernetes operator and Python SDK exploring a different approach to fault-tolerant microservices: applications that participate in their own adaptation as demand, dependencies, and available resources change. The idea is to give developers a way to write microservices and pipelines by defining both the capabilities and its permitted responses to pressure. I'm hoping this opens the door to strategies of running production near or at-scale, while remaining adaptive and responsive to sudden impulses of traffic. For example, a service might use high-throughput batch workers when resources are available, switch to a lower-memory implementation when constrained, or share compatible work with an authorized peer. Those transitions need to account for readiness, backpressure, and draining work already accepted in a safe manner. Polyad coordinates this at two levels: Within a service: SDK strategies support changes to concurrency, worker profiles, admission, and peer connections. Across the application: Graphs and nested \"PolyGraphs\" describe workloads and their relationships, allowing coordinated changes to topology, routing, and capacity within administrator-defined constraints. This complements infrastructure scaling. KEDA can add replicas; optional VPA integration lets application code understand configured resource bounds and observe and react to current Linux cgroup allocations. The application can then adjust how it uses that capacity. There's a graph-theory component, too: Cheeger bounds help constrain structural bottlenecks. But a well-connected graph is not an SLA guarantee. We also need to measure whether work completes on time, delivers the required capability, and meets the agreed quality level. A service that remains reachable while producing unacceptable results hasn't necessarily remained useful. I'm exploring these interactions through local, process-based studies before spinning up cloud-based validation: comparing fixed and adaptive systems under controlled load, resource changes, and disruptions, with plots of latency, backlog, service-level attainment (SLA) that's computable at runtime, and adaptation behavior. The intent is to make adaptation an explicit, testable part of the application contract and engineering process, not just a cascade of infrastructure reactions and PagerDuty pings after something fails. Code and architecture (WIP): https://lnkd.in/edjues52 Python SDK: https://lnkd.in/ep4n-NpJ Worker adaptation study, with graphs: https://lnkd.in/enpeacGx Service composition adaptation study, with graphs: https://lnkd.in/ew2XgdAX GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand. github.com 11, number of reactions 11",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7507271032412704768/"
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7507271032412704768/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "https://lnkd.in/edjues52",
-              "url": "https://lnkd.in/edjues52"
+              "url": "https://lnkd.in/edjues52",
+              "resolved_url": "https://lnkd.in/edjues52",
+              "title": "LinkedIn"
             },
             {
               "label": "https://lnkd.in/ep4n-NpJ",
-              "url": "https://lnkd.in/ep4n-NpJ"
+              "url": "https://lnkd.in/ep4n-NpJ",
+              "resolved_url": "https://lnkd.in/ep4n-NpJ",
+              "title": "LinkedIn"
             },
             {
               "label": "https://lnkd.in/enpeacGx",
-              "url": "https://lnkd.in/enpeacGx"
+              "url": "https://lnkd.in/enpeacGx",
+              "resolved_url": "https://lnkd.in/enpeacGx",
+              "title": "LinkedIn"
             },
             {
               "label": "https://lnkd.in/ew2XgdAX",
-              "url": "https://lnkd.in/ew2XgdAX"
+              "url": "https://lnkd.in/ew2XgdAX",
+              "resolved_url": "https://lnkd.in/ew2XgdAX",
+              "title": "LinkedIn"
             }
           ],
           "images": [
@@ -232,7 +262,9 @@
               "path": "data/assets/05c551260d291438dfbd2a618561a75ed044ef66b5728bd20bf456e7c00661df.png",
               "link": "https://lnkd.in/ew2XgdAX"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -257,7 +289,9 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/111622183/",
-              "url": "https://www.linkedin.com/company/111622183/"
+              "url": "https://www.linkedin.com/company/111622183/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -285,7 +319,9 @@
               "path": "data/assets/4d984860f1dd075e170313ea7de434d1446d699907e3e633a3ea990dbb4c4661.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Lead Platform Engineer",
@@ -308,11 +344,15 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/75395048/",
-              "url": "https://www.linkedin.com/company/75395048/"
+              "url": "https://www.linkedin.com/company/75395048/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "GitHub - astrivant/composer: Lossily compile rendered Helm manifests to Docker compose files",
-              "url": "https://github.com/astrivant/composer"
+              "url": "https://github.com/astrivant/composer",
+              "resolved_url": "https://github.com/astrivant/composer",
+              "title": "GitHub - astrivant/composer: Get a Docker Compose file for free in your project from Helm charts"
             }
           ],
           "images": [
@@ -328,7 +368,9 @@
               "path": "data/assets/c2a4598d6699321f663e1b3f8853daea063c42f71c17609d2eead82be3d5e284.png",
               "link": "https://github.com/astrivant/composer"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Site Reliability Engineer (Security)",
@@ -347,7 +389,9 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/2908815/",
-              "url": "https://www.linkedin.com/company/2908815/"
+              "url": "https://www.linkedin.com/company/2908815/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -357,7 +401,9 @@
               "path": "data/assets/2cd6be2e05908a858e354923ded56b8475d5813636c3acf68c88b6c5b39f912c.png",
               "link": "https://www.linkedin.com/company/2908815/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Founder",
@@ -375,7 +421,9 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/91593723/",
-              "url": "https://www.linkedin.com/company/91593723/"
+              "url": "https://www.linkedin.com/company/91593723/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -397,7 +445,9 @@
               "path": "data/assets/92d8a4b2d32c009a42143e49e92e2b2b8188384cef7a64977a168e01f596a540.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2410566952/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "DevOps Engineer",
@@ -434,11 +484,15 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/75395048/",
-              "url": "https://www.linkedin.com/company/75395048/"
+              "url": "https://www.linkedin.com/company/75395048/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "pre-commit hook that lints Gitlab CI configurations",
-              "url": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook"
+              "url": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook",
+              "resolved_url": "https://github.com/emmeowzing/gitlabci-lint-pre-commit-hook",
+              "title": "GitHub - emmeowzing/gitlabci-lint-pre-commit-hook: A pre-commit hook that lints Gitlab CI configurations"
             }
           ],
           "images": [
@@ -454,7 +508,9 @@
               "path": "data/assets/2ec68037e893cd9c4cfab7c9f9d96c7b0a271d499942a9e814befb51251a9117.png",
               "link": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "DevOps Engineer",
@@ -484,19 +540,27 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/11386524/",
-              "url": "https://www.linkedin.com/company/11386524/"
+              "url": "https://www.linkedin.com/company/11386524/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "CLI helper to filter inputs by .gitignore-like conf files in CI",
-              "url": "https://github.com/bjd2385/wildmatch"
+              "url": "https://github.com/bjd2385/wildmatch",
+              "resolved_url": "https://github.com/emmeowzing/wildmatch",
+              "title": "GitHub - emmeowzing/wildmatch: A CLI helper to filter inputs by .gitignore-like conf files"
             },
             {
               "label": "CircleCI config validate pre-commit hook for use with dynamic-continuation",
-              "url": "https://github.com/bjd2385/circleci-config-pre-commit-hook"
+              "url": "https://github.com/bjd2385/circleci-config-pre-commit-hook",
+              "resolved_url": "https://github.com/emmeowzing/circleci-config-pre-commit-hook",
+              "title": "GitHub - emmeowzing/circleci-config-pre-commit-hook: CircleCI config validate pre-commit hook for use with dynamic-continuation"
             },
             {
               "label": "CircleCI orb pack and validate pre-commit hook",
-              "url": "https://github.com/bjd2385/circleci-orb-pre-commit-hook"
+              "url": "https://github.com/bjd2385/circleci-orb-pre-commit-hook",
+              "resolved_url": "https://github.com/emmeowzing/circleci-orb-pre-commit-hook",
+              "title": "GitHub - emmeowzing/circleci-orb-pre-commit-hook: CircleCI orb pack and validate pre-commit hook"
             }
           ],
           "images": [
@@ -524,7 +588,9 @@
               "path": "data/assets/a4cbc62be6175c9784352e1eec6647b42e9d43ab6ca7d47cd675c3fb3233936d.png",
               "link": "https://github.com/bjd2385/circleci-orb-pre-commit-hook"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Threat Stack, Inc",
@@ -554,11 +620,15 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/3068295/",
-              "url": "https://www.linkedin.com/company/3068295/"
+              "url": "https://www.linkedin.com/company/3068295/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "A CLI tool for Threat Stack ruleset manipulation via API",
-              "url": "https://github.com/bjd2385/threatstack-rule-manager"
+              "url": "https://github.com/bjd2385/threatstack-rule-manager",
+              "resolved_url": "https://github.com/emmeowzing/threatstack-rule-manager",
+              "title": "GitHub - emmeowzing/threatstack-rule-manager: A tool for working with Threat Stack rules"
             }
           ],
           "images": [
@@ -574,7 +644,9 @@
               "path": "data/assets/b63106d54fa92134ab675b3d49945cad3efef45561f0f0bbdc3dbda5b1a194ad.png",
               "link": "https://github.com/bjd2385/threatstack-rule-manager"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Datto, Inc.",
@@ -603,15 +675,21 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/1477873/",
-              "url": "https://www.linkedin.com/company/1477873/"
+              "url": "https://www.linkedin.com/company/1477873/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "A fast (experimental) RX algorithm implementation in Python 3.9+",
-              "url": "https://github.com/bjd2385/rx_algorithm"
+              "url": "https://github.com/bjd2385/rx_algorithm",
+              "resolved_url": "https://github.com/emmeowzing/rx_algorithm",
+              "title": "GitHub - emmeowzing/rx_algorithm: A fast (experimental) RX algorithm implementation in Python 3.9+"
             },
             {
               "label": "Parse backed-up volumes' utilization across ZFS snapshots",
-              "url": "https://github.com/bjd2385/datto"
+              "url": "https://github.com/bjd2385/datto",
+              "resolved_url": "https://github.com/emmeowzing/datto",
+              "title": "GitHub - emmeowzing/datto: Datto volume info script"
             }
           ],
           "images": [
@@ -633,7 +711,9 @@
               "path": "data/assets/6397a76eb20ff9f654377eb03b941a9904cbd4a5d461a576f85740a96795d6fb.png",
               "link": "https://github.com/bjd2385/datto"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Evaluation Technician",
@@ -649,7 +729,9 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/2371/",
-              "url": "https://www.linkedin.com/company/2371/"
+              "url": "https://www.linkedin.com/company/2371/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -659,7 +741,9 @@
               "path": "data/assets/dc67c125b2ed87b03f136b34a3acfe9ae43f1f8b37bce5f7d7e2982fe4099e08.png",
               "link": "https://www.linkedin.com/company/2371/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Line Lead",
@@ -675,7 +759,9 @@
           "links": [
             {
               "label": "https://www.linkedin.com/company/2282551/",
-              "url": "https://www.linkedin.com/company/2282551/"
+              "url": "https://www.linkedin.com/company/2282551/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -685,7 +771,9 @@
               "path": "data/assets/5eccc5a89ec0792091f6477e7776d7a58ce3265e0b20fbedb6a086683123b363.png",
               "link": "https://www.linkedin.com/company/2282551/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Undergraduate Researcher",
@@ -701,7 +789,9 @@
           "links": [
             {
               "label": "https://www.linkedin.com/school/165762/",
-              "url": "https://www.linkedin.com/school/165762/"
+              "url": "https://www.linkedin.com/school/165762/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -717,7 +807,9 @@
               "path": "data/assets/2d24d909bf4ce39f275f8f5a7a6bd58fd7c37947399ea5e5145f0947c004b5de.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/776655142/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -734,7 +826,9 @@
           "links": [
             {
               "label": "https://www.linkedin.com/school/19573/",
-              "url": "https://www.linkedin.com/school/19573/"
+              "url": "https://www.linkedin.com/school/19573/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -744,7 +838,9 @@
               "path": "data/assets/27e7d4c6a71ad1fc7050916fe05bd7933bd622b2dfa0de4202d7dc47b28b447d.png",
               "link": "https://www.linkedin.com/school/19573/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Rochester Institute of Technology",
@@ -755,7 +851,9 @@
           "links": [
             {
               "label": "https://www.linkedin.com/school/165762/",
-              "url": "https://www.linkedin.com/school/165762/"
+              "url": "https://www.linkedin.com/school/165762/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -765,7 +863,9 @@
               "path": "data/assets/e4c5eba40d1ecb4ab0ee0fab22ade151bf69291f275863a057b8671f512a82a4.png",
               "link": "https://www.linkedin.com/school/165762/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -783,7 +883,9 @@
           "links": [
             {
               "label": "https://github.com/astrivant/polyad",
-              "url": "https://github.com/astrivant/polyad"
+              "url": "https://github.com/astrivant/polyad",
+              "resolved_url": "https://github.com/astrivant/polyad",
+              "title": "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand."
             }
           ],
           "images": [
@@ -799,7 +901,9 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "hypothesis-helm",
@@ -812,7 +916,9 @@
           "links": [
             {
               "label": "https://github.com/astrivant/hypothesis-helm",
-              "url": "https://github.com/astrivant/hypothesis-helm"
+              "url": "https://github.com/astrivant/hypothesis-helm",
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm",
+              "title": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts"
             }
           ],
           "images": [
@@ -828,7 +934,9 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "composer",
@@ -844,7 +952,9 @@
               "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "orchidarium",
@@ -867,7 +977,9 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "pass-operator",
@@ -890,7 +1002,9 @@
               "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -904,7 +1018,9 @@
             "Polyad"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Hypothesis Testing",
@@ -912,7 +1028,9 @@
             "hypothesis-helm"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Helm Charts",
@@ -920,7 +1038,9 @@
             "hypothesis-helm"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Software Infrastructure",
@@ -935,7 +1055,9 @@
               "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Platform Architecture",
@@ -950,7 +1072,9 @@
               "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Leadership",
@@ -965,7 +1089,9 @@
               "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "secrets management",
@@ -980,7 +1106,9 @@
               "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Compilers",
@@ -995,7 +1123,9 @@
               "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "3D Printing",
@@ -1010,7 +1140,9 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Website Building",
@@ -1025,7 +1157,9 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Terrariums",
@@ -1040,13 +1174,17 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Customer Satisfaction",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Information Security",
@@ -1054,7 +1192,9 @@
             "pass-operator"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Hydroponics",
@@ -1062,13 +1202,17 @@
             "orchidarium"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Orchids",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Software as a Service (SaaS)",
@@ -1083,7 +1227,9 @@
               "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "SaaS Development",
@@ -1098,7 +1244,9 @@
               "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Business Ownership",
@@ -1108,7 +1256,9 @@
           "links": [
             {
               "label": "2 experiences at Tiger Lily Plants LLC. and 1 other company",
-              "url": "https://www.linkedin.com/in/emmeowzing/skill-insights/48/"
+              "url": "https://www.linkedin.com/in/emmeowzing/skill-insights/48/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -1118,7 +1268,9 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Lean Startup",
@@ -1128,7 +1280,9 @@
           "links": [
             {
               "label": "2 experiences at Tiger Lily Plants LLC. and 1 other company",
-              "url": "https://www.linkedin.com/in/emmeowzing/skill-insights/49/"
+              "url": "https://www.linkedin.com/in/emmeowzing/skill-insights/49/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -1138,7 +1292,9 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "AWS",
@@ -1146,7 +1302,9 @@
             "Passed LinkedIn Skill Assessment"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Python (Programming Language)",
@@ -1163,7 +1321,9 @@
               "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Customer Service",
@@ -1178,73 +1338,97 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Troubleshooting",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Disaster Recovery",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Samba",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "NFS",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "iSCSI",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Electrical Troubleshooting",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Electrostatic Discharge (ESD)",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Databases",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "OpenShift",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Technical Support",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Amazon EKS",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Google Cloud Platform (GCP)",
@@ -1259,43 +1443,57 @@
               "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Amazon Linux",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "HashiCorp",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Vault",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Argo CD",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Infracost",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Powershell",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Problem Solving",
@@ -1311,7 +1509,9 @@
               "path": "data/assets/471b20aba29461c2d581582c2092cc6431af1e8e61460b1de5a75eaff1262c15.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Linux",
@@ -1334,7 +1534,9 @@
               "path": "data/assets/471b20aba29461c2d581582c2092cc6431af1e8e61460b1de5a75eaff1262c15.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Python",
@@ -1343,13 +1545,17 @@
             "2 endorsements"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Mathematics",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Telecommunications",
@@ -1365,7 +1571,9 @@
               "path": "data/assets/ea8cf5e3633f974a98a55ae3186c1d07f1511d3cf25afbb8c081abd51a231d0e.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Cloud Computing",
@@ -1373,7 +1581,9 @@
             "1 endorsement"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Amazon Web Services (AWS)",
@@ -1390,25 +1600,33 @@
               "path": "data/assets/471b20aba29461c2d581582c2092cc6431af1e8e61460b1de5a75eaff1262c15.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Windows",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "LaTeX",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Terraform",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "AWS Lambda",
@@ -1416,7 +1634,9 @@
             "Passed LinkedIn Skill Assessment"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Bash",
@@ -1425,7 +1645,9 @@
             "Passed LinkedIn Skill Assessment"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Kubernetes",
@@ -1433,7 +1655,9 @@
             "pass-operator"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Git",
@@ -1442,7 +1666,9 @@
             "1 endorsement"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Postman",
@@ -1450,19 +1676,25 @@
             "1 endorsement"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Hyper-V",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Flask",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Amazon EC2",
@@ -1470,19 +1702,25 @@
             "1 endorsement"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "MySQL",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Google Kubernetes Engine (GKE)",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Docker Products",
@@ -1498,49 +1736,65 @@
               "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "GitHub",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "DevOps",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "AWS Command Line Interface (CLI)",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "ZFS",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "GitOps",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Artifactory",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "CircleCI",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -1552,19 +1806,25 @@
           "title": "Received: Recommendations",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Received: Off",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Given: Recommendations",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Given: Recommendations",
@@ -1583,11 +1843,15 @@
           "links": [
             {
               "label": "Julian Picone · 1st Engineer | Leader | AI Explorer February 24, 2024, Emma reported to Julian directly",
-              "url": "https://www.linkedin.com/in/juliandpicone/"
+              "url": "https://www.linkedin.com/in/juliandpicone/",
+              "resolved_url": "",
+              "title": ""
             },
             {
               "label": "Joseph Gwinn · 1st Engineering Manager - DevOps at SBE Vision February 24, 2024, Emma reported to Joseph directly",
-              "url": "https://www.linkedin.com/in/joseph-gwinn/"
+              "url": "https://www.linkedin.com/in/joseph-gwinn/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -1603,7 +1867,9 @@
               "path": "data/assets/0581619255a09b9877a8f4679a28983965c465aa8df2ec03e0a0b2507e12f5c1.png",
               "link": "https://www.linkedin.com/in/joseph-gwinn/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -1617,7 +1883,9 @@
             "English"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -1634,7 +1902,9 @@
             "Member · Jul 2025 – Present"
           ],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -1656,7 +1926,9 @@
               "path": "data/assets/a0aded75179ca907ed2d40042657d49987a9a4593f3052cedba26973818a0ea7.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Debezium, Company",
@@ -1672,7 +1944,9 @@
               "path": "data/assets/a0b32845eb859fe042cce268e4322fa2a63b445c9d9a7a3ba9b464be6073a762.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Astrivant, Company",
@@ -1688,7 +1962,9 @@
               "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Tiger Lily Plants LLC., Company",
@@ -1704,7 +1980,9 @@
               "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: ATLANTA ORCHID SOCIETY INC, Company",
@@ -1720,7 +1998,9 @@
               "path": "data/assets/1951e4c82c228b0fdd192b36f3f2757d1c767b68b9866866c91b061432b5f6de.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Observable Space, Company",
@@ -1736,7 +2016,9 @@
               "path": "data/assets/5ce58b6b1f3a32e14797bc693e611c454e8efb2ecb7ea2cef47f82e6dd8c1d45.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: LeadDev, Company",
@@ -1752,7 +2034,9 @@
               "path": "data/assets/21a035849b8e0eff931185b69a03ffb3a956a0a5cb34393a7958cd1a0363412c.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: StrataBlue, Company",
@@ -1768,7 +2052,9 @@
               "path": "data/assets/a5cfdaa8111a57d3aa629cab509880a038cd6e7c927de057dcf5071ade5855cf.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Stateful, Company",
@@ -1784,7 +2070,9 @@
               "path": "data/assets/3325c7e977781b2e1495d7e642003717c46c4b1daed1f4fe4eaa3099b751f395.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Kubesploit, Company",
@@ -1800,7 +2088,9 @@
               "path": "data/assets/323e32eff30d30ac9c93dd52caf718c550b243c9f5ed419fff807587d30c4eb0.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Kube Events, Company",
@@ -1816,7 +2106,9 @@
               "path": "data/assets/79daf25a53a1350b15a06487dbbb0997ba67a1362cfda6024c21fbe8b4f7fbeb.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Y Combinator, Company",
@@ -1832,7 +2124,9 @@
               "path": "data/assets/3a53ca5d7ee532750537e67057bf5e2c626a52b45430a4f30f7fb77b52482103.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Trail of Bits, Company",
@@ -1848,7 +2142,9 @@
               "path": "data/assets/7250263219bc2b66bfde4048f4a3ad8594fac3427cd6f6893820e53e04e40fda.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Net2Secure, Company",
@@ -1864,7 +2160,9 @@
               "path": "data/assets/b0638f0888d3fac315db28a1427fa141775b85cceeec14fa852283516ccb212b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Kleiner Perkins Grit Podcast, Company",
@@ -1880,7 +2178,9 @@
               "path": "data/assets/f62ca6a6dcb6756dfaacc0cd2ede5f985eb82c11c3293b0c1fcec5e230f1d04b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Kontron Europe, Company",
@@ -1896,7 +2196,9 @@
               "path": "data/assets/7e2854d80ae341753a53b522d54d08a867d6ed5037ec6d60c1987e99a713a214.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: DataHub, Company",
@@ -1912,7 +2214,9 @@
               "path": "data/assets/e5bd3d5b53b608a0d23bce65decbd1cb4fd11839a32d3bf9eaf20de56c2b7b98.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Ramp, Company",
@@ -1928,7 +2232,9 @@
               "path": "data/assets/9c5a106f1feafda55ebe99359072c5df2d40743d62a9c332bdbc3f28ce3ab192.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Pylon, Company",
@@ -1944,7 +2250,9 @@
               "path": "data/assets/d788b23a976701a7e6128c4eb65fd3ea2fba499dab89cf88c1f39fc34940b2cb.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: openstatus, Company",
@@ -1960,7 +2268,9 @@
               "path": "data/assets/10daefe525d6c3f279c2866b724103332b16e2863ca8a7d284c84edbaf773961.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Hanko, Company",
@@ -1976,7 +2286,9 @@
               "path": "data/assets/dd9b1363e1410588c0eb64f5504ef53c5988e0ea65a93906c4a2167fa7d0deaa.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Skio, Company",
@@ -1992,7 +2304,9 @@
               "path": "data/assets/bb188c8a3dbe14c4517b8e928c6d4f53510fad186ff22309ef099c518e185a16.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: RenderATL (Render Atlanta), Company",
@@ -2008,7 +2322,9 @@
               "path": "data/assets/6c1729475e3cb826b2b9e2610b429dad0c11007ce51533ff39487de912253e42.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Istio, Company",
@@ -2024,7 +2340,9 @@
               "path": "data/assets/7483d0b305e2e5edadda7b05ee5124361e7272bcd6e555ede7e4fc7d66d2c902.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: OpenTelemetry, Company",
@@ -2040,7 +2358,9 @@
               "path": "data/assets/d2898ecca6f80149d671399f021c0420e049682812f965c1e325b3deb254be48.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: VictoriaMetrics, Company",
@@ -2056,7 +2376,9 @@
               "path": "data/assets/e6ce69ead18e735c63f42f4faee94704e66f393fe61924fed0c14de2cbaf5b25.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: General Atomics Aeronautical Systems, Company",
@@ -2072,7 +2394,9 @@
               "path": "data/assets/4aa9c7c97e0aefa6cba066b844bb9e89dfce1aa8a2548e27471b929d4173e574.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Starfish Space, Company",
@@ -2088,7 +2412,9 @@
               "path": "data/assets/1ca3e73dd218fecb14f0cc4ea7fcf509ab1fa09ab0f65011ce6373ed60e49512.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Sierra Space, Company",
@@ -2104,7 +2430,9 @@
               "path": "data/assets/cd0255a5e45ccc4f3551d355ab5bb73630014691400fa06e0a83851d5b0fc08d.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Companies: Payload, Company",
@@ -2120,7 +2448,9 @@
               "path": "data/assets/f11bac6ed0be849200d805249b469b21373a29f78fb42a6eb9b4edf08d50b468.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Groups: Business in Japan, Group",
@@ -2136,7 +2466,9 @@
               "path": "data/assets/918bf6720ac52ba849ff63ab727c3a910612591fb098cf7d8e07fb656a54c7ee.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Groups: Cloud Computing, SaaS, Data Centre & Virtualization, Group",
@@ -2152,7 +2484,9 @@
               "path": "data/assets/759fb41448db1809551d30b78ae06b38cd96e03b2877cc41fe0aa023104900fe.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Groups: DevOps & SRE Discussions, Group",
@@ -2168,7 +2502,9 @@
               "path": "data/assets/326d62a33861b37e73aa8545ceeabd49ec436ace3ce3590e70f126dd4afaa1a7.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Groups: Astronomy Section of the Rochester Academy of Science, Group",
@@ -2184,7 +2520,9 @@
               "path": "data/assets/e614619f188921f578027c76ec236f481fcc9d4f866464b0b7c2f192c50dd16d.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Groups: DevOps, Group",
@@ -2200,7 +2538,9 @@
               "path": "data/assets/59b56c4e45574b4bdf3f78e3fd6161989baa4fb95da0f1d31fb4f84981f13587.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Groups: AWS Cloud Computing Hub for Users & Builders, Group",
@@ -2216,7 +2556,9 @@
               "path": "data/assets/c517dc5d50ed7acd21636fbb26d0a9e4357e0060b619591aafdf44c8942faf6b.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Newsletters: Create Possibilities, Newsletter",
@@ -2229,7 +2571,9 @@
           "links": [
             {
               "label": "LinkedIn Guide to Creating",
-              "url": "https://www.linkedin.com/showcase/linkedin-guide-to-creating/"
+              "url": "https://www.linkedin.com/showcase/linkedin-guide-to-creating/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -2245,7 +2589,9 @@
               "path": "data/assets/0580485a78b9eed5c30b275aa5cd789ac70ef9c7870d6616845eceb60e95df94.png",
               "link": "https://www.linkedin.com/showcase/linkedin-guide-to-creating/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Newsletters: New in Robusta, Newsletter",
@@ -2258,7 +2604,9 @@
           "links": [
             {
               "label": "Robusta Dev",
-              "url": "https://www.linkedin.com/company/robusta-dev/"
+              "url": "https://www.linkedin.com/company/robusta-dev/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -2268,7 +2616,9 @@
               "path": "data/assets/8a80d71a1a69d82032c602b2d4690cbdfea48715dd80077453e89d8ee6eec3ff.png",
               "link": "https://www.linkedin.com/company/robusta-dev/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Newsletters: Confident Commit, Newsletter",
@@ -2281,7 +2631,9 @@
           "links": [
             {
               "label": "CircleCI",
-              "url": "https://www.linkedin.com/company/circleci/"
+              "url": "https://www.linkedin.com/company/circleci/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -2297,7 +2649,9 @@
               "path": "data/assets/120f4d3488cdf66ec2d87a8bdf7aecfdecb06fcb06c303eb94821706a9f150e5.png",
               "link": "https://www.linkedin.com/company/circleci/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Newsletters: Lean Cluster, Newsletter",
@@ -2310,7 +2664,9 @@
           "links": [
             {
               "label": "PerfectScale by DoiT",
-              "url": "https://www.linkedin.com/company/perfectscale/"
+              "url": "https://www.linkedin.com/company/perfectscale/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -2326,7 +2682,9 @@
               "path": "data/assets/8cc199dfe1ac1ff04bfdaf8edbb11b11f91ce134b127fc24ab869da8cdf29f11.png",
               "link": "https://www.linkedin.com/company/perfectscale/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Newsletters: Branching Out_, Newsletter",
@@ -2339,7 +2697,9 @@
           "links": [
             {
               "label": "GitHub",
-              "url": "https://www.linkedin.com/company/github/"
+              "url": "https://www.linkedin.com/company/github/",
+              "resolved_url": "",
+              "title": ""
             }
           ],
           "images": [
@@ -2355,7 +2715,9 @@
               "path": "data/assets/d0a02f461230ac9886b92c84909ef30824d552b31c5825d9f6ca8f52f3078e44.png",
               "link": "https://www.linkedin.com/company/github/"
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         },
         {
           "title": "Schools: Y Combinator, School",
@@ -2371,7 +2733,9 @@
               "path": "data/assets/3a53ca5d7ee532750537e67057bf5e2c626a52b45430a4f30f7fb77b52482103.png",
               "link": ""
             }
-          ]
+          ],
+          "skills": [],
+          "positions": []
         }
       ]
     },
@@ -2383,7 +2747,9 @@
           "title": "Civil Rights and Social Action • Economic Empowerment • Human Rights • Health • Education • Animal Welfare • Poverty Alleviation • Science and Technology • Environment • Disaster and Humanitarian Relief",
           "paragraphs": [],
           "links": [],
-          "images": []
+          "images": [],
+          "skills": [],
+          "positions": []
         }
       ]
     }

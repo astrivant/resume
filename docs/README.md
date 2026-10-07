@@ -34,7 +34,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `capture.retry_attempts` | `5` | Total attempts for transient browser and HTTP failures |
 | `capture.retry_backoff_seconds` | `10` | Initial exponential retry delay |
 | `capture.retry_max_backoff_seconds` | `300` | Maximum retry delay |
-| `capture.fetch_link_previews` | `true` | Download external project previews or icons |
+| `capture.fetch_link_previews` | `true` | Resolve external links, record page titles, and download previews or icons |
 | `output.profile` | `data/profile.json` | Portable, validated profile snapshot |
 | `output.assets` | `data/assets` | Content-addressed PNG images |
 | `output.tex` | `tex/resume.tex` | Generated LaTeX source |
@@ -203,7 +203,22 @@ pagination. It preserves grouped positions, full text, link targets, and referen
 images, and reads the owner's Contact info dialog. Contact fields shown there,
 including email and birthday when present, are part of the snapshot. A separate
 `requests` session downloads images and one level of external
-project previews. It never receives browser cookies or credentials. Browser cookies remain in that local profile for retries and are never exported to the
+project previews. Both HTML anchors and HTTP(S)/`www.` URLs found in intro text,
+entry titles, descriptions, and grouped roles participate in link discovery.
+Inspection records the final HTTP redirect destination and Open Graph, Twitter,
+or HTML page title, then resolves preview images relative to that page or its HTML
+base URL. It does not crawl the page's outgoing links. Direct binary downloads
+retain their destination without inventing an image preview.
+
+Run `poetry run resume enrich` to apply this to an existing snapshot without
+starting Firefox. Original text and source URLs remain intact. Shared URLs and
+images are fetched once per run, and existing local images are reused. Contact
+links and LinkedIn navigation are not inspected. `capture.fetch_link_previews: false`
+disables remote inspection, while prose URL discovery remains available. Inspection
+failures produce the same incomplete-capture diagnostics as media failures and
+leave the accepted snapshot unchanged unless explicitly accepted.
+
+The requests session never receives browser cookies or credentials. Browser cookies remain in that local profile for retries and are never exported to the
 snapshot, build artifacts, or CI. Diagnostics stay ignored under `.cache/capture/`.
 The collected text is saved there before media downloads start, so an interrupted
 download retains a diagnostic snapshot marked incomplete.
@@ -227,6 +242,10 @@ Rendering does not contact LinkedIn. It consumes the committed snapshot, copies
 only referenced PNGs into `tex/assets/`, escapes profile text, and renders the
 packaged `resume.tex.j2` with strict undefined-variable handling. Templates use
 `((( variable )))` for expressions and `((* statement *))` for control flow.
+Prose URLs become inline hyperlinks, using saved resolved destinations when
+available. Older snapshots gain clickable prose links locally; network metadata
+requires capture or `enrich`. The `tex_links` filter accepts text and its associated
+links for custom templates, for example `paragraph|tex_links(entry.links)`.
 
 `build` runs two pdfLaTeX passes in the digest-pinned
 [`drpsychick/texlive-pdflatex` image](https://hub.docker.com/r/drpsychick/texlive-pdflatex).
@@ -339,9 +358,10 @@ The Python package separates capture from document generation:
 | --- | --- |
 | `linkedin/browser.py` | Firefox lifecycle, login, and expanded profile capture |
 | `linkedin/parsing.py` | LinkedIn HTML extraction into shared profile models |
+| `linkedin/links.py` | Safe URL normalization and prose link discovery without network access |
 | `linkedin/sections.py`, `linkedin/skills.py` | Section aliases, visible skill labels, and endorsement totals |
 | `linkedin/dates.py`, `latex/experience.py` | Employment date interpretation and job visibility before rendering |
-| `linkedin/media.py` | Image downloads, link previews, and portable PNG caching |
+| `linkedin/media.py` | Link destination/title inspection, image previews, and portable PNG caching |
 | `linkedin/retrying.py` | Bounded exponential retries for browser operations |
 | `latex/escaping.py` | Literal text, emoji, and URL conversion for LaTeX |
 | `latex/rendering.py` | Visibility filtering, asset staging, and strict Jinja rendering |

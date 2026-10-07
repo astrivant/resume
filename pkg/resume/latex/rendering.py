@@ -13,10 +13,11 @@ from attrs import evolve
 from jinja2 import Environment, StrictUndefined
 
 from resume.config import project_path
-from resume.latex.escaping import latex_escape, latex_url
+from resume.latex.escaping import latex_escape, latex_linked_text, latex_url
 from resume.latex.experience import filter_experience
 from resume.latex.media import image_role, is_header_photo
 from resume.latex.themes import resolve_style
+from resume.linkedin.links import discover_profile_links
 from resume.linkedin.sections import section_key
 from resume.models import Section
 from resume.visualization.skills import render_skill_cloud, skill_scores
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from resume.config import Config
-    from resume.models import Entry, Media, Profile
+    from resume.models import Entry, Link, Media, Profile
 
 __all__ = ["render_profile"]
 
@@ -51,6 +52,9 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     if profile.warnings and not allow_incomplete:
         raise ValueError("Capture is incomplete: " + "; ".join(profile.warnings))
 
+    # Older snapshots may contain unstructured URLs; discovering them is local and preserves job ownership before filtering.
+    profile = discover_profile_links(profile)
+
     # Resolve before filtering or drawing: themes may change visibility and page settings as well as colors.
     style = resolve_style(config.style)
     target = project_path(root, config.output.tex)
@@ -58,17 +62,19 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     asset_directory = target.parent / "assets"
     asset_directory.mkdir(exist_ok=True)
 
-    def stage(items: list[Media]) -> list[Media]:
+    def stage(items: list[Media], links: list[Link]) -> list[Media]:
         """
         Stage only existing, validated assets with content-derived filenames.
 
         Args:
             items (list[Media]): References from one profile block.
+            links (list[Link]): Block-owned references used to resolve image click destinations.
 
         Returns:
             list[Media]: References relative to the generated TeX file.
         """
         result: list[Media] = []
+        destinations = {link.url: link.resolved_url or link.url for link in links}
 
         for item in items:
             # Missing media is an explicit incomplete-build choice; normal CI must fail instead of dropping illustrations.
@@ -89,7 +95,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
             # Give templates stable relative paths and reuse the same filename for identical captured bytes.
             name = hashlib.sha256(source.read_bytes()).hexdigest() + ".png"
             shutil.copyfile(source, asset_directory / name)
-            result.append(evolve(item, path=f"assets/{name}"))
+            result.append(evolve(item, path=f"assets/{name}", link=destinations.get(item.link, item.link)))
 
         return result
 
@@ -128,12 +134,16 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         Returns:
             Entry: Visible content with image paths relative to the generated TeX.
         """
-        return evolve(entry, images=[] if cloud else stage(entry.images), positions=[stage_entry(position) for position in entry.positions])
+        return evolve(
+            entry,
+            images=[] if cloud else stage(entry.images, entry.links),
+            positions=[stage_entry(position) for position in entry.positions],
+        )
 
     # Build a template-specific view while leaving the captured snapshot available for later re-enabling of content.
     prepared = evolve(
         visible,
-        images=stage([image for image in profile.images if style.show_header_photo or not is_header_photo(image)]),
+        images=stage([image for image in profile.images if style.show_header_photo or not is_header_photo(image)], profile.links),
         sections=[
             evolve(
                 section,
@@ -157,6 +167,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         keep_trailing_newline=True,
     )
     environment.filters["tex"] = latex_escape
+    environment.filters["tex_links"] = latex_linked_text
     environment.filters["url"] = latex_url
     environment.tests["header_photo"] = is_header_photo
     environment.filters["image_role"] = image_role

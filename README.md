@@ -165,6 +165,21 @@ After editing your LinkedIn profile, run `poetry run resume capture` again, revi
 the changed snapshot and assets, and commit and push them. For layout changes,
 edit `resume.config.yaml` and push; the saved profile can be reused.
 
+To discover URLs in already captured text and refresh their destinations, page
+titles, and preview images without another LinkedIn login:
+
+```bash
+poetry run resume enrich
+poetry run resume validate
+poetry run resume build
+```
+
+Capture also performs this enrichment. HTTP(S) and `www.` URLs become clickable
+within the PDF's prose. Original text and URLs stay in the snapshot alongside
+observed redirect destinations and titles; rendering and CI remain offline.
+`capture.fetch_link_previews: false` disables remote link inspection while keeping
+local URL discovery. Contact links remain clickable without fetching their pages.
+
 Hide whole sections with the top-level `disable` list, for example:
 
 ```yaml

@@ -35,6 +35,14 @@ proficiency, collaborators, descriptions, and other displayed fields. Grouped
 positions stay together. Media retains its source URL, accessible label, cached
 PNG path, and click destination.
 
+Each link retains its original `label` and `url`. Optional `resolved_url` and
+`title` fields record the final redirect destination and observed page title;
+both default to an empty string in older snapshots. Introspection never replaces
+profile prose with remote page content. HTTP(S) and `www.` references in text are
+also stored as links, and the PDF uses resolved destinations for inline links,
+reference labels, and associated images. Capture and `resume enrich` obtain this
+metadata; offline builds do not fetch pages.
+
 Grouped employment entries also carry optional `positions`, a list of entries
 with each role's own title, paragraphs, links, images, and skills. The parent keeps
 its flattened content for compatibility. Capture and media caching retain both;

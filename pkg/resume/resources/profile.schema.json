@@ -65,6 +65,15 @@
           "url": {
             "type": "string",
             "pattern": "^https?://[^\\s{}\\\\]+$"
+          },
+          "resolved_url": {
+            "anyOf": [
+              {"type": "string", "pattern": "^https?://[^\\s{}\\\\]+$"},
+              {"const": ""}
+            ]
+          },
+          "title": {
+            "type": "string"
           }
         },
         "required": [
@@ -150,21 +159,7 @@
         "links": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "label": {
-                "type": "string"
-              },
-              "url": {
-                "type": "string",
-                "pattern": "^https?://[^\\s{}\\\\]+$"
-              }
-            },
-            "required": [
-              "label",
-              "url"
-            ],
-            "additionalProperties": false
+            "$ref": "#/properties/links/items"
           }
         },
         "images": {

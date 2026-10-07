@@ -5,11 +5,12 @@ Extract profile content from rendered LinkedIn HTML without relying on private A
 from __future__ import annotations
 
 import re
-from urllib.parse import parse_qs, unquote, urljoin, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from bs4 import BeautifulSoup, Tag
 
 from resume.linkedin.dates import employment_period
+from resume.linkedin.links import merge_text_links, safe_url
 from resume.linkedin.sections import section_key
 from resume.linkedin.skills import endorsement_count, skill_labels
 from resume.models import Entry, Link, Media, Profile, Section, Skill
@@ -21,39 +22,6 @@ _UI_TEXT = re.compile(
     r"^(?:show all\b|show more\b|see more$|see less$|show less$|\.\.\.more$|…more$|…see more$|add section$|add profile section$)",
     re.IGNORECASE,
 )
-
-
-def safe_url(value: str, base: str = "https://www.linkedin.com") -> str:
-    """
-    Normalize navigable web links and discard scripts, credentials, and fragments.
-
-    Args:
-        value (str): Raw link or image source.
-        base (str): Base used to resolve relative URLs.
-
-    Returns:
-        str: Absolute HTTP URL, or an empty string when unsuitable.
-    """
-
-    if not value or value.startswith("#"):
-        return ""
-
-    # Resolve relative references before validation so templates and downloaders share the same URL contract.
-    absolute = urljoin(base, value)
-
-    try:
-        parsed = urlsplit(absolute)
-
-        if parsed.scheme not in {"https", "http"} or not parsed.hostname or parsed.username or parsed.password:
-            return ""
-    except ValueError:
-        return ""
-
-    # Exclude characters that would make these destinations unsafe or ambiguous when embedded in TeX arguments.
-    if re.search(r"[\s{}\\]", absolute):
-        return ""
-
-    return absolute
 
 
 def _clean(node: Tag) -> Tag:
@@ -128,7 +96,7 @@ def _links(node: Tag) -> list[Link]:
 
         result.setdefault(url, Link(label=label or url, url=url))
 
-    return list(result.values())
+    return merge_text_links(list(result.values()), node.stripped_strings)
 
 
 def _images(node: Tag) -> list[Media]:

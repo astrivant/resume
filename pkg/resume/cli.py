@@ -18,6 +18,7 @@ from resume.config import load_config, project_path
 from resume.latex.compilation import compile_pdf
 from resume.latex.rendering import render_profile
 from resume.linkedin.browser import capture_profile
+from resume.linkedin.media import cache_media
 from resume.models import load_profile, save_profile
 
 if TYPE_CHECKING:
@@ -44,6 +45,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     for name, help_text in (
         ("capture", "Open Firefox, wait for login, and save your expanded profile and images"),
+        ("enrich", "Discover text links, resolve destinations, and cache previews from the saved profile"),
         ("validate", "Validate configuration and snapshot ownership"),
         ("render", "Generate tex/resume.tex from the saved profile"),
         ("build", "Render LaTeX and compile resume.pdf with Docker or the bundled container toolchain"),
@@ -64,8 +66,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
 
-        if args.command == "capture":
-            profile = capture_profile(config, root, args.connect_port)
+        if args.command in {"capture", "enrich"}:
+            profile = (
+                capture_profile(config, root, args.connect_port)
+                if args.command == "capture"
+                else cache_media(load_profile(snapshot, config.linkedin.username), config, root)
+            )
 
             if profile.warnings and not args.allow_incomplete:
                 # Preserve recoverable diagnostics without replacing the last accepted, publishable snapshot.

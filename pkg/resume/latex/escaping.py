@@ -5,8 +5,14 @@ Escape profile text, emoji, and URLs for LaTeX template expressions.
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
-__all__ = ["latex_escape", "latex_url"]
+from resume.linkedin.links import text_links
+
+if TYPE_CHECKING:
+    from resume.models import Link
+
+__all__ = ["latex_escape", "latex_linked_text", "latex_url"]
 
 _ESCAPES = {
     "\\": r"\textbackslash{}",
@@ -71,3 +77,31 @@ def latex_url(value: str) -> str:
 
     # URL validation already rejected structural TeX characters; escape remaining hyperref-sensitive characters without rewriting the URL.
     return "".join({"%": r"\%", "#": r"\#", "&": r"\&", "_": r"\_"}.get(character, character) for character in value)
+
+
+def latex_linked_text(value: str, links: list[Link]) -> str:
+    """
+    Preserve prose while making explicit web URLs clickable using captured redirect destinations.
+
+    Args:
+        value (str): Untrusted profile text containing optional web references.
+        links (list[Link]): References associated with this text, including previously resolved destinations.
+
+    Returns:
+        str: Escaped prose with safe hyperlinks and URL line-break opportunities, without network requests.
+    """
+    destinations = {link.url: link.resolved_url or link.url for link in links}
+    parts: list[str] = []
+    offset = 0
+
+    for start, end, link in text_links(value):
+        parts.append(latex_escape(value[offset:start]))
+
+        # Escape all display text and allow long URL paths to wrap without treating prose as raw TeX.
+        label = r"\allowbreak{}".join(latex_escape(part) for part in re.split(r"(?<=[/.?&=_#-])", link.label) if part)
+        destination = latex_url(destinations.get(link.url, link.url))
+        parts.append(r"\href{" + destination + "}{" + label + "}")
+        offset = end
+
+    parts.append(latex_escape(value[offset:]))
+    return "".join(parts)

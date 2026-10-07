@@ -42,6 +42,10 @@ Choose the appropriate starting point:
 - First run, a different owner, or requested LinkedIn updates: capture first.
 - Layout-only changes or a requested rebuild: reuse the matching saved snapshot.
   Validation checks ownership; changing the username does not fetch new data.
+- Link resolution or preview refresh on acquired text: run `poetry run resume enrich`
+  against the saved snapshot, then validate and build. This makes bounded public
+  HTTP requests and needs no Firefox session. Original text and URLs are retained;
+  the snapshot gains resolved destinations, page titles, and cached previews.
 
 ## Prepare the local environment
 
