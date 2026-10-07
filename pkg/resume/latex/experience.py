@@ -45,6 +45,7 @@ def _disabled(title: str, company: str, selectors: list[JobSelector]) -> bool:
     Returns:
         bool: Whether at least one rule matches this identity.
     """
+    # A selector combines its fields with AND; separate selectors provide alternative ways to exclude a role.
     return any(
         (selector.title is None or _normalized(selector.title) == _normalized(title))
         and (selector.company is None or _normalized(selector.company) == _normalized(company))
@@ -64,6 +65,7 @@ def _overlaps(period: EmploymentPeriod, cutoff: date | None, as_of: date) -> boo
     Returns:
         bool: Whether this period belongs in the displayed employment history.
     """
+    # Test interval overlap rather than start-date recency so a long-running role is not lost at the cutoff.
     return cutoff is None or (period.start <= as_of and (period.end is None or period.end >= cutoff))
 
 
@@ -81,6 +83,7 @@ def _regroup(entry: Entry, selected: list[Entry | None]) -> Entry:
     Raises:
         ValueError: Recorded role boundaries cannot be reconciled with the captured company text.
     """
+    # Splice each recorded role in order, preserving company context between roles and avoiding ambiguous title-only matches.
     paragraphs: list[str] = []
     cursor = 0
     for position, replacement in zip(entry.positions, selected, strict=True):
@@ -96,6 +99,8 @@ def _regroup(entry: Entry, selected: list[Entry | None]) -> Entry:
         cursor = start + len(lines)
     paragraphs.extend(entry.paragraphs[cursor:])
     positions = [position for position in selected if position is not None]
+    # Remove role-owned references from the parent first, then reintroduce only those belonging to retained roles.
+    # This preserves shared logos and links while preventing excluded job content from leaking into the PDF or cloud.
     owned_links = {link.url for position in entry.positions for link in position.links}
     kept_links = {link.url for position in positions for link in position.links}
     owned_images = {(image.url, image.link) for position in entry.positions for image in position.images}
@@ -110,6 +115,7 @@ def _regroup(entry: Entry, selected: list[Entry | None]) -> Entry:
     images.extend(image for position in positions for image in position.images)
     skills = [skill for skill in entry.skills if _normalized(skill.name) not in owned_skills]
     skills.extend(skill for position in positions for skill in position.skills)
+    # Keep the flattened presentation and structured role metadata consistent for packaged and custom templates.
     return evolve(
         entry,
         paragraphs=paragraphs,
@@ -139,6 +145,7 @@ def _select(entry: Entry, settings: Experience, cutoff: date | None, as_of: date
     """
     dated = [(index, period) for index, line in enumerate(entry.paragraphs) if (period := employment_period(line)) is not None]
     if entry.positions:
+        # Company-wide exclusions short-circuit the group; otherwise each child inherits its employer for exact matching.
         company = entry.title
         if _disabled("", company, settings.disable):
             return None
@@ -156,13 +163,16 @@ def _select(entry: Entry, settings: Experience, cutoff: date | None, as_of: date
         ]
         if not any(retained):
             return None
+        # Old snapshots cannot attribute media or tags to individual roles; require recapture instead of guessing ownership.
         if not all(retained):
             raise ValueError(f"Filtering individual roles at {entry.title!r} needs role boundaries. Run `resume capture` once to refresh.")
         return entry
+    # Standalone jobs usually put the employer before the date row, with employment type after a middle-dot separator.
     if not company and entry.paragraphs and (not dated or dated[0][0] > 0):
         company = entry.paragraphs[0].split("·", 1)[0].strip()
     if _disabled(entry.title, company, settings.disable):
         return None
+    # Missing or unreadable dates are insufficient evidence for removal; explicit identity exclusions still apply above.
     if dated and not _overlaps(dated[0][1], cutoff, as_of):
         return None
     return entry
@@ -183,11 +193,14 @@ def filter_experience(entries: list[Entry], settings: Experience, *, today: date
     Returns:
         list[Entry]: Selected jobs with original descriptions and dates intact.
     """
+    # Preserve the original records when filtering is disabled, including legacy groups without role boundaries.
     if not settings.disable and settings.last_years is None:
         return entries
+    # A pinned endpoint makes rebuilds repeatable; otherwise use one UTC date consistently for every job in this call.
     as_of = date.fromisoformat(settings.as_of) if settings.as_of else today or datetime.now(UTC).date()
     cutoff = None
     if settings.last_years is not None:
+        # Subtract calendar years, not 365-day intervals, and clamp leap-day anniversaries to an existing date.
         year = as_of.year - settings.last_years
         cutoff = date(year, as_of.month, min(as_of.day, calendar.monthrange(year, as_of.month)[1])) if year > 0 else date.min
     return [selected for entry in entries if (selected := _select(entry, settings, cutoff, as_of)) is not None]

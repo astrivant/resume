@@ -114,9 +114,9 @@ class Style:
         skills_word_cloud (bool): Replace the Skills list with a cloud weighted by references and endorsements.
     """
 
-    paper: str = "a4"
+    paper: str = "letter"
     accent: str = "0A66C2"
-    background: str = "F3F2EF"
+    background: str = "FFFFFF"
     font_size: int = 10
     show_header_photo: bool = True
     skills_word_cloud: bool = True
@@ -160,6 +160,7 @@ def project_path(root: Path, value: str) -> Path:
     Raises:
         ValueError: The path is absolute, points at the root, or escapes it.
     """
+    # Resolve symlinks before checking containment; lexical '..' checks alone would allow existing links to escape.
     target = (root / value).resolve()
     if Path(value).is_absolute() or target == root.resolve() or not target.is_relative_to(root.resolve()):
         raise ValueError(f"Expected a path within the configuration directory: {value}")
@@ -180,10 +181,12 @@ def load_config(path: Path) -> Config:
         jsonschema.ValidationError: A value is invalid or a field is unknown.
         ValueError: An output or template path escapes the project directory.
     """
+    # Validate raw types before cattrs can coerce them, including real calendar dates for the job window.
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     schema = json.loads(files("resume").joinpath("resources/config.schema.json").read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
+    # Inputs, templates, and outputs share one root but must never resolve to the same file or directory.
     paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf]
     if config.template:
         paths.append(config.template)

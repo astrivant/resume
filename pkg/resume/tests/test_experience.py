@@ -143,6 +143,7 @@ def test_grouped_roles_filter_before_templates_assets_and_skills(tmp_path: Path,
     profile = Profile("example-person", "Alex", sections=[section])
     snapshot = tmp_path / "profile.json"
     save_profile(profile, snapshot)
+    # Compare the persisted input after rendering as well as the output, since filters must remain reversible without recapture.
     original = snapshot.read_bytes()
     assert load_profile(snapshot, profile.username) == profile
     config = Config(LinkedIn(profile.username), experience=Experience(last_years=5, as_of="2026-10-07"))
@@ -152,6 +153,7 @@ def test_grouped_roles_filter_before_templates_assets_and_skills(tmp_path: Path,
     rendered = render_profile(profile, config, tmp_path).read_text()
     assert "Staff Engineer" in rendered
     assert "Example Systems" in rendered
+    # Assert across text, URLs, dates, and skill metadata so a hidden role cannot survive through another template field.
     for hidden in ("Senior Engineer", "Removed", "removed", "Python", "Sep 2021"):
         assert hidden not in rendered
     assert json.loads((tmp_path / "tex/skills.weights.json").read_text()) == {"Rust": {"references": 1, "endorsements": 0, "weight": 1}}

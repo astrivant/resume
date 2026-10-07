@@ -38,6 +38,7 @@ def _is_header_photo(image: Media) -> bool:
     Returns:
         bool: Whether the label or LinkedIn image URL identifies a cover/background photo.
     """
+    # Cover URLs can identify a banner even when its accessible label is absent or generic.
     label = image.alt.casefold()
     return "background" in label or "cover" in label or "profile-displaybackgroundimage" in image.url.casefold()
 
@@ -58,6 +59,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     Raises:
         ValueError: Capture warnings or missing assets prevent a complete résumé.
     """
+    # Rendering must not silently promote a diagnostic capture into an apparently complete, publishable resume.
     if profile.warnings and not allow_incomplete:
         raise ValueError("Capture is incomplete: " + "; ".join(profile.warnings))
     target = project_path(root, config.output.tex)
@@ -77,6 +79,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         """
         result: list[Media] = []
         for item in items:
+            # Missing media is an explicit incomplete-build choice; normal CI must fail instead of dropping illustrations.
             if not item.path:
                 if allow_incomplete:
                     continue
@@ -86,11 +89,13 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
                 if allow_incomplete:
                     continue
                 raise ValueError(f"Expected a captured PNG asset: {item.path}")
+            # Give templates stable relative paths and reuse the same filename for identical captured bytes.
             name = hashlib.sha256(source.read_bytes()).hexdigest() + ".png"
             shutil.copyfile(source, asset_directory / name)
             result.append(evolve(item, path=f"assets/{name}"))
         return result
 
+    # Filter before scoring or staging so hidden sections and jobs contribute neither cloud weights nor referenced assets.
     disabled = {section_key(key) for key in config.disable}
     visible = evolve(
         profile,
@@ -106,6 +111,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
             if section_key(section.key) not in disabled
         ],
     )
+    # Job tags can generate a Skills card even when LinkedIn did not provide a separate Skills section.
     scores = skill_scores(visible) if config.style.skills_word_cloud and "skills" not in disabled else {}
     skill_cloud = render_skill_cloud(scores, target.parent)
     if skill_cloud and not any(section.key == "skills" for section in visible.sections):
@@ -124,6 +130,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         """
         return evolve(entry, images=[] if cloud else stage(entry.images), positions=[stage_entry(position) for position in entry.positions])
 
+    # Build a template-specific view while leaving the captured snapshot available for later re-enabling of content.
     prepared = evolve(
         visible,
         images=stage([image for image in profile.images if config.style.show_header_photo or not _is_header_photo(image)]),
@@ -136,6 +143,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
             if section.entries or (skill_cloud and section.key == "skills")
         ],
     )
+    # Use delimiters that do not collide with TeX braces; missing fields fail, and explicit filters own TeX escaping.
     environment = Environment(
         undefined=StrictUndefined,
         autoescape=False,
@@ -150,6 +158,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     environment.filters["tex"] = latex_escape
     environment.filters["url"] = latex_url
     environment.tests["header_photo"] = _is_header_photo
+    # Custom templates receive the same filtered view as the packaged template, so presentation cannot bypass exclusions.
     if config.template:
         template = project_path(root, config.template).read_text(encoding="utf-8")
     else:

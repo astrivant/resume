@@ -36,6 +36,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     Returns:
         int: Zero on success, two on invalid input or a failed stage.
     """
+    # Keep capture separate from offline commands so CI can build committed inputs without a browser session.
     parser = argparse.ArgumentParser(description="Capture your LinkedIn profile and build an illustrated PDF résumé.")
     parser.add_argument(
         "--config", type=Path, default=Path("resume.reference.yaml"), help="Configuration file (default: resume.reference.yaml)"
@@ -45,7 +46,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         ("capture", "Open Firefox, wait for login, and save your expanded profile and images"),
         ("validate", "Validate configuration and snapshot ownership"),
         ("render", "Generate tex/resume.tex from the saved profile"),
-        ("build", "Render LaTeX and compile resume.pdf using Docker"),
+        ("build", "Render LaTeX and compile resume.pdf with Docker or the bundled container toolchain"),
     ):
         command = commands.add_parser(name, help=help_text)
         command.add_argument(
@@ -55,28 +56,33 @@ def main(argv: Sequence[str] | None = None) -> int:
             command.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
     args = parser.parse_args(argv)
     try:
+        # Anchor every stage to the config directory, regardless of where the command was invoked.
         config = load_config(args.config)
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
         if args.command == "capture":
             profile = capture_profile(config, root, args.connect_port)
             if profile.warnings and not args.allow_incomplete:
+                # Preserve recoverable diagnostics without replacing the last accepted, publishable snapshot.
                 diagnostic = root / ".cache/capture/profile.json"
                 save_profile(profile, diagnostic)
                 raise ValueError(f"Capture needs review at {diagnostic}: " + "; ".join(profile.warnings))
             save_profile(profile, snapshot)
             print(f"Saved {snapshot}")
             return 0
+        # Enforce ownership on every offline path so a fork cannot accidentally publish the previous owner's resume.
         profile = load_profile(snapshot, config.linkedin.username)
         if args.command == "validate":
             if profile.warnings and not args.allow_incomplete:
                 raise ValueError("Capture warnings: " + "; ".join(profile.warnings))
             print(f"Valid profile: {profile.name} ({len(profile.sections)} sections)")
             return 0
+        # Rendering owns content selection; compilation only consumes the resulting TeX and staged assets.
         source = render_profile(profile, config, root, allow_incomplete=args.allow_incomplete)
         result = compile_pdf(source, config, root) if args.command == "build" else source
         print(result)
     except KeyboardInterrupt:
+        # Browser cleanup happens in its context manager; retain the profile so the next capture can reuse login.
         print("\nresume: Capture cancelled; the local browser login is retained for next time.", file=sys.stderr)
         return 130
     except NoSuchWindowException:

@@ -14,6 +14,59 @@ from pathlib import Path
 import pytest
 
 
+@pytest.mark.parametrize("matching_revision", [False, True])
+def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, matching_revision: bool) -> None:
+    """
+    Publish both tag aliases from the tested image and reject an unrelated archive before pushing.
+
+    Args:
+        tmp_path (Path): Isolated command recorder and workflow summary.
+        matching_revision (bool): Whether the archive belongs to the verified source commit.
+
+    Returns:
+        None: Publishing never rebuilds an image or pushes a mismatched source revision.
+    """
+    # Replace Docker at the command boundary so publication sequencing is tested without contacting a daemon or registry.
+    docker = tmp_path / "docker"
+    docker.write_text(
+        "#!/usr/bin/env bash\n"
+        'printf "%s\\n" "$*" >>"$DOCKER_CALLS"\n'
+        'if [[ "$1" == image && "$2" == inspect ]]; then printf "%s\\n" "$ARCHIVE_REVISION"; fi\n',
+        encoding="utf-8",
+    )
+    docker.chmod(0o700)
+    source = "a" * 40
+    tags = ["ghcr.io/example/resume:v1.0.0", f"ghcr.io/example/resume:sha-{source}"]
+    environment = dict(
+        os.environ,
+        PATH=f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
+        SOURCE_SHA=source,
+        IMAGE_TAGS="\n".join(tags),
+        ARCHIVE_REVISION=source if matching_revision else "b" * 40,
+        DOCKER_CALLS=str(tmp_path / "calls"),
+        GITHUB_STEP_SUMMARY=str(tmp_path / "summary"),
+    )
+    result = subprocess.run(
+        ["bash", "scripts/ci/publish-container.sh"],
+        cwd=Path(__file__).resolve().parents[3],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    calls = (tmp_path / "calls").read_text().splitlines()
+    assert calls[0] == "load --input .cache/container/resume.tar.gz"
+    assert not any(call.startswith("build") for call in calls)
+    if matching_revision:
+        assert result.returncode == 0
+        assert [call for call in calls if call.startswith("push ")] == [f"push {tag}" for tag in tags]
+        assert (tmp_path / "summary").read_text() == "".join(f"- Published {tag}\n" for tag in tags)
+    else:
+        assert result.returncode != 0
+        assert "does not match" in result.stderr
+        assert not any(call.startswith(("push ", "tag ")) for call in calls)
+
+
 def _git(root: Path, *arguments: str) -> str:
     """
     Run Git inside a temporary test repository.
@@ -40,6 +93,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     Returns:
         None: Reruns neither create duplicate PDF commits nor release obsolete source.
     """
+    # Use a real local remote to exercise fast-forward and rerun behavior without granting tests access to GitHub writes.
     root = tmp_path / "checkout"
     remote = tmp_path / "remote.git"
     root.mkdir()
@@ -82,6 +136,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     published = _git(remote, "rev-parse", "main")
     assert published != source
     assert output.read_text() == f"published-sha={published}\n"
+    # Model a new user commit arriving after the first PDF publication; a retry must not publish that older build as current.
     if advanced:
         (root / "source-change.txt").write_text("New source invalidates the previous artifact.", encoding="utf-8")
         _git(root, "add", "source-change.txt")

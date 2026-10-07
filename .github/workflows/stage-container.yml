@@ -1,0 +1,49 @@
+name: Container publication stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: Verified source commit whose container may be published
+        type: string
+        required: true
+permissions:
+  contents: read
+  packages: write
+defaults:
+  run:
+    shell: bash
+jobs:
+  publish:
+    name: Push verified container to GHCR
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: resume-container
+          path: .cache/container/
+      # Derive fork-local image names and tag aliases from GitHub context, without moving a shared latest tag.
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        id: metadata
+        with:
+          images: ghcr.io/${{ github.repository }}
+          flavor: latest=false
+          tags: |
+            type=ref,event=tag
+            type=sha,format=long
+      # Authenticate only after verification, with the job-scoped package token rather than a long-lived registry secret.
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Publish the tested image without rebuilding
+        env:
+          SOURCE_SHA: ${{ inputs.sha }}
+          IMAGE_TAGS: ${{ steps.metadata.outputs.tags }}
+        run: bash scripts/ci/publish-container.sh

@@ -27,6 +27,7 @@ def endorsement_count(lines: Iterable[str]) -> int:
     Returns:
         int: Observed total, or zero when absent. A displayed 99+ contributes the known lower bound 99.
     """
+    # Visible text and accessibility labels often repeat the same total; summing them would inflate the cloud's weights.
     return max((int(match[1].replace(",", "")) for line in lines for match in _ENDORSEMENTS.finditer(line)), default=0)
 
 
@@ -40,6 +41,7 @@ def skill_labels(value: str) -> list[Skill]:
     Returns:
         list[Skill]: Named associations only; undisplayed skills are never invented.
     """
+    # A collapsed remainder describes undisplayed skills, not another label or evidence for their individual names.
     value = re.sub(r"\s*(?:and\s+)?\+\d+\s+skills?\s*$", "", value, flags=re.IGNORECASE)
     value = re.sub(r"^skills:\s*", "", value, flags=re.IGNORECASE)
     return [Skill(name=name) for part in value.split(",") if (name := part.strip()) and not re.fullmatch(r"\d+\s+skills?", name)]

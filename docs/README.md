@@ -8,6 +8,7 @@
 - [Profile schema and skill clouds](profile-schema.md)
 - [Local capture](#local-capture)
 - [Rendering and PDF builds](#rendering-and-pdf-builds)
+- [Container usage and tag publication](containers.md)
 - [Signed releases](#signed-releases)
 - [Pipeline and ownership](#pipeline-and-ownership)
 - [Capture limits and recovery](#capture-limits-and-recovery)
@@ -153,6 +154,9 @@ The following overrides are optional:
   before running `poetry run resume capture` to use another directory.
 - **`SE_AVOID_STATS`** — Selenium Manager statistics opt-out; defaults to `true`.
   Export `false` before capture to allow statistics collection.
+- **`RESUME_TEX_BACKEND`** — PDF compiler backend: `docker` by default on the host,
+  or `local` to invoke `pdflatex` directly. The published container sets `local`
+  automatically for its bundled toolchain. Ordinary users need no override.
 
 Export retry overrides when running the shell scripts locally, or add them to
 the `env` mapping of the relevant job in `.github/workflows/stage-*.yml`. Repository
@@ -286,8 +290,10 @@ trusted fingerprint establishes whose key they are trusting.
 
 The workflow follows Polyad's stage architecture: resolve one immutable source
 commit; run independent test and build stages; require both in `CI verification`;
-then publish only from `main`. Test and build jobs have read-only repository access.
-The deploy job alone has `contents: write`. Every external action is pinned by SHA,
+then publish the PDF only from `main`. Pushed tags publish the tested runtime
+container through a separate stage with `packages: write`; see
+[container publication](containers.md#publish-on-a-tag). Test and build jobs have read-only repository access.
+The PDF deploy job alone has `contents: write`. Every external action is pinned by SHA,
 Poetry installs from the lockfile, and development tools stay out of runtime installs.
 
 Fork owners must enable Actions and permit `GITHUB_TOKEN` writes. Branch protection

@@ -9,6 +9,7 @@ from pathlib import Path
 
 from resume.config import load_config, project_path
 
+# Decouple user-configurable output paths from the artifact name expected by signing and deploy stages.
 config = load_config(Path("resume.reference.yaml"))
 artifact = Path(".cache/publication/resume.pdf")
 artifact.parent.mkdir(parents=True, exist_ok=True)

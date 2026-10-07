@@ -1,75 +1,16 @@
-\documentclass[((( style.font_size )))pt,((( style.paper )))paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage[margin=17mm]{geometry}
-\usepackage{helvet}
-\usepackage{xcolor,graphicx}
-\usepackage{needspace}
-\usepackage{twemojis}
-\usepackage[breakable,skins]{tcolorbox}
-\usepackage[unicode,breaklinks=true]{hyperref}
-\renewcommand{\familydefault}{\sfdefault}
-\definecolor{accent}{HTML}{((( style.accent )))}
-\definecolor{canvas}{HTML}{((( style.background )))}
-\definecolor{ink}{HTML}{191919}
-\definecolor{muted}{HTML}{666666}
-\definecolor{border}{HTML}{D9D9D9}
-\hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) — Resume}}
-\hypersetup{pdfsubject={Emoji graphics: Twemoji, copyright Twitter and contributors, CC BY 4.0, https://github.com/twitter/twemoji}}
-\pdfinfoomitdate=1
-\pdftrailerid{}
-\pdfsuppressptexinfo=15
-\pagecolor{canvas}
-\color{ink}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{5pt}
-\setlength{\emergencystretch}{3em}
-\setlength{\fboxsep}{12pt}
-\setlength{\fboxrule}{0.4pt}
-\newtcolorbox{profilecard}[1][]{enhanced,breakable,colback=white,colframe=border,
-  arc=3mm,boxrule=0.4pt,left=4mm,right=4mm,top=4mm,bottom=4mm,
-  before skip=8pt,after skip=8pt,#1}
-\newcommand{\entrytitle}[1]{{\large\bfseries #1}\par\nopagebreak}
-\newcommand{\sectiontitle}[1]{{\Large\bfseries #1}\par\nopagebreak\vspace{4pt}}
-\urlstyle{same}
-\begin{document}
-\begin{profilecard}
-{\color{accent}\rule{\linewidth}{5pt}}\par
-((* for image in profile.images *))
-((* if image is header_photo *))
-\includegraphics[width=\linewidth]{((( image.path )))}\par
-((* else *))
-\includegraphics[width=22mm,height=28mm,keepaspectratio]{((( image.path )))}\quad
-((* endif *))
-((* endfor *))
-\par\vspace{5pt}
-{\fontsize{25}{29}\selectfont\bfseries ((( profile.name|tex )))}\par
-((* for line in profile.intro *))
-((( line|tex )))\par
-((* endfor *))
-\href{https://www.linkedin.com/in/((( profile.username|url )))/}{\textbf{LinkedIn profile}}\par
-((* for link in profile.links *))
-((* if link.label == link.url *))
-\url{((( link.url )))}\par
-((* else *))
-\href{((( link.url|url )))}{((( link.label|tex )))}\par
-((* endif *))
-((* endfor *))
-\end{profilecard}
-((* for section in profile.sections *))
-\Needspace{8\baselineskip}
-\begin{profilecard}((* if section.key == 'skills' and skill_cloud *))[breakable=false]((* endif *))
+((# Share escaping and visibility rules between the contact column and the document body. #))
+((* macro render_section(section) *))
+\Needspace{5\baselineskip}
 \sectiontitle{((( section.title|tex )))}
 ((* if section.key == 'skills' and skill_cloud *))
 \includegraphics[width=\linewidth]{((( skill_cloud )))}\par
 ((* else *))
 ((* for entry in section.entries *))
-((* if not loop.first *))
-\vspace{8pt}{\color{border}\hrule}\vspace{8pt}
-((* endif *))
+((* if not loop.first *))\par\addvspace{9pt}((* endif *))
 ((* if section.key == 'about' *))
 ((( entry.title|tex )))\par
 ((* else *))
+\Needspace{3\baselineskip}
 \entrytitle{((( entry.title|tex )))}
 ((* endif *))
 ((* for paragraph in entry.paragraphs *))
@@ -78,8 +19,8 @@
 ((* for image in entry.images *))
 ((* set logo = '/company/' in image.link or '/school/' in image.link or 'logo' in image.alt|lower *))
 ((* if image.link *))\href{((( image.link|url )))}{((* endif *))%
-\includegraphics[width=((* if logo *))14mm((* else *))0.42\linewidth((* endif *)),height=((* if logo *))14mm((* else *))32mm((* endif *)),keepaspectratio]{((( image.path )))}%
-((* if image.link *))}((* endif *))\quad
+\includegraphics[width=((* if logo *))12mm((* else *))0.45\linewidth((* endif *)),height=((* if logo *))12mm((* else *))32mm((* endif *)),keepaspectratio]{((( image.path )))}%
+((* if image.link *))}((* endif *))\hspace{3pt}
 ((* endfor *))
 ((* if entry.images *))\par((* endif *))
 ((* for link in entry.links *))
@@ -91,6 +32,79 @@
 ((* endfor *))
 ((* endfor *))
 ((* endif *))
-\end{profilecard}
+\par\addvspace{12pt}
+((* endmacro *))
+\documentclass[((( style.font_size )))pt,((( style.paper )))paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=19mm]{geometry}
+% The CLI supplies the bundled font tree to both compiler backends.
+\pdfmapfile{+EBGaramond.map}
+\usepackage[lining]{ebgaramond}
+\usepackage{microtype}
+\usepackage{xcolor,graphicx,needspace}
+\usepackage{twemojis}
+\usepackage{flowfram}
+\usepackage{xurl}
+\usepackage[unicode,breaklinks=true]{hyperref}
+\definecolor{accent}{HTML}{((( style.accent )))}
+\definecolor{canvas}{HTML}{((( style.background )))}
+\definecolor{ink}{HTML}{191919}
+\hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) — Resume}}
+\hypersetup{pdfsubject={Emoji graphics: Twemoji, copyright Twitter and contributors, CC BY 4.0, https://github.com/twitter/twemoji}}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\pagecolor{canvas}
+\color{ink}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\emergencystretch}{3em}
+\raggedright
+\widowpenalty=10000
+\clubpenalty=10000
+\newcommand{\entrytitle}[1]{{\large\bfseries #1}\par\nopagebreak}
+\newcommand{\sectiontitle}[1]{{\Large\bfseries #1}\par\nopagebreak\vspace{3pt}}
+\urlstyle{same}
+% Reserve a narrow identity column on page one, then use full-width continuation pages.
+% Flow frames let long content continue instead of clipping it in a fixed-height box.
+\newflowframe[1]{0.34\textwidth}{\textheight}{0pt}{0pt}[identity]
+\newflowframe[1]{0.61\textwidth}{\textheight}{0.39\textwidth}{0pt}[opening]
+\newflowframe[>1]{\textwidth}{\textheight}{0pt}{0pt}[continuation]
+\begin{document}
+{\fontsize{24}{28}\selectfont\bfseries ((( profile.name|tex )))}\par\vspace{6pt}
+((* for image in profile.images *))
+((* if image is header_photo *))
+\includegraphics[width=\linewidth]{((( image.path )))}\par
+((* else *))
+\includegraphics[width=22mm,height=28mm,keepaspectratio]{((( image.path )))}\par
+((* endif *))
 ((* endfor *))
+((* for line in profile.intro *))
+((( line|tex )))\par
+((* endfor *))
+\href{https://www.linkedin.com/in/((( profile.username|url )))/}{\textbf{LinkedIn profile}}\par
+((* for link in profile.links *))
+((* if link.label == link.url *))
+\url{((( link.url )))}\par
+((* else *))
+\href{((( link.url|url )))}{((( link.label|tex )))}\par
+((* endif *))
+((* endfor *))
+\par\addvspace{12pt}
+((* for section in profile.sections if section.key == 'contact' *))
+((( render_section(section) )))
+((* endfor *))
+((# A header-only profile does not need a forced break or an empty body heading. #))
+((* set body = profile.sections|rejectattr('key', 'equalto', 'contact')|list *))
+((* if body *))
+\framebreak
+% About leads the right column regardless of the order returned by LinkedIn.
+((* for section in body if section.key == 'about' *))
+((( render_section(section) )))
+((* endfor *))
+((* for section in body if section.key != 'about' *))
+((( render_section(section) )))
+((* endfor *))
+((* endif *))
 \end{document}

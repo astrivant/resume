@@ -57,5 +57,6 @@ def section_key(value: str) -> str:
     Returns:
         str: Canonical key for a known section, or the normalized unfamiliar key.
     """
+    # Normalize known aliases without treating the catalog as a whitelist; unfamiliar LinkedIn sections remain representable.
     key = re.sub(r"[^a-z0-9]+", "-", value.casefold()).strip("-")
     return _ALIASES.get(key, key)

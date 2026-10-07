@@ -1,0 +1,19 @@
+# Only source, packaging metadata, and development tooling enter the build context.
+*
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!poetry.lock
+!README.md
+!LICENSE
+!.python-version
+!.pre-commit-config.yaml
+!resume.reference.yaml
+!pkg/
+!pkg/**
+!scripts/
+!scripts/**
+**/__pycache__
+**/*.py[cod]
+**/*.key
+**/*.pem

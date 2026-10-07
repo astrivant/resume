@@ -2,7 +2,9 @@
 # Upload verified, signed artifacts to a draft release before making it public.
 set -euo pipefail
 artifact_dir="${1:-.cache/publication}"
+# Verify again at the publication boundary, after artifacts have crossed job storage and download boundaries.
 bash scripts/release/verify.sh "$artifact_dir"
+# Key releases by source revision so reruns can reconcile the same release rather than create duplicates.
 tag="resume-${SOURCE_SHA}"
 notes="$RUNNER_TEMP/resume-release-notes.md"
 {
@@ -18,6 +20,7 @@ notes="$RUNNER_TEMP/resume-release-notes.md"
 } >"$notes"
 if draft=$(bash scripts/tooling/retry.sh gh release view "$tag" --json isDraft --jq .isDraft 2>/dev/null); then
     if [[ "$draft" == false ]]; then
+        # Public releases are immutable here; a retry succeeds only if the existing PDF, key, and provenance match exactly.
         previous=$(mktemp -d "$RUNNER_TEMP/resume-release.XXXXXX")
         bash scripts/tooling/retry.sh gh release download "$tag" --dir "$previous" --pattern resume.pdf --pattern key-fingerprint.txt --pattern source.json
         cmp "$artifact_dir/resume.pdf" "$previous/resume.pdf"
@@ -29,10 +32,12 @@ if draft=$(bash scripts/tooling/retry.sh gh release view "$tag" --json isDraft -
 else
     bash scripts/tooling/retry.sh bash scripts/release/create-draft.sh "$tag" "$notes"
 fi
+# Assemble the complete attachment set before publication so consumers never see a public release with missing verification material.
 artifacts=(resume.pdf resume.pdf.sig resume.pdf.sigstore.json cosign.pub key-fingerprint.txt source.json SHA256SUMS SHA256SUMS.sigstore.json)
 paths=()
 for artifact in "${artifacts[@]}"; do
     paths+=("$artifact_dir/$artifact")
 done
+# Replacing draft assets makes interrupted uploads recoverable; the final visibility change is the publication boundary.
 bash scripts/tooling/retry.sh gh release upload "$tag" "${paths[@]}" --clobber
 bash scripts/tooling/retry.sh gh release edit "$tag" --draft=false --notes-file "$notes"

@@ -27,9 +27,10 @@ output:
   tex: tex/resume.tex
   pdf: resume.pdf
 style:
-  paper: a4
+  # US Letter (8.5 x 11 inches); set a4 for ISO A4.
+  paper: letter
   accent: '0A66C2'
-  background: F3F2EF
+  background: FFFFFF
   font_size: 10
   # Set true to display the cover/background photo; the portrait stays visible.
   show_header_photo: false

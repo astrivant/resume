@@ -14,6 +14,7 @@ to `main` handle the publishing.
 - [Why use resume?](#why-use-resume)
 - [How it works](#how-it-works)
 - [Update your résumé](#update-your-résumé)
+- [Container image](#container-image)
 - [Development](#development)
 
 ## Quick start
@@ -79,7 +80,8 @@ signing step as environment variables; GitHub supplies the publication token:
   Actions generates the repository token, and the deploy workflow passes it to the
   GitHub CLI as `GH_TOKEN`. It uses `contents: write` to commit `resume.pdf` and
   publish releases. No personal access token is needed; repository and branch rules
-  must permit those writes.
+  must permit those writes. Tag publication also uses the built-in token with
+  `packages: write` to push the tool's container image to GHCR.
 
 From your fork's checkout, with the GitHub CLI authenticated:
 
@@ -173,6 +175,27 @@ To preview the PDF locally with Docker running:
 ```bash
 poetry run resume build
 ```
+
+## Container image
+
+Pushing a Git tag runs the pipeline and publishes the tested runtime image to
+`ghcr.io/<owner>/<repository>:<tag>`, plus `:sha-<full-commit-sha>`. Forks publish
+under their own repository names. No extra registry secret is needed.
+
+After publishing a tag such as `v0.1.0`, build from your captured inputs with Docker:
+
+```bash
+docker run --rm --init --platform linux/amd64 --network=none \
+    --user "$(id -u):$(id -g)" \
+    --mount "type=bind,source=$PWD,target=/workspace" \
+    ghcr.io/OWNER/resume:v0.1.0 build
+```
+
+Replace `OWNER` with your lowercase GitHub owner name. The image includes Python,
+the locked runtime dependencies, Firefox, and the pinned TeX toolchain; PDF builds
+need no Docker socket or local Python installation. Capture still requires an
+interactive browser login. See [container usage and tag publishing](docs/containers.md)
+for local builds, browser display setup, and GHCR package visibility.
 
 ## Development
 
