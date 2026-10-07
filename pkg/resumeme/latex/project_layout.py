@@ -16,7 +16,23 @@ from resumeme.models import Entry, Media
 if TYPE_CHECKING:
     from resumeme.models import Profile
 
-__all__ = ["ProjectLayout", "company_logos", "project_layout"]
+__all__ = ["CompanyAffiliation", "ProjectLayout", "company_logos", "project_layout"]
+
+
+@frozen
+class CompanyAffiliation:
+    """
+    Present a project's company once with its observed logo and associated roles.
+
+    Attributes:
+        company (str): Captured company name using the first observed spelling.
+        roles (list[str]): Distinct associated role titles in source order.
+        logo (Media): Staged company branding with its observed click destination.
+    """
+
+    company: str
+    roles: list[str]
+    logo: Media
 
 
 @frozen
@@ -37,6 +53,28 @@ class ProjectLayout:
     affiliations: dict[str, tuple[str, str, Media]]
     metadata: list[str]
     description: list[str]
+
+    @property
+    def companies(self) -> list[CompanyAffiliation]:
+        """
+        Group recognized affiliations without changing the source rows supplied to custom templates.
+
+        Returns:
+            list[CompanyAffiliation]: Company rows in first-seen order with unique roles and no inferred affiliations.
+        """
+        groups: dict[str, CompanyAffiliation] = {}
+
+        for prefix, company, logo in self.affiliations.values():
+            key = _company_key(company)
+            group = groups.setdefault(key, CompanyAffiliation(company, [], logo))
+
+            # A company-only association has no role; retain each distinct role from the remaining observed prefixes.
+            role = prefix.removeprefix("Associated with ").removesuffix(" at ").strip()
+
+            if role and _company_key(role) not in {_company_key(value) for value in group.roles}:
+                group.roles.append(role)
+
+        return list(groups.values())
 
 
 def _company_key(value: str) -> str:

@@ -132,6 +132,117 @@ def test_nested_items_continuations_and_paragraph_boundaries() -> None:
     assert paragraphs[1].startswith("  - Parent")
 
 
+@pytest.mark.parametrize("separator", ["\n", "\r\n", None])
+def test_unindented_sentence_fragments_stay_in_the_same_bullet(separator: str | None) -> None:
+    """
+    Reflow comma and semicolon continuations from HTML breaks or separate captured rows.
+
+    Args:
+        separator (str | None): Embedded newline style, or None for separate paragraph strings.
+
+    Returns:
+        None: One nested bullet owns the complete sentence without changing the input.
+    """
+    fragments = ["  • Providing technical reviews,", "coordinating platform work;", "guiding implementation decisions."]
+    paragraphs = ["- Responsibilities", *([separator.join(fragments)] if separator is not None else fragments), "- Next item"]
+    original = paragraphs.copy()
+    assert text_blocks(paragraphs) == [
+        TextBlock("Responsibilities", 0),
+        TextBlock("Providing technical reviews, coordinating platform work; guiding implementation decisions.", 1),
+        TextBlock("Next item", 0),
+    ]
+    assert paragraphs == original
+
+
+@pytest.mark.parametrize(
+    ("previous", "following"),
+    [
+        ("Providing technical reviews,", "Responsibilities"),
+        ("Providing technical reviews,", "responsibilities:"),
+        ("Providing technical reviews,", "2020 - Present"),
+        ("Providing technical reviews,", "https://example.org/project"),
+        ("Providing technical reviews,", "www.example.org/project"),
+        ("Provided technical reviews.", "coordinating platform work"),
+        ("Provided technical reviews!", "coordinating platform work"),
+        ("Provided technical reviews?", "coordinating platform work"),
+        ("Responsibilities:", "coordinating platform work"),
+        ("TLS certificates", "pre-commit hook that lints Gitlab CI configurations"),
+    ],
+)
+def test_unmarked_headings_metadata_and_attachments_remain_separate(previous: str, following: str) -> None:
+    """
+    Require positive sentence-continuation evidence before joining unindented content.
+
+    Args:
+        previous (str): Bullet text preceding a potential boundary.
+        following (str): Content that must retain its own paragraph.
+
+    Returns:
+        None: Adjacent prose is not mistaken for a wrapped fragment.
+    """
+    assert text_blocks([f"- {previous}", following]) == [TextBlock(previous, 0), TextBlock(following)]
+
+
+@pytest.mark.parametrize("blank", ["", " ", "\n"])
+def test_blank_lines_end_sentence_continuations(blank: str) -> None:
+    """
+    Treat an explicit blank line as a paragraph boundary even after a comma.
+
+    Args:
+        blank (str): Blank paragraph or embedded line break.
+
+    Returns:
+        None: Later prose cannot resume a terminated list item.
+    """
+    assert text_blocks(["- Providing technical reviews,", blank, "coordinating platform work."]) == [
+        TextBlock("Providing technical reviews,", 0),
+        TextBlock("coordinating platform work."),
+    ]
+
+
+def test_new_bullets_and_ordinary_paragraphs_keep_their_boundaries() -> None:
+    """
+    Preserve explicit list markers and independent prose despite continuation-like punctuation.
+
+    Returns:
+        None: Only unmarked continuations inside an active list can join the previous item.
+    """
+    assert text_blocks(["- Providing reviews,", "- coordinating work."]) == [
+        TextBlock("Providing reviews,", 0),
+        TextBlock("coordinating work.", 0),
+    ]
+    assert text_blocks(["Providing reviews,", "coordinating work."]) == [
+        TextBlock("Providing reviews,"),
+        TextBlock("coordinating work."),
+    ]
+
+
+def test_rendered_experience_rejoins_the_captured_sentence(tmp_path: Path) -> None:
+    """
+    Keep the reported role description in one bullet while retaining escaping, links, and source rows.
+
+    Args:
+        tmp_path (Path): Isolated template output directory.
+
+    Returns:
+        None: LaTeX controls natural wrapping instead of starting a paragraph mid-sentence.
+    """
+    lines = [
+        "- Led and mentored engineers by overseeing project execution, providing technical reviews,",
+        "coordinating platform work, guiding implementation decisions, and supporting team skill set growth.",
+        r"- Documented changes,",
+        r"including \input{secret} & https://lnkd.in/tool.",
+    ]
+    original = lines.copy()
+    entry = Entry("Lead Platform Engineer", lines, [Link("Tool", "https://lnkd.in/tool", "https://example.org/tool")])
+    profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [entry])])
+    source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
+    assert rf"\profilebullet{{0}}{{{lines[0][2:]} {lines[1]}}}" in source
+    assert r"\profileparagraph{coordinating platform work" not in source
+    assert r"\profilebullet{0}{Documented changes, including \textbackslash{}input\{secret\} \& \href{https://example.org/tool}" in source
+    assert entry.paragraphs == original
+
+
 def test_rendered_bullets_preserve_links_and_escape_profile_text(tmp_path: Path) -> None:
     """
     Translate lists at render time while keeping source data, hyperlink targets, and TeX escaping intact.

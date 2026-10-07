@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from PIL import Image
 
 from resumeme.config import Config, LinkedIn
-from resumeme.latex.project_layout import project_layout
+from resumeme.latex.project_layout import CompanyAffiliation, project_layout
 from resumeme.latex.rendering import render_profile
 from resumeme.models import Entry, Link, Media, Profile, Section
 
@@ -43,6 +43,7 @@ def test_project_logos_match_names_and_preserve_unrepresented_links() -> None:
     assert layout.title_url == project_url
     assert layout.affiliations[entry.paragraphs[0]] == ("Associated with ", company, inline)
     assert layout.affiliations[entry.paragraphs[1]] == ("Associated with Engineer at ", company, inline)
+    assert layout.companies == [CompanyAffiliation(company, ["Engineer"], inline)]
     assert layout.entry.images == [preview]
     assert layout.entry.links == [guide]
     assert layout.entry.paragraphs == [*entry.paragraphs[:2], "Read " + source_url, "Build useful services"]
@@ -62,14 +63,48 @@ def test_ambiguous_or_missing_company_branding_does_not_acquire_a_guessed_logo()
     entry = Entry("Tool", ["Associated with First Company", "Associated with Second Company"], images=[logo])
     layout = project_layout(entry, companies={})
     assert layout.affiliations == {}
+    assert layout.companies == []
     assert layout.entry.images == [logo]
     assert layout.title_url == ""
     assert project_layout(Entry("Minimal"), companies={}).entry == Entry("Minimal")
 
 
+def test_company_rows_group_repeated_names_without_losing_distinct_roles() -> None:
+    """
+    Keep one row per observed company and preserve every distinct associated role in source order.
+
+    Returns:
+        None: Repeated branding is suppressed while unrelated or unrecognized associations remain intact.
+    """
+    first = Media("https://example.org/first.png", path="first.png")
+    second = Media("https://example.org/second.png", path="second.png")
+    lines = [
+        "Associated with Example Co.",
+        "Associated with Engineer at Example Co.",
+        "Associated with engineer at EXAMPLE CO",
+        "Associated with Lead Engineer at Example Co.",
+        "Associated with Engineer at Second Company",
+        "Associated with Independent Work",
+    ]
+    entry = Entry("Tool", lines)
+    layout = project_layout(entry, companies={"example co": first, "second company": second})
+    expected = [
+        CompanyAffiliation("Example Co.", ["Engineer", "Lead Engineer"], first),
+        CompanyAffiliation("Second Company", ["Engineer"], second),
+    ]
+    assert layout.companies == expected
+    assert layout.metadata == lines
+    assert lines[-1] not in layout.affiliations
+    assert entry.paragraphs == lines
+
+    # Computed presentation rows are independently owned; callers cannot mutate subsequent renders or saved metadata.
+    layout.companies[0].roles.append("Unrelated role")
+    assert layout.companies == expected
+
+
 def test_project_company_logos_render_inline_and_references_remain_clickable(tmp_path: Path) -> None:
     """
-    Reuse visible employer branding at the company-name position without repeating its gallery or link row.
+    Render one logo/name row per company, followed by its associated roles, without duplicate gallery or link rows.
 
     Args:
         tmp_path (Path): Isolated rendering and asset directory.
@@ -85,7 +120,7 @@ def test_project_company_logos_render_inline_and_references_remain_clickable(tmp
     job = Entry("Engineer", ["Example Co. · Full-time", "2020 - Present"], images=[logo])
     project = Entry(
         "tool",
-        ["Associated with Engineer at Example Co.", "See " + source_url],
+        ["Associated with Example Co.", "Associated with Engineer at Example Co.", "See " + source_url],
         links=[Link(source_url, source_url, project_url, "GitHub - example/tool: Build services")],
     )
     profile = Profile(
@@ -94,9 +129,12 @@ def test_project_company_logos_render_inline_and_references_remain_clickable(tmp
     source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
     projects = source.split(r"\projectrow[", 1)[1]
     assert rf"\entrytitle{{\href{{{project_url}}}{{tool}}}}" in projects
-    assert projects.count(r"\inlinecompanylogo{") == 1
-    assert projects.index("Associated with Engineer at") < projects.index(r"\inlinecompanylogo{") < projects.index("Example Co.")
-    assert rf"\href{{{company_url}}}{{\inlinecompanylogo" in projects
+    assert projects.count(r"\projectcompany{") == 1
+    assert projects.count(r"\includegraphics[width=4mm,height=4mm,keepaspectratio]") == 1
+    assert projects.index(r"\projectcompany{") < projects.index("Example Co.") < projects.index(r"Engineer\par")
+    assert projects.count("Example Co.") == 1
+    assert "Associated with" not in projects
+    assert rf"\href{{{company_url}}}{{%" in projects
     assert "Build services" in projects
     assert "GitHub -" not in projects
     assert rf"See \href{{{project_url}}}" in projects
@@ -104,4 +142,6 @@ def test_project_company_logos_render_inline_and_references_remain_clickable(tmp
 
     # Hidden jobs cannot supply logos to otherwise visible projects.
     without_jobs = render_profile(profile, Config(LinkedIn(profile.username), disable=["experience"]), tmp_path).read_text()
-    assert r"\inlinecompanylogo{" not in without_jobs.split(r"\projectrow[", 1)[1]
+    without_jobs = without_jobs.split(r"\projectrow[", 1)[1]
+    assert r"\projectcompany{" not in without_jobs
+    assert "Associated with Engineer at Example Co." in without_jobs

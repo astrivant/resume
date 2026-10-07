@@ -54,7 +54,17 @@
 ((* endif *))
 ((* endif *))
 ((* if project *))
-((( render_text(project.metadata, text_links, affiliations=project.affiliations) )))
+((# Group known employers into compact rows; ambiguous associations retain their captured text. #))
+((( render_text(project.metadata|reject('in', project.affiliations)|list, text_links) )))
+((* for affiliation in project.companies *))
+\projectcompany{%
+((* if affiliation.logo.link *))\href{((( affiliation.logo.link|url )))}{((* endif *))%
+\includegraphics[width=4mm,height=4mm,keepaspectratio]{((( affiliation.logo.path )))}%
+((* if affiliation.logo.link *))}((* endif *))%
+}{((( affiliation.company|tex )))}{%
+((* for title in affiliation.roles *))((( title|tex_links(text_links) )))\par%
+((* endfor *))}
+((* endfor *))
 ((* elif badge and badge[0] == 0 *))
 ((( company_name(badge, entry.paragraphs[0], entry.links) )))
 ((( render_text(entry.paragraphs[1:], entry.links, locations) )))
@@ -175,9 +185,18 @@
 \clubpenalty=10000
 % Limit theme colors to their semantic roles; groups prevent heading colors leaking into body text.
 \newcommand{\entrytitle}[1]{{\color{entryheading}\large\bfseries #1}\par\nopagebreak}
-\newcommand{\roletitle}[1]{{\color{entryheading}\normalsize\bfseries #1}\par\nopagebreak}
+% Place vertices on the progression rule without changing the title's width or pagination.
+% Paint the canvas-colored clearance over the rule first so neither connector touches the dot.
+\newcommand{\rolevertex}{%
+  \tikz[overlay,baseline]{%
+    \fill[canvas] (-3mm-0.3pt,0.5ex) circle[radius=1.8mm];
+    \fill[ink!55] (-3mm-0.3pt,0.5ex) circle[radius=0.9mm];
+  }%
+}
+\newcommand{\roletitle}[1]{{\color{entryheading}\normalsize\bfseries\leavevmode\rolevertex #1}\par\nopagebreak}
 \newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{3pt}}
-% A left rule connects roles within a company and continues on subsequent pages without boxing the whole history.
+% The rule is painted before the role contents, whose vertices interrupt it with a clear gap.
+% It continues on subsequent pages without boxing the whole history or repeating title vertices.
 \newenvironment{roleprogression}{%
   % Framed centers continuation pieces by default; keep the bar at the left when the next flow frame is wider.
   \let\centerline\leftline
@@ -231,6 +250,19 @@
 % Project affiliation logos share the surrounding text's scale and keep their natural aspect ratio.
 \newcommand{\inlinecompanylogo}[1]{%
   \raisebox{-0.15em}{\includegraphics[width=1.1em,height=1.1em,keepaspectratio]{#1}}%
+}
+% Each project company gets a fixed logo slot beside a wrapping name and subordinate role titles.
+% Keep the row together so a long name stays aligned within either project column.
+\newcommand{\projectcompany}[3]{%
+  \profileparagraph{%
+    \begin{minipage}[t]{4mm}\vspace{0pt}\centering #1\end{minipage}%
+    \hspace{1.5mm}%
+    \begin{minipage}[t]{\dimexpr\linewidth-5.5mm\relax}%
+      \vspace{0pt}\raggedright\setlength{\parskip}{1pt}%
+      {\color{entryheading}\bfseries #2}\par
+      {\small #3}%
+    \end{minipage}%
+  }%
 }
 % Normalize every recognized marker to one print bullet, with hanging alignment for wrapped and nested items.
 % Each item remains a paragraph so it can use the existing flow-frame pagination and width measurements.

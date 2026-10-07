@@ -262,8 +262,8 @@ subsequent pages use the full text width. Projects uses two columns.
 | Content | Presentation |
 | --- | --- |
 | Profile | Round portrait, pronouns beneath the name, company logo beside its name |
-| Grouped experience | Company heading followed by nested roles joined by a muted left rule; long groups continue across pages |
-| Projects | Dates and affiliations above media; descriptions below; inline company logos |
+| Grouped experience | Company heading followed by nested roles with muted dots beside their titles and a connecting line clear of each dot; long groups continue across pages |
+| Projects | Two-column cards with linked titles, dates, and a logo beside each company name; associated roles beneath the company, descriptions beneath media |
 | Skills | Up to 20 words; size by combined score, color by relative endorsement count |
 | Headings | Child headings identical to their parent are omitted, ignoring case and Unicode/whitespace formatting |
 | Lists | Recognized ASCII, Unicode, checkbox, and ordered markers render as bullets with nested indentation |
@@ -273,6 +273,11 @@ subsequent pages use the full text width. Projects uses two columns.
 Photos and logos retain their proportions; only portraits are cropped. Section and
 entry text remains complete across page breaks. LinkedIn UI attribution, repeated
 header company names, and redundant standalone references are omitted.
+
+Within a bullet, unindented lowercase text after a comma or semicolon rejoins the
+preceding sentence. Explicitly indented continuations also stay in the same item.
+Blank lines, new markers, and ordinary paragraph boundaries remain separate; the
+saved snapshot is unchanged.
 
 ### Project consolidation and links
 

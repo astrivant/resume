@@ -54,14 +54,16 @@ def text_blocks(paragraphs: list[str]) -> list[TextBlock]:
         paragraphs (list[str]): Original paragraphs, possibly containing embedded newlines and indentation.
 
     Returns:
-        list[TextBlock]: Ordered prose and bullet blocks, preserving nested indentation and indented continuations.
+        list[TextBlock]: Ordered prose and bullets with indented continuations and comma/semicolon-led sentence fragments joined.
     """
     lines = [line for paragraph in paragraphs for line in (paragraph.splitlines() or [""])]
     result: list[TextBlock] = []
     levels: list[int] = []
 
     for index, line in enumerate(lines):
-        if not line.strip():
+        text = line.strip()
+
+        if not text:
             levels.clear()
             continue
 
@@ -88,11 +90,21 @@ def text_blocks(paragraphs: list[str]) -> list[TextBlock]:
         else:
             indent = len(line.expandtabs(4)) - len(line.expandtabs(4).lstrip())
 
-            if levels and indent > levels[-1] and result[-1].depth is not None:
-                # Explicitly indented continuation lines belong to the preceding item; unmarked headings remain paragraphs.
-                result[-1] = evolve(result[-1], text=result[-1].text + " " + line.strip())
+            # Captured <br> tags can split a sentence into unindented rows. Require punctuation and a lowercase continuation
+            # to avoid absorbing unmarked headings, metadata, or attachment titles after ordinary, unpunctuated list items.
+            sentence_continuation = (
+                bool(levels)
+                and result[-1].text.endswith((",", ";"))
+                and text[0].islower()
+                and not text.endswith(":")
+                and not re.match(r"(?:https?://|www\.)", text)
+            )
+
+            if levels and result[-1].depth is not None and (indent > levels[-1] or sentence_continuation):
+                # Both continuation forms retain the original bullet's nesting and pass through normal link/TeX escaping.
+                result[-1] = evolve(result[-1], text=result[-1].text + " " + text)
             else:
                 levels.clear()
-                result.append(TextBlock(line.strip()))
+                result.append(TextBlock(text))
 
     return result
