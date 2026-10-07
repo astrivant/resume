@@ -47,7 +47,7 @@
 ((* set standalone_role = section.key == 'experience' and not role and not entry.positions *))
 ((* if section.key != 'about' and heading *))
 ((# Keep a company with its first role, and short jobs with their descriptions, when reflow approaches a page boundary. #))
-\Needspace{((* if entry.positions or (badge and entry.paragraphs|length <= 5) *))12((* elif section.key == 'education' *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
+\Needspace{((* if entry.positions or (badge and entry.paragraphs|length <= 5) *))12((* elif section.key == 'education' or (badge and style.profile_column_side == 'right') *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
 ((* endif *))
 ((# Standalone positions own one rail; nested positions share their company's existing progression rail. #))
 ((* if standalone_role *))\begin{roleprogression}((* endif *))
@@ -238,7 +238,11 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \fill[ink!55] (-3mm-0.3pt,0.5ex) circle[radius=0.9mm];
   }%
 }
+((* if style.profile_column_side == 'right' *))
+\newcommand{\roletitle}[2][\normalsize]{\profileparagraph{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}}\nopagebreak}
+((* else *))
 \newcommand{\roletitle}[2][\normalsize]{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}\par\nopagebreak}
+((* endif *))
 % Give each section heading half a body-text line of breathing room before its content.
 \newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{0.5\baselineskip}}
 % The rule is painted before the role contents, whose vertices interrupt it with a clear gap.
@@ -259,6 +263,30 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \fi%
   \hspace{3mm}\usebox{\roleframemeasure}%
 }
+((* if style.profile_column_side == 'right' *))
+% Keep role paragraphs in the main text flow so each can widen when it clears the profile block.
+% Paint the continuous rail behind the text, rather than boxing an entire role at its initial width.
+\newif\ifprofileprogression
+\newcounter{profileparagraphid}
+\newcount\profilerailpage
+\newdimen\profileraildepth
+\newcommand{\profilerailprevious}{}
+\newcommand{\profilerailopacity}{100}
+\newcommand{\drawprofilerail}[4]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[roleconnector,line width=0.6pt] (#1) -- (#2);
+    \ifnum#3<100\relax
+      \draw[roleconnector!#3!canvas,line width=0.6pt] (#1) -- ++(0,-#4);
+    \fi
+  \end{tikzpicture}%
+}
+\newenvironment{roleprogression}[1][100]{%
+  \par\profileprogressiontrue
+  \def\profilerailprevious{}%
+  \def\profilerailopacity{#1}%
+  \profilerailpage=0
+}{\par}
+((* else *))
 \newenvironment{roleprogression}[1][100]{%
   % Framed centers continuation pieces by default; keep the bar at the left when the next flow frame is wider.
   \let\centerline\leftline
@@ -270,6 +298,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \def\LastFrameCommand{\roleframe}%
   \MakeFramed{\advance\hsize-\width\FrameRestore}%
 }{\endMakeFramed}
+((* endif *))
 % Scale to cover the circle without stretching, then clip only the portrait in the PDF.
 % Original captured images stay untouched, and logos retain their rectangular outlines.
 \newsavebox{\portraitmeasure}
@@ -293,6 +322,55 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % measurement TeX would carry their narrow line breaks onto the full-width second page.
 % Paragraphs longer than a whole page remain breakable, so no profile text is clipped.
 \newsavebox{\paragraphmeasure}
+((* if style.profile_column_side == 'right' *))
+\newlength{\profileparagraphwidth}
+\newcommand{\profileparagraph}[1]{%
+  \par
+  \setlength{\profileparagraphwidth}{\linewidth}%
+  \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
+  \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{#1}}%
+  % Move whole paragraphs across a frame boundary, then measure again at the newly available width.
+  \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\typeblockheight
+    \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax>\dimexpr\pagegoal-\pagetotal\relax
+      \framebreak
+      \setlength{\profileparagraphwidth}{\linewidth}%
+      \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
+      \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{#1}}%
+    \fi
+  \fi
+  \ifprofileprogression
+    \stepcounter{profileparagraphid}%
+    \begingroup
+      \setlength{\leftskip}{\dimexpr6mm+0.6pt\relax}%
+      \setlength{\linewidth}{\profileparagraphwidth}%
+      \noindent\tikz[remember picture,overlay]{%
+        \coordinate (role-start-\arabic{profileparagraphid}) at (-3mm-0.3pt,\ht\paragraphmeasure);
+      }%
+      #1\par
+    \endgroup
+    % A zero-height mark records the paragraph's bottom without changing its baseline spacing.
+    \profileraildepth=\prevdepth
+    \nointerlineskip\hbox{\tikz[remember picture,overlay]{%
+      \coordinate (role-end-\arabic{profileparagraphid}) at (3mm+0.3pt,0pt);
+    }}%
+    \prevdepth=\profileraildepth
+    \edef\profilerailstart{role-start-\arabic{profileparagraphid}}%
+    \ifnum\profilerailpage=\value{page}\relax
+      \edef\profilerailstart{\profilerailprevious}%
+    \fi
+    % Freeze node identifiers before the shipout hook runs; vertices stay visible above these background rails.
+    \edef\pendingprofilerail{\noexpand\AddToHookNext{shipout/background}{%
+      \noexpand\drawprofilerail{\profilerailstart}{role-end-\arabic{profileparagraphid}}%
+        {\profilerailopacity}{\the\dimexpr0.5\baselineskip\relax}}}%
+    \pendingprofilerail
+    \edef\profilerailprevious{role-end-\arabic{profileparagraphid}}%
+    \profilerailpage=\value{page}
+    \def\profilerailopacity{100}%
+  \else
+    #1\par
+  \fi
+}
+((* else *))
 \newcommand{\profileparagraph}[1]{%
   \par
   \ifnum\value{page}=1
@@ -306,6 +384,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \fi
   #1\par
 }
+((* endif *))
 % Plain LinkedIn labels such as Projects introduce subsections, rather than continuing the preceding bullet.
 % Give them subordinate emphasis and keep room for the first line of their following content.
 \newcommand{\profilesubheading}[1]{%
