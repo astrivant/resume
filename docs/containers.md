@@ -1,10 +1,14 @@
 # Container usage and publication
 
-The runtime image packages the `resume` CLI, its locked production dependencies,
+The runtime image packages the `resumeme` CLI, its locked production dependencies,
 Firefox ESR, and the TeX toolchain from the same pinned `drpsychick/texlive-pdflatex`
 image used by host builds. It installs the built Python wheel and runs as UID/GID
 `10001:10001` by default. Profile snapshots, assets, browser sessions, signing keys,
 and generated PDFs are supplied at runtime and are excluded from the image.
+
+The image includes [Tini](https://github.com/krallin/tini) as PID 1 to reap orphaned
+processes and forward shutdown signals to the CLI's process group. The default
+entrypoint is `/usr/bin/tini -g -- resumeme`; `docker run --init` is unnecessary.
 
 ## Contents
 
@@ -19,21 +23,21 @@ After the first tag has been published, run this from a checkout containing your
 configuration, `data/profile.json`, and captured assets:
 
 ```bash
-docker run --rm --init --platform linux/amd64 --network=none \
+docker run --rm --platform linux/amd64 --network=none \
     --user "$(id -u):$(id -g)" \
     --mount "type=bind,source=$PWD,target=/workspace" \
-    ghcr.io/OWNER/resume:v0.1.0 build
+    ghcr.io/OWNER/resumeme:v0.1.0 build
 ```
 
-Replace `OWNER/resume` with your lowercase owner/repository and `v0.1.0` with your
+Replace `OWNER/resumeme` with your lowercase owner/repository and `v0.1.0` with your
 published tag. The command writes `resume.pdf`, generated TeX, and build logs back
 to the checkout. Using your UID/GID keeps generated files owned by you on Linux.
-The working directory is `/workspace`; the usual `resume.config.yaml` default
+The working directory is `/workspace`; the usual `resumeme.config.yaml` default
 and all relative path rules apply. For another configuration, pass
 `--config your-config.yaml build` after the image name.
 
 Use `validate`, `render`, or `--help` in place of `build` for other operations.
-The container sets `RESUME_TEX_BACKEND=local` so both pdfLaTeX passes run inside
+The container sets `RESUMEME_TEX_BACKEND=local` so both pdfLaTeX passes run inside
 the container. Shell escape stays disabled. The build command above disables
 networking as well. No nested Docker daemon or host Docker socket is required.
 
@@ -43,19 +47,19 @@ contains neither Poetry nor development dependencies.
 
 ## Capture with Firefox
 
-On macOS and Windows, use the documented local `poetry run resume capture` flow,
+On macOS and Windows, use the documented local `poetry run resumeme capture` flow,
 then run the container against the resulting snapshot. The published image can
 also run visible Firefox when connected to a Linux graphical display. For a local
 X11 session with a readable Xauthority cookie file:
 
 ```bash
-docker run --rm -it --init --platform linux/amd64 --shm-size=1g \
+docker run --rm -it --platform linux/amd64 --shm-size=1g \
     --user "$(id -u):$(id -g)" --hostname "$(hostname)" \
     --env DISPLAY --env XAUTHORITY=/tmp/xauthority \
     --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix,readonly \
     --mount "type=bind,source=${XAUTHORITY:-$HOME/.Xauthority},target=/tmp/xauthority,readonly" \
     --mount "type=bind,source=$PWD,target=/workspace" \
-    ghcr.io/OWNER/resume:v0.1.0 capture
+    ghcr.io/OWNER/resumeme:v0.1.0 capture
 ```
 
 Capture needs networking for LinkedIn, Selenium Manager's first driver download,
@@ -67,8 +71,8 @@ an interactive LinkedIn capture.
 ## Build locally
 
 ```bash
-docker build --platform linux/amd64 --target production --tag resume:local .
-bash scripts/ci/check-container.sh resume:local
+docker build --platform linux/amd64 --target production --tag resumeme:local .
+bash scripts/ci/check-container.sh resumeme:local
 ```
 
 The smoke check runs without networking or a writable container filesystem. It
@@ -80,13 +84,13 @@ The same Dockerfile has a `development` target with Poetry, development
 dependencies, source, tests, and repository scripts:
 
 ```bash
-docker build --platform linux/amd64 --target development --tag resume:dev .
-docker run --rm --platform linux/amd64 --entrypoint python resume:dev -m pytest
+docker build --platform linux/amd64 --target development --tag resumeme:dev .
+docker run --rm --platform linux/amd64 --entrypoint /usr/bin/tini resumeme:dev -g -- python -m pytest
 ```
 
 Dependencies install from `poetry.lock` without resolving new versions. The base
 Python and TeX images are pinned by digest. Keep the TeX digest in `Dockerfile`
-and `pkg/resume/latex/resources/toolchain.json` aligned; schema checks enforce this
+and `pkg/resumeme/latex/resources/toolchain.json` aligned; schema checks enforce this
 shared toolchain contract. Dependabot tracks Docker and Actions updates.
 
 ## Publish on a tag

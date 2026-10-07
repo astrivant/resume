@@ -38,12 +38,12 @@ jobs:
           platforms: linux/amd64
           load: true
           push: false
-          tags: resume:ci
+          tags: resumeme:ci
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ inputs.sha }}
-          cache-from: type=gha,scope=resume-container-amd64
-          cache-to: type=gha,mode=max,scope=resume-container-amd64
+          cache-from: type=gha,scope=resumeme-container-amd64
+          cache-to: type=gha,mode=max,scope=resumeme-container-amd64
       - name: Compile a synthetic resume in the installed container
         run: bash scripts/ci/check-container.sh
 
@@ -52,12 +52,12 @@ jobs:
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         run: |
           mkdir -p .cache/container
-          docker save resume:ci | gzip > .cache/container/resume.tar.gz
+          docker save resumeme:ci | gzip > .cache/container/resumeme.tar.gz
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         with:
-          name: resume-container
-          path: .cache/container/resume.tar.gz
+          name: resumeme-container
+          path: .cache/container/resumeme.tar.gz
           include-hidden-files: true
           if-no-files-found: error
           compression-level: 0
@@ -75,7 +75,7 @@ jobs:
         with:
           groups: main
 
-      # resume build uses the digest-pinned drpsychick/texlive-pdflatex image.
+      # resumeme build uses the digest-pinned drpsychick/texlive-pdflatex image.
       - run: bash scripts/ci/build.sh
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -99,7 +99,7 @@ jobs:
           retention-days: 14
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: resume-source-and-distributions
+          name: resumeme-source-and-distributions
           path: |
             tex/
             dist/

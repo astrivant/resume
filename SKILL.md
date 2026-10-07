@@ -1,5 +1,5 @@
 ---
-name: resume
+name: resumeme
 description: >-
   Generate a resume PDF from a user's LinkedIn profile with this repository's
   Python CLI. Use for first-time setup, interactive Firefox capture, rebuilding
@@ -16,8 +16,8 @@ particular editor, plugin, or skill installer.
 
 ## Establish the inputs
 
-Work in the existing `resume` checkout containing `pyproject.toml`, `poetry.lock`,
-and `resume.config.yaml`. If this skill was copied elsewhere, locate the checkout
+Work in the existing `resumeme` checkout containing `pyproject.toml`, `poetry.lock`,
+and `resumeme.config.yaml`. If this skill was copied elsewhere, locate the checkout
 first; all paths below are relative to that checkout. Inspect `git status --short`
 and preserve existing changes.
 
@@ -27,14 +27,14 @@ author's username, snapshot, and PDF; establish whose profile is wanted before
 reusing those inputs. Ask for the username only when the conversation and existing
 configuration do not establish it.
 
-Set `linkedin.username` in `resume.config.yaml`, preserving comments and other
+Set `linkedin.username` in `resumeme.config.yaml`, preserving comments and other
 settings. Apply section exclusions, job filters, or styling changes only as
 requested; see [configuration](docs/README.md#configuration) and
 [themes](docs/themes.md). Paths in `output` are relative to the config directory.
 For a custom config, put the global option before the subcommand:
 
 ```bash
-poetry run resume --config path/to/config.yaml build
+poetry run resumeme --config path/to/config.yaml build
 ```
 
 Choose the appropriate starting point:
@@ -42,14 +42,14 @@ Choose the appropriate starting point:
 - First run, a different owner, or requested LinkedIn updates: capture first.
 - Layout-only changes or a requested rebuild: reuse the matching saved snapshot.
   Validation checks ownership; changing the username does not fetch new data.
-- Link resolution or preview refresh on acquired text: run `poetry run resume enrich`
+- Link resolution or preview refresh on acquired text: run `poetry run resumeme enrich`
   against the saved snapshot, then validate and build. This makes bounded public
   HTTP requests and needs no Firefox session. Original text and URLs are retained;
   the snapshot gains resolved destinations, page titles, and cached previews.
 
 ## Prepare the local environment
 
-Use Python 3.13+, Poetry 2.1.3, Firefox for capture, and a running Docker daemon
+Use Python 3.13+, Poetry 2.5.1, Firefox for capture, and a running Docker daemon
 for the default local PDF build. On macOS, follow the
 [Homebrew bootstrap](README.md#quick-start); `Brewfile` supplies host tools, and
 the bootstrap installs the pinned Poetry version. On other hosts, use equivalent
@@ -64,7 +64,7 @@ export POETRY_INSTALLER_RE_RESOLVE=false
 export MPLCONFIGDIR="$PWD/.cache/matplotlib"
 poetry check --lock
 poetry install --only main --no-interaction
-poetry run resume --help
+poetry run resumeme --help
 ```
 
 Use the project environment even if the agent inherited an unrelated activated
@@ -77,7 +77,7 @@ Keep the committed dependency resolution; normal PDF generation does not need
 Run capture in a persistent process whose lifetime allows the user to sign in:
 
 ```bash
-poetry run resume capture
+poetry run resumeme capture
 ```
 
 Once Firefox opens, tell the user to sign in there, complete any MFA, and leave
@@ -105,14 +105,14 @@ reported omissions; otherwise surface the blocker and retain the last good input
 Run these sequentially, proceeding only after each succeeds:
 
 ```bash
-poetry run resume validate
+poetry run resumeme validate
 docker info >/dev/null
-poetry run resume build
+poetry run resumeme build
 ```
 
 Start Docker Desktop on macOS if needed. The build renders Jinja templates and
 runs two pdfLaTeX passes in the pinned TeX image. A host LaTeX installation is
-unnecessary. For a render-only diagnosis, run `poetry run resume render`; generated
+unnecessary. For a render-only diagnosis, run `poetry run resumeme render`; generated
 TeX alone is not the finished deliverable. Compiler logs are in `.cache/build/`.
 
 Confirm that this build succeeded and that the configured PDF exists and is

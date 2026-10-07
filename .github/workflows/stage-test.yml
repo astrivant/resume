@@ -32,3 +32,69 @@ jobs:
           path: .cache/coverage/coverage.xml
           if-no-files-found: error
           retention-days: 14
+  documents:
+    name: TeXtidote spelling, grammar, and LaTeX review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+        with:
+          groups: main
+
+      # Check the rendered document from this source commit, including a user's configured output.tex path.
+      - name: Render the resume and prepare report paths
+        id: documents
+        run: |
+          poetry run resumeme render
+          poetry run python scripts/ci/prepare-textidote.py
+
+      # Run the Marketplace action's published image directly: its action.yml otherwise selects a floating latest tag.
+      # https://github.com/marketplace/actions/textidote-action
+      - name: Review README prose
+        id: readme
+        uses: docker://gokhlayeh/textidote@sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441
+        with:
+          args: README.md . html .cache/textidote/readme.html -1 "--check en"
+      - name: Review generated LaTeX and profile prose
+        id: resume
+        if: ${{ !cancelled() && steps.documents.outcome == 'success' }}
+        uses: docker://gokhlayeh/textidote@sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441
+        with:
+          args: >-
+            ./${{ steps.documents.outputs.tex_file }}
+            ${{ steps.documents.outputs.tex_directory }}
+            html ${{ steps.documents.outputs.tex_report }}
+            -1 "--check en"
+
+      # Keep editorial findings visible without rewriting captured profile prose; execution failures still fail the test stage.
+      - name: Summarize document review
+        if: always()
+        env:
+          README_WARNINGS: ${{ steps.readme.outputs.num_warnings }}
+          RESUME_WARNINGS: ${{ steps.resume.outputs.num_warnings }}
+        run: |
+          {
+              printf '## TeXtidote review\n\n'
+              printf '| Document | Findings |\n| --- | --- |\n'
+              printf '| README | %s |\n' "${README_WARNINGS:-unavailable}"
+              printf '| Resume | %s |\n\n' "${RESUME_WARNINGS:-unavailable}"
+              printf 'Download the textidote-reports artifact for annotated HTML. Prose findings are advisory; tool failures block CI.\n'
+          } >>"$GITHUB_STEP_SUMMARY"
+
+          if [[ "${README_WARNINGS:-0}" != 0 || "${RESUME_WARNINGS:-0}" != 0 ]]; then
+              echo '::warning::TeXtidote found prose issues. Review the textidote-reports artifact.'
+          fi
+
+      # Preserve any completed report if the other document check fails, while treating a missing report directory as an error.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always() && steps.documents.outcome == 'success'
+        with:
+          name: textidote-reports
+          path: .cache/textidote/*.html
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

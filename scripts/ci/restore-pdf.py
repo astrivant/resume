@@ -8,10 +8,10 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from resume.config import load_config, project_path
+from resumeme.config import load_config, project_path
 
 # Resolve the destination from this source commit's config, while consuming the stable cross-job artifact filename.
-config = load_config(Path("resume.config.yaml"))
+config = load_config(Path("resumeme.config.yaml"))
 artifact = Path(".cache/publication/resume.pdf")
 
 if not artifact.read_bytes().startswith(b"%PDF-"):

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Exercise the installed CLI, packaged template, word cloud, and bundled TeX without network access.
 set -euo pipefail
-image="${1:-resume:ci}"
+image="${1:-resumeme:ci}"
 project=$(mktemp -d)
 trap 'rm -rf "$project"' EXIT
 
 # Synthetic inputs exercise packaged resources without reading or modifying the owner's captured profile.
-cat >"$project/resume.config.yaml" <<'YAML'
+cat >"$project/resumeme.config.yaml" <<'YAML'
 linkedin:
   username: container-check
 YAML

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install from the committed lockfile; CI must never resolve new versions.
 set -euo pipefail
-python -m pip install --disable-pip-version-check poetry==2.1.3
+python -m pip install --disable-pip-version-check poetry==2.5.1
 
 # Pin installation behavior as well as dependency versions; CI must consume the committed resolution without prompting for a keyring.
 export POETRY_VIRTUALENVS_IN_PROJECT=true

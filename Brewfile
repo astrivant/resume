@@ -1,5 +1,5 @@
 # macOS host dependencies; Python packages and lint tools are installed from poetry.lock.
-# Install Poetry 2.1.3 with pipx as documented in README.md to match the CI bootstrap.
+# Install Poetry 2.5.1 with pipx as documented in README.md to match the CI bootstrap.
 brew "python@3.13"
 brew "pipx"
 

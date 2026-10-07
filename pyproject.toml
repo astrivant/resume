@@ -1,5 +1,5 @@
 [project]
-name = "resume"
+name = "resumeme"
 version = "0.1.0"
 description = "Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
 authors = [{name = "Emma Doyle"}]
@@ -23,15 +23,15 @@ dependencies = [
 ]
 
 [project.scripts]
-resume = "resume.cli:main"
+resumeme = "resumeme.cli:main"
 
 [tool.poetry]
-packages = [{include = "resume", from = "pkg"}]
+packages = [{include = "resumeme", from = "pkg"}]
 include = [
-    {path = "pkg/resume/resources/**/*", format = ["sdist", "wheel"]},
-    {path = "pkg/resume/latex/resources/**/*", format = ["sdist", "wheel"]},
+    {path = "pkg/resumeme/resources/**/*", format = ["sdist", "wheel"]},
+    {path = "pkg/resumeme/latex/resources/**/*", format = ["sdist", "wheel"]},
 ]
-exclude = ["pkg/resume/tests"]
+exclude = ["pkg/resumeme/tests"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=9,<10"
@@ -51,18 +51,18 @@ shfmt-py = "3.12.0.2"
 pypdf = ">=6,<7"
 
 [build-system]
-requires = ["poetry-core==2.2.1"]
+requires = ["poetry-core==2.5.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-testpaths = ["pkg/resume/tests"]
+testpaths = ["pkg/resumeme/tests"]
 
 # Share CPU-based worker selection between local runs and CI; use -n 0 when debugging a single process.
 addopts = "-ra -n auto"
 
 [tool.coverage.run]
 relative_files = true
-source = ["pkg/resume"]
+source = ["pkg/resumeme"]
 omit = ["*/tests/*"]
 data_file = ".cache/coverage/.coverage"
 

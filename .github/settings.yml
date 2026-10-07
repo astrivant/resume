@@ -1,5 +1,5 @@
 repository:
-  name: resume
+  name: resumeme
   description: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions
   has_issues: true
   has_projects: false

@@ -22,8 +22,8 @@ A profile with no optional content renders its name and LinkedIn URL. Empty
 sections are omitted from the document. Login pages and pages without an identity
 still fail capture.
 
-The [JSON Schema](../pkg/resume/resources/profile.schema.json) validates snapshots;
-[typed models](../pkg/resume/models.py) supply optional defaults. Existing version-1
+The [JSON Schema](../pkg/resumeme/resources/profile.schema.json) validates snapshots;
+[typed models](../pkg/resumeme/models.py) supply optional defaults. Existing version-1
 snapshots remain valid.
 
 ## Section coverage
@@ -40,7 +40,7 @@ Each link retains its original `label` and `url`. Optional `resolved_url` and
 both default to an empty string in older snapshots. Introspection never replaces
 profile prose with remote page content. HTTP(S) and `www.` references in text are
 also stored as links, and the PDF uses resolved destinations for inline links,
-reference labels, and associated images. Capture and `resume enrich` obtain this
+reference labels, and associated images. Capture and `resumeme enrich` obtain this
 metadata; offline builds do not fetch pages.
 
 Grouped employment entries also carry optional `positions`, a list of entries
@@ -149,8 +149,8 @@ and `skill_cloud`, which is a relative PNG path or `None`.
 
 ## Verification
 
-The [minimal fixture](../pkg/resume/tests/fixtures/profile-minimal.html) and
-[maximal fixture](../pkg/resume/tests/fixtures/profile-maximal.html) exercise empty
+The [minimal fixture](../pkg/resumeme/tests/fixtures/profile-minimal.html) and
+[maximal fixture](../pkg/resumeme/tests/fixtures/profile-maximal.html) exercise empty
 and populated profiles, all catalogued sections, nested jobs, media, endorsements,
 and an unfamiliar section. Tests cover schema round trips, exclusions, scoring,
 and deterministic PNG generation without a LinkedIn account.

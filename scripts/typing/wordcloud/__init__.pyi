@@ -1,5 +1,5 @@
 """
-Type the WordCloud 1.9 public API used by resume; upstream does not ship type hints.
+Type the WordCloud 1.9 public API used by resumeme; upstream does not ship type hints.
 """
 
 from __future__ import annotations

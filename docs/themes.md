@@ -1,8 +1,8 @@
 # Inline themes
 
 `style.theme` defaults to `null`: the renderer uses the base `style` fields.
-The reference config includes an editable `tiger` theme. Select it with
-`style.theme: tiger`, then run `resume build` to regenerate the PDF offline.
+The checked-in config selects the editable `tiger` theme for this résumé. Use
+`style.theme: null` for the neutral base, then run `resumeme build` to regenerate the PDF offline.
 
 Themes are maps of ordinary style fields. Values in the selected theme **override
 the base style**, including explicitly configured values. Fields absent from the
@@ -14,15 +14,18 @@ style:
   paper: letter
   font_size: 10
   background: 'FFFFFF'
-  accent: '0A66C2'
+  accent: '3F6248'
+  ink: '363636'
+  entry_color: '363636'
+  skill_colors: ['555555']
   themes:
     tiger:
-      accent: 'A44813'
-      ink: '241A15'
+      accent: '3F6248'
+      ink: '363636'
       name_color: '6B2737'
-      heading_color: 'C44A11'
-      entry_color: '8F2E08'
-      skill_colors: ['6B2737', '8F2E08', 'A44813', 'C44A11', '86543B']
+      heading_color: 'A44813'
+      entry_color: '363636'
+      skill_colors: ['86543B']
     compact:
       paper: a4
       font_size: 10
@@ -30,7 +33,7 @@ style:
       skills_word_cloud: false
 ```
 
-Here, `tiger` replaces the blue base accent with copper. Selecting `compact`
+Here, `tiger` adds warm heading colors while retaining green links. Selecting `compact`
 keeps the base colors and changes page and visibility settings. Theme definitions
 cannot override `theme` or `themes`, select another theme, or change fields outside
 `style`. An unknown selected name, misspelled field, invalid color, or empty cloud
@@ -44,21 +47,28 @@ the same JSON Schema definitions as their corresponding base style fields.
 ## The tiger palette
 
 The autumn palette draws from [Tiger Lily Plants' CSS](https://tiger-lily-plants.com/assets/main.css),
-inspected on October 7, 2026. The burgundy is a complementary addition; the other
-colors come directly from the stylesheet. Values live in `resume.config.yaml`,
+inspected on October 7, 2026. Burnt copper and bark brown come from the stylesheet;
+burgundy, forest green, and soft charcoal complete the print palette. Values live in `resumeme.config.yaml`,
 so builds do not fetch the website or change when its CSS changes.
 
 | Color | Hex | PDF role | Reference |
 | --- | --- | --- | --- |
-| Burgundy | `6B2737` | Profile name and cloud | Complementary addition |
-| Burnt orange | `C44A11` | Section headings and cloud | `--color-primary` |
-| Deep rust | `8F2E08` | Entry headings and cloud | `--color-primary-dark` |
-| Copper | `A44813` | Links and cloud | Site link/navigation color |
-| Bark brown | `86543B` | Cloud | `.tag-icon` |
-| Warm dark brown | `241A15` | Body text | `--color-surface`, adapted for text on white |
+| Burgundy | `6B2737` | Profile name: the primary identity anchor | Complementary addition |
+| Burnt copper | `A44813` | Section headings: the main scanning landmarks | Site link/navigation color |
+| Soft charcoal | `363636` | Bold entry titles and regular body text | Neutral off-black for print |
+| Forest green | `3F6248` | All clickable text, including linked titles and locations | Complementary addition |
+| Bark brown | `86543B` | Skill cloud: one tone, with size indicating strength | `.tag-icon` |
+
+Color follows purpose: the name anchors the page, warm section headings divide it,
+and job titles sit beneath them in bold body ink. Green always identifies a link,
+even inside a heading; logos and photographs retain their original colors. The
+neutral base style uses dark headings, soft charcoal body text and entry titles,
+green links, and a gray cloud.
 
 The theme inherits white paper, Garamond, the two-column opening page, and image
-proportions from the base design. Skill colors are assigned by a stable hash of
+proportions from the base design. The single cloud color avoids implying unrelated
+skill categories; word size conveys the reference and endorsement weighting. Custom
+multicolor palettes remain supported, with colors assigned by a stable hash of
 each label. Changing colors preserves the word positions, weights, and endorsement
 counts. Set `background` in either the base style or the selected theme to change
 both the page and cloud canvas together.

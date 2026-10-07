@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: resume-container
+          name: resumeme-container
           path: .cache/container/
 
       # Derive fork-local image names and tag aliases from GitHub context, without moving a shared latest tag.

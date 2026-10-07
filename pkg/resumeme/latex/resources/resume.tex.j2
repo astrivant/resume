@@ -1,0 +1,331 @@
+((# Shared entry rendering keeps project cards and ordinary sections on the same escaping and image rules. #))
+((* macro render_text(paragraphs, links, locations={}, affiliations={}, badges={}) *))
+((* for block in paragraphs|text_blocks *))
+((* if block.depth is not none *))
+\profilebullet{((( block.depth )))}{((( block.text|tex_links(links) )))}
+((* else *))
+((* if block.text in badges *))
+((( company_name((0, badges[block.text]), block.text, links) )))
+((* elif block.text in affiliations *))
+((* set prefix, company, logo = affiliations[block.text] *))
+\profileparagraph{((( prefix|tex )))%
+((* if logo.link *))\href{((( logo.link|url )))}{((* endif *))\inlinecompanylogo{((( logo.path )))}((* if logo.link *))}((* endif *))%
+\nobreak\hspace{0.3em}((( company|tex )))}
+((* elif block.text in locations *))
+((* set location = locations[block.text] *))
+\profileparagraph{\href{((( location.url|url )))}{((( location.label|tex )))}((( block.text[location.label|length:]|tex_links(links) )))}
+((* else *))
+\profileparagraph{((( block.text|tex_links(links) )))}
+((* endif *))
+((* endif *))
+((* endfor *))
+((* endmacro *))
+((* macro company_name(badge, text, links, heading=false) *))
+\companyline{%
+((* if badge[1].link *))\href{((( badge[1].link|url )))}{((* endif *))%
+\includegraphics[width=8mm,height=8mm,keepaspectratio]{((( badge[1].path )))}%
+((* if badge[1].link *))}((* endif *))%
+}{((* if heading *))\entrytitle{((* endif *))((( text|tex_links(links) )))((* if heading *))}((* endif *))}
+((* endmacro *))
+((* macro render_entry(entry, section) *))
+((* set text_links = entry.links *))
+((# Deduplicate only the immediate child heading; all paragraphs, illustrations, and references remain renderable. #))
+((* set heading = entry.title|distinct_heading(section.title) *))
+((* set project = entry|project_layout(show_title=heading != '') if section.key == 'projects' else none *))
+((* set entry = project.entry if project else entry *))
+((* set badge = entry|employer_badge if section.key == 'experience' else none *))
+((# A logo attached to a suppressed company heading falls back to the gallery so it and its link remain visible. #))
+((* if not heading and badge and badge[0] == -1 *))((* set badge = none *))((* endif *))
+((* set locations = entry|job_locations if section.key == 'experience' else {} *))
+((* if section.key == 'about' *))
+((( render_text([heading], entry.links) )))
+((* elif heading *))
+\Needspace{((* if section.key == 'education' *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
+((* if badge and badge[0] == -1 *))
+((( company_name(badge, heading, entry.links, heading=true) )))
+((* elif project and project.title_url *))
+\entrytitle{\href{((( project.title_url|url )))}{((( heading|tex )))}}
+((* else *))
+\entrytitle{((( heading|tex_links(entry.links) )))}
+((* endif *))
+((* endif *))
+((* if project *))
+((( render_text(project.metadata, text_links, affiliations=project.affiliations) )))
+((* elif badge and badge[0] == 0 *))
+((( company_name(badge, entry.paragraphs[0], entry.links) )))
+((( render_text(entry.paragraphs[1:], entry.links, locations) )))
+((* else *))
+((( render_text(entry.paragraphs, text_links, locations, project.affiliations if project else {}) )))
+((* endif *))
+((# Match the source hierarchy: featured illustrations, compact attachments, organization logos, then tiny site icons. #))
+((* set gallery = entry.images|reject('equalto', badge[1])|list if badge else entry.images *))
+((* if gallery *))\profileparagraph{((* endif *))
+((* for image in gallery -*))
+((* set role = image|image_role -*))
+((* if image.link *))\href{((( image.link|url )))}{((* endif *))%
+((* if role == 'portrait' -*))
+\portraitphoto[8mm]{((( image.path )))}%
+((* elif role == 'icon' -*))
+\includegraphics[width=3.5mm,height=3.5mm,keepaspectratio]{((( image.path )))}%
+((* elif role == 'logo' -*))
+\includegraphics[width=8mm,height=8mm,keepaspectratio]{((( image.path )))}%
+((* elif section.key in ['featured', 'activity'] -*))
+\includegraphics[width=0.8\linewidth,height=40mm,keepaspectratio]{((( image.path )))}%
+((* else -*))
+\includegraphics[width=24mm,height=14mm,keepaspectratio]{((( image.path )))}%
+((* endif -*))
+((* if image.link *))}((* endif *))\hspace{3pt}
+((* endfor -*))
+((* if gallery *))}((* endif *))
+((# Attachment descriptions travel with the project and explain its media from directly underneath it. #))
+((* if project *))
+((( render_text(project.description, text_links) )))
+((* endif *))
+((# The employer badge already links its destination; retain a text reference only when no linked badge supplies it. #))
+((* for link in entry.links if not badge or not badge[1].link or (link.resolved_url or link.url) != badge[1].link *))
+((* if link.label == link.url and not link.title *))
+\profileparagraph{{\small ((( link.label|tex_links([link]) )))}}
+((* else *))
+\profileparagraph{{\small\href{((( (link.resolved_url or link.url)|url )))}{((( (link.title if link.label == link.url else link.label)|tex )))}}}
+((* endif *))
+((* endfor *))
+((* endmacro *))
+((* macro section_heading(section, anchor) *))
+((# Emit each destination with the heading after pagination has selected its final page. #))
+\hypertarget{((( anchor )))}{}%
+\sectiontitle{((( section.title|tex )))}
+((* endmacro *))
+((* macro render_section(section, anchor) *))
+((* if section.key == 'projects' *))
+% Projects use the full paper width; move past the first-page identity columns only when necessary.
+\ifnum\value{page}=1\clearpage\fi
+((* endif *))
+((# Reserve the first education entry's eight lines plus its section heading so reflow cannot strand the heading. #))
+\Needspace{((* if section.key == 'education' *))11((* else *))5((* endif *))\baselineskip}
+((* if section.key == 'skills' and skill_cloud *))\begin{minipage}{\linewidth}((* endif *))
+((* if section.key != 'projects' *))((( section_heading(section, anchor) )))((* endif *))
+((* if section.key == 'skills' and skill_cloud *))
+% Scale both bounds to 75% of the original display size without changing the cloud's proportions or weights.
+\includegraphics[width=0.75\linewidth,height=0.4125\textheight,keepaspectratio]{((( skill_cloud )))}\par
+\end{minipage}
+((* elif section.key == 'projects' *))
+((* for pair in section.entries|batch(2) *))
+\projectrow[((* if loop.first *))((( section_heading(section, anchor) )))((* endif *))]{((( render_entry(pair[0], section) )))}{((* if pair|length == 2 *))((( render_entry(pair[1], section) )))((* endif *))}
+((* endfor *))
+((* else *))
+((* for entry in section.entries *))
+((* if not loop.first *))\par\addvspace{9pt}((* endif *))
+((( render_entry(entry, section) )))
+((* endfor *))
+((* endif *))
+\par\addvspace{10pt}
+((* endmacro *))
+\documentclass[((( style.font_size )))pt,((( style.paper )))paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=19mm]{geometry}
+% The CLI supplies the bundled font tree to both compiler backends.
+\pdfmapfile{+EBGaramond.map}
+\usepackage[lining]{ebgaramond}
+\usepackage{microtype}
+\usepackage{xcolor,graphicx,needspace}
+\usepackage{tikz}
+\usepackage{twemojis}
+\usepackage{flowfram}
+\usepackage{xurl}
+\usepackage[unicode,breaklinks=true]{hyperref}
+\definecolor{accent}{HTML}{((( style.accent )))}
+\definecolor{canvas}{HTML}{((( style.background )))}
+\definecolor{ink}{HTML}{((( style.ink )))}
+\definecolor{profilename}{HTML}{((( style.name_color )))}
+\definecolor{sectionheading}{HTML}{((( style.heading_color )))}
+\definecolor{entryheading}{HTML}{((( style.entry_color )))}
+% Every text link uses the same color, including links nested inside headings; color marks clickability.
+\hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,filecolor=accent,citecolor=accent,
+  pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) — Resume}}
+\hypersetup{pdfsubject={Emoji graphics: Twemoji, copyright Twitter and contributors, CC BY 4.0, https://github.com/twitter/twemoji}}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\pagecolor{canvas}
+\color{ink}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{3em}
+\raggedright
+\widowpenalty=10000
+\clubpenalty=10000
+% Limit theme colors to their semantic roles; groups prevent heading colors leaking into body text.
+\newcommand{\entrytitle}[1]{{\color{entryheading}\large\bfseries #1}\par\nopagebreak}
+\newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{3pt}}
+% Scale to cover the circle without stretching, then clip only the portrait in the PDF.
+% Original captured images stay untouched, and logos retain their rectangular outlines.
+\newsavebox{\portraitmeasure}
+\newlength{\portraitdiameter}
+\newcommand{\portraitphoto}[2][36.4mm]{%
+  \begingroup
+  \setlength{\portraitdiameter}{#1}%
+  \sbox{\portraitmeasure}{\includegraphics[width=\portraitdiameter]{#2}}%
+  \ifdim\ht\portraitmeasure<\portraitdiameter
+    \sbox{\portraitmeasure}{\includegraphics[height=\portraitdiameter]{#2}}%
+  \fi
+  \begin{tikzpicture}
+    \path[use as bounding box] (-0.5\portraitdiameter,-0.5\portraitdiameter)
+      rectangle (0.5\portraitdiameter,0.5\portraitdiameter);
+    \clip (0,0) circle[radius=0.5\portraitdiameter];
+    \node[overlay,inner sep=0pt,outer sep=0pt] at (0,0) {\usebox{\portraitmeasure}};
+  \end{tikzpicture}%
+  \endgroup
+}
+% Finish ordinary first-page paragraphs before switching frame widths. Without this
+% measurement TeX would carry their narrow line breaks onto the full-width second page.
+% Paragraphs longer than a whole page remain breakable, so no profile text is clipped.
+\newsavebox{\paragraphmeasure}
+\newcommand{\profileparagraph}[1]{%
+  \par
+  \ifnum\value{page}=1
+    \sbox{\paragraphmeasure}{\parbox{\linewidth}{#1}}%
+    % Include leading baseline space; underestimating it can overflow before framebreak and flush a second, nearly empty page.
+    \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\textheight
+      \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax>\dimexpr\pagegoal-\pagetotal\relax
+        \framebreak
+      \fi
+    \fi
+  \fi
+  #1\par
+}
+% Keep a company's linked logo beside its name, allowing long employer names to wrap within the remaining width.
+\newcommand{\companyline}[2]{%
+  \profileparagraph{%
+    \begin{minipage}[c]{8mm}\centering #1\end{minipage}%
+    \hspace{2mm}%
+    \begin{minipage}[c]{\dimexpr\linewidth-10mm\relax}\raggedright #2\end{minipage}%
+  }%
+}
+% Project affiliation logos share the surrounding text's scale and keep their natural aspect ratio.
+\newcommand{\inlinecompanylogo}[1]{%
+  \raisebox{-0.15em}{\includegraphics[width=1.1em,height=1.1em,keepaspectratio]{#1}}%
+}
+% Normalize every recognized marker to one print bullet, with hanging alignment for wrapped and nested items.
+% Each item remains a paragraph so it can use the existing flow-frame pagination and width measurements.
+\newcommand{\profilebullet}[2]{%
+  % TeX resets hanging indentation after the paragraph; leave flow-frame changes outside a temporary formatting group.
+  \profileparagraph{%
+    \hangindent=\dimexpr#1em+1em\relax\hangafter=1
+    \noindent\hspace*{#1em}\makebox[1em][l]{\textbullet}#2%
+  }%
+}
+% Keep project pairs top-aligned. Split oversized cards into column-width pieces instead of clipping their text.
+\newbox\projectleft
+\newbox\projectright
+\newbox\projectleftpart
+\newbox\projectrightpart
+\newdimen\projectwidth
+\newdimen\projectheight
+\newcommand{\projectparts}{%
+  \noindent\hbox to\linewidth{%
+    \vtop{\hrule height0pt width\projectwidth\unvbox\projectleftpart}%
+    \hfil
+    \vtop{\hrule height0pt width\projectwidth\unvbox\projectrightpart}%
+  }\par
+}
+\newcommand{\printprojectrow}{%
+  \projectheight=\dimexpr\ht\projectleft+\dp\projectleft\relax
+  \ifdim\dimexpr\ht\projectright+\dp\projectright\relax>\projectheight
+    \projectheight=\dimexpr\ht\projectright+\dp\projectright\relax
+  \fi
+  \ifdim\projectheight>0.85\textheight
+    \Needspace{0.9\textheight}%
+    \setbox\projectleftpart=\vsplit\projectleft to0.85\textheight
+    \setbox\projectrightpart=\vsplit\projectright to0.85\textheight
+    \projectparts
+    \framebreak
+    \printprojectrow
+  \else
+    \Needspace{\dimexpr\projectheight+12pt\relax}%
+    \setbox\projectleftpart=\box\projectleft
+    \setbox\projectrightpart=\box\projectright
+    \projectparts
+    \par\addvspace{12pt}%
+  \fi
+}
+\newcommand{\projectrow}[3][]{%
+  \begingroup
+  \projectwidth=0.48\linewidth
+  \setbox\projectleft=\vbox{\hsize=\projectwidth\linewidth=\projectwidth #2}%
+  \setbox\projectright=\vbox{\hsize=\projectwidth\linewidth=\projectwidth #3}%
+  % Reserve the measured first row with its heading, including the first chunk of an oversized pair.
+  \if\relax\detokenize{#1}\relax\else
+    \projectheight=\dimexpr\ht\projectleft+\dp\projectleft\relax
+    \ifdim\dimexpr\ht\projectright+\dp\projectright\relax>\projectheight
+      \projectheight=\dimexpr\ht\projectright+\dp\projectright\relax
+    \fi
+    \ifdim\projectheight>0.85\textheight\projectheight=0.85\textheight\fi
+    \Needspace{\dimexpr\projectheight+5\baselineskip\relax}%
+    #1%
+  \fi
+  \printprojectrow
+  \endgroup
+}
+\urlstyle{same}
+% Reserve a narrow identity column on page one, then use full-width continuation pages.
+% Flow frames let long content continue instead of clipping it in a fixed-height box.
+\newflowframe[1]{0.34\textwidth}{\textheight}{0pt}{0pt}[identity]
+\newflowframe[1]{0.61\textwidth}{\textheight}{0.39\textwidth}{0pt}[opening]
+\newflowframe[>1]{\textwidth}{\textheight}{0pt}{0pt}[continuation]
+% Flow frames reset their text color on entry; inherit the configured body ink in every column and continuation page.
+\setallflowframes{textcolor=ink}
+\begin{document}
+((# Relocate observed header branding beside its name, using the same linked company row as Experience. #))
+((* set header, header_badges = profile|header_logos *))
+{\color{profilename}\fontsize{24}{28}\selectfont\bfseries ((( profile.name|tex )))}\par
+((# Keep captured pronouns with the name, above the portrait, and omit their old position in the intro below. #))
+((* for line in profile.intro if line is pronouns *))
+((( line|tex )))\par
+((* endfor *))
+\vspace{6pt}
+((* for image in header.images *))
+((* set role = image|image_role(header=true) *))
+((* if role == 'cover' *))
+\includegraphics[width=\linewidth]{((( image.path )))}\par
+((* elif role == 'portrait' *))
+\portraitphoto{((( image.path )))}\par
+((* elif role == 'logo' *))
+\includegraphics[width=8mm,height=8mm,keepaspectratio]{((( image.path )))}\par
+((* elif role == 'icon' *))
+\includegraphics[width=3.5mm,height=3.5mm,keepaspectratio]{((( image.path )))}\par
+((* else *))
+\includegraphics[width=24mm,height=14mm,keepaspectratio]{((( image.path )))}\par
+((* endif *))
+((* endfor *))
+((( render_text(header.intro|reject('pronouns')|list, profile.links, badges=header_badges) )))
+\href{https://www.linkedin.com/in/((( profile.username|url )))/}{\textbf{LinkedIn profile}}\par
+((# A compact hierarchy links only rendered headings, including synthesized Projects and Skills sections. #))
+((* if style.show_table_of_contents and section_navigation *))
+\par\addvspace{12pt}
+\Needspace{3\baselineskip}
+{\color{sectionheading}\large\bfseries Contents}\par\nopagebreak
+((* for anchor, section in section_navigation *))
+\noindent\hangindent=0.6em\hangafter=1\hspace*{0.6em}\hyperlink{((( anchor )))}{((( section.title|tex )))}\par
+((* endfor *))
+\par\addvspace{6pt}
+((* endif *))
+((* if connection_url *))
+\href{((( connection_url|url )))}{((( (connection_count or 'Connections')|tex )))}\par
+((* elif connection_count *))
+((( connection_count|tex )))\par
+((* endif *))
+\par\addvspace{12pt}
+((* for anchor, section in section_navigation if section.key == 'contact' *))
+((( render_section(section, anchor) )))
+((* endfor *))
+((# A header-only profile does not need a forced break or an empty body heading. #))
+((* set body = profile.sections|rejectattr('key', 'equalto', 'contact')|list *))
+((* if body *))
+\framebreak
+% About leads the right column regardless of the order returned by LinkedIn.
+((* for anchor, section in section_navigation if section.key != 'contact' *))
+((( render_section(section, anchor) )))
+((* endfor *))
+((* endif *))
+\end{document}

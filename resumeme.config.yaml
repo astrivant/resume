@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=./pkg/resumeme/resources/config.schema.json
+linkedin:
+  username: emmeowzing
+
+# Hide sections in the generated resume using their keys from data/profile.json.
+# Example: [featured, interests, recommendations]
+disable: [contact, featured, recommendations, interests, causes, organizations, languages]
+experience:
+
+  # Match a job title, company, or both (case-insensitive).
+  # Example: [{title: DevOps Engineer, company: HqO}]
+  disable: []
+
+  # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
+  last_years: null
+
+  # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
+  # null uses today's UTC date. Keep explicit dates quoted.
+  as_of: null
+capture:
+  page_timeout_seconds: 30
+  max_scrolls: 60
+  max_pages_per_section: 30
+  fetch_link_previews: true
+  retry_attempts: 5
+  retry_backoff_seconds: 10
+  retry_max_backoff_seconds: 300
+output:
+  profile: data/profile.json
+  assets: data/assets
+  tex: tex/resume.tex
+  pdf: resume.pdf
+style:
+
+  # null uses the base style below; set tiger to apply the matching overrides in themes.
+  theme: tiger
+
+  # US Letter (8.5 x 11 inches); set a4 for ISO A4.
+  paper: letter
+
+  # Green consistently identifies clickable text; neutral headings use size and weight for hierarchy.
+  accent: '3F6248'
+  skill_colors: ['555555']
+  background: FFFFFF
+  font_size: 10
+
+  # Soft charcoal for normal text and bold entry titles on white paper.
+  ink: '363636'
+  entry_color: '363636'
+
+  # Set true to display the cover/background photo; the portrait stays visible.
+  show_header_photo: false
+
+  # Link visible sections beneath the LinkedIn profile link in the first-page left column.
+  show_table_of_contents: true
+
+  # Optional connection metadata below the LinkedIn profile link. Enable either or both.
+  show_connection_count: false
+  show_connection_link: false
+
+  # Display the birthday only when Contact info is enabled (remove contact from disable).
+  display_birthday: false
+
+  # Show the top 20 skills by visible references plus twice each observed endorsement.
+  skills_word_cloud: true
+
+  # Each named theme can override any presentation field above, or the text/cloud colors below.
+  # Theme fields win over base style fields; omitted fields keep their base values.
+  themes:
+    tiger:
+
+      # Name > section headings > entry titles/body: burgundy, burnt orange, then soft charcoal.
+      # Green is reserved for links; a single cloud color leaves skill strength to word size.
+      # Source and palette roles: docs/themes.md
+      accent: '3F6248'
+      ink: '363636'
+      name_color: '6B2737'
+      heading_color: 'A44813'
+      entry_color: '363636'
+      skill_colors: ['86543B']
+
+# Optional exact template override; otherwise the package template is used.
+template: null

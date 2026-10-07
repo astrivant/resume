@@ -4,5 +4,5 @@ set -euo pipefail
 
 # Build distributable code and the configured document before handing a stable PDF path to the signing stage.
 poetry build
-poetry run resume build
+poetry run resumeme build
 poetry run python scripts/ci/stage-pdf.py

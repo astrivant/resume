@@ -5,8 +5,8 @@ set -euo pipefail
 : "${IMAGE_TAGS:?Set IMAGE_TAGS to the newline-separated GHCR references}"
 
 # Deploy the exact image tested by the build stage; rebuilding here could change dependencies or generated layers.
-docker load --input .cache/container/resume.tar.gz
-revision=$(docker image inspect resume:ci --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')
+docker load --input .cache/container/resumeme.tar.gz
+revision=$(docker image inspect resumeme:ci --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')
 
 # Fail before assigning public tags if the downloaded archive belongs to another source revision.
 if [[ "$revision" != "$SOURCE_SHA" ]]; then
@@ -17,7 +17,7 @@ fi
 # Publish both the Git-tag and commit aliases; retry uploads without introducing another image build.
 while IFS= read -r reference; do
     [[ -n "$reference" ]] || continue
-    docker tag resume:ci "$reference"
+    docker tag resumeme:ci "$reference"
     bash scripts/tooling/retry.sh docker push "$reference"
 
     if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then

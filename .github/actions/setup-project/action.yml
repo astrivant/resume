@@ -1,4 +1,4 @@
-name: Set up resume
+name: Set up resumeme
 description: Install the selected dependency groups from the committed Poetry lockfile
 inputs:
   groups:
