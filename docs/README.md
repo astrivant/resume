@@ -59,7 +59,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; set to `false` in the reference config |
-| `style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page left column |
+| `style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page profile column |
 | `style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
 | `style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |
 | `style.show_connection_link` | `false` | Link the count, or a concise Connections label, to the captured connections page |
@@ -87,8 +87,9 @@ fields keep their base values. See [inline themes and palette sources](themes.md
 Set `style.profile_column_side: right` for an upper-right profile block. Its height
 is measured from the enabled portrait, header text, social links, contents, and
 leading Contact section. Body text starts to its left and continues at full width
-below it; later pages use the full width. The default, `left`, retains the original
-full-height column layout. This setting also supports inline theme overrides.
+below it, adjusting at paragraph boundaries. Later pages use the full width.
+The default, `left`, retains the original full-height column layout. This setting
+also supports inline theme overrides.
 An oversized profile block falls back to ordinary flowing columns so long contact
 information remains visible.
 
