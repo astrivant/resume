@@ -121,6 +121,10 @@ def test_role_progression_renders_once_after_job_filters(tmp_path: Path, filtere
     profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [group])])
     text = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert text.count(r"\begin{roleprogression}") == 1
+
+    # Filtering down to one role restores the normal connector rather than suggesting a remaining progression.
+    assert (r"\begin{roleprogression}[70]" in text) is not filtered
+
     company_heading = r"\entrytitle{\hypertarget{resumeme-section-0-job-0}{}Example}"
     current_heading = r"\roletitle{\hypertarget{resumeme-section-0-job-0-0}{}Staff Engineer}"
     previous_heading = r"\roletitle{\hypertarget{resumeme-section-0-job-0-1}{}Engineer}"

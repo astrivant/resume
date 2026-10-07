@@ -3,15 +3,6 @@
   "title": "Resumeme config",
   "type": "object",
   "properties": {
-    "disable": {
-      "description": "Section keys omitted from rendered output. Capture and the saved profile remain unchanged.",
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-      }
-    },
     "linkedin": {
       "type": "object",
       "properties": {
@@ -320,6 +311,70 @@
         }
       },
       "additionalProperties": false
+    },
+    "codex": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "context": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$"
+        },
+        "about_max_words": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "headline_max_words": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 40
+        }
+      }
+    },
+    "section_order": {
+      "description": "Enabled section keys in PDF and contents order. Comment out or remove a key to hide it; an empty array renders only the profile header.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      },
+      "default": [
+        "contact",
+        "about",
+        "featured",
+        "activity",
+        "experience",
+        "education",
+        "services",
+        "career-breaks",
+        "certifications",
+        "volunteering-experiences",
+        "projects",
+        "publications",
+        "patents",
+        "courses",
+        "honors",
+        "test-scores",
+        "skills",
+        "recommendations",
+        "languages",
+        "organizations",
+        "interests",
+        "causes"
+      ]
     }
   },
   "required": [

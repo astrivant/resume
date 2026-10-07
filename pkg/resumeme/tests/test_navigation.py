@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from resumeme.compiler.asts.profile import Entry, Profile, Section
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.navigation import experience_navigation
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn
@@ -69,7 +70,9 @@ def test_projects_link_only_to_visible_employment(tmp_path: Path, disabled: str)
         [JobSelector(title="Engineer")] if disabled == "role" else [JobSelector(company="Example & Co.")] if disabled == "company" else []
     )
     config = Config(
-        LinkedIn(profile.username), disable=["experience"] if disabled == "section" else [], experience=Experience(disable=selectors)
+        LinkedIn(profile.username),
+        section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["experience"] if disabled == "section" else [])],
+        experience=Experience(disable=selectors),
     )
     source = render_profile(profile, config, tmp_path).read_text()
     projects = source.split(r"\projectrow[", 1)[1]

@@ -12,6 +12,7 @@ import yaml
 from jsonschema import ValidationError
 
 from resumeme.compiler.asts.profile import Entry, Link, Profile, Section, Skill
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn, load_config
 
@@ -45,7 +46,7 @@ def test_contents_follow_visible_sections_in_display_order(tmp_path: Path) -> No
     )
     config = Config(
         LinkedIn(profile.username),
-        disable=["interests"],
+        section_order=[key for key in DEFAULT_SECTION_ORDER if key != "interests"] + ["custom"],
         experience=Experience(disable=[JobSelector(title="Hidden role")]),
     )
     text = render_profile(profile, config, tmp_path).read_text()
@@ -82,7 +83,10 @@ def test_contents_include_generated_sections_only_when_visible(tmp_path: Path, d
     """
     role = Entry("Engineer", links=[Link("Build tool", "https://example.org/tool")], skills=[Skill("Python", 3)])
     profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [role])])
-    config = Config(LinkedIn(profile.username), disable=["projects", "skills"] if disabled else [])
+    config = Config(
+        LinkedIn(profile.username),
+        section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["projects", "skills"] if disabled else [])],
+    )
     text = render_profile(profile, config, tmp_path).read_text()
     labels = re.findall(r"\\hyperlink\{resumeme-section-\d+\}\{([^}]*)\}", text)
     assert labels == (["Experience"] if disabled else ["Experience", "Projects", "Skills"])
@@ -158,7 +162,7 @@ def test_header_only_profiles_have_no_empty_contents(tmp_path: Path, disabled: b
     """
     sections = [Section("about", "About", [Entry("Hidden narrative")])] if disabled else []
     profile = Profile("example-person", "Alex", sections=sections)
-    config = Config(LinkedIn(profile.username), disable=["about"])
+    config = Config(LinkedIn(profile.username), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["about"])])
     text = render_profile(profile, config, tmp_path).read_text()
     assert r"\bfseries Contents}" not in text
     assert r"\hyperlink{" not in text

@@ -15,9 +15,11 @@ from attrs import field, frozen
 from jsonschema import Draft202012Validator, FormatChecker
 
 from resumeme.compiler.constants.backend import AST_PACKAGE, CONFIG_SCHEMA
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 
 __all__ = [
     "Capture",
+    "Codex",
     "Config",
     "Experience",
     "GitHub",
@@ -53,6 +55,26 @@ class GitHub:
     """
 
     username: str | None = None
+
+
+@frozen
+class Codex:
+    """
+    Configure optional résumé summaries without storing API credentials.
+
+    Attributes:
+        enabled (bool): Allow generated summaries to replace résumé copy.
+        context (str): User-supplied background, target audience, and writing preferences.
+        model (str | None): Explicit Codex model, or None for the pinned CLI's default.
+        about_max_words (int): Maximum words in the generated About paragraph.
+        headline_max_words (int): Maximum words in the summary beneath the portrait.
+    """
+
+    enabled: bool = False
+    context: str = ""
+    model: str | None = None
+    about_max_words: int = 100
+    headline_max_words: int = 18
 
 
 @frozen
@@ -195,7 +217,7 @@ class Style:
     """
 
     paper: str = "letter"
-    accent: str = "3F6248"
+    accent: str = "245135"
     background: str = "FFFFFF"
     font_size: int = 10
     show_header_photo: bool = True
@@ -225,9 +247,10 @@ class Config:
         output (Output): Paths relative to the configuration directory.
         style (Style): Print presentation choices.
         template (str | None): Optional custom template path.
-        disable (list[str]): Section keys omitted from rendered output while retaining the captured snapshot.
         experience (Experience): Job exclusions and optional employment date window.
         github (GitHub): Optional public account linked beneath the LinkedIn profile.
+        codex (Codex): Optional generated résumé copy and user context.
+        section_order (list[str]): Enabled section keys in display order; omitted keys stay hidden.
     """
 
     linkedin: LinkedIn
@@ -235,9 +258,10 @@ class Config:
     output: Output = field(factory=Output)
     style: Style = field(factory=Style)
     template: str | None = None
-    disable: list[str] = field(factory=list)
     experience: Experience = field(factory=Experience)
     github: GitHub = field(factory=GitHub)
+    codex: Codex = field(factory=Codex)
+    section_order: list[str] = field(factory=lambda: list(DEFAULT_SECTION_ORDER))
 
 
 def project_path(root: Path, value: str) -> Path:

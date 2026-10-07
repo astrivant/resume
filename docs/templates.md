@@ -11,15 +11,19 @@ Rendering uses strict undefined-variable checks and these delimiters:
 
 | Variable | Contract |
 | --- | --- |
-| `profile` | Filtered profile with consolidated projects and staged image paths |
+| `profile` | Filtered profile with consolidated projects, staged image paths, and sections in configured display order |
 | `style` | Effective style after theme overrides |
 | `skill_cloud` | Relative PNG path, or `None` |
+| `summary_headline` | Validated generated text beneath the portrait, or an empty string |
 | `connection_count`, `connection_url` | Enabled captured values, otherwise empty strings |
 | `github_username` | Configured public account, or `None` |
 | `section_navigation` | `(anchor, section)` pairs in display order with unique TeX-safe anchors |
 
 Filters return presentation values without changing the captured snapshot.
 Disabled sections and jobs are excluded before templates run.
+`section_order` applies after generated and empty sections have settled, so both
+`profile.sections` and `section_navigation` have the same sequence. The packaged
+template shares its tiled row renderer between Projects and Featured.
 
 ## Filters
 

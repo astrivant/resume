@@ -1,0 +1,67 @@
+name: Summary stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: Immutable source commit used for summary evidence
+        type: string
+        required: true
+    secrets:
+      OPENAI_API_KEY:
+        description: OpenAI API key for the optional Codex summary
+        required: false
+    outputs:
+      generated:
+        description: Whether consumers must download the generated summary artifact
+        value: ${{ jobs.summary.outputs.generated }}
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  summary:
+    name: Prepare optional résumé summary
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      generated: ${{ steps.prepare.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+        with:
+          groups: main
+      - name: Prepare filtered profile evidence and output schema
+        id: prepare
+        env:
+          GENERATE_SUMMARY: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+          OPENAI_KEY_CONFIGURED: ${{ secrets.OPENAI_API_KEY != '' }}
+        run: poetry run python scripts/ci/prepare-summary.py
+
+      # Keep API access in its own job; downstream linting, Docker, signing, and publication receive only the JSON artifact.
+      - name: Generate About and portrait summaries
+        if: steps.prepare.outputs.enabled == 'true'
+        uses: openai/codex-action@bdf19a4a223ec2549a3e2274a0cf61556bc07675 # v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          codex-version: 0.161.0
+          model: ${{ steps.prepare.outputs.model }}
+          permission-profile: ':read-only'
+          safety-strategy: drop-sudo
+          prompt-file: .cache/codex/prompt.txt
+          output-schema-file: .cache/codex/schema.json
+          output-file: .cache/codex/summary.json
+          codex-args: '["--ephemeral"]'
+
+      # Both consumers independently validate ownership, input fingerprint, and word limits before using this output.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: steps.prepare.outputs.enabled == 'true'
+        with:
+          name: resumeme-summary
+          path: .cache/codex/summary.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

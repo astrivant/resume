@@ -64,7 +64,10 @@ def test_profile_extremes_roundtrip_and_render(tmp_path: Path, filename: str) ->
     snapshot = tmp_path / "profile.json"
     save_profile(profile, snapshot)
     assert load_profile(snapshot, "example-person") == profile
-    rendered = render_profile(profile, Config(LinkedIn("example-person")), tmp_path).read_text(encoding="utf-8")
+
+    # Explicitly enable every captured key, including the unfamiliar section used to verify forward-compatible parsing.
+    config = Config(LinkedIn("example-person"), section_order=[section.key for section in profile.sections])
+    rendered = render_profile(profile, config, tmp_path).read_text(encoding="utf-8")
     assert "Alex Example" in rendered
 
     if filename == "profile-minimal.html":

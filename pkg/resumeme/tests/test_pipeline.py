@@ -17,6 +17,7 @@ from resumeme.cli import main
 from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile, safe_url
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, load_profile, save_profile
 from resumeme.compiler.backends.latex.escaping import latex_escape
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, load_config, project_path
 
@@ -244,7 +245,7 @@ def test_config_defaults_and_unknown_fields(tmp_path: Path) -> None:
     path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
     config = load_config(path)
     assert config.output.pdf == "resume.pdf"
-    assert config.disable == []
+    assert config.section_order == list(DEFAULT_SECTION_ORDER)
     assert config.style.show_header_photo is True
     assert config.style.paper == "letter"
     assert config.style.background == "FFFFFF"
@@ -268,7 +269,7 @@ def test_opening_columns_respect_section_visibility(tmp_path: Path, disabled: li
     """
     path = tmp_path / "resumeme.config.yaml"
     path.write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
-    config = evolve(load_config(path), disable=disabled)
+    config = evolve(load_config(path), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (disabled)])
 
     # Capture order is deliberately different from presentation order; filtering still owns what reaches either column.
     profile = Profile(
@@ -299,19 +300,19 @@ def test_opening_columns_respect_section_visibility(tmp_path: Path, disabled: li
 
 
 @pytest.mark.parametrize("value", ["skills", "[skills, skills]", "[null]", "[Skills]", "['']"])
-def test_disable_rejects_invalid_section_lists(tmp_path: Path, value: str) -> None:
+def test_section_order_rejects_invalid_section_lists(tmp_path: Path, value: str) -> None:
     """
-    Reject malformed section exclusions before rendering.
+    Reject malformed enabled-section lists before rendering.
 
     Args:
         tmp_path (Path): Temporary project directory.
-        value (str): Invalid YAML value for the disable field.
+        value (str): Invalid YAML value for the section_order field.
 
     Returns:
         None: Invalid types, duplicate keys, and malformed section names fail validation.
     """
     config = tmp_path / "resumeme.config.yaml"
-    config.write_text(f"linkedin:\n  username: example-person\ndisable: {value}\n", encoding="utf-8")
+    config.write_text(f"linkedin:\n  username: example-person\nsection_order: {value}\n", encoding="utf-8")
 
     with pytest.raises(ValidationError):
         load_config(config)
@@ -330,7 +331,7 @@ def test_disabled_sections_are_omitted_without_changing_capture(tmp_path: Path, 
         None: Excluded content and media disappear from output while the snapshot stays intact.
     """
     config = tmp_path / "resumeme.config.yaml"
-    config.write_text("linkedin:\n  username: example-person\ndisable: [skills, independent-studies]\n", encoding="utf-8")
+    config.write_text("linkedin:\n  username: example-person\nsection_order: [about]\n", encoding="utf-8")
 
     if custom_template:
         with config.open("a", encoding="utf-8") as stream:
@@ -377,7 +378,7 @@ def test_disabled_sections_are_omitted_without_changing_capture(tmp_path: Path, 
 
     # Re-enabling the sections restores the requirement to resolve their missing images.
     with pytest.raises(ValueError, match="not downloaded"):
-        render_profile(profile, evolve(load_config(config), disable=[]), tmp_path)
+        render_profile(profile, evolve(load_config(config), section_order=["about", "skills", "independent-studies"]), tmp_path)
 
 
 def test_disabling_every_section_keeps_the_profile_header(tmp_path: Path) -> None:
@@ -391,7 +392,7 @@ def test_disabling_every_section_keeps_the_profile_header(tmp_path: Path) -> Non
         None: The owner's header remains and all excluded section headings are absent.
     """
     profile = Profile("example-person", "Alex Example", sections=[Section("about", "About", [Entry("Hidden narrative")])])
-    config = Config(LinkedIn("example-person"), disable=["about", "interests"])
+    config = Config(LinkedIn("example-person"), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["about", "interests"])])
     rendered = render_profile(profile, config, tmp_path).read_text(encoding="utf-8")
     assert "Alex Example" in rendered
     assert r"\sectiontitle{About}" not in rendered

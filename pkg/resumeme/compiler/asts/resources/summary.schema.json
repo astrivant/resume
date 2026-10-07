@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generated résumé summary",
+  "type": "object",
+  "properties": {
+    "username": {"type": "string"},
+    "source_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "about": {"type": "string", "maxLength": 12000},
+    "headline": {"type": "string", "maxLength": 1000}
+  },
+  "required": ["username", "source_digest", "about", "headline"],
+  "additionalProperties": false
+}

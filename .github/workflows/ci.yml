@@ -28,18 +28,28 @@ jobs:
           persist-credentials: false
       - id: source
         run: bash scripts/ci/source.sh
+  summary-stage:
+    name: Summarize
+    needs: source
+    uses: ./.github/workflows/stage-summary.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   test-stage:
     name: Test
-    needs: source
+    needs: [source, summary-stage]
     uses: ./.github/workflows/stage-test.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
+      summary: ${{ needs.summary-stage.outputs.generated == 'true' }}
   build-stage:
     name: Build
-    needs: source
+    needs: [source, summary-stage]
     uses: ./.github/workflows/stage-build.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
+      summary: ${{ needs.summary-stage.outputs.generated == 'true' }}
     secrets:
       COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
       COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
@@ -48,7 +58,7 @@ jobs:
   verified:
     name: CI verification
     if: always()
-    needs: [source, test-stage, build-stage]
+    needs: [source, summary-stage, test-stage, build-stage]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

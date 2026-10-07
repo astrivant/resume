@@ -9,11 +9,11 @@ __all__ = [
     "LATEX_PACKAGE",
     "CONFIG_SCHEMA",
     "PROFILE_SCHEMA",
+    "SUMMARY_SCHEMA",
     "TEMPLATE",
     "TOOLCHAIN",
     "FONT_ARCHIVE",
     "CLOUD_FONT",
-    "SECTION_ORDER",
     "SOURCE_DATE_EPOCH",
     "COMPILER_TIMEOUT_SECONDS",
     "BLOCK_START",
@@ -28,13 +28,12 @@ AST_PACKAGE = "resumeme.compiler.asts"
 LATEX_PACKAGE = "resumeme.compiler.backends.latex"
 CONFIG_SCHEMA = "resources/config.schema.json"
 PROFILE_SCHEMA = "resources/profile.schema.json"
+SUMMARY_SCHEMA = "resources/summary.schema.json"
 TEMPLATE = "resources/resume.tex.j2"
 TOOLCHAIN = "resources/toolchain.json"
 FONT_ARCHIVE = "resources/fonts/ebgaramond-texmf.zip"
 CLOUD_FONT = "resources/fonts/EBGaramond-Regular.otf"
 
-# Keep destination numbering independent of source title spelling and rendered language.
-SECTION_ORDER = {"contact": 0, "about": 1}
 SOURCE_DATE_EPOCH = "946684800"
 COMPILER_TIMEOUT_SECONDS = 120
 

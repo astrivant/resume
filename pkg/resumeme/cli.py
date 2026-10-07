@@ -14,6 +14,7 @@ import yaml
 from jsonschema import ValidationError
 from selenium.common.exceptions import NoSuchWindowException, TimeoutException, WebDriverException
 
+from resumeme.codex.request import prepare_summary
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.compiler.pipeline import render_profile
@@ -49,6 +50,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         ("capture", "Open Firefox, wait for login, and save your expanded profile and images"),
         ("enrich", "Discover text links, resolve destinations, and cache previews from the saved profile"),
         ("validate", "Validate configuration and snapshot ownership"),
+        ("summary-prompt", "Prepare a Codex summary prompt and output schema from visible profile text"),
         ("render", "Generate tex/resume.tex from the saved profile"),
         ("build", "Render LaTeX and compile resume.pdf with Docker or the bundled container toolchain"),
     ):
@@ -59,6 +61,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if name == "capture":
             command.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
+
+        if name in {"render", "build"}:
+            command.add_argument("--summary", type=Path, help="Generated summary JSON relative to the configuration directory")
 
     args = parser.parse_args(argv)
 
@@ -88,6 +93,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         # Enforce ownership on every offline path so a fork cannot accidentally publish the previous owner's resume.
         profile = load_profile(snapshot, config.linkedin.username)
 
+        if args.command == "summary-prompt":
+            print(prepare_summary(profile, config, root))
+            return 0
+
         if args.command == "validate":
             if profile.warnings and not args.allow_incomplete:
                 raise ValueError("Capture warnings: " + "; ".join(profile.warnings))
@@ -96,7 +105,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
 
         # Rendering owns content selection; compilation only consumes the resulting TeX and staged assets.
-        source = render_profile(profile, config, root, allow_incomplete=args.allow_incomplete)
+        source = render_profile(
+            profile,
+            config,
+            root,
+            allow_incomplete=args.allow_incomplete,
+            summary_path=project_path(root, str(args.summary)) if args.summary else None,
+        )
         result = compile_pdf(source, config, root) if args.command == "build" else source
         print(result)
     except KeyboardInterrupt:

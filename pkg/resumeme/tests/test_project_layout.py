@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.project_layout import CompanyAffiliation, project_layout
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
@@ -144,7 +145,11 @@ def test_project_company_logos_render_inline_and_references_remain_clickable(tmp
     assert not project.images
 
     # Hidden jobs cannot supply logos to otherwise visible projects.
-    without_jobs = render_profile(profile, Config(LinkedIn(profile.username), disable=["experience"]), tmp_path).read_text()
+    without_jobs = render_profile(
+        profile,
+        Config(LinkedIn(profile.username), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["experience"])]),
+        tmp_path,
+    ).read_text()
     without_jobs = without_jobs.split(r"\projectrow[", 1)[1]
     assert r"\projectcompany{" not in without_jobs
     assert "Associated with Engineer at Example Co." in without_jobs

@@ -16,6 +16,7 @@ from jinja2 import Environment, StrictUndefined
 from resumeme.compiler.asts.links import discover_profile_links
 from resumeme.compiler.asts.profile import Section
 from resumeme.compiler.asts.sections import section_key
+from resumeme.compiler.asts.summary import load_summary
 from resumeme.compiler.backends.latex.escaping import latex_escape, latex_linked_text, latex_url
 from resumeme.compiler.constants.backend import (
     BLOCK_END,
@@ -23,23 +24,25 @@ from resumeme.compiler.constants.backend import (
     COMMENT_END,
     COMMENT_START,
     LATEX_PACKAGE,
-    SECTION_ORDER,
     TEMPLATE,
     VARIABLE_END,
     VARIABLE_START,
 )
 from resumeme.compiler.passes.contact import without_birthday
-from resumeme.compiler.passes.experience import clean_experience, filter_experience
 from resumeme.compiler.passes.header import is_pronouns, prepare_header, prepare_header_logos
 from resumeme.compiler.passes.headings import distinct_heading
 from resumeme.compiler.passes.lists import text_blocks
 from resumeme.compiler.passes.locations import job_locations
 from resumeme.compiler.passes.media import employer_badge, image_role, is_header_photo
 from resumeme.compiler.passes.navigation import experience_navigation
+from resumeme.compiler.passes.ordering import order_sections
 from resumeme.compiler.passes.progression import experience_layout
 from resumeme.compiler.passes.project_layout import company_logos, project_layout
 from resumeme.compiler.passes.projects import consolidate_projects
+from resumeme.compiler.passes.skills import expand_skill_summaries
+from resumeme.compiler.passes.summary import apply_summary, summary_digest
 from resumeme.compiler.passes.themes import resolve_style
+from resumeme.compiler.passes.visibility import visible_profile
 from resumeme.config import project_path
 from resumeme.visualization.skills import render_skill_cloud, skill_scores
 
@@ -52,7 +55,9 @@ if TYPE_CHECKING:
 __all__ = ["render_profile"]
 
 
-def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomplete: bool = False) -> Path:
+def render_profile(
+    profile: Profile, config: Config, root: Path, *, allow_incomplete: bool = False, summary_path: Path | None = None
+) -> Path:
     """
     Render enabled sections and stage their referenced images alongside the TeX source.
 
@@ -61,6 +66,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         config (Config): Section exclusions, template, style, and output settings.
         root (Path): Configuration directory.
         allow_incomplete (bool): Explicitly accept capture warnings or missing assets.
+        summary_path (Path | None): Explicit generated-copy artifact, validated against this capture and configuration.
 
     Returns:
         Path: Generated LaTeX source.
@@ -72,6 +78,13 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     # Rendering must not silently promote a diagnostic capture into an apparently complete, publishable resume.
     if profile.warnings and not allow_incomplete:
         raise ValueError("Capture is incomplete: " + "; ".join(profile.warnings))
+
+    # Validate against the original inputs before display passes remove or relocate source text.
+    summary = (
+        load_summary(summary_path, username=profile.username, source_digest=summary_digest(profile, config), settings=config.codex)
+        if summary_path is not None
+        else None
+    )
 
     # Older snapshots may contain unstructured URLs; discovering them is local and preserves job ownership before filtering.
     profile = discover_profile_links(profile)
@@ -121,24 +134,15 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         return result
 
     # Filter before scoring or staging so hidden sections and jobs contribute neither cloud weights nor referenced assets.
-    disabled = {section_key(key) for key in config.disable}
-    visible = evolve(
-        profile,
-        sections=[
-            evolve(
-                section,
-                key=section_key(section.key),
-                entries=[clean_experience(entry) for entry in filter_experience(section.entries, config.experience)]
-                if section_key(section.key) == "experience"
-                else section.entries,
-            )
-            for section in profile.sections
-            if section_key(section.key) not in disabled
-        ],
-    )
+    enabled = {section_key(key) for key in config.section_order}
+    visible = visible_profile(profile, config)
 
     # Connection counts are optional header metadata, not repeated intro prose or a second profile URL.
-    visible, connection_count, connection_url = prepare_header(visible, style)
+    summary_headline = " ".join(summary.headline.split()) if summary else ""
+    visible, connection_count, connection_url = prepare_header(visible, evolve(style, show_headline=False) if summary_headline else style)
+
+    if summary:
+        visible = apply_summary(visible, summary, about_enabled="about" in enabled)
 
     # Apply field visibility before scoring or staging, including the view supplied to custom templates.
     if not style.display_birthday:
@@ -151,10 +155,13 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         )
 
     # Consolidate only retained roles and posts, so exclusions cannot leak project cards back into the document.
-    visible, project_links = consolidate_projects(visible, enabled="projects" not in disabled)
+    visible, project_links = consolidate_projects(visible, enabled="projects" in enabled)
+
+    # LinkedIn's collapsed counts refer to captured tags or reverse Skills associations, not printable skill names.
+    visible = expand_skill_summaries(visible)
 
     # Job tags can generate a Skills card even when LinkedIn did not provide a separate Skills section.
-    scores = skill_scores(visible) if style.skills_word_cloud and "skills" not in disabled else {}
+    scores = skill_scores(visible) if style.skills_word_cloud and "skills" in enabled else {}
     skill_cloud = render_skill_cloud(scores, target.parent, colors=style.skill_colors, background=style.background)
 
     if skill_cloud and not any(section.key == "skills" for section in visible.sections):
@@ -190,6 +197,9 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
             if section.entries or (skill_cloud and section.key == "skills")
         ],
     )
+
+    # Apply order after generated sections and empty-section removal; custom templates receive the same sequence as navigation.
+    prepared = evolve(prepared, sections=order_sections(prepared.sections, config.section_order))
 
     # Use delimiters that do not collide with TeX braces; missing fields fail, and explicit filters own TeX escaping.
     environment = Environment(
@@ -240,10 +250,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
 
     # Share display order between section rendering and navigation, after exclusions and generated sections have settled.
     # Numeric destinations avoid collisions or TeX injection from duplicate, unfamiliar, or punctuation-heavy section keys.
-    section_navigation = [
-        (f"resumeme-section-{index}", section)
-        for index, section in enumerate(sorted(prepared.sections, key=lambda section: SECTION_ORDER.get(section.key, 2)))
-    ]
+    section_navigation = [(f"resumeme-section-{index}", section) for index, section in enumerate(prepared.sections)]
     jobs = experience_navigation(section_navigation)
     environment.filters["job_destination"] = jobs.destination
     environment.filters["job_association"] = jobs.association
@@ -251,6 +258,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         profile=prepared,
         style=style,
         skill_cloud=skill_cloud,
+        summary_headline=summary_headline,
         connection_count=connection_count,
         connection_url=connection_url,
         github_username=config.github.username,

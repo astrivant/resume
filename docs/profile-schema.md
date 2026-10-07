@@ -145,7 +145,7 @@ skills outside the top 20. See [theme configuration](themes.md).
 
 `style.skills_word_cloud: true` replaces the Skills list with the cloud. Explicit
 tags can produce a Skills card even when there is no separate captured Skills
-section. `disable: [skills]` hides the cloud and the list; disabled sections cannot
+section. Omitting `skills` from `section_order` hides the cloud and the list; disabled sections cannot
 contribute labels, endorsements, or references. Set `style.skills_word_cloud: false`
 to render the captured list. No available skills means no cloud or empty Skills card.
 

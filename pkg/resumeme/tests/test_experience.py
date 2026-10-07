@@ -15,6 +15,7 @@ from jsonschema import ValidationError
 from resumeme.compiler.asts.dates import EmploymentPeriod, employment_period
 from resumeme.compiler.asts.parsing import parse_detail
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, load_profile, save_profile
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.experience import clean_experience, filter_experience
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn, load_config
@@ -275,7 +276,9 @@ def test_empty_profiles_and_disabled_experience(tmp_path: Path) -> None:
     assert filter_experience([], config.experience) == []
     ambiguous = Entry("Example", ["Staff", "2020 - Present", "Junior", "2010 - 2019"])
     hidden = evolve(profile, sections=[Section("experience", "Experience", [ambiguous])])
-    assert render_profile(hidden, evolve(config, disable=["experience"]), tmp_path).exists()
+    assert render_profile(
+        hidden, evolve(config, section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["experience"])]), tmp_path
+    ).exists()
 
 
 @pytest.mark.parametrize(

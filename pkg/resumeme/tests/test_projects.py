@@ -10,6 +10,7 @@ import pytest
 from attrs import evolve
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.projects import consolidate_projects
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn
@@ -143,10 +144,14 @@ def test_consolidated_projects_respect_sections_and_grouped_job_exclusions(tmp_p
     profile = Profile(
         "example-person", "Alex", sections=[Section("experience", "Experience", [group]), Section("featured", "Featured", [featured])]
     )
-    config = Config(LinkedIn(profile.username), disable=disabled, experience=Experience(disable=[JobSelector(title="Intern")]))
+    config = Config(
+        LinkedIn(profile.username),
+        section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (disabled)],
+        experience=Experience(disable=[JobSelector(title="Intern")]),
+    )
     source = render_profile(profile, config, tmp_path).read_text()
     assert "Hidden" not in source
-    assert (r"\projectrow[" in source.split(r"\begin{document}", 1)[1]) is ("projects" not in disabled)
+    assert (r"\sectiontitle{Projects}" in source) is ("projects" not in disabled)
 
     if "projects" in disabled:
         assert "Kept project" not in source
@@ -155,7 +160,9 @@ def test_consolidated_projects_respect_sections_and_grouped_job_exclusions(tmp_p
     elif "experience" in disabled:
         assert "Kept project" not in source
     else:
-        assert source.count(r"Associated with Staff at \hyperlink{resumeme-section-0-job-0-0}{Company}") == 1
+        # Featured precedes Experience in the default order, but an excluded section consumes no destination index.
+        index = 0 if "featured" in disabled else 1
+        assert source.count(rf"Associated with Staff at \hyperlink{{resumeme-section-{index}-job-0-0}}{{Company}}") == 1
 
     if "featured" in disabled:
         assert "Featured attachment" not in source
@@ -214,7 +221,7 @@ def test_disabled_projects_do_not_stage_relocated_missing_images(tmp_path: Path,
     link = Link("Hidden attachment", "https://example.org/hidden")
     role = Entry("Engineer", ["Visible description"], [link], [Media("https://example.org/missing.png", link=link.url)])
     profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [role])])
-    config = Config(LinkedIn(profile.username), disable=["projects"])
+    config = Config(LinkedIn(profile.username), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["projects"])])
 
     if custom:
         (tmp_path / "custom.tex.j2").write_text("((( profile )))", encoding="utf-8")

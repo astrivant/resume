@@ -12,6 +12,7 @@ from attrs import evolve
 from jsonschema import ValidationError
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.contact import without_birthday
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, Style, load_config
@@ -87,7 +88,11 @@ def test_birthday_visibility_applies_to_packaged_and_custom_templates(tmp_path: 
         "Alex",
         sections=[Section("contact-info", "Contact info", [contact]), Section("about", "About", [Entry("I build birthday reminders")])],
     )
-    config = Config(LinkedIn(profile.username), style=Style(display_birthday=display), disable=["contact"] if disable_contact else [])
+    config = Config(
+        LinkedIn(profile.username),
+        style=Style(display_birthday=display),
+        section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["contact"] if disable_contact else [])],
+    )
     custom = tmp_path / "custom.tex.j2"
     custom.write_text("((( profile.sections )))", encoding="utf-8")
 

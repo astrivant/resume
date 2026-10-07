@@ -11,13 +11,13 @@ style:
   paper: letter
   font_size: 10
   background: 'FFFFFF'
-  accent: '3F6248'
+  accent: '245135'
   ink: '363636'
   entry_color: '363636'
   skill_colors: ['777777', '363636']
   themes:
     tiger:
-      accent: '3F6248'
+      accent: '245135'
       ink: '363636'
       name_color: '6B2737'
       heading_color: 'A44813'
@@ -42,7 +42,7 @@ configuration validation. Rebuild with `poetry run resumeme build`.
 | `name_color` | `6B2737` | Profile name |
 | `heading_color` | `A44813` | Section headings |
 | `ink`, `entry_color` | `363636` | Body text and entry titles |
-| `accent` | `3F6248` | Clickable text |
+| `accent` | `245135` | Clickable text in deep plant green |
 | `skill_colors` | `[9A7663, 6B2737]` | Skill endorsement gradient: muted brown to burgundy |
 
 The tiger palette references [Tiger Lily Plants](https://tiger-lily-plants.com/assets/main.css).
@@ -54,6 +54,8 @@ photographs retain their source colors.
 `skill_colors` is an ordered list of hexadecimal color stops. The first represents
 zero endorsements; the last represents the highest endorsement count among the
 20 displayed skills. Intermediate counts interpolate between the stops.
+The centered cloud includes a short caption and a matching 0–100% color scale;
+single-color palettes omit the scale.
 
 ```text
 color percentage = 100 × skill endorsements / highest displayed endorsement count

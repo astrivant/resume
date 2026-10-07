@@ -24,8 +24,8 @@ records describe output layout without replacing the saved source schema.
 
 1. Load and validate configuration and snapshot ownership.
 2. Discover text links locally, resolve themes, and filter sections and jobs.
-3. Apply header/contact visibility and consolidate visible project attachments.
-4. Score skills and stage local image/font assets.
+3. Apply header/contact visibility, optional validated summary copy, and consolidate visible project attachments.
+4. Expand collapsed skill summaries, score skills, and stage local image/font assets.
 5. Build section and employment destinations from the retained hierarchy.
 6. Apply layout passes and escape text while Jinja emits LaTeX.
 7. Compile twice with the pinned toolchain and atomically publish the PDF.
@@ -33,6 +33,19 @@ records describe output layout without replacing the saved source schema.
 Passes return display copies; they do not modify the snapshot or fetch remote
 data. Exclusions precede scoring, media staging, and destination generation.
 Hidden jobs therefore cannot contribute assets or dangling internal PDF links.
+
+Optional [Codex summaries](codex.md) are generated outside the compiler. An explicit
+`--summary` artifact must match the profile owner, filtered evidence, and generation
+settings before its About and portrait text can be rendered. Ordinary builds
+never invoke a model or load cached summary files implicitly.
+
+`passes/skills.py` replaces summaries such as `Python, Bash and +2 skills` with
+names recorded in the entry's structured tags or explicit Skills-section
+associations. Reverse associations require an exact, unique entry title after
+Unicode, whitespace, and case normalization. Repeated labels and endorsement
+totals are deduplicated. Employment tags remain hidden from job descriptions.
+If the capture lacks enough associated names, the compiler retains the summary
+and logs a diagnostic; refreshing the capture supplies the missing evidence.
 
 The CLI remains `resumeme`. Configuration and snapshot locations are unchanged;
 internal imports now use `resumeme.compiler`. Custom templates consume the

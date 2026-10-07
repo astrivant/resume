@@ -6,6 +6,10 @@ on:
         description: Immutable source commit resolved by the entry workflow
         type: string
         required: true
+      summary:
+        description: Review the same generated copy used to build the PDF
+        type: boolean
+        default: false
 permissions:
   contents: read
 defaults:
@@ -46,11 +50,16 @@ jobs:
           groups: main
 
       # Check the rendered document from this source commit, including a user's configured output.tex path.
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        if: inputs.summary
+        with:
+          name: resumeme-summary
+          path: .cache/codex/
       - name: Render the resume and prepare report paths
         id: documents
-        run: |
-          poetry run resumeme render
-          poetry run python scripts/ci/prepare-textidote.py
+        env:
+          USE_CODEX_SUMMARY: ${{ inputs.summary }}
+        run: bash scripts/ci/render.sh
 
       # Run the Marketplace action's published image directly: its action.yml otherwise selects a floating latest tag.
       # https://github.com/marketplace/actions/textidote-action

@@ -4,10 +4,10 @@ Read displayed skill labels and endorsement totals without inferring hidden coun
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 from resumeme.compiler.asts.profile import Skill
+from resumeme.compiler.constants.skills import COLLAPSED_SKILLS, SKILL_COUNT, SKILL_PREFIX
 from resumeme.compiler.constants.skills import ENDORSEMENTS as _ENDORSEMENTS
 
 if TYPE_CHECKING:
@@ -43,6 +43,6 @@ def skill_labels(value: str) -> list[Skill]:
     """
 
     # A collapsed remainder describes undisplayed skills, not another label or evidence for their individual names.
-    value = re.sub(r"\s*(?:and\s+)?\+\d+\s+skills?\s*$", "", value, flags=re.IGNORECASE)
-    value = re.sub(r"^skills:\s*", "", value, flags=re.IGNORECASE)
-    return [Skill(name=name) for part in value.split(",") if (name := part.strip()) and not re.fullmatch(r"\d+\s+skills?", name)]
+    value = COLLAPSED_SKILLS.sub("", value).strip().rstrip(",")
+    value = SKILL_PREFIX.sub("", value)
+    return [Skill(name=name) for part in value.split(",") if (name := part.strip()) and not SKILL_COUNT.fullmatch(name)]

@@ -30,6 +30,7 @@ capture your profile, and let a push to `main` build, sign, and publish it.
     - [Job history](#job-history)
     - [Profile header and contact information](#profile-header-and-contact-information)
     - [Skills](#skills)
+    - [Codex summaries](#codex-summaries)
   - [Publishing](#publishing)
     - [Fork environment variables](#fork-environment-variables)
       - [Configure signing secrets](#configure-signing-secrets)
@@ -168,7 +169,7 @@ poetry run resumeme build
 
 Capture also performs this enrichment. HTTP(S) and `www.` URLs become clickable
 within the PDF's prose. Original text and URLs stay in the snapshot alongside
-observed redirect destinations and titles; rendering and CI remain offline.
+observed redirect destinations and titles; rendering remains offline.
 `capture.fetch_link_previews: false` disables remote link inspection while keeping
 local URL discovery. Contact links remain clickable without fetching their pages.
 
@@ -187,23 +188,32 @@ For colors and typography, see [inline themes](docs/themes.md).
 
 ### Sections and projects
 
-Hide whole sections with the top-level `disable` list, for example:
+Use the `section_order` array for both visibility and order. Comment out an entry
+to hide it; uncomment or move it to include or reorder it:
 
 ```yaml
-disable: [featured, interests, recommendations]
+section_order:
+  - about
+  - experience
+  - projects
+  # - featured
+  - education
+  - skills
 ```
 
 This changes the generated resume while retaining the captured data. See
 [configuration](docs/README.md#configuration) for section keys and other options.
-The shipped configuration hides Contact info, Featured, Recommendations, Interests,
-Causes, Organizations, and Languages. Remove a section's key from `disable` to show it again.
+The shipped config lists every known section, with Contact info, Featured,
+Recommendations, Interests, Causes, Organizations, and Languages commented out.
+Only uncommented entries appear in the PDF and its table of contents. Projects
+and enabled Featured posts use matching light-gray, two-column tiles.
 
 Projects and project attachments from visible jobs and Featured posts appear in
 one two-column Projects section. Matching resolved links merge into a single entry
 with their role associations. Attachment descriptions move out of Experience and
 appear below the project's image or logo; role narrative stays with the job.
-Post text and inline links stay in Featured. Adding
-`projects` to `disable` also hides the relocated project cards.
+Post text and inline links stay in Featured. Commenting out `projects` also hides
+the relocated project cards.
 
 ### Job history
 
@@ -257,6 +267,15 @@ Disabled sections contribute no references. Set `style.skills_word_cloud: false`
 for the text list, or add `skills` to `disable` to hide it. Profiles with no optional
 sections also work. See the [profile schema and scoring rules](docs/profile-schema.md).
 
+### Codex summaries
+
+Optionally let Codex write About and a short description beneath your portrait.
+Add the `OPENAI_API_KEY` Actions secret, set `codex.enabled: true`, and provide
+target roles, tone, or extra background under `codex.context` in
+[resumeme.config.yaml](resumeme.config.yaml). Main-branch CI generates the copy
+once for both document checks and the PDF build. The captured profile stays intact.
+See [Codex setup and local previews](docs/codex.md).
+
 ## Publishing
 
 ### Fork environment variables
@@ -265,6 +284,10 @@ For signed main-branch releases, configure the Cosign values below as **GitHub
 Actions repository secrets in your own fork**. The workflow passes them to the
 signing step as environment variables; GitHub supplies the publication token:
 
+- **`OPENAI_API_KEY` — required only when `codex.enabled: true`.** An API key from
+  your OpenAI project, stored as an Actions repository secret. The Codex summary
+  job receives it; ordinary builds and pull-request checks do not. API usage is
+  billed to that project. See [Codex setup](docs/codex.md).
 - **`COSIGN_PRIVATE_KEY` — required for signed releases.** Set this to the complete
   PEM contents of your own Cosign private key, including the header, footer, and
   newlines. The value is the key itself, not a filename.

@@ -14,6 +14,7 @@ from PIL import Image
 
 from resumeme.compiler.asts.parsing import parse_profile
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.header import prepare_header, prepare_header_logos
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, GitHub, LinkedIn, Style, load_config
@@ -161,7 +162,7 @@ def test_connection_display_flags_are_independent(tmp_path: Path, show_count: bo
     config = Config(
         LinkedIn(profile.username),
         style=Style(show_connection_count=show_count, show_connection_link=show_link),
-        disable=["contact"],
+        section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["contact"])],
     )
     source = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert source.count("214 connections") == int(show_count)

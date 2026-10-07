@@ -4,7 +4,7 @@ Static sections rules shared by compiler stages.
 
 from __future__ import annotations
 
-__all__ = ["SECTION_TITLES", "ALIASES"]
+__all__ = ["SECTION_TITLES", "DEFAULT_SECTION_ORDER", "ALIASES"]
 
 SECTION_TITLES: dict[str, str] = {
     "contact": "Contact info",
@@ -30,6 +30,10 @@ SECTION_TITLES: dict[str, str] = {
     "interests": "Interests",
     "causes": "Causes",
 }
+
+# The catalog's declared sequence is the default presentation order; users can replace it in configuration.
+DEFAULT_SECTION_ORDER = tuple(SECTION_TITLES)
+
 ALIASES = {
     "contact-info": "contact",
     "licenses-certifications": "certifications",

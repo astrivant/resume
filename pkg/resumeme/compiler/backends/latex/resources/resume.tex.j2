@@ -41,17 +41,24 @@
 ((# A logo attached to a suppressed company heading falls back to the gallery so it and its link remain visible. #))
 ((* if not heading and badge and badge[0] == -1 *))((* set badge = none *))((* endif *))
 ((* set locations = entry|job_locations if section.key == 'experience' else {} *))
+((* set standalone_role = section.key == 'experience' and not role and not entry.positions *))
+((* if section.key != 'about' and heading *))
+((# Keep a company with its first role, and short jobs with their descriptions, when reflow approaches a page boundary. #))
+\Needspace{((* if entry.positions or (badge and entry.paragraphs|length <= 5) *))12((* elif section.key == 'education' *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
+((* endif *))
+((# Standalone positions own one rail; nested positions share their company's existing progression rail. #))
+((* if standalone_role *))\begin{roleprogression}((* endif *))
 ((* if section.key == 'about' *))
 ((( render_text([heading], entry.links) )))
 ((* elif heading *))
-((# Keep a company with its first role, and short jobs with their descriptions, when reflow approaches a page boundary. #))
-\Needspace{((* if entry.positions or (badge and entry.paragraphs|length <= 5) *))12((* elif section.key == 'education' *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
 ((* if badge and badge[0] == -1 *))
 ((( company_name(badge, heading, entry.links, heading=true, anchor=anchor) )))
 ((* elif project and project.title_url *))
 \entrytitle{\href{((( project.title_url|url )))}{((( heading|tex )))}}
 ((* elif role *))
 \roletitle{((* if anchor *))\hypertarget{((( anchor )))}{}((* endif *))((( heading|tex_links(entry.links) )))}
+((* elif standalone_role *))
+\roletitle[\large]{((* if anchor *))\hypertarget{((( anchor )))}{}((* endif *))((( heading|tex_links(entry.links) )))}
 ((* else *))
 \entrytitle{((* if anchor *))\hypertarget{((( anchor )))}{}((* endif *))((( heading|tex_links(entry.links) )))}
 ((* endif *))
@@ -113,13 +120,15 @@
 ((* endfor *))
 ((# Roles retain their own dates, locations, and descriptions inside one breakable company progression. #))
 ((* if entry.positions *))
-\begin{roleprogression}
+((# Fade only the leading connector of a retained multi-role company, never a single remaining position. #))
+\begin{roleprogression}((* if entry.positions|length > 1 *))[70]((* endif *))
 ((* for position in entry.positions *))
 ((* if not loop.first *))\par\addvspace{9pt}((* endif *))
 ((( render_entry(position, section, role=true, parent_title=entry.title, anchor=anchor ~ '-' ~ loop.index0 if anchor else '') )))
 ((* endfor *))
 \end{roleprogression}
 ((* endif *))
+((* if standalone_role *))\end{roleprogression}((* endif *))
 ((* endmacro *))
 ((* macro section_heading(section, anchor) *))
 ((# Emit each destination with the heading after pagination has selected its final page. #))
@@ -127,22 +136,27 @@
 \sectiontitle{((( section.title|tex )))}
 ((* endmacro *))
 ((* macro render_section(section, anchor) *))
-((* if section.key == 'projects' *))
-% Projects use the full paper width; move past the first-page identity columns only when necessary.
+((* set tiled = section.key in ['projects', 'featured'] *))
+((* if tiled *))
+% Tiled sections use the full paper width; move past the first-page identity columns only when necessary.
 \ifnum\value{page}=1\clearpage\fi
 ((* endif *))
 ((# Reserve the first education entry's eight lines plus its section heading so reflow cannot strand the heading. #))
 \Needspace{((* if section.key == 'education' *))11((* else *))5((* endif *))\baselineskip}
 ((* if section.key == 'skills' and skill_cloud *))\begin{minipage}{\linewidth}((* endif *))
-((* if section.key != 'projects' *))((( section_heading(section, anchor) )))((* endif *))
+((* if not tiled *))((( section_heading(section, anchor) )))((* endif *))
 ((* if section.key == 'skills' and skill_cloud *))
+% Center the cloud and its compact caption together, keeping the section heading aligned with other sections.
+\begingroup\centering
 % Scale both bounds to 75% of the original display size without changing the cloud's proportions or weights.
 \includegraphics[width=0.75\linewidth,height=0.4125\textheight,keepaspectratio]{((( skill_cloud )))}\par
+{\footnotesize\itshape Top skills}\par
 ((* if style.skill_colors|length > 1 *))
-{\footnotesize Endorsements: \textcolor{skilllow}{0\%}\enspace--\enspace\textcolor{skillhigh}{100\% of highest count}}\par
+{\footnotesize Relative endorsements: 0\%\enspace\raisebox{-0.3mm}{\pgfuseshading{skillendorsements}}\enspace100\%}\par
 ((* endif *))
+\endgroup
 \end{minipage}
-((* elif section.key == 'projects' *))
+((* elif tiled *))
 ((* for pair in section.entries|batch(2) *))
 \projectrow[((* if loop.first *))((( section_heading(section, anchor) )))((* endif *))]{((( render_entry(pair[0], section) )))}{((* if pair|length == 2 *))((( render_entry(pair[1], section) )))((* endif *))}
 ((* endfor *))
@@ -175,8 +189,19 @@
 \definecolor{profilename}{HTML}{((( style.name_color )))}
 \definecolor{sectionheading}{HTML}{((( style.heading_color )))}
 \definecolor{entryheading}{HTML}{((( style.entry_color )))}
-\definecolor{skilllow}{HTML}{((( style.skill_colors[0] )))}
-\definecolor{skillhigh}{HTML}{((( style.skill_colors[-1] )))}
+% A neutral tint separates project tiles without adding another accent to the theme.
+\colorlet{projectbackground}{black!3!canvas}
+((# Use every configured stop so the legend matches the cloud's piecewise RGB interpolation. #))
+((* if style.skill_colors|length > 1 *))
+((* for color in style.skill_colors *))
+\definecolor{skillstop((( loop.index0 )))}{HTML}{((( color )))}
+((* endfor *))
+\pgfdeclarehorizontalshading{skillendorsements}{2mm}{%
+((* for color in style.skill_colors -*))
+color( ((( 36 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop((( loop.index0 ))))((* if not loop.last *));((* endif *))%
+((* endfor -*))
+}
+((* endif *))
 % Every text link uses the same color, including links nested inside headings; color marks clickability.
 \hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,filecolor=accent,citecolor=accent,
   pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) — Resume}}
@@ -202,14 +227,36 @@
     \fill[ink!55] (-3mm-0.3pt,0.5ex) circle[radius=0.9mm];
   }%
 }
-\newcommand{\roletitle}[1]{{\color{entryheading}\normalsize\bfseries\leavevmode\rolevertex #1}\par\nopagebreak}
-\newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{3pt}}
+\newcommand{\roletitle}[2][\normalsize]{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}\par\nopagebreak}
+% Give each section heading half a body-text line of breathing room before its content.
+\newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{0.5\baselineskip}}
 % The rule is painted before the role contents, whose vertices interrupt it with a clear gap.
 % It continues on subsequent pages without boxing the whole history or repeating title vertices.
-\newenvironment{roleprogression}{%
+\newsavebox{\roleframemeasure}
+\colorlet{roleconnector}{ink!18}
+\newcommand{\roleframe}[2][100]{%
+  \sbox{\roleframemeasure}{#2}%
+  \hspace{3mm}{\color{roleconnector}\vrule width0.6pt}%
+  %
+  % Blend the leading cap against the page: 70% opacity means 30% transparency.
+  % The first vertex's canvas halo conceals the join half a line below the frame's top.
+  \ifnum#1<100\relax
+    \tikz[overlay]{%
+      \fill[roleconnector!#1!canvas] (-0.6pt,\ht\roleframemeasure)
+        rectangle (0pt,\ht\roleframemeasure-0.5\baselineskip);
+    }%
+  \fi%
+  \hspace{3mm}\usebox{\roleframemeasure}%
+}
+\newenvironment{roleprogression}[1][100]{%
   % Framed centers continuation pieces by default; keep the bar at the left when the next flow frame is wider.
   \let\centerline\leftline
-  \def\FrameCommand##1{\hspace{3mm}{\color{ink!25}\vrule width0.6pt}\hspace{3mm}##1}%
+  \def\FrameCommand{\roleframe[#1]}%
+  %
+  % Only the first piece owns the leading cap; page continuations keep the ordinary rail color.
+  \let\FirstFrameCommand\FrameCommand
+  \def\MidFrameCommand{\roleframe}%
+  \def\LastFrameCommand{\roleframe}%
   \MakeFramed{\advance\hsize-\width\FrameRestore}%
 }{\endMakeFramed}
 % Scale to cover the circle without stretching, then clip only the portrait in the PDF.
@@ -289,11 +336,26 @@
 \newbox\projectrightpart
 \newdimen\projectwidth
 \newdimen\projectheight
+\newcommand{\projecttile}[1]{%
+  % Do not paint an empty partner when the final row is odd or one long card has already finished.
+  \ifdim\dimexpr\ht#1+\dp#1\relax>0pt
+    \colorbox{projectbackground}{%
+      \vtop to\projectheight{\hrule height0pt width\projectwidth\unvbox#1\vfil}%
+    }%
+  \else
+    \hbox to\dimexpr\projectwidth+2\fboxsep\relax{\hfil}%
+  \fi
+}
 \newcommand{\projectparts}{%
+  % Match tile heights within each row, including the individual pieces of oversized entries.
+  \projectheight=\dimexpr\ht\projectleftpart+\dp\projectleftpart\relax
+  \ifdim\dimexpr\ht\projectrightpart+\dp\projectrightpart\relax>\projectheight
+    \projectheight=\dimexpr\ht\projectrightpart+\dp\projectrightpart\relax
+  \fi
   \noindent\hbox to\linewidth{%
-    \vtop{\hrule height0pt width\projectwidth\unvbox\projectleftpart}%
+    \projecttile\projectleftpart
     \hfil
-    \vtop{\hrule height0pt width\projectwidth\unvbox\projectrightpart}%
+    \projecttile\projectrightpart
   }\par
 }
 \newcommand{\printprojectrow}{%
@@ -309,7 +371,7 @@
     \framebreak
     \printprojectrow
   \else
-    \Needspace{\dimexpr\projectheight+12pt\relax}%
+    \Needspace{\dimexpr\projectheight+2\fboxsep+12pt\relax}%
     \setbox\projectleftpart=\box\projectleft
     \setbox\projectrightpart=\box\projectright
     \projectparts
@@ -318,7 +380,9 @@
 }
 \newcommand{\projectrow}[3][]{%
   \begingroup
-  \projectwidth=0.48\linewidth
+  % Include the inset inside each existing column's width so backgrounds never consume the gutter.
+  \setlength{\fboxsep}{2mm}%
+  \projectwidth=\dimexpr0.48\linewidth-2\fboxsep\relax
   \setbox\projectleft=\vbox{\hsize=\projectwidth\linewidth=\projectwidth #2}%
   \setbox\projectright=\vbox{\hsize=\projectwidth\linewidth=\projectwidth #3}%
   % Reserve the measured first row with its heading, including the first chunk of an oversized pair.
@@ -328,7 +392,7 @@
       \projectheight=\dimexpr\ht\projectright+\dp\projectright\relax
     \fi
     \ifdim\projectheight>0.85\textheight\projectheight=0.85\textheight\fi
-    \Needspace{\dimexpr\projectheight+5\baselineskip\relax}%
+    \Needspace{\dimexpr\projectheight+2\fboxsep+5\baselineskip\relax}%
     #1%
   \fi
   \printprojectrow
@@ -337,12 +401,15 @@
 \urlstyle{same}
 % Reserve a narrow identity column on page one, then use full-width continuation pages.
 % Flow frames let long content continue instead of clipping it in a fixed-height box.
-\newflowframe[1]{0.34\textwidth}{\textheight}{0pt}{0pt}[identity]
-\newflowframe[1]{0.61\textwidth}{\textheight}{0.39\textwidth}{0pt}[opening]
+% Allocate 26% to identity and 69% to the body, retaining a 5% gutter.
+\newflowframe[1]{0.26\textwidth}{\textheight}{0pt}{0pt}[identity]
+\newflowframe[1]{0.69\textwidth}{\textheight}{0.31\textwidth}{0pt}[opening]
 \newflowframe[>1]{\textwidth}{\textheight}{0pt}{0pt}[continuation]
 % Flow frames reset their text color on entry; inherit the configured body ink in every column and continuation page.
 \setallflowframes{textcolor=ink}
 \begin{document}
+((# Contact starts in the identity column only when it leads the requested visible order. #))
+((* set contact_first = section_navigation and section_navigation[0][1].key == 'contact' *))
 ((# Relocate observed header branding beside its name, using the same linked company row as Experience. #))
 ((* set header, header_badges = profile|header_logos *))
 {\color{profilename}\fontsize{24}{28}\selectfont\bfseries ((( profile.name|tex )))}\par
@@ -365,6 +432,10 @@
 \includegraphics[width=24mm,height=14mm,keepaspectratio]{((( image.path )))}\par
 ((* endif *))
 ((* endfor *))
+((# Generated copy is a separate display overlay; captured company, location, and social links retain their normal placement. #))
+((* if summary_headline *))
+\profileparagraph{((( summary_headline|tex )))}
+((* endif *))
 ((( render_text(header.intro|reject('pronouns')|list, profile.links, badges=header_badges) )))
 \href{https://www.linkedin.com/in/((( profile.username|url )))/}{\makebox[1.3em][l]{\faLinkedin}\textbf{LinkedIn profile}}\par
 ((* if github_username *))
@@ -374,7 +445,7 @@
 ((* if style.show_table_of_contents and section_navigation *))
 \par\addvspace{12pt}
 \Needspace{3\baselineskip}
-{\color{sectionheading}\large\bfseries Contents}\par\nopagebreak
+{\color{sectionheading}\large\bfseries Contents}\par\nopagebreak\vspace{0.5\baselineskip}
 ((* for anchor, section in section_navigation *))
 \noindent\hangindent=0.6em\hangafter=1\hspace*{0.6em}\hyperlink{((( anchor )))}{((( section.title|tex )))}\par
 ((* endfor *))
@@ -386,15 +457,15 @@
 ((( connection_count|tex )))\par
 ((* endif *))
 \par\addvspace{12pt}
-((* for anchor, section in section_navigation if section.key == 'contact' *))
-((( render_section(section, anchor) )))
-((* endfor *))
+((* if contact_first *))
+((( render_section(section_navigation[0][1], section_navigation[0][0]) )))
+((* endif *))
 ((# A header-only profile does not need a forced break or an empty body heading. #))
-((* set body = profile.sections|rejectattr('key', 'equalto', 'contact')|list *))
+((* set body = section_navigation[1:] if contact_first else section_navigation *))
 ((* if body *))
 \framebreak
-% About leads the right column regardless of the order returned by LinkedIn.
-((* for anchor, section in section_navigation if section.key != 'contact' *))
+% Follow the configured section order in the body, including About and any relocated Contact info.
+((* for anchor, section in body *))
 ((( render_section(section, anchor) )))
 ((* endfor *))
 ((* endif *))

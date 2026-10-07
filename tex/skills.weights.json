@@ -14,15 +14,15 @@
     "endorsements": 0,
     "weight": 9
   },
-  "Linux": {
+  "Kubernetes": {
     "references": 8,
     "endorsements": 0,
     "weight": 8
   },
-  "Kubernetes": {
-    "references": 7,
+  "Linux": {
+    "references": 8,
     "endorsements": 0,
-    "weight": 7
+    "weight": 8
   },
   "CircleCI": {
     "references": 6,
@@ -154,7 +154,22 @@
     "endorsements": 0,
     "weight": 2
   },
+  "Hydroponics": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
   "Hyper-V": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Hypothesis Testing": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Information Security": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -270,21 +285,6 @@
     "weight": 1
   },
   "Google Kubernetes Engine (GKE)": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "Hydroponics": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "Hypothesis Testing": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "Information Security": {
     "references": 1,
     "endorsements": 0,
     "weight": 1

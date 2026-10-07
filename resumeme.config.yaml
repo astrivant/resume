@@ -6,9 +6,43 @@ linkedin:
 github:
   username: emmeowzing
 
-# Hide sections in the generated resume using their keys from data/profile.json.
-# Example: [featured, interests, recommendations]
-disable: [contact, featured, recommendations, interests, causes, organizations, languages]
+# Optional Codex-generated About and portrait summary. Set OPENAI_API_KEY as an Actions secret before enabling.
+codex:
+  enabled: false
+  model: null
+  about_max_words: 100
+  headline_max_words: 18
+
+  # Add target roles, audience, tone, or additional factual background here. Never put an API key in this file.
+  context: ''
+
+# Enabled sections in PDF/contents order. Reorder entries; comment out a key to hide that section.
+# Uncomment it to restore the section. Missing/empty sections are skipped; [] renders only the profile header.
+# Add unfamiliar keys from data/profile.json to include them. Featured uses the same tiles as Projects.
+section_order:
+  # - contact
+  - about
+  # - featured
+  - activity
+  - experience
+  - education
+  - services
+  - career-breaks
+  - certifications
+  - volunteering-experiences
+  - projects
+  - publications
+  - patents
+  - courses
+  - honors
+  - test-scores
+  - skills
+  # - recommendations
+  # - languages
+  # - organizations
+  # - interests
+  # - causes
+
 experience:
 
   # Match a job title, company, or both (case-insensitive).
@@ -45,8 +79,8 @@ style:
   # US Letter (8.5 x 11 inches); set a4 for ISO A4.
   paper: letter
 
-  # Green consistently identifies clickable text; neutral headings use size and weight for hierarchy.
-  accent: '3F6248'
+  # Deep plant green identifies clickable text; neutral headings use size and weight for hierarchy.
+  accent: '245135'
   skill_colors: ['777777', '363636']
   background: FFFFFF
   font_size: 10
@@ -65,7 +99,7 @@ style:
   show_connection_count: false
   show_connection_link: false
 
-  # Display the birthday only when Contact info is enabled (remove contact from disable).
+  # Display the birthday only when Contact info is enabled (uncomment contact in section_order).
   display_birthday: false
 
   # Size the top 20 skills by references + 2 * endorsements; skill_colors runs from 0% to 100% of the highest displayed count.
@@ -79,7 +113,7 @@ style:
       # Name > section headings > entry titles/body: burgundy, burnt orange, then soft charcoal.
       # Green marks links; skill colors progress from muted brown to burgundy as endorsement counts increase.
       # Source and palette roles: docs/themes.md
-      accent: '3F6248'
+      accent: '245135'
       ink: '363636'
       name_color: '6B2737'
       heading_color: 'A44813'

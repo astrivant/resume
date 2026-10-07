@@ -10,6 +10,7 @@ import pytest
 from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.headings import distinct_heading
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, Style
@@ -143,6 +144,10 @@ def test_custom_templates_can_apply_the_rule_after_section_filtering(tmp_path: P
         encoding="utf-8",
     )
     profile = Profile("example-person", "Alex", sections=[Section("languages", "Languages", [Entry("Languages", ["English"])])])
-    config = Config(LinkedIn(profile.username), template="custom.tex.j2", disable=["languages"] if disabled else [])
+    config = Config(
+        LinkedIn(profile.username),
+        template="custom.tex.j2",
+        section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["languages"] if disabled else [])],
+    )
     text = render_profile(profile, config, tmp_path).read_text()
     assert text == ("" if disabled else "|Languages|English")

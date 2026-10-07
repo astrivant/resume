@@ -25,7 +25,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | Setting | Default | Purpose |
 | --- | --- | --- |
 | `linkedin.username` | `emmeowzing` | Profile slug from `/in/<username>/` |
-| `disable` | `[]` | Section keys to omit from the generated resume |
+| `section_order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
 | `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
 | `experience.last_years` | `null` | Include jobs overlapping the trailing N calendar years; null keeps all dates |
 | `experience.as_of` | `null` | Quoted ISO date fixing the window endpoint; null uses today's UTC date |
@@ -40,8 +40,13 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `output.assets` | `data/assets` | Content-addressed PNG images |
 | `output.tex` | `tex/resume.tex` | Generated LaTeX source |
 | `output.pdf` | `resume.pdf` | Compiled PDF and CI commit destination |
+| `codex.enabled` | `false` | Enable optional generated About and portrait summaries; requires the `OPENAI_API_KEY` Actions secret |
+| `codex.context` | `''` | Additional background, target roles, audience, and tone supplied to Codex |
+| `codex.model` | `null` | Codex model override, or the pinned CLI's default |
+| `codex.about_max_words` | `100` | Maximum generated About length, from 1 to 300 words |
+| `codex.headline_max_words` | `18` | Maximum portrait summary length, from 1 to 40 words |
 | `style.paper` | `letter` | `letter` (8.5 × 11 inches) or `a4` |
-| `style.accent` | `3F6248` | Six-digit hexadecimal link color; muted forest green by default |
+| `style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; set to `false` in the reference config |
@@ -67,22 +72,46 @@ config, or add your own entries under `style.themes`. The selected entry overrid
 matching base style fields, including paper size and visibility toggles. Omitted
 fields keep their base values. See [inline themes and palette sources](themes.md).
 
-To hide entire sections, add their keys to the top-level `disable` list:
+### Section visibility, order, and tiles
+
+The top-level `section_order` array controls both visibility and order. Move an
+entry to reorder it, comment it out to hide it, and uncomment it to restore it:
 
 ```yaml
-disable:
-  - featured
-  - interests
-  - recommendations
+section_order:
+  - about
+  - experience
+  - projects
+  # - featured
+  - education
+  - skills
 ```
 
-Use lowercase `sections[].key` values from `data/profile.json`. Unknown keys have
-no effect; `[]` includes every captured section. Exclusions apply to PDF output,
-project consolidation, and skill scoring. The snapshot remains complete.
+Only listed sections appear, in that order. Missing and empty sections are skipped;
+`section_order: []` renders only the profile header. Omitting the setting uses the
+package's full default list. Use lowercase `sections[].key` values from
+`data/profile.json`; add unfamiliar keys explicitly to include them. Known aliases
+are accepted, with their first occurrence setting the position.
 
-The shipped config disables `contact`, `featured`, `recommendations`, `interests`,
-`causes`, `organizations`, and `languages`. Rebuild locally with
-`poetry run resumeme build`, or push the config change for CI to rebuild.
+[resumeme.config.yaml](../resumeme.config.yaml) lists every known section, with
+`contact`, `featured`, `recommendations`, `interests`, `causes`, `organizations`, and
+`languages` commented out. The same visibility rules apply before project
+consolidation, skill scoring, and Codex summary generation. The captured snapshot
+remains complete. The table of contents follows the chosen order, including
+generated Projects and Skills sections.
+
+The former top-level `disable` key is no longer accepted. To migrate an older
+config, remove it and comment out those keys in `section_order` instead.
+`experience.disable` remains the independent control for individual jobs.
+
+Contact info occupies the first-page identity column when it leads the visible
+order. Move `contact` later in the array to place it among the body sections.
+About has no forced position beyond its place in the default array.
+
+Projects and Featured use the same two-column tiles with a subtle gray background
+and inset padding. Tiles use the full page width and can continue across pages
+without truncating long posts. Uncomment `featured` in `section_order` to display posts;
+their project previews still consolidate into Projects.
 
 ### Header and skills
 
@@ -95,12 +124,12 @@ The shipped config disables `contact`, `featured`, `recommendations`, `interests
 - `show_table_of_contents` adds links to visible sections in document order.
 - `show_connection_count` and `show_connection_link` control connection metadata
   independently. Enabling both links the count.
-- `display_birthday` applies only when `contact` is enabled.
+- `display_birthday` applies only when `contact` is included in `section_order`.
 - `skills_word_cloud` replaces the Skills list with the top 20 weighted skills.
   Size represents references plus twice the endorsement count. Color represents
   endorsements relative to the highest count among those 20 skills.
 
-Set `skills_word_cloud: false` for the text list or add `skills` to `disable` to
+Set `skills_word_cloud: false` for the text list or comment out `skills` in `section_order` to
 hide the section. See [skill scoring](profile-schema.md#scoring-and-rendering) and
 [theme configuration](themes.md). All style fields support inline theme overrides.
 
@@ -150,7 +179,7 @@ Legacy flattened groups support the same layout when title/date boundaries are
 recognizable. Partial job filtering still requires structured positions; run
 `resumeme capture` if the filter reports missing role boundaries.
 
-`disable: [experience]` overrides job filters. Excluded roles cannot contribute
+Omitting `experience` from `section_order` hides all jobs. Excluded roles cannot contribute
 project attachments or skill references. Independently captured Projects and Skills
 entries remain subject to their own section settings.
 
@@ -262,14 +291,16 @@ window in a reproducible build.
 
 The default is US Letter with 19 mm margins and bundled EB Garamond. Set
 `style.paper: a4` for ISO A4 and `style.font_size` for 10, 11, or 12 point body text.
-The first page has an identity column and a content column starting with About;
-subsequent pages use the full text width. Projects uses two columns.
+The first page has an identity column and a content column starting with About by
+default; `section_order` controls the content sequence. Subsequent pages use the
+full text width. Projects and Featured use two-column tiles.
 
 | Content | Presentation |
 | --- | --- |
 | Profile | Round portrait, pronouns beneath the name, company logo beside its name |
 | Grouped experience | Company heading followed by nested roles with muted dots beside their titles and a connecting line clear of each dot; long groups continue across pages |
-| Projects | Two-column cards with linked titles, dates, and a logo beside each company name; associated roles beneath the company, descriptions beneath media |
+| Projects | Light-gray tiles with linked titles, dates, and a logo beside each company name; associated roles beneath the company, descriptions beneath media |
+| Featured | The same two-column tiles, retaining complete post text and links; project previews consolidate into Projects |
 | Skills | Up to 20 words; size by combined score, color by relative endorsement count |
 | Headings | Child headings identical to their parent are omitted, ignoring case and Unicode/whitespace formatting |
 | Lists | Recognized ASCII, Unicode, checkbox, and ordered markers render as bullets with nested indentation |

@@ -13,6 +13,7 @@ from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Link, Profile, Section, Skill
 from resumeme.compiler.asts.skills import endorsement_count
+from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Capture, Config, LinkedIn
 from resumeme.linkedin.browser import parse_detail_after_expansion
@@ -174,13 +175,15 @@ def test_section_exclusions_apply_before_cloud_scoring(tmp_path: Path) -> None:
             ),
         ],
     )
-    config = Config(LinkedIn("example-person"), disable=["licenses-and-certifications"])
+    config = Config(LinkedIn("example-person"), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["certifications"])])
     source = render_profile(profile, config, tmp_path)
     scores = json.loads((source.parent / "skills.weights.json").read_text())
     assert scores == {"Python": {"references": 1, "endorsements": 2, "weight": 5}}
     assert "Secret tooling" not in source.read_text()
     assert profile.sections[1].entries[0].skills == [Skill("Secret tooling", 100)]
-    render_profile(profile, evolve(config, disable=["skills", "certifications"]), tmp_path)
+    render_profile(
+        profile, evolve(config, section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["skills", "certifications"])]), tmp_path
+    )
     assert json.loads((source.parent / "skills.weights.json").read_text()) == {}
     assert not list((source.parent / "assets").glob("skills-*.png"))
     assert "assets/skills-" not in source.read_text()
@@ -218,7 +221,7 @@ def test_tags_can_generate_a_cloud_without_a_skills_section(tmp_path: Path) -> N
     source = render_profile(profile, config, tmp_path)
     assert "assets/skills-" in source.read_text()
     assert r"\sectiontitle{Skills}" in source.read_text()
-    render_profile(profile, evolve(config, disable=["skills"]), tmp_path)
+    render_profile(profile, evolve(config, section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["skills"])]), tmp_path)
     assert r"\sectiontitle{Skills}" not in source.read_text()
 
 
