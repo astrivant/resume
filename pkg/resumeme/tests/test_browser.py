@@ -1,5 +1,5 @@
 """
-Verify macOS profile lifetime and bounded browser failure behavior without a live login.
+Verify browser selection, persistent profiles, and bounded failures without a live login.
 """
 
 from __future__ import annotations
@@ -9,18 +9,19 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import pytest
+from jsonschema import ValidationError
 from selenium.common.exceptions import NoSuchWindowException, TimeoutException
 from selenium.webdriver.common.by import By
 
 from resumeme.cli import main
-from resumeme.config import Capture
-from resumeme.linkedin.browser import _detail_tabs, _firefox, _login
+from resumeme.compiler.asts.profile import Profile
+from resumeme.config import Capture, Config, LinkedIn, load_config
+from resumeme.linkedin.browser import _browser, _detail_tabs, _firefox, _login, capture_profile
 
 if TYPE_CHECKING:
-    from pytest import MonkeyPatch
+    from typing import Literal
 
-    from resumeme.compiler.asts.profile import Profile
-    from resumeme.config import Config
+    from pytest import MonkeyPatch
 
 
 def test_macos_profile_survives_retries_locally(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
@@ -140,6 +141,142 @@ def test_headless_launch_uses_native_firefox_without_opening_a_window(tmp_path: 
         assert "-profile" in options.arguments
 
     launcher.assert_not_called()
+
+
+@pytest.mark.parametrize("headless", [False, True])
+def test_chrome_uses_its_own_persistent_profile_and_closes_on_failure(tmp_path: Path, monkeypatch: MonkeyPatch, headless: bool) -> None:
+    """
+    Launch the configured Chrome with the same private profile across interactive and unattended retries.
+
+    Args:
+        tmp_path (Path): Temporary browser profile directory.
+        monkeypatch (MonkeyPatch): Browser driver substitutions.
+        headless (bool): Whether the configured Chrome should open without a desktop window.
+
+    Returns:
+        None: Chrome receives the expected options, retains login state, and releases the driver after an error.
+    """
+    driver = MagicMock()
+    driver.__enter__.return_value = driver
+    factory = MagicMock(return_value=driver)
+    monkeypatch.setattr("resumeme.linkedin.browser.webdriver.Chrome", factory)
+    firefox = MagicMock(side_effect=AssertionError("Chrome selection must not launch Firefox"))
+    monkeypatch.setattr("resumeme.linkedin.browser._firefox", firefox)
+    service = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.browser.ChromeService", service)
+
+    with pytest.raises(TimeoutException):
+        with _browser(tmp_path, Capture(browser="chrome"), headless=headless) as captured:
+            assert captured is driver
+            raise TimeoutException("Synthetic page timeout")
+
+    profile = tmp_path / ".cache/chrome"
+    options = factory.call_args.kwargs["options"]
+    assert f"--user-data-dir={profile.resolve()}" in options.arguments
+    assert ("--headless=new" in options.arguments) is headless
+    assert options.experimental_options["prefs"]["intl.accept_languages"] == "en-US,en"
+    assert profile.is_dir()
+    assert profile.stat().st_mode & 0o777 == 0o700
+    assert not (tmp_path / ".cache/firefox").exists()
+    service.assert_called_once_with(log_output=str(tmp_path / ".cache/capture/chrome.log"))
+    driver.__exit__.assert_called_once()
+    firefox.assert_not_called()
+
+
+def test_default_browser_preserves_firefox_attachment(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """
+    Preserve the existing Firefox default and explicit Marionette attachment contract.
+
+    Args:
+        tmp_path (Path): Temporary browser root.
+        monkeypatch (MonkeyPatch): Launcher replacement without opening a real browser.
+
+    Returns:
+        None: Default settings forward the explicit port and return the Firefox driver.
+    """
+    firefox = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.browser._firefox", firefox)
+
+    with _browser(tmp_path, Capture(), 2829) as driver:
+        assert driver is firefox.return_value.__enter__.return_value
+
+    firefox.assert_called_once_with(tmp_path, 2829, headless=False)
+
+
+def test_chrome_rejects_firefox_attachment_before_launch(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """
+    Reject a Firefox protocol port without accidentally opening either browser.
+
+    Args:
+        tmp_path (Path): Temporary browser root.
+        monkeypatch (MonkeyPatch): Chrome launcher sentinel.
+
+    Returns:
+        None: Unsupported attachment fails with an actionable browser selection message.
+    """
+    chrome = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.browser._chrome", chrome)
+
+    with pytest.raises(ValueError, match="--connect-port is only supported with capture.browser: firefox"):
+        with _browser(tmp_path, Capture(browser="chrome"), 2829):
+            pytest.fail("Chrome must reject Marionette attachment")
+
+    chrome.assert_not_called()
+
+
+@pytest.mark.parametrize("browser", ["firefox", "chrome"])
+def test_capture_uses_configured_browser_and_shared_login(
+    tmp_path: Path, monkeypatch: MonkeyPatch, browser: Literal["firefox", "chrome"]
+) -> None:
+    """
+    Apply browser selection at the capture boundary while retaining the shared expansion and login pipeline.
+
+    Args:
+        tmp_path (Path): Isolated diagnostics and snapshot directory.
+        monkeypatch (MonkeyPatch): Browser, expansion, and media boundaries.
+        browser (Literal["firefox", "chrome"]): Configured Selenium implementation.
+
+    Returns:
+        None: Both browser choices reach the same login and profile capture with configured timeouts.
+    """
+    (tmp_path / ".cache/capture").mkdir(parents=True)
+    session = MagicMock()
+    driver = session.return_value.__enter__.return_value
+    driver.current_url = "https://www.linkedin.com/in/example-person/"
+    monkeypatch.setattr("resumeme.linkedin.browser._browser", session)
+    login = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.browser._login", login)
+    monkeypatch.setattr("resumeme.linkedin.browser._expand", MagicMock(return_value=["<main><h1>Alex</h1></main>"]))
+    media = MagicMock(return_value=Profile("example-person", "Alex"))
+    monkeypatch.setattr("resumeme.linkedin.browser.cache_media", media)
+    config = Config(LinkedIn("example-person"), capture=Capture(browser=browser))
+    assert capture_profile(config, tmp_path).name == "Alex"
+    session.assert_called_once_with(tmp_path, config.capture, None, headless=False)
+    driver.set_page_load_timeout.assert_called_once_with(config.capture.page_timeout_seconds)
+    login.assert_called_once_with(driver, config.capture, headless=False)
+    assert media.call_args.args[0].name == "Alex"
+
+
+@pytest.mark.parametrize("setting", ["", "firefox", "chrome", "safari", "Chrome", "null"])
+def test_browser_config_defaults_and_validation(tmp_path: Path, setting: str) -> None:
+    """
+    Default to Firefox while accepting only the two documented browser identifiers.
+
+    Args:
+        tmp_path (Path): Temporary configuration directory.
+        setting (str): Omitted, supported, or invalid browser setting.
+
+    Returns:
+        None: Valid selections structure correctly and unsupported browser names fail before capture.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text("linkedin:\n  username: example-person\n" + (f"capture:\n  browser: {setting}\n" if setting else ""))
+
+    if setting in {"", "firefox", "chrome"}:
+        assert load_config(path).capture.browser == (setting or "firefox")
+    else:
+        with pytest.raises(ValidationError):
+            load_config(path)
 
 
 @pytest.mark.parametrize("challenge", [False, True])

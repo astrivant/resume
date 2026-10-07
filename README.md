@@ -11,7 +11,7 @@ version you want to share to get a signed release.
 
 **[View the résumé (PDF)](resume.pdf)** - [Fork this project](https://github.com/astrivant/resume/fork)
 
-## Why use resumeme?
+## Why use this tool?
 
 - **Review your résumé in Git.** Profile text, images, configuration, and templates
   live in your repository. Changes have diffs and history.
@@ -29,7 +29,7 @@ version you want to share to get a signed release.
 ## Contents
 
 - [resumeme](#resumeme)
-  - [Why use resumeme?](#why-use-resumeme)
+  - [Why use this tool?](#why-use-this-tool)
   - [Contents](#contents)
   - [Quick start](#quick-start)
     - [1. Install](#1-install)
