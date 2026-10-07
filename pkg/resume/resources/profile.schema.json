@@ -154,19 +154,22 @@
                     ],
                     "additionalProperties": false
                   }
+                },
+                "skills": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/skill"
+                  }
                 }
               },
-              "required": [
-                "title"
-              ],
+              "required": [],
               "additionalProperties": false
             }
           }
         },
         "required": [
           "key",
-          "title",
-          "entries"
+          "title"
         ],
         "additionalProperties": false
       }
@@ -182,10 +185,28 @@
     }
   },
   "required": [
-    "schema_version",
     "username",
-    "name",
-    "sections"
+    "name"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "skill": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "endorsements": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    }
+  }
 }

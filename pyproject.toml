@@ -19,6 +19,7 @@ dependencies = [
     "Jinja2>=3.1.6,<4",
     "jsonschema>=4.26,<5",
     "Pillow>=12,<13",
+    "wordcloud>=1.9.6,<2",
 ]
 
 [project.scripts]
@@ -84,6 +85,8 @@ runtime-evaluated-decorators = ["attrs.define", "attrs.frozen"]
 convention = "google"
 
 [tool.mypy]
+mypy_path = ["scripts/typing"]
+exclude = ["scripts/typing/"]
 python_version = "3.13"
 strict = true
 files = ["pkg", "scripts"]

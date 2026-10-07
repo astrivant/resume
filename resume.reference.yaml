@@ -24,5 +24,7 @@ style:
   font_size: 10
   # Set true to display the cover/background photo; the portrait stays visible.
   show_header_photo: false
+  # Aggregate visible skill references plus twice each observed endorsement.
+  skills_word_cloud: true
 # Optional exact template override; otherwise the package template is used.
 template: null

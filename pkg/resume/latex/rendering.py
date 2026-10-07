@@ -14,6 +14,9 @@ from jinja2 import Environment, StrictUndefined
 
 from resume.config import project_path
 from resume.latex.escaping import latex_escape, latex_url
+from resume.linkedin.sections import section_key
+from resume.models import Section
+from resume.visualization.skills import render_skill_cloud, skill_scores
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -87,13 +90,30 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
             result.append(evolve(item, path=f"assets/{name}"))
         return result
 
-    prepared = evolve(
+    disabled = {section_key(key) for key in config.disable}
+    visible = evolve(
         profile,
+        sections=[
+            evolve(section, key=section_key(section.key)) for section in profile.sections if section_key(section.key) not in disabled
+        ],
+    )
+    scores = skill_scores(visible) if config.style.skills_word_cloud and "skills" not in disabled else {}
+    skill_cloud = render_skill_cloud(scores, target.parent)
+    if skill_cloud and not any(section.key == "skills" for section in visible.sections):
+        visible = evolve(visible, sections=[*visible.sections, Section("skills", "Skills")])
+    prepared = evolve(
+        visible,
         images=stage([image for image in profile.images if config.style.show_header_photo or not _is_header_photo(image)]),
         sections=[
-            evolve(section, entries=[evolve(entry, images=stage(entry.images)) for entry in section.entries])
-            for section in profile.sections
-            if section.key not in config.disable
+            evolve(
+                section,
+                entries=[
+                    evolve(entry, images=[] if skill_cloud and section.key == "skills" else stage(entry.images))
+                    for entry in section.entries
+                ],
+            )
+            for section in visible.sections
+            if section.entries or (skill_cloud and section.key == "skills")
         ],
     )
     environment = Environment(
@@ -114,6 +134,6 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         template = project_path(root, config.template).read_text(encoding="utf-8")
     else:
         template = files("resume.latex").joinpath("resources/resume.tex.j2").read_text(encoding="utf-8")
-    content = environment.from_string(template).render(profile=prepared, style=config.style)
+    content = environment.from_string(template).render(profile=prepared, style=config.style, skill_cloud=skill_cloud)
     target.write_text(content, encoding="utf-8")
     return target

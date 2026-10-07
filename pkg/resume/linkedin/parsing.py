@@ -9,11 +9,13 @@ from urllib.parse import parse_qs, unquote, urljoin, urlsplit
 
 from bs4 import BeautifulSoup, Tag
 
-from resume.models import Entry, Link, Media, Profile, Section
+from resume.linkedin.sections import section_key
+from resume.linkedin.skills import endorsement_count, skill_labels
+from resume.models import Entry, Link, Media, Profile, Section, Skill
 
 __all__ = ["detail_links", "merge_profile_html", "parse_contact", "parse_detail", "parse_profile", "safe_url"]
 
-_IGNORED_SECTIONS = {"analytics", "resources", "activity", "suggested-for-you"}
+_IGNORED_SECTIONS = {"analytics", "resources", "suggested-for-you"}
 _UI_TEXT = re.compile(
     r"^(?:show all\b|show more\b|see more$|see less$|show less$|\.\.\.more$|…more$|…see more$|add section$|add profile section$)",
     re.IGNORECASE,
@@ -56,6 +58,10 @@ def _clean(node: Tag) -> Tag:
         Tag: Independent, cleaned HTML fragment.
     """
     cleaned = BeautifulSoup(str(node), "html.parser")
+    for control in cleaned.select("input[type='checkbox'], input[type='radio']"):
+        wrapper = control.find_parent(attrs={"componentkey": re.compile(r"^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$")})
+        if wrapper is not None and wrapper.select_one("p, h1, h2, h3, img") is None:
+            wrapper.decompose()
     for item in cleaned.select(
         "script, style, button, nav, label, input, [role='tab'], .visually-hidden, [hidden], [inert], [style*='display: none']"
     ):
@@ -125,36 +131,43 @@ def _images(node: Tag) -> list[Media]:
     return list(result.values())
 
 
-def _entry(node: Tag) -> Entry:
+def _entry(node: Tag, *, strip_skills: bool = False, skills_section: bool = False) -> Entry:
     """
     Preserve a whole entry, including nested positions and associated projects.
 
     Args:
         node (Tag): Top-level entry or prose block.
+        strip_skills (bool): Hide job association text while retaining structured tags.
+        skills_section (bool): Interpret the entry title as a skill with endorsements.
 
     Returns:
         Entry: Complete text and all associated references.
     """
     cleaned = _clean(node)
+    skills = []
+    for association in cleaned.select("a[href*='/skill-associations-details/'], a[href*='/skill-associations/']"):
+        skills.extend(skill_labels(" ".join(association.stripped_strings)))
+        if strip_skills:
+            association.decompose()
     lines = _lines(cleaned)
-    return Entry(title=lines[0] if lines else "", paragraphs=lines[1:], links=_links(cleaned), images=_images(cleaned))
+    if skills_section and lines:
+        labels = [*node.stripped_strings, *(str(item.get("aria-label", "")) for item in node.select("[aria-label]"))]
+        skills = [Skill(lines[0], endorsements=endorsement_count(labels))]
+    return Entry(title=lines[0] if lines else "", paragraphs=lines[1:], links=_links(cleaned), images=_images(cleaned), skills=skills)
 
 
-def _entries(node: Tag, *, strip_skills: bool = False) -> list[Entry]:
+def _entries(node: Tag, *, strip_skills: bool = False, skills_section: bool = False) -> list[Entry]:
     """
     Split top-level list entries while keeping grouped experience intact.
 
     Args:
         node (Tag): Section or detail page content.
         strip_skills (bool): Remove attached LinkedIn skill summaries from job records.
+        skills_section (bool): Preserve skill names and endorsement totals as structured data.
 
     Returns:
         list[Entry]: Entries or a single full-text block when no list exists.
     """
-    if strip_skills:
-        node = _clean(node)
-        for summary in node.select("a[href*='/skill-associations-details/']"):
-            summary.decompose()
     candidates: list[Tag] = node.select(
         "[componentkey^='entity-collection-item-'], [componentkey^='FeFeaturedItemUrn('], "
         "[componentkey^='com.linkedin.sdui.profile.skill('], "
@@ -166,19 +179,24 @@ def _entries(node: Tag, *, strip_skills: bool = False) -> list[Entry]:
             item
             for item in node.select("div[componentkey]")
             if re.fullmatch(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", str(item.get("componentkey", "")))
+            and item.select_one("p, h3, img") is not None
         ]
     if not candidates:
         candidates = node.select("ul > li")
     identities = {id(item) for item in candidates}
     roots = [item for item in candidates if not any(id(parent) in identities for parent in item.parents)]
     if roots:
-        entries = [entry for item in roots if (entry := _entry(item)).title or entry.images]
+        entries = [
+            entry
+            for item in roots
+            if (entry := _entry(item, strip_skills=strip_skills, skills_section=skills_section)).title or entry.images
+        ]
         if entries:
             return entries
     cleaned = _clean(node)
     for heading in cleaned.select("h2"):
         heading.decompose()
-    entry = _entry(cleaned)
+    entry = _entry(cleaned, strip_skills=strip_skills, skills_section=skills_section)
     return [entry] if entry.title or entry.images else []
 
 
@@ -201,7 +219,7 @@ def detail_links(html: str, username: str) -> dict[str, str]:
         parsed = urlsplit(url)
         match = pattern.match(unquote(parsed.path))
         if parsed.hostname == "www.linkedin.com" and match:
-            result[match[1]] = url
+            result[section_key(match[1])] = url
     return result
 
 
@@ -229,6 +247,14 @@ def merge_profile_html(snapshots: list[str]) -> str:
             length = len(_clean(node).get_text())
             if title not in cards or length >= cards[title][0]:
                 cards[title] = (length, str(node))
+        heading = main.select_one("h1, h2")
+        if heading is not None and heading.find_parent("section") in (main, None):
+            intro = _clean(main)
+            for section in intro.select("section"):
+                section.decompose()
+            title = " ".join(_clean(heading).stripped_strings)
+            if title and intro.select_one("h1, h2"):
+                cards[title] = (len(intro.get_text()), f"<section>{intro}</section>")
     return '<main><section aria-label="Primary content">' + "".join(value[1] for value in cards.values()) + "</section></main>"
 
 
@@ -244,16 +270,16 @@ def parse_profile(html: str, username: str) -> Profile:
         Profile: Ordered sections and intro content.
 
     Raises:
-        ValueError: Profile identity or content is missing.
+        ValueError: Profile identity is missing or the page is an authentication form.
     """
     soup = BeautifulSoup(html, "html.parser")
     main = soup.select_one('section[aria-label="Primary content"]') or soup.select_one("main")
     heading = main.select_one("h1, h2") if main else None
-    if main is None or heading is None:
+    if main is None or heading is None or soup.select_one("input[type='password']"):
         raise ValueError("No profile heading found. Finish login and open your profile; LinkedIn may also have changed its markup.")
     name = heading.get_text(" ", strip=True)
     intro_node = heading.find_parent("section") or heading.parent
-    if not isinstance(intro_node, Tag) or not name:
+    if not isinstance(intro_node, Tag) or not name or name.casefold() in {"sign in", "join linkedin", "security verification"}:
         raise ValueError("The profile intro is missing.")
     intro = _clean(intro_node)
     for item in intro.select("h1, h2, [data-testid='carousel']"):
@@ -265,17 +291,17 @@ def parse_profile(html: str, username: str) -> Profile:
             continue
         title = re.sub(r"\s+\(?[\d,]+\)?$", "", " ".join(_clean(title_node).stripped_strings))
         anchor = node.select_one("[id].pv-profile-card__anchor, [data-resume-section]")
-        key = str(anchor.get("id", "")) if anchor else ""
+        key = str(anchor.get("data-resume-section") or anchor.get("id", "")) if anchor else ""
         for link in node.select("a[href]"):
             match = re.match(rf"/in/{re.escape(username)}/details/([^/]+)/", urlsplit(safe_url(str(link.get("href", "")))).path)
             if match:
                 key = match[1]
                 break
-        key = key or re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+        key = section_key(key or title)
         if key and key not in _IGNORED_SECTIONS:
-            sections.append(Section(key=key, title=title, entries=_entries(node, strip_skills=key == "experience")))
-    if not sections:
-        raise ValueError("No profile sections found; refusing to save an empty or unsupported profile page.")
+            sections.append(
+                Section(key=key, title=title, entries=_entries(node, strip_skills=key == "experience", skills_section=key == "skills"))
+            )
     return Profile(username=username, name=name, intro=_lines(intro), images=_images(intro), links=_links(intro), sections=sections)
 
 
@@ -298,7 +324,13 @@ def parse_detail(html: str, key: str, title: str) -> Section:
     main = soup.select_one('section[aria-label="Primary content"]') or soup.select_one("main")
     if main is None:
         raise ValueError(f"No detail entries found for {title}; refusing to discard its preview.")
-    entries = _entries(main, strip_skills=key == "experience")
+    key = section_key(key)
+    if main.select_one(".artdeco-empty-state, [data-view-name*='empty-state'], [data-test-empty-state]"):
+        return Section(key=key, title=title)
+    heading = main.find(["h1", "h2", "p"])
+    if heading is not None and heading.get_text(" ", strip=True).casefold() == title.casefold():
+        heading.decompose()
+    entries = _entries(main, strip_skills=key == "experience", skills_section=key == "skills")
     entries = [entry for entry in entries if entry.title.casefold() != title.casefold() or entry.paragraphs or entry.images]
     if not entries:
         raise ValueError(f"No detail entries found for {title}; refusing to discard its preview.")

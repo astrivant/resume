@@ -100,10 +100,10 @@ def test_unknown_sections_and_long_text_are_retained() -> None:
     assert profile.sections[0].entries[0].title == text.strip()
 
 
-@pytest.mark.parametrize("html", ["<form>Sign in</form>", "<main><h1>Example</h1></main>"])
+@pytest.mark.parametrize("html", ["<form>Sign in</form>", "<main><h1>Sign in</h1><input type='password'></main>"])
 def test_unsupported_pages_fail_instead_of_saving_empty_profile(html: str) -> None:
     """
-    Reject login screens and profile pages without supported section content.
+    Reject login screens while allowing profile pages with no optional sections.
 
     Args:
         html (str): Incomplete or unrelated HTML.

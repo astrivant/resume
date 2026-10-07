@@ -1,0 +1,342 @@
+{
+  "Python": {
+    "references": 11,
+    "endorsements": 2,
+    "weight": 15
+  },
+  "Kubernetes": {
+    "references": 13,
+    "endorsements": 0,
+    "weight": 13
+  },
+  "Problem Solving": {
+    "references": 1,
+    "endorsements": 6,
+    "weight": 13
+  },
+  "GitHub": {
+    "references": 10,
+    "endorsements": 0,
+    "weight": 10
+  },
+  "Linux": {
+    "references": 9,
+    "endorsements": 0,
+    "weight": 9
+  },
+  "Git": {
+    "references": 4,
+    "endorsements": 1,
+    "weight": 6
+  },
+  "Terraform": {
+    "references": 6,
+    "endorsements": 0,
+    "weight": 6
+  },
+  "Amazon Web Services (AWS)": {
+    "references": 1,
+    "endorsements": 2,
+    "weight": 5
+  },
+  "DevOps": {
+    "references": 5,
+    "endorsements": 0,
+    "weight": 5
+  },
+  "Python (Programming Language)": {
+    "references": 5,
+    "endorsements": 0,
+    "weight": 5
+  },
+  "Telecommunications": {
+    "references": 1,
+    "endorsements": 2,
+    "weight": 5
+  },
+  "Windows": {
+    "references": 5,
+    "endorsements": 0,
+    "weight": 5
+  },
+  "ZFS": {
+    "references": 5,
+    "endorsements": 0,
+    "weight": 5
+  },
+  "AWS": {
+    "references": 4,
+    "endorsements": 0,
+    "weight": 4
+  },
+  "Bash": {
+    "references": 4,
+    "endorsements": 0,
+    "weight": 4
+  },
+  "CircleCI": {
+    "references": 4,
+    "endorsements": 0,
+    "weight": 4
+  },
+  "Helm Charts": {
+    "references": 4,
+    "endorsements": 0,
+    "weight": 4
+  },
+  "Hypothesis Testing": {
+    "references": 4,
+    "endorsements": 0,
+    "weight": 4
+  },
+  "Amazon EC2": {
+    "references": 1,
+    "endorsements": 1,
+    "weight": 3
+  },
+  "Cloud Computing": {
+    "references": 1,
+    "endorsements": 1,
+    "weight": 3
+  },
+  "Disaster Recovery": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "HashiCorp": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Mathematics": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Postman": {
+    "references": 1,
+    "endorsements": 1,
+    "weight": 3
+  },
+  "Technical Support": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Troubleshooting": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Vault": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Argo CD": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Artifactory": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Docker Products": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Flask": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Graph Theory": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Hyper-V": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Infracost": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "iSCSI": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "NFS": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Orchids": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Powershell": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Samba": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "secrets management": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Terrariums": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "3D Printing": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Amazon EKS": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Amazon Linux": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "AWS Command Line Interface (CLI)": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "AWS Lambda": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Business Ownership": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Compilers": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Customer Satisfaction": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Customer Service": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Databases": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Electrical Troubleshooting": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Electrostatic Discharge (ESD)": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "GitOps": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Google Cloud Platform (GCP)": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Google Kubernetes Engine (GKE)": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Hydroponics": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Information Security": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "LaTeX": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Leadership": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Lean Startup": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "MySQL": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "OpenShift": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Platform Architecture": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "SaaS Development": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Software as a Service (SaaS)": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Software Infrastructure": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Website Building": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  }
+}

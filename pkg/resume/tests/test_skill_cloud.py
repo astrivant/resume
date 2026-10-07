@@ -1,0 +1,180 @@
+"""
+Verify phrase-aware skill scoring, endorsement weights, exclusions, and deterministic graphics.
+"""
+
+from __future__ import annotations
+
+import json
+from typing import TYPE_CHECKING
+
+from attrs import evolve
+from PIL import Image
+
+from resume.config import Config, LinkedIn
+from resume.latex.rendering import render_profile
+from resume.linkedin.skills import endorsement_count
+from resume.models import Entry, Link, Profile, Section, Skill
+from resume.visualization.skills import SkillScore, render_skill_cloud, skill_scores
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+
+def test_scores_combine_references_tags_and_endorsements() -> None:
+    """
+    Count declarations and references once while adding twice the largest endorsement total.
+
+    Returns:
+        None: Duplicate endorsement displays, mirrored link labels, and job tags do not inflate scores.
+    """
+    profile = Profile(
+        "example-person",
+        "Alex",
+        intro=["Python engineer · #DevOps"],
+        sections=[
+            Section("skills", "Skills", [Entry("Python", ["3 endorsements", "3 endorsements"]), Entry("PYTHON", ["2 endorsements"])]),
+            Section(
+                "experience",
+                "Experience",
+                [
+                    Entry(
+                        "Engineer",
+                        ["Python and pythonic systems"],
+                        [Link("Python and pythonic systems", "https://example.org")],
+                        skills=[Skill("Python"), Skill("Rust")],
+                    )
+                ],
+            ),
+            Section("projects", "Projects", [Entry("Rust and RUST tools")]),
+        ],
+    )
+    scores = skill_scores(profile)
+    assert scores["Python"] == SkillScore(references=3, endorsements=3)
+    assert scores["Python"].weight == 9
+    assert scores["Rust"] == SkillScore(references=3, endorsements=0)
+    assert scores["DevOps"] == SkillScore(references=1, endorsements=0)
+    assert set(scores) == {"Python", "Rust", "DevOps"}
+
+
+def test_multiword_and_punctuated_skills_remain_distinct() -> None:
+    """
+    Match complete skill phrases without counting prefixes or splitting language names.
+
+    Returns:
+        None: C, C++, C#, Java, JavaScript, and multiword phrases retain separate frequencies.
+    """
+    names = ["C", "C++", "C#", "Java", "JavaScript", ".NET", "Machine Learning"]
+    profile = Profile(
+        "example-person",
+        "Alex",
+        intro=["C++ and C# on .NET; JavaScript and machine learning. JavaScripted isn't JavaScript."],
+        sections=[Section("skills", "Skills", [Entry(name) for name in names])],
+    )
+    scores = skill_scores(profile)
+    assert scores["C"].references == scores["Java"].references == 1
+    assert scores["C++"].references == scores["C#"].references == scores[".NET"].references == 2
+    assert scores["JavaScript"].references == 3
+    assert scores["Machine Learning"].references == 2
+
+
+def test_endorsement_total_ignores_dates_and_uses_visible_lower_bound() -> None:
+    """
+    Read only displayed endorsement totals and avoid inventing counts behind a plus suffix.
+
+    Returns:
+        None: Repeated and unrelated numbers do not increase the observed endorsement total.
+    """
+    assert endorsement_count(["2025", "4 experiences", "99+ endorsements", "99+ endorsements"]) == 99
+    assert endorsement_count(["1,234 endorsements", "Endorsed by 50 colleagues"]) == 1234
+    assert endorsement_count(["Endorsed by a colleague", "5 experiences"]) == 0
+
+
+def test_section_exclusions_apply_before_cloud_scoring(tmp_path: Path) -> None:
+    """
+    Keep hidden sections out of both the image and its score manifest, including section aliases.
+
+    Args:
+        tmp_path (Path): Temporary output directory.
+
+    Returns:
+        None: A hidden certification contributes no skill, reference, endorsement, or rendered text.
+    """
+    profile = Profile(
+        "example-person",
+        "Alex",
+        sections=[
+            Section("skills", "Skills", [Entry("Python", skills=[Skill("Python", 2)])]),
+            Section(
+                "licenses-certifications", "Licenses & certifications", [Entry("Python certificate", skills=[Skill("Secret tooling", 100)])]
+            ),
+        ],
+    )
+    config = Config(LinkedIn("example-person"), disable=["licenses-and-certifications"])
+    source = render_profile(profile, config, tmp_path)
+    scores = json.loads((source.parent / "skills.weights.json").read_text())
+    assert scores == {"Python": {"references": 1, "endorsements": 2, "weight": 5}}
+    assert "Secret tooling" not in source.read_text()
+    assert profile.sections[1].entries[0].skills == [Skill("Secret tooling", 100)]
+    render_profile(profile, evolve(config, disable=["skills", "certifications"]), tmp_path)
+    assert json.loads((source.parent / "skills.weights.json").read_text()) == {}
+    assert not list((source.parent / "assets").glob("skills-*.png"))
+    assert "assets/skills-" not in source.read_text()
+
+
+def test_cloud_can_be_replaced_by_the_original_skills_list(tmp_path: Path) -> None:
+    """
+    Retain the text rendering option without requiring another capture.
+
+    Args:
+        tmp_path (Path): Temporary project directory.
+
+    Returns:
+        None: The disabled cloud leaves the original skill list and endorsement text visible.
+    """
+    profile = Profile("example-person", "Alex", sections=[Section("skills", "Skills", [Entry("Python", ["3 endorsements"])])])
+    config = Config(LinkedIn("example-person"))
+    source = render_profile(profile, evolve(config, style=evolve(config.style, skills_word_cloud=False)), tmp_path)
+    assert "3 endorsements" in source.read_text()
+    assert "assets/skills-" not in source.read_text()
+
+
+def test_tags_can_generate_a_cloud_without_a_skills_section(tmp_path: Path) -> None:
+    """
+    Aggregate explicit job tags on sparse profiles without adding unrelated prose as skills.
+
+    Args:
+        tmp_path (Path): Temporary project directory.
+
+    Returns:
+        None: An enabled generated Skills card appears only when there are known skills or hashtags.
+    """
+    profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [Entry("Engineer", skills=[Skill("Rust")])])])
+    config = Config(LinkedIn("example-person"))
+    source = render_profile(profile, config, tmp_path)
+    assert "assets/skills-" in source.read_text()
+    assert r"\sectiontitle{Skills}" in source.read_text()
+    render_profile(profile, evolve(config, disable=["skills"]), tmp_path)
+    assert r"\sectiontitle{Skills}" not in source.read_text()
+
+
+def test_cloud_pixels_and_scores_are_reproducible(tmp_path: Path) -> None:
+    """
+    Render every label with stable pixels and an auditable sidecar without a graphical display.
+
+    Args:
+        tmp_path (Path): Temporary TeX directory.
+
+    Returns:
+        None: Repeated generation produces identical PNG bytes and the expected score manifest.
+    """
+    (tmp_path / "assets").mkdir()
+    scores = {"Python": SkillScore(4, 3), "Machine Learning": SkillScore(2, 0), "C++": SkillScore(1, 1)}
+    image_path = render_skill_cloud(scores, tmp_path)
+    assert image_path is not None
+    original = (tmp_path / image_path).read_bytes()
+    assert render_skill_cloud(scores, tmp_path) == image_path
+    assert (tmp_path / image_path).read_bytes() == original
+    with Image.open(tmp_path / image_path) as image:
+        assert image.size == (1800, 800)
+        assert image.getextrema() != ((255, 255), (255, 255), (255, 255))
+    assert json.loads((tmp_path / "skills.weights.json").read_text())["Python"]["weight"] == 10

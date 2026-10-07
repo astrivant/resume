@@ -60,6 +60,9 @@
 \Needspace{8\baselineskip}
 \begin{profilecard}
 \sectiontitle{((( section.title|tex )))}
+((* if section.key == 'skills' and skill_cloud *))
+\includegraphics[width=\linewidth]{((( skill_cloud )))}\par
+((* else *))
 ((* for entry in section.entries *))
 ((* if not loop.first *))
 \vspace{8pt}{\color{border}\hrule}\vspace{8pt}
@@ -87,6 +90,7 @@
 ((* endif *))
 ((* endfor *))
 ((* endfor *))
+((* endif *))
 \end{profilecard}
 ((* endfor *))
 \end{document}

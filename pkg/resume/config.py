@@ -81,6 +81,7 @@ class Style:
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile's cover/background photo.
+        skills_word_cloud (bool): Replace the Skills list with a cloud weighted by references and endorsements.
     """
 
     paper: str = "a4"
@@ -88,6 +89,7 @@ class Style:
     background: str = "F3F2EF"
     font_size: int = 10
     show_header_photo: bool = True
+    skills_word_cloud: bool = True
 
 
 @frozen

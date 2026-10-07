@@ -3,6 +3,7 @@
 ## Contents
 
 - [Configuration](#configuration)
+- [Profile schema and skill clouds](profile-schema.md)
 - [Local capture](#local-capture)
 - [Rendering and PDF builds](#rendering-and-pdf-builds)
 - [Signed releases](#signed-releases)
@@ -37,6 +38,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `style.background` | `F3F2EF` | Six-digit hexadecimal page background |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; set to `false` in the reference config |
+| `style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
 | `template` | `null` | Optional custom Jinja/LaTeX template |
 
 The configuration and profile JSON Schemas are packaged under
@@ -68,6 +70,13 @@ The reference config hides the cover/background photo with
 `style.show_header_photo: false`. Set it to `true` to restore the photo on the next
 build. This applies to packaged and custom templates, keeps the portrait and section
 images visible, and retains the captured photo so re-enabling it needs no recapture.
+
+The Skills cloud scores each label as **references + 2 × endorsements**, using only
+enabled sections. `disable: [skills]` hides it entirely. Set
+`style.skills_word_cloud: false` to restore the captured Skills list. The PNG and
+`tex/skills.weights.json` are regenerated with the TeX. See the
+[profile schema and scoring rules](profile-schema.md) for supported sections,
+minimal profiles, legacy snapshots, and count interpretation.
 
 ## Local capture
 
@@ -212,12 +221,14 @@ The Python package separates capture from document generation:
 | --- | --- |
 | `linkedin/browser.py` | Firefox lifecycle, login, and expanded profile capture |
 | `linkedin/parsing.py` | LinkedIn HTML extraction into shared profile models |
+| `linkedin/sections.py`, `linkedin/skills.py` | Section aliases, visible skill labels, and endorsement totals |
 | `linkedin/media.py` | Image downloads, link previews, and portable PNG caching |
 | `linkedin/retrying.py` | Bounded exponential retries for browser operations |
 | `latex/escaping.py` | Literal text, emoji, and URL conversion for LaTeX |
 | `latex/rendering.py` | Visibility filtering, asset staging, and strict Jinja rendering |
 | `latex/compilation.py` | Two-pass PDF compilation using the pinned TeX Live container |
 | `latex/resources/` | Packaged Jinja template and compiler image manifest |
+| `visualization/skills.py` | Skill scoring, deterministic word clouds, and score manifests |
 | `config.py`, `models.py`, `resources/` | Shared configuration, profile records, persistence, and schemas |
 | `cli.py` | Command orchestration across capture, validation, rendering, and compilation |
 | `tests/` | Package-local unit tests and pipeline integration tests |

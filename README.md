@@ -108,6 +108,11 @@ This changes the generated resume while retaining the captured data. See
 The cover/background photo is hidden by default in `resume.reference.yaml`. Set
 `style.show_header_photo` to `true` to display it again; the portrait stays visible.
 
+Skills appear as a word cloud scored by **references + 2 × endorsements**.
+Disabled sections contribute no references. Set `style.skills_word_cloud: false`
+for the text list, or add `skills` to `disable` to hide it. Profiles with no optional
+sections also work. See the [profile schema and scoring rules](docs/profile-schema.md).
+
 To preview the PDF locally with Docker running:
 
 ```bash

@@ -15,7 +15,7 @@ from jsonschema import Draft202012Validator
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ["Entry", "Link", "Media", "Profile", "Section", "load_profile", "save_profile"]
+__all__ = ["Entry", "Link", "Media", "Profile", "Section", "Skill", "load_profile", "save_profile"]
 
 
 @frozen
@@ -51,6 +51,20 @@ class Media:
 
 
 @frozen
+class Skill:
+    """
+    Retain a named skill or tag and its observed endorsement total.
+
+    Attributes:
+        name (str): Display spelling, including multiword skills and punctuation.
+        endorsements (int): Observed total, never summed across duplicate observations.
+    """
+
+    name: str
+    endorsements: int = 0
+
+
+@frozen
 class Entry:
     """
     Preserve an entry's full text and associated media without a length limit.
@@ -60,12 +74,14 @@ class Entry:
         paragraphs (list[str]): Remaining text in display order.
         links (list[Link]): References associated with this entry.
         images (list[Media]): Logos, figures, and linked project previews.
+        skills (list[Skill]): Structured skill declarations or associations, including hidden job tags.
     """
 
-    title: str
+    title: str = ""
     paragraphs: list[str] = field(factory=list)
     links: list[Link] = field(factory=list)
     images: list[Media] = field(factory=list)
+    skills: list[Skill] = field(factory=list)
 
 
 @frozen
