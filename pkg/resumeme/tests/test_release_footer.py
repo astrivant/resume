@@ -162,24 +162,23 @@ def test_footer_after_a_final_image_uses_page_coordinates() -> None:
     reader = PdfReader(BytesIO(release_footer(output.getvalue(), "https://example.org/releases")))
     matrices: list[list[float]] = []
 
-    def locate(text: str, cm: list[float], tm: list[float], font: DictionaryObject | None, size: float) -> None:
+    def locate(operator: bytes, operands: list[object], cm: list[float], tm: list[float]) -> None:
         """
-        Record the effective graphics coordinates used by the working-copy footer.
+        Record the page coordinates at the footer's form invocation.
 
         Args:
-            text (str): Extracted text fragment.
+            operator (bytes): Parsed PDF operation.
+            operands (list[object]): Operation arguments, including the invoked form name.
             cm (list[float]): Current graphics transformation matrix.
             tm (list[float]): Text transformation matrix.
-            font (DictionaryObject | None): Resolved font resources.
-            size (float): Font size in points.
 
         Returns:
             None: Footer matrices are collected for the placement assertion.
         """
-        if "Unsigned working copy" in text:
-            matrices.append(cm)
+        if operator == b"Do" and operands == ["/ResumemeReleaseFooter"]:
+            matrices.append(cm.copy())
 
-    reader.pages[-1].extract_text(visitor_text=locate)
+    reader.pages[-1].extract_text(visitor_operand_before=locate)
     assert matrices
     assert all(matrix == [1, 0, 0, 1, 0, 0] for matrix in matrices)
 
