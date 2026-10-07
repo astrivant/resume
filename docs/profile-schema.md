@@ -108,7 +108,7 @@ than adding the same endorsements twice. A displayed `99+` contributes the known
 lower bound of 99. Missing or undisplayed counts contribute zero.
 
 Job skill associations are stored in `entry.skills` while their summary rows stay
-out of job descriptions. A collapsed “+3 skills” does not invent three labels.
+out of job descriptions. A collapsed "+3 skills" does not invent three labels.
 Existing snapshots without structured skills still supply names and counts from
 their Skills entries. Previously stripped job tags require recapture to recover;
 the renderer does not infer them.
@@ -118,7 +118,7 @@ the renderer does not infer them.
 For each named skill or hashtag:
 
 ```text
-weight = visible references + 2 × observed endorsements
+weight = visible references + 2 * observed endorsements
 ```
 
 One skill declaration contributes one reference. Matching elsewhere is
@@ -135,7 +135,7 @@ legibility. The layout is deterministic for fixed inputs and dependency versions
 Color represents endorsement count independently of references:
 
 ```text
-endorsement percentage = 100 × endorsements / highest displayed endorsement count
+endorsement percentage = 100 * endorsements / highest displayed endorsement count
 ```
 
 `style.skill_colors` defines ordered stops from 0% to 100%. Equal counts share a

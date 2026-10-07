@@ -194,7 +194,9 @@ def test_duplicate_project_sections_preserve_distinct_descriptions_and_employers
         sections=[
             Section("projects", "Projects", [Entry("Tool", links=[Link("First description", url)])]),
             Section("projects", "Projects", [Entry("Tool", links=[Link("Second description", url)])]),
-            Section("experience", "Experience", [Entry("Engineer", ["Example Co. · Full-time", "2024 - Present"], [Link("Tool", url)])]),
+            Section(
+                "experience", "Experience", [Entry("Engineer", ["Example Co. \u00b7 Full-time", "2024 - Present"], [Link("Tool", url)])]
+            ),
         ],
     )
     result, _ = consolidate_projects(profile, enabled=True)

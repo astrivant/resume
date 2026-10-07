@@ -31,7 +31,7 @@ def test_shared_viewer_cards_move_each_description_and_respect_visibility(enable
         None: Role prose survives, card descriptions move or hide together, and the snapshot remains intact.
     """
     viewer = "https://www.linkedin.com/in/example/overlay/Position/123/treasury/"
-    narrative = ["Example Co. · Full-time", "2024 - Present", "Built services and led the team."]
+    narrative = ["Example Co. \u00b7 Full-time", "2024 - Present", "Built services and led the team."]
     images = [Media(f"https://example.org/{name}.png", alt=f"Thumbnail for {name}", link=viewer) for name in ("Website", "Store")]
     role = Entry(
         "Engineer",

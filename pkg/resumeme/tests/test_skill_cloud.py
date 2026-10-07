@@ -76,7 +76,7 @@ def test_scores_combine_references_tags_and_endorsements() -> None:
     profile = Profile(
         "example-person",
         "Alex",
-        intro=["Python engineer · #DevOps"],
+        intro=["Python engineer \u00b7 #DevOps"],
         sections=[
             Section("skills", "Skills", [Entry("Python", ["3 endorsements", "3 endorsements"]), Entry("PYTHON", ["2 endorsements"])]),
             Section(

@@ -129,7 +129,7 @@ def experience_navigation(sections: list[tuple[str, Section]]) -> ExperienceNavi
             if badge and badge[0] == -1:
                 company = entry.title
             elif entry.paragraphs and (dated == 1 or (badge and badge[0] == 0)):
-                company = entry.paragraphs[0].split("·", 1)[0].strip()
+                company = entry.paragraphs[0].split("\u00b7", 1)[0].strip()
 
         targets.append(JobTarget(anchor, company, "" if entry.positions else entry.title))
 

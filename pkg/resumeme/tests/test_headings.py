@@ -25,7 +25,7 @@ if TYPE_CHECKING:
         ("Languages", "Languages", True),
         ("  LANGUAGES\u00a0", "Languages", True),
         ("Independent\n studies", "Independent studies", True),
-        ("Ｌａｎｇｕａｇｅｓ", "Languages", True),
+        ("\uff2c\uff41\uff4e\uff47\uff55\uff41\uff47\uff45\uff53", "Languages", True),
         ("Café", "Cafe\u0301", True),
         ("English", "Languages", False),
         ("Languages used professionally", "Languages", False),

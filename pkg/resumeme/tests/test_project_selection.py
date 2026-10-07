@@ -114,7 +114,7 @@ def test_affiliation_guides_unlinked_descriptions_to_the_correct_role_attachment
         None: The selected project retains its own explicit description, role provenance, and source link only.
     """
     roles = [
-        Entry("Engineer", [f"{company} · Full-time", "2024 - Present"], [Link("Tool", f"https://github.com/{company}/tool")])
+        Entry("Engineer", [f"{company} \u00b7 Full-time", "2024 - Present"], [Link("Tool", f"https://github.com/{company}/tool")])
         for company in ["First", "Second"]
     ]
     profile = Profile(

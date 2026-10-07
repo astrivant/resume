@@ -9,7 +9,7 @@ Build and release your résumé like software: fork the project, set your userna
 capture your profile, and keep `main` current with monthly refreshes. Tag the
 version you want to share to get a signed release.
 
-**[View the résumé (PDF)](resume.pdf)** · [Fork this project](https://github.com/astrivant/resume/fork)
+**[View the résumé (PDF)](resume.pdf)** - [Fork this project](https://github.com/astrivant/resume/fork)
 
 ## Why use resumeme?
 
@@ -140,8 +140,8 @@ Open your checkout in an agent with terminal access and give it this prompt:
 
 The portable [agent skill](SKILL.md) covers first-run setup, the browser login
 handoff, retries, saved-profile rebuilds, and optional GitHub publication. For
-layout changes, tell the agent to reuse the saved profile. Add “publish through
-my fork's GitHub Actions workflow” when you also want a signed release.
+layout changes, tell the agent to reuse the saved profile. Add "publish through
+my fork's GitHub Actions workflow" when you also want a signed release.
 
 ## How it works
 
@@ -322,7 +322,7 @@ to choose the window. See [saved calendars and offline builds](docs/README.md#gi
 
 ### Skills
 
-The top 20 skills appear as a word cloud scored by **references + 2 × endorsements**.
+The top 20 skills appear as a word cloud scored by **references + 2 * endorsements**.
 Size reflects this score; color reflects endorsements relative to the most-endorsed
 displayed skill. `style.skill_colors` defines the gradient from 0% to 100%.
 Disabled sections contribute no references. Set `style.skills_word_cloud: false`
@@ -345,28 +345,28 @@ See [Codex setup and local previews](docs/codex.md).
 Configure these **GitHub Actions repository secrets in your own fork** for the
 features you use. GitHub supplies the publication token:
 
-- **`LINKEDIN_USERNAME` — required for monthly refresh.** Your LinkedIn login email
+- **`LINKEDIN_USERNAME` - required for monthly refresh.** Your LinkedIn login email
   or account identifier; this is separate from `linkedin.username`, the profile slug.
-- **`LINKEDIN_PASSWORD` — required for monthly refresh.** The login password. These
+- **`LINKEDIN_PASSWORD` - required for monthly refresh.** The login password. These
   two secrets reach capture on refresh runs and the optional
   [LinkedIn signing identity update](docs/ownership.md) after signed releases.
-- **`OPENAI_API_KEY` — required only when `codex.enabled: true`.** An API key from
+- **`OPENAI_API_KEY` - required only when `codex.enabled: true`.** An API key from
   your OpenAI project, stored as an Actions repository secret. The Codex summary
   job receives it; ordinary builds and pull-request checks do not. API usage is
   billed to that project. See [Codex setup](docs/codex.md).
-- **`COSIGN_PRIVATE_KEY` — required for signed releases.** Set this to the complete
+- **`COSIGN_PRIVATE_KEY` - required for signed releases.** Set this to the complete
   PEM contents of your own Cosign private key, including the header, footer, and
   newlines. The value is the key itself, not a filename.
-- **`COSIGN_PASSWORD` — required for an encrypted signing key.** Set this to that
+- **`COSIGN_PASSWORD` - required for an encrypted signing key.** Set this to that
   key's password. Leave it unset for an unencrypted key; the signing script defaults
   to an empty password.
-- **`GH_TOKEN` / `GITHUB_TOKEN` — supplied automatically; no secret to create.**
+- **`GH_TOKEN` / `GITHUB_TOKEN` - supplied automatically; no secret to create.**
   Actions generates the repository token, and the deploy workflow passes it to the
   GitHub CLI as `GH_TOKEN`. It uses `contents: write` to commit `resume.pdf` and
   publish releases. No personal access token is needed; repository and branch rules
   must permit those writes. Tag publication also uses the built-in token with
   `packages: write` to push the tool's container image to GHCR.
-- **`PYPI_API_TOKEN` — package maintainers only.** Grant the repository access to
+- **`PYPI_API_TOKEN` - package maintainers only.** Grant the repository access to
   this organization secret, or define it as a repository/`pypi` environment secret.
   Version-tag releases expose it to Poetry as `POETRY_PYPI_TOKEN_PYPI` and upload
   `resumeme` to PyPI. Forks that only generate resumes do not need it. See

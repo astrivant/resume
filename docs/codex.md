@@ -7,8 +7,8 @@ edit your LinkedIn account.
 
 ## Enable in your fork
 
-Add an **`OPENAI_API_KEY`** repository secret under **Settings → Secrets and
-variables → Actions**, or use the GitHub CLI's interactive prompt:
+Add an **`OPENAI_API_KEY`** repository secret under **Settings -> Secrets and
+variables -> Actions**, or use the GitHub CLI's interactive prompt:
 
 ```bash
 gh secret set OPENAI_API_KEY
@@ -45,7 +45,7 @@ calling Codex. Enabling generation without the secret fails with a setup message
 - About is replaced only when enabled in the document. The short summary appears
   beneath the portrait, before company/location details and social links.
   It replaces the captured headline even when `style.show_headline` is true.
-- `headline_max_words` accepts 1–40 words; `about_max_words` accepts 1–300 words.
+- `headline_max_words` accepts 1-40 words; `about_max_words` accepts 1-300 words.
   Responses exceeding those limits fail validation.
 - Minimal profiles can return empty fields. Empty fields retain ordinary rendering.
 - JSON includes an owner and input fingerprint. Changes to the evidence, context,

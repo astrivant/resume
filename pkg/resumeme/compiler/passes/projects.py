@@ -81,7 +81,7 @@ def _association(entry: Entry) -> str:
 
     # Standalone roles place the employer before their date; legacy company groups start with an employment type.
     if not entry.positions and dated is not None and dated > 0:
-        company = entry.paragraphs[0].split("·", 1)[0].strip()
+        company = entry.paragraphs[0].split("\u00b7", 1)[0].strip()
 
         if company.casefold() not in {
             "full-time",

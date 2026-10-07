@@ -31,7 +31,7 @@ def _location_link(line: str) -> Link | None:
     Returns:
         Link | None: Encoded map destination and original place label, or None for non-location text.
     """
-    place, separator, mode = line.partition("·")
+    place, separator, mode = line.partition("\u00b7")
     place = place.rstrip()
     words = place.split()
 
@@ -71,7 +71,7 @@ def job_locations(entry: Entry) -> dict[str, Link]:
     candidates = {index + 1 for index, line in enumerate(lines) if employment_period(line)}
 
     # Older company groups store a shared location after the total tenure, before any individual role title.
-    if lines and _DURATION.fullmatch(lines[0].rsplit("·", 1)[-1].strip()):
+    if lines and _DURATION.fullmatch(lines[0].rsplit("\u00b7", 1)[-1].strip()):
         candidates.add(1)
 
     result: dict[str, Link] = {}

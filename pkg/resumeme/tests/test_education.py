@@ -35,7 +35,7 @@ if TYPE_CHECKING:
         (EducationSelector(school="Other School", degree="Bachelor of Science"), [0, 1, 2]),
         (EducationSelector(school="University"), [0, 1, 2]),
         (EducationSelector(major="Math"), [0, 1, 2]),
-        (EducationSelector(degree="Associate’s Degree, Mathematics"), [1]),
+        (EducationSelector(degree="Associate\u2019s Degree, Mathematics"), [1]),
     ],
 )
 def test_selectors_match_complete_fields(selector: EducationSelector, retained: list[int]) -> None:
@@ -50,9 +50,9 @@ def test_selectors_match_complete_fields(selector: EducationSelector, retained: 
         None: Matching entries are removed in full and remaining records retain their order and identity.
     """
     entries = [
-        Entry("Example University", ["Associate’s Degree, Mathematics", "2015 – 2016"]),
-        Entry("Example University", ["Bachelor of Science, Physics", "2016 – 2020"]),
-        Entry("Other School", ["Associate’s Degree, Mathematics", "2015 – 2016"]),
+        Entry("Example University", ["Associate\u2019s Degree, Mathematics", "2015 \u2013 2016"]),
+        Entry("Example University", ["Bachelor of Science, Physics", "2016 \u2013 2020"]),
+        Entry("Other School", ["Associate\u2019s Degree, Mathematics", "2015 \u2013 2016"]),
     ]
     selected = filter_education(entries, Education(disable=[selector]))
     assert selected == [entries[index] for index in retained]
@@ -66,11 +66,11 @@ def test_selectors_match_complete_fields(selector: EducationSelector, retained: 
     [
         ([], EducationSelector(degree="Bachelor"), False),
         ([], EducationSelector(school="Example"), True),
-        (["2013 – 2014", "Physics"], EducationSelector(major="Physics"), False),
-        (["2013 – 2014"], EducationSelector(degree="2013 – 2014"), False),
+        (["2013 \u2013 2014", "Physics"], EducationSelector(major="Physics"), False),
+        (["2013 \u2013 2014"], EducationSelector(degree="2013 \u2013 2014"), False),
         (["Physics"], EducationSelector(major="Physics"), True),
         (["Bachelor"], EducationSelector(degree="Bachelor"), True),
-        (["BSc, Physics\n2013 – 2014"], EducationSelector(major="Physics"), True),
+        (["BSc, Physics\n2013 \u2013 2014"], EducationSelector(major="Physics"), True),
         (["BSc, Physics", "Research in Mathematics"], EducationSelector(major="Mathematics"), False),
         (["BSc, Physics, Astronomy"], EducationSelector(major="Physics, Astronomy"), True),
         (["BSc, Physics, Astronomy"], EducationSelector(major="Astronomy"), False),
@@ -101,8 +101,8 @@ def test_capture_and_multiple_exclusions() -> None:
     """
     section = parse_detail(
         """<main><ul class="pvs-list">
-        <li><div>Example University</div><div>Associate’s Degree, Mathematics</div><div>2015 – 2016</div></li>
-        <li><div>Other School</div><div>BSc, Physics</div><div>2016 – 2020</div></li>
+        <li><div>Example University</div><div>Associate\u2019s Degree, Mathematics</div><div>2015 \u2013 2016</div></li>
+        <li><div>Other School</div><div>BSc, Physics</div><div>2016 \u2013 2020</div></li>
         </ul></main>""",
         "education",
         "Education",
@@ -133,7 +133,7 @@ def test_exclusions_reach_rendering_assets_skills_and_summaries(tmp_path: Path) 
         skills=[Skill("PrivateSkill", 9)],
     )
     shown = Entry("Visible School", ["BA, History"])
-    job = Entry("Engineer", ["Hidden School · Full-time", "2020 – Present"])
+    job = Entry("Engineer", ["Hidden School \u00b7 Full-time", "2020 \u2013 Present"])
     profile = Profile(
         "example-person",
         "Alex",

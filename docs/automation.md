@@ -92,7 +92,7 @@ including [installation](README.md#install) and the [agent workflow](../SKILL.md
 ## Run or adjust the schedule
 
 Edit `on.schedule` in `.github/workflows/ci.yml` to change the cadence. To run the
-same refresh now, select **Run workflow → main → refresh**, or run:
+same refresh now, select **Run workflow -> main -> refresh**, or run:
 
 ```bash
 gh workflow run ci.yml --ref main -f refresh=true

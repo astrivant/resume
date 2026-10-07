@@ -40,7 +40,7 @@ def test_inline_html_and_soft_breaks_render_as_complete_body_blocks(tmp_path: Pa
         "- Built reli<strong>able</strong> systems using<br>AWS and <em>Python</em>.<br>"
         "Improved availability.<br>- Read "
         '<a href="https://example.org/tool"><span>https://example.org/</span>tool</a>, '
-        r"using \input{secret} &amp; documentation.<span>…see more</span></p>"
+        "using \\input{secret} &amp; documentation.<span>\u2026see more</span></p>"
         "<p>Collaborated with <span>engineers</span><br>across teams.<br><br>Kept a separate paragraph.</p>"
         "<p>Another independent paragraph.</p></div></main>"
     )
@@ -72,7 +72,7 @@ def test_inline_html_and_soft_breaks_render_as_complete_body_blocks(tmp_path: Pa
 
 
 @pytest.mark.parametrize("separator", ["\n", "\r\n", "\u2028"])
-@pytest.mark.parametrize("marker", ["", "- ", "  • "])
+@pytest.mark.parametrize("marker", ["", "- ", "  \u2022 "])
 def test_multiline_body_text_reflows_without_sentence_heuristics(separator: str, marker: str) -> None:
     """
     Join soft wraps even without commas, lowercase continuation text, or an unfinished sentence.
@@ -100,7 +100,7 @@ def test_body_breaks_keep_nested_lists_headings_dates_and_independent_paragraphs
     """
     assert text_blocks(
         [
-            "2020 - Present\nResponsibilities\n- Built services\n  • using\nAWS and Go\n- Next item\nTechnologies\nPython",
+            "2020 - Present\nResponsibilities\n- Built services\n  \u2022 using\nAWS and Go\n- Next item\nTechnologies\nPython",
             "A separate sentence,",
             "with its own captured paragraph.",
         ]

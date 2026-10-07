@@ -24,6 +24,7 @@ Return JSON matching the provided schema. Copy username and source_digest exactl
 about: one concise paragraph, no more than about_max_words words.
 headline: a short professional description beneath the portrait, no more than headline_max_words words.
 Use plain text, no Markdown, LaTeX, lists, links, headings, or preamble. Avoid generic praise and invented metrics.
+Use ASCII hyphens, straight quotes, and three periods for ellipses. Preserve accented words and names.
 Do not infer current employment, total career duration, credentials, seniority, or achievements beyond the supplied facts.
 Context may provide additional facts, the target role, audience, and tone. Do not invent missing background.
 If there is insufficient professional evidence, return empty strings rather than fabricate a summary.

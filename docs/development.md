@@ -73,6 +73,12 @@ the [runtime prerequisites](README.md#install).
 
 ## Document checks
 
+Use keyboard punctuation in prose, comments, CLI messages, and templates: `-`,
+straight quotes, `...`, and `->`. Accented words and names are welcome. Express
+Unicode parser delimiters and test cases with code-point escapes or HTML entities;
+keep captured profile data lossless. Rendering normalizes editorial punctuation
+without removing accents or meaningful symbols such as list bullets.
+
 CI runs [TeXtidote Action](https://github.com/marketplace/actions/textidote-action)
 against the root README and generated LaTeX, with English spelling and grammar
 checks. Download `textidote-reports` for annotated HTML; the job summary reports

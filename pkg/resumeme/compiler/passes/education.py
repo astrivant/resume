@@ -25,7 +25,7 @@ def _normalized(value: str) -> str:
     Returns:
         str: Case-folded label with collapsed whitespace and straight apostrophes.
     """
-    return " ".join(value.casefold().split()).replace("’", "'").replace("‘", "'")
+    return " ".join(value.casefold().split()).replace("\u2019", "'").replace("\u2018", "'")
 
 
 def filter_education(entries: list[Entry], settings: Education) -> list[Entry]:

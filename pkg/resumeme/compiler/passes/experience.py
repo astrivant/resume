@@ -225,7 +225,7 @@ def _select(entry: Entry, settings: Experience, cutoff: date | None, as_of: date
 
     # Standalone jobs usually put the employer before the date row, with employment type after a middle-dot separator.
     if not company and entry.paragraphs and (not dated or dated[0][0] > 0):
-        company = entry.paragraphs[0].split("·", 1)[0].strip()
+        company = entry.paragraphs[0].split("\u00b7", 1)[0].strip()
 
     if _disabled(entry.title, company, settings.disable):
         return None

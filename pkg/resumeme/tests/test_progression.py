@@ -33,13 +33,13 @@ def test_structured_roles_keep_company_context_and_own_their_content() -> None:
     previous = Entry("Engineer", ["2020 - 2022", "Earlier work"], links=[link], images=[logo])
     group = Entry(
         "Example",
-        ["Full-time · 6 yrs", current.title, *current.paragraphs, previous.title, *previous.paragraphs],
+        ["Full-time \u00b7 6 yrs", current.title, *current.paragraphs, previous.title, *previous.paragraphs],
         links=[link],
         images=[logo, figure],
         positions=[current, previous],
     )
     display = experience_layout(group)
-    assert display.paragraphs == ["Full-time · 6 yrs"]
+    assert display.paragraphs == ["Full-time \u00b7 6 yrs"]
     assert display.images == [logo]
     assert display.positions[0].images == [figure]
     assert display.positions[1].images == []
@@ -56,7 +56,16 @@ def test_legacy_groups_split_only_role_text_at_title_date_boundaries() -> None:
     Returns:
         None: Text order is preserved exactly and legacy references stay at company scope.
     """
-    lines = ["Full-time · 4 yrs", "Boston", "Senior Engineer", "2022 - 2024", "Led delivery", "Engineer", "2020 - 2022", "Built systems"]
+    lines = [
+        "Full-time \u00b7 4 yrs",
+        "Boston",
+        "Senior Engineer",
+        "2022 - 2024",
+        "Led delivery",
+        "Engineer",
+        "2020 - 2022",
+        "Built systems",
+    ]
     link = Link("Reference", "https://example.org/reference")
     group = Entry("Example", lines, links=[link])
     display = experience_layout(group)
@@ -109,7 +118,7 @@ def test_role_progression_renders_once_after_job_filters(tmp_path: Path, filtere
     previous = Entry("Engineer", ["2020 - 2022", "Earlier delivery"])
     group = Entry(
         "Example",
-        ["Full-time · 6 yrs", current.title, *current.paragraphs, previous.title, *previous.paragraphs],
+        ["Full-time \u00b7 6 yrs", current.title, *current.paragraphs, previous.title, *previous.paragraphs],
         images=[logo],
         positions=[current, previous],
     )
@@ -150,14 +159,14 @@ def test_nested_role_work_mode_follows_duration(structured: bool, mode: str) -> 
     Returns:
         None: Each mode follows its duration once and captured paragraphs remain intact.
     """
-    current = Entry("Engineer", ["Apr 2021 - Jul 2021 · 4 mos", mode, "Built systems"])
-    previous = Entry("Associate", ["Jan 2021 - Mar 2021 · 3 mos", "On-site", "Earlier work"])
-    lines = ["Full-time · 7 mos", current.title, *current.paragraphs, previous.title, *previous.paragraphs]
+    current = Entry("Engineer", ["Apr 2021 - Jul 2021 \u00b7 4 mos", mode, "Built systems"])
+    previous = Entry("Associate", ["Jan 2021 - Mar 2021 \u00b7 3 mos", "On-site", "Earlier work"])
+    lines = ["Full-time \u00b7 7 mos", current.title, *current.paragraphs, previous.title, *previous.paragraphs]
     group = Entry("Example", lines, positions=[current, previous] if structured else [])
     display = experience_layout(group)
-    assert display.positions[0].paragraphs == [f"Apr 2021 - Jul 2021 · 4 mos · {mode}", "Built systems"]
-    assert display.positions[1].paragraphs == ["Jan 2021 - Mar 2021 · 3 mos · On-site", "Earlier work"]
-    assert current.paragraphs == ["Apr 2021 - Jul 2021 · 4 mos", mode, "Built systems"]
+    assert display.positions[0].paragraphs == [f"Apr 2021 - Jul 2021 \u00b7 4 mos \u00b7 {mode}", "Built systems"]
+    assert display.positions[1].paragraphs == ["Jan 2021 - Mar 2021 \u00b7 3 mos \u00b7 On-site", "Earlier work"]
+    assert current.paragraphs == ["Apr 2021 - Jul 2021 \u00b7 4 mos", mode, "Built systems"]
     assert group.paragraphs == lines
     assert experience_layout(current) == current
 
@@ -172,26 +181,26 @@ def test_nested_work_mode_retains_clickable_geography(tmp_path: Path) -> None:
     Returns:
         None: Only metadata placement changes; the visible location remains a Google Maps link.
     """
-    current = Entry("Engineer", ["Apr 2021 - Jul 2021 · 4 mos", "Boston, MA · Remote", "Built systems"])
-    previous = Entry("Associate", ["Jan 2021 - Mar 2021 · 3 mos", "On-site", "Earlier work"])
+    current = Entry("Engineer", ["Apr 2021 - Jul 2021 \u00b7 4 mos", "Boston, MA \u00b7 Remote", "Built systems"])
+    previous = Entry("Associate", ["Jan 2021 - Mar 2021 \u00b7 3 mos", "On-site", "Earlier work"])
     group = Entry("Example", [current.title, *current.paragraphs, previous.title, *previous.paragraphs], positions=[current, previous])
     profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [group])])
     source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
-    assert r"\profileparagraph{Apr 2021 - Jul 2021 · 4 mos · Remote}" in source
-    assert r"\profileparagraph{Jan 2021 - Mar 2021 · 3 mos · On-site}" in source
+    assert "\\profileparagraph{Apr 2021 - Jul 2021 \u00b7 4 mos \u00b7 Remote}" in source
+    assert "\\profileparagraph{Jan 2021 - Mar 2021 \u00b7 3 mos \u00b7 On-site}" in source
     assert r"\href{https://www.google.com/maps/search/?api=1\&query=Boston\%2C+MA}{Boston, MA}" in source
     assert r"\hypertarget{resumeme-section-0-job-0-0}" in source
     assert r"\profileparagraph{On-site}" not in source
-    assert current.paragraphs[1] == "Boston, MA · Remote"
+    assert current.paragraphs[1] == "Boston, MA \u00b7 Remote"
 
 
 @pytest.mark.parametrize(
     "paragraphs",
     [
-        ["2021 - 2022 · 1 yr", "Remote systems delivery"],
-        ["2021 - 2022 · 1 yr", "Responsibilities", "Remote"],
-        ["2021 - 2022 · 1 yr", "- Built systems · Remote"],
-        ["2021 - 2022 · 1 yr · Hybrid", "On-site"],
+        ["2021 - 2022 \u00b7 1 yr", "Remote systems delivery"],
+        ["2021 - 2022 \u00b7 1 yr", "Responsibilities", "Remote"],
+        ["2021 - 2022 \u00b7 1 yr", "- Built systems \u00b7 Remote"],
+        ["2021 - 2022 \u00b7 1 yr \u00b7 Hybrid", "On-site"],
         ["Remote", "Undated role"],
     ],
 )
@@ -217,8 +226,8 @@ def test_existing_date_work_mode_is_not_duplicated() -> None:
     Returns:
         None: The displayed role retains exactly one occurrence of its work mode.
     """
-    role = Entry("Engineer", ["2021 - 2022 · 1 yr · Remote", "Remote", "Built systems"])
+    role = Entry("Engineer", ["2021 - 2022 \u00b7 1 yr \u00b7 Remote", "Remote", "Built systems"])
     group = Entry("Example", [role.title, *role.paragraphs], positions=[role])
     display = experience_layout(group).positions[0]
-    assert display.paragraphs == ["2021 - 2022 · 1 yr · Remote", "Built systems"]
+    assert display.paragraphs == ["2021 - 2022 \u00b7 1 yr \u00b7 Remote", "Built systems"]
     assert experience_layout(display) == display

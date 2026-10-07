@@ -72,14 +72,14 @@ def employment_period(line: str) -> EmploymentPeriod | None:
     Read a complete date-range line, optionally followed by LinkedIn's duration suffix.
 
     Args:
-        line (str): Captured text such as January 2020 – Present · 6 yrs.
+        line (str): Captured text such as January 2020 - Present.
 
     Returns:
         EmploymentPeriod | None: Inclusive bounds, or None for absent, unsupported, or inconsistent dates.
     """
 
     # Match a complete metadata line after removing the duration suffix, never a year range buried in job prose.
-    match = _PERIOD.fullmatch(line.split("·", 1)[0].strip())
+    match = _PERIOD.fullmatch(line.split("\u00b7", 1)[0].strip())
 
     if match is None:
         return None

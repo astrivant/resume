@@ -27,7 +27,7 @@ _FINGERPRINT = "SHA256:" + "a" * 64
 _BLOCK = ownership_block(_FINGERPRINT, "https://github.com/fork/resumeme/releases")
 
 
-@pytest.mark.parametrize("original", ["", "Platform engineer.", "First paragraph.\n\nSecond — café ☕.\n", "Intro\n\n"])
+@pytest.mark.parametrize("original", ["", "Platform engineer.", "First paragraph.\n\nSecond \u2014 café \u2615.\n", "Intro\n\n"])
 def test_append_preserves_personal_text(original: str) -> None:
     """
     Retain all original text and make repeated updates idempotent.

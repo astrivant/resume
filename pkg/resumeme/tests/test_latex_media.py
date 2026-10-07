@@ -81,7 +81,7 @@ def test_employer_logos_render_once_beside_the_company_name(tmp_path: Path, grou
     paragraphs = (
         ["Full-time", "Engineer", "2020 - Present", "- Built systems", "Intern", "2019 - 2020"]
         if grouped
-        else [company + " · Full-time", "2020 - Present", "- Built systems"]
+        else [company + " \u00b7 Full-time", "2020 - Present", "- Built systems"]
     )
     entry = Entry(company if grouped else "Engineer", paragraphs, [Link(company, url)], [logo])
     assert employer_badge(entry) == (-1 if grouped else 0, logo)

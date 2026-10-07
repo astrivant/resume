@@ -54,12 +54,12 @@ photographs retain their source colors.
 `skill_colors` is an ordered list of hexadecimal color stops. The first represents
 zero endorsements; the last represents the highest endorsement count among the
 20 displayed skills. Intermediate counts interpolate between the stops.
-The centered cloud includes a short caption and a compact vertical 0–100% color scale to its left;
+The centered cloud includes a short caption and a compact vertical 0-100% color scale to its left;
 single-color palettes omit the scale.
 
 ```text
-color percentage = 100 × skill endorsements / highest displayed endorsement count
-size weight       = visible references + 2 × observed endorsements
+color percentage = 100 * skill endorsements / highest displayed endorsement count
+size weight       = visible references + 2 * observed endorsements
 ```
 
 Equal endorsement counts receive equal colors regardless of skill name or reference

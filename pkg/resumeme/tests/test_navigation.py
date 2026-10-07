@@ -37,7 +37,7 @@ def test_grouped_and_standalone_targets_follow_rendered_paths(structured: bool) 
         ["Full-time", current.title, *current.paragraphs, previous.title, *previous.paragraphs],
         positions=[current, previous] if structured else [],
     )
-    other = Entry("Engineer", ["Other Company · Full-time", "2024 - Present"])
+    other = Entry("Engineer", ["Other Company \u00b7 Full-time", "2024 - Present"])
     navigation = experience_navigation([("resumeme-section-0", Section("experience", "Experience", [group, other]))])
     assert navigation.destination("  EXAMPLE & CO ") == "resumeme-section-0-job-0"
     assert navigation.destination("Example & Co.", ["Engineer"]) == "resumeme-section-0-job-0-1"
@@ -103,7 +103,7 @@ def test_repeated_titles_and_suppressed_headings_keep_unique_destinations(tmp_pa
     Returns:
         None: Repeated roles use distinct paths and a suppressed company heading remains a valid destination.
     """
-    roles = [Entry("Engineer", ["One · Full-time", "2022 - Present"]), Entry("Engineer", ["Two · Full-time", "2020 - 2022"])]
+    roles = [Entry("Engineer", ["One \u00b7 Full-time", "2022 - Present"]), Entry("Engineer", ["Two \u00b7 Full-time", "2020 - 2022"])]
     group = Entry("Experience", ["Engineer", "2018 - 2020", "Engineer", "2016 - 2018"])
     project = Entry("Tool", ["Associated with Experience", "Associated with Engineer at Two"])
     profile = Profile(

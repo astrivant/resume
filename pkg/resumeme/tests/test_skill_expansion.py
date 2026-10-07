@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 @pytest.mark.parametrize(
     "summary",
-    ["Python, Bash and +2 skills", "Python, Bash, +2 skills", "Python, Bash + 2 skills", "Python, Bash and ＋2\u00a0SKILLS"],
+    ["Python, Bash and +2 skills", "Python, Bash, +2 skills", "Python, Bash + 2 skills", "Python, Bash and \uff0b2\u00a0SKILLS"],
 )
 def test_reverse_associations_expand_summary_and_link(summary: str) -> None:
     """

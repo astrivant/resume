@@ -199,7 +199,7 @@
 ((* endfor *))
 \end{tikzpicture}\par
 {\fontsize{7}{9}\selectfont\color{ink}((( contributions.total ))) contributions\par
-((( contributions.start|tex ))) -- ((( contributions.end|tex )))\par}
+((( contributions.start|tex ))) - ((( contributions.end|tex )))\par}
 \endgroup
 ((* endmacro *))
 \documentclass[((( style.font_size )))pt,((( style.paper )))paper]{article}
@@ -248,7 +248,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* endif *))
 % Every text link uses the same color, including links nested inside headings; color marks clickability.
 \hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,filecolor=accent,citecolor=accent,
-  pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) — Resume}}
+  pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) - Resume}}
 \hypersetup{pdfsubject={Emoji graphics: Twemoji, copyright Twitter and contributors, CC BY 4.0, https://github.com/twitter/twemoji}}
 \pdfinfoomitdate=1
 \pdftrailerid{}

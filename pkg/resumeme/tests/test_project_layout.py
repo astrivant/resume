@@ -118,7 +118,7 @@ def test_project_company_logos_render_inline_and_references_remain_clickable(tmp
     project_url = "https://github.com/example/tool"
     source_url = "https://lnkd.in/tool"
     logo = Media("https://example.org/logo.png", alt="Example Co. logo", path="logo.png", link=company_url)
-    job = Entry("Engineer", ["Example Co. · Full-time", "2020 - Present"], images=[logo])
+    job = Entry("Engineer", ["Example Co. \u00b7 Full-time", "2020 - Present"], images=[logo])
     project = Entry(
         "tool",
         ["Associated with Example Co.", "Associated with Engineer at Example Co.", "See " + source_url],

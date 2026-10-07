@@ -25,23 +25,23 @@ if TYPE_CHECKING:
         "---",
         "*",
         "+",
-        "–",
-        "—",
-        "−",
-        "•",
-        "‣",
-        "◦",
-        "▪",
-        "○",
-        "◆",
-        "→",
-        "➤",
+        "\u2013",
+        "\u2014",
+        "\u2212",
+        "\u2022",
+        "\u2023",
+        "\u25e6",
+        "\u25aa",
+        "\u25cb",
+        "\u25c6",
+        "\u2192",
+        "\u27a4",
         "->",
         "=>",
-        "✓",
-        "☐",
-        "✅",
-        "🔹",
+        "\u2713",
+        "\u2610",
+        "\u2705",
+        "\U0001f539",
         "[x]",
         "- [ ]",
         "1.",
@@ -49,8 +49,8 @@ if TYPE_CHECKING:
         "(3)",
         "a)",
         "(iv)",
-        "①",
-        "1️⃣",
+        "\u2460",
+        "1\ufe0f\u20e3",
     ],
 )
 def test_common_list_markers_become_regular_bullets(marker: str) -> None:
@@ -66,7 +66,7 @@ def test_common_list_markers_become_regular_bullets(marker: str) -> None:
     assert text_blocks([f"{marker} Built Python services & APIs."]) == [TextBlock("Built Python services & APIs.", 0)]
 
 
-@pytest.mark.parametrize("marker", ["•", "▪", "🔹", "✅", "☑️"])
+@pytest.mark.parametrize("marker", ["\u2022", "\u25aa", "\U0001f539", "\u2705", "\u2611\ufe0f"])
 def test_unambiguous_unicode_markers_need_no_separator(marker: str) -> None:
     """
     Accept pasted Unicode bullets whose source omitted the usual separating space.
@@ -87,16 +87,16 @@ def test_unambiguous_unicode_markers_need_no_separator(marker: str) -> None:
         "2026. Led a team",
         "2026-10-07",
         "-5% error rate",
-        "−10 degrees",
+        "\u221210 degrees",
         "1.2.3 release",
         "C++ services",
-        "Built X — then Y",
+        "Built X \u2014 then Y",
         "https://example.org/a-b",
         "A. Smith",
         "I. Introduction",
         "o rings",
         "-",
-        "•",
+        "\u2022",
     ],
 )
 def test_ordinary_prose_and_ambiguous_prefixes_are_preserved(line: str) -> None:
@@ -119,7 +119,14 @@ def test_nested_items_continuations_and_paragraph_boundaries() -> None:
     Returns:
         None: Mixed list markers share stable indentation and unmarked headings terminate the list.
     """
-    paragraphs = ["Responsibilities", "  - Parent\n    • Child\n      continued text\n  + Sibling", "", "A. First", "B. Second", "Summary"]
+    paragraphs = [
+        "Responsibilities",
+        "  - Parent\n    \u2022 Child\n      continued text\n  + Sibling",
+        "",
+        "A. First",
+        "B. Second",
+        "Summary",
+    ]
     assert text_blocks(paragraphs) == [
         TextBlock("Responsibilities"),
         TextBlock("Parent", 0),
@@ -143,7 +150,7 @@ def test_unindented_sentence_fragments_stay_in_the_same_bullet(separator: str | 
     Returns:
         None: One nested bullet owns the complete sentence without changing the input.
     """
-    fragments = ["  • Providing technical reviews,", "coordinating platform work;", "guiding implementation decisions."]
+    fragments = ["  \u2022 Providing technical reviews,", "coordinating platform work;", "guiding implementation decisions."]
     paragraphs = ["- Responsibilities", *([separator.join(fragments)] if separator is not None else fragments), "- Next item"]
     original = paragraphs.copy()
     assert text_blocks(paragraphs) == [
@@ -253,7 +260,7 @@ def test_rendered_bullets_preserve_links_and_escape_profile_text(tmp_path: Path)
     Returns:
         None: Original markers become consistent LaTeX bullet commands without becoming executable TeX.
     """
-    lines = [r"— Built \input{secret} & tooling", "  ▪ Read https://lnkd.in/tool", "2020 - Present"]
+    lines = ["\u2014 Built \\input{secret} & tooling", "  \u25aa Read https://lnkd.in/tool", "2020 - Present"]
     entry = Entry("Responsibilities", lines, [Link("Tool", "https://lnkd.in/tool", "https://example.org/tool")])
     profile = Profile("example-person", "Alex", sections=[Section("about", "About", [entry])])
     source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()

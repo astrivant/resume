@@ -41,7 +41,7 @@ def company_logos(profile: Profile) -> dict[str, Media]:
 
             if badge:
                 index, logo = badge
-                company = entry.title if index == -1 else entry.paragraphs[index].split("·", 1)[0]
+                company = entry.title if index == -1 else entry.paragraphs[index].split("\u00b7", 1)[0]
                 result.setdefault(company_key(company), logo)
 
     return result

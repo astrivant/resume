@@ -144,7 +144,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     if fork:
         bundle = artifact.parent / "readme"
         bundle.mkdir()
-        (bundle / "README.md").write_text("# Fresh owner · Résumé\n", encoding="utf-8")
+        (bundle / "README.md").write_text("# Fresh owner - Résumé\n", encoding="utf-8")
         (bundle / "pdf.sha256").write_text(hashlib.sha256(artifact.read_bytes()).hexdigest())
         Image.new("RGB", (20, 30), "white").save(bundle / "resume-preview.png")
 

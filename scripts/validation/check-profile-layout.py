@@ -157,6 +157,24 @@ def main() -> None:
         assert any(page == 1 and "Project proof" in text for page, text, _, _ in rows), "Short profile stranded Projects on page two"
         print("projects: first-page space reused below the profile")
 
+        # An oversized optional Contact section must remain breakable rather than clipping a measured identity box.
+        details = [f"Contact detail {index:03d}" for index in range(80)]
+        profile = Profile(
+            "layout-check",
+            "Layout Check",
+            sections=[
+                Section("contact", "Contact", [Entry(paragraphs=details)]),
+                Section("about", "About", [Entry(paragraphs=[sentence])]),
+            ],
+        )
+        config = evolve(config, section_order=["contact", "about"])
+        rows = _rows(compile_pdf(render_profile(profile, config, root), config, root))
+        text = " ".join(row[1] for row in rows)
+        assert re.findall(r"Contact detail \d{3}", text) == details, "Tall profile lost or duplicated contact details"
+        assert sentence in text, "Body did not resume at full width after the tall profile"
+        assert any(page > 1 and "Build practical" in text for page, text, _, _ in rows), "Tall profile did not continue onto another page"
+        print("oversized: complete profile preserved across column and page boundaries")
+
 
 if __name__ == "__main__":
     main()

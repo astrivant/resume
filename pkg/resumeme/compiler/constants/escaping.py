@@ -6,9 +6,25 @@ from __future__ import annotations
 
 import re
 
-__all__ = ["ESCAPES", "EMOJI"]
+__all__ = ["ESCAPES", "EMOJI", "PUNCTUATION"]
+
+# Normalize editorial typography at presentation time while keeping captured text and accented names intact.
+PUNCTUATION = {
+    "\u2010": "-",
+    "\u2011": "-",
+    "\u2012": "-",
+    "\u2013": "-",
+    "\u2014": "-",
+    "\u2015": "-",
+    "\u2018": "'",
+    "\u2019": "'",
+    "\u201c": '"',
+    "\u201d": '"',
+    "\u2026": "...",
+}
 
 ESCAPES = {
+    **PUNCTUATION,
     "\\": r"\textbackslash{}",
     "&": r"\&",
     "%": r"\%",

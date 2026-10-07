@@ -47,6 +47,6 @@ PARAGRAPH_BREAK = "\u2029"
 
 IGNORED_SECTIONS = {"analytics", "resources", "suggested-for-you"}
 UI_TEXT = re.compile(
-    r"^(?:show all\b|show more\b|see more$|see less$|show less$|\.\.\.more$|…more$|…see more$|add section$|add profile section$)",
+    r"^(?:show all\b|show more\b|see more$|see less$|show less$|\.\.\.more$|\u2026more$|\u2026see more$|add section$|add profile section$)",
     re.IGNORECASE,
 )

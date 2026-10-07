@@ -71,13 +71,13 @@ def test_personal_readme_uses_only_selected_public_identity() -> None:
         LinkedIn("example"),
         output=Output(pdf="documents/cv.pdf"),
         github=GitHub("example-dev"),
-        readme=Readme(introduction="Platform & reliability.\n<script>alert(1)</script>"),
+        readme=Readme(introduction="Platform & reliability \u2014 résumé\u2026\n<script>alert(1)</script>"),
     )
     markdown = render_readme(profile, config, "example/my-cv", 3)
-    assert r"# Jane \[Doe\] &lt;script&gt; · Résumé" in markdown
-    assert r"Platform &amp; reliability\. &lt;script&gt;alert\(1\)&lt;/script&gt;" in markdown
+    assert r"# Jane \[Doe\] &lt;script&gt; - Résumé" in markdown
+    assert r"Platform &amp; reliability \- résumé\.\.\. &lt;script&gt;alert\(1\)&lt;/script&gt;" in markdown
     assert "./documents/cv.pdf" in markdown
-    assert "PDF · 3 pages" in markdown
+    assert "PDF - 3 pages" in markdown
     assert f"]({PREVIEW_PATH})" in markdown
     assert "https://github.com/example/my-cv/releases" in markdown
     assert "https://github.com/example-dev" in markdown
@@ -85,7 +85,7 @@ def test_personal_readme_uses_only_selected_public_identity() -> None:
     assert "hidden" not in markdown
     assert "<script>" not in markdown
     minimal = render_readme(Profile("example", "Jane"), Config(LinkedIn("example")), "example/my-cv", 1)
-    assert "PDF · 1 page)" in minimal
+    assert "PDF - 1 page)" in minimal
     assert "[GitHub]" not in minimal
 
 
@@ -142,7 +142,7 @@ def test_readme_bundle_is_bound_to_the_published_pdf(tmp_path: Path, monkeypatch
     before = {path.name: path.read_bytes() for path in bundle.iterdir()}
     stage_readme(tmp_path, config, "example/cv")
     assert before == {path.name: path.read_bytes() for path in bundle.iterdir()}
-    assert "PDF · 2 pages" in (bundle / "README.md").read_text()
+    assert "PDF - 2 pages" in (bundle / "README.md").read_text()
 
     # Reject inconsistent downloads before replacing either tracked file, while keeping all extra cache contents unselected.
     (tmp_path / "README.md").write_text("Original project README")

@@ -67,7 +67,7 @@ def prepare_header(profile: Profile, style: Style) -> tuple[Profile, str, str]:
         elif _COUNT.fullmatch(combined):
             count = count or combined
             index += 1
-        elif line.casefold() not in {"contact info", "edit contact info", "connections", "·"}:
+        elif line.casefold() not in {"contact info", "edit contact info", "connections", "\u00b7"}:
             intro.append(profile.intro[index])
 
         index += 1

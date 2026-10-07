@@ -169,6 +169,28 @@ def test_detail_entries_keep_titles_above_nested_bullet_lists(component: str) ->
     assert entries[0].images[0].url == "https://example.org/logo.png"
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("Dates 2020\u20132026; engineering\u2014delivery", "Dates 2020-2026; engineering-delivery"),
+        ("\u201cRésumé\u201d and Renée\u2019s café\u2026", '"Résumé" and Renée\'s café...'),
+        ("Re\u2010use, on\u2011site, 1\u20122, work\u2015life", "Re-use, on-site, 1-2, work-life"),
+    ],
+)
+def test_rendered_punctuation_uses_keyboard_characters(value: str, expected: str) -> None:
+    """
+    Normalize editorial punctuation at rendering without stripping accented names or words.
+
+    Args:
+        value (str): Captured text containing typographic punctuation.
+        expected (str): Rendered spelling with ordinary keyboard punctuation.
+
+    Returns:
+        None: The presentation changes punctuation while preserving the surrounding text.
+    """
+    assert latex_escape(value) == expected
+
+
 def test_emoji_rendering_preserves_sequences_and_escapes_surrounding_text() -> None:
     """
     Translate profile emoji to bundled graphics without exposing neighboring TeX syntax.
@@ -176,7 +198,10 @@ def test_emoji_rendering_preserves_sequences_and_escapes_surrounding_text() -> N
     Returns:
         None: Emoji sequences remain intact while ordinary text is escaped.
     """
-    assert latex_escape("Plants 🪴 & engineering 👩‍💻") == r"Plants \texttwemoji{1fab4} \& engineering \texttwemoji{1f469-200d-1f4bb}"
+    assert (
+        latex_escape("Plants \U0001fab4 & engineering \U0001f469\u200d\U0001f4bb")
+        == r"Plants \texttwemoji{1fab4} \& engineering \texttwemoji{1f469-200d-1f4bb}"
+    )
 
 
 def test_contact_dialog_retains_fields_without_unrelated_page_content() -> None:

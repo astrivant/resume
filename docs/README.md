@@ -88,7 +88,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `codex.about_max_words` | `100` | Maximum generated About length, from 1 to 300 words |
 | `codex.headline_max_words` | `18` | Maximum portrait summary length, from 1 to 40 words |
 | `style.profile_column_side` | `left` | `right` places the profile at the upper right and lets body content use the full width beneath it |
-| `style.paper` | `letter` | `letter` (8.5 × 11 inches) or `a4` |
+| `style.paper` | `letter` | `letter` (8.5 x 11 inches) or `a4` |
 | `style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
@@ -207,7 +207,7 @@ experience:
   after ignoring case and repeated whitespace. A company-only selector hides all
   its roles; a title-only selector hides that title at every employer. Copy titles
   and employer names from the Experience entries in `data/profile.json`, omitting
-  the employer's `· Full-time` or similar employment-type suffix.
+  the employer's middle-dot separator and `Full-time` or similar employment-type suffix.
 - `last_years` is a positive integer, or `null` to keep all dates. Jobs are included
   when any part of their employment overlaps the inclusive window from N calendar
   years before `as_of` through `as_of`. A job does not have to start inside it.
@@ -311,7 +311,7 @@ they do not fetch newer contributions before signing it.
 ## Job text and subheadings
 
 Job descriptions retain their internal hierarchy. Standalone labels such as
-“Responsibilities,” “Projects,” and “Technologies” use bold body-sized text with a
+"Responsibilities," "Projects," and "Technologies" use bold body-sized text with a
 small preceding gap. Disable that emphasis without hiding the labels:
 
 ```yaml
@@ -335,8 +335,8 @@ experience:
 
 This list replaces the defaults shown in `resumeme.config.yaml`. Matching uses the
 entire standalone text block, with Unicode normalization, case folding, collapsed
-whitespace, and an optional trailing colon. Labels are literal text. “Projects
-improved reliability” remains ordinary prose. Adding a label also preserves its
+whitespace, and an optional trailing colon. Labels are literal text. "Projects
+improved reliability" remains ordinary prose. Adding a label also preserves its
 boundary during reflow, including when highlighting is disabled. Use `[]` to turn
 off label recognition, or remove individual labels to avoid unwanted emphasis.
 These settings apply to standalone jobs and nested roles; they preserve the saved
@@ -362,19 +362,19 @@ environment variables are required for ordinary capture, builds, or publication.
 
 The following overrides are optional:
 
-- **`RETRY_ATTEMPTS`** — total attempts for transient failures in CI network
+- **`RETRY_ATTEMPTS`** - total attempts for transient failures in CI network
   commands; defaults to `5`. Accepts an integer from `1` to `99`.
-- **`RETRY_BACKOFF_SECONDS`** — initial delay between those attempts; defaults to
+- **`RETRY_BACKOFF_SECONDS`** - initial delay between those attempts; defaults to
   `10` seconds. Accepts a nonnegative integer. The delay doubles after each retry,
   up to `RETRY_MAX_BACKOFF_SECONDS`.
-- **`RETRY_MAX_BACKOFF_SECONDS`** — maximum delay for those retries; defaults to
+- **`RETRY_MAX_BACKOFF_SECONDS`** - maximum delay for those retries; defaults to
   `300` seconds. Accepts a positive integer.
-- **`SE_CACHE_PATH`** — local Selenium Manager cache directory; defaults to
+- **`SE_CACHE_PATH`** - local Selenium Manager cache directory; defaults to
   `.cache/selenium/` under the configuration directory. Export an absolute path
   before running `poetry run resumeme capture` to use another directory.
-- **`SE_AVOID_STATS`** — Selenium Manager statistics opt-out; defaults to `true`.
+- **`SE_AVOID_STATS`** - Selenium Manager statistics opt-out; defaults to `true`.
   Export `false` before capture to allow statistics collection.
-- **`RESUMEME_TEX_BACKEND`** — PDF compiler backend: `docker` by default on the host,
+- **`RESUMEME_TEX_BACKEND`** - PDF compiler backend: `docker` by default on the host,
   or `local` to invoke `pdflatex` directly. The published container sets `local`
   automatically for its bundled toolchain. Ordinary users need no override.
 
@@ -487,7 +487,7 @@ below it retains the breakable two-column layout.
 | Headings | Child headings identical to their parent are omitted, ignoring case and Unicode/whitespace formatting |
 | Lists | Recognized ASCII, Unicode, checkbox, and ordered markers render as bullets with nested indentation |
 | Locations | Captured job locations link to Google Maps; work arrangements remain plain text |
-| Images | Portrait: 36.4 mm; organization logos: up to 8 mm; icons: up to 3.5 mm; attachments: up to 24 × 14 mm |
+| Images | Portrait: 36.4 mm; organization logos: up to 8 mm; icons: up to 3.5 mm; attachments: up to 24 x 14 mm |
 
 Photos and logos retain their proportions; only portraits are cropped. Section and
 entry text remains complete across page breaks. LinkedIn UI attribution, repeated
@@ -691,13 +691,13 @@ an existing draft after a lost network response.
 | Component | Responsibility | Interface |
 | --- | --- | --- |
 | `linkedin/` | Browser authentication, capture, HTTP enrichment, asset caching | HTML and cached PNGs |
-| `compiler/asts/` | HTML parsing, schemas, attrs source and presentation records | HTML/JSON → typed profile and intermediate records |
-| `compiler/passes/` | Visibility, content organization, layout, and navigation | Typed profile → display structures |
-| `compiler/backends/latex/` | Escaping, Jinja resources, fonts, PDF toolchain | Display structures → TeX → PDF |
+| `compiler/asts/` | HTML parsing, schemas, attrs source and presentation records | HTML/JSON -> typed profile and intermediate records |
+| `compiler/passes/` | Visibility, content organization, layout, and navigation | Typed profile -> display structures |
+| `compiler/backends/latex/` | Escaping, Jinja resources, fonts, PDF toolchain | Display structures -> TeX -> PDF |
 | `compiler/pipeline.py`, `compiler/constants/` | Pass ordering, template bindings, shared vocabularies and target settings | Configured offline compilation |
 | `github/contributions.py`, `compiler/asts/contributions.py` | Public calendar acquisition and validated day observations | Optional GitHub graph input |
-| `visualization/` | Skill scoring and endorsement colors | Visible profile → cloud + score manifest |
-| `config.py` | Validated runtime and presentation settings | YAML → typed configuration |
+| `visualization/` | Skill scoring and endorsement colors | Visible profile -> cloud + score manifest |
+| `config.py` | Validated runtime and presentation settings | YAML -> typed configuration |
 | `cli.py` | Pipeline commands | `capture`, `enrich`, `validate`, `render`, `build` |
 | `scripts/` | Tooling, CI, and release automation | Workflow steps and package entry points |
 

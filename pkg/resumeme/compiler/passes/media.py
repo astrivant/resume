@@ -44,7 +44,7 @@ def employer_badge(entry: Entry) -> tuple[int, Media] | None:
         if company and company == entry.title.strip().casefold():
             return -1, image
 
-        if entry.paragraphs and company and company == entry.paragraphs[0].split("·", 1)[0].strip().casefold():
+        if entry.paragraphs and company and company == entry.paragraphs[0].split("\u00b7", 1)[0].strip().casefold():
             return 0, image
 
     # Standalone jobs place their employer immediately before the employment dates; undated or absent names stay unchanged.

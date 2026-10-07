@@ -22,9 +22,9 @@ if TYPE_CHECKING:
     "location",
     [
         "Atlanta, Georgia, United States",
-        "Boston, Massachusetts, United States · Hybrid",
-        "Wakefield, Massachusetts, United States · Remote",
-        "Rochester, New York Metropolitan Area · On-site",
+        "Boston, Massachusetts, United States \u00b7 Hybrid",
+        "Wakefield, Massachusetts, United States \u00b7 Remote",
+        "Rochester, New York Metropolitan Area \u00b7 On-site",
         "London",
         "New York",
         "São Paulo, Brazil",
@@ -43,10 +43,10 @@ def test_job_location_queries_keep_geography_and_omit_work_modes(location: str) 
     Returns:
         None: The map query round-trips to the captured place and source paragraphs stay unchanged.
     """
-    paragraphs = ["Example Co · Full-time", "Jan 2020 - Present · 6 yrs", location, "Built services"]
+    paragraphs = ["Example Co \u00b7 Full-time", "Jan 2020 - Present \u00b7 6 yrs", location, "Built services"]
     entry = Entry("Engineer", paragraphs)
     link = job_locations(entry)[location]
-    place = location.split("·", 1)[0].strip()
+    place = location.split("\u00b7", 1)[0].strip()
     destination = urlsplit(link.url)
     assert destination.scheme == "https"
     assert destination.netloc == "www.google.com"
@@ -95,12 +95,19 @@ def test_grouped_company_locations_and_role_locations_are_recognized() -> None:
         None: Legacy and structured groups expose the same shared and role-specific destinations.
     """
     role = Entry("Engineer", ["2020 - Present", "Remote", "Built services"])
-    earlier = Entry("Intern", ["2019 - 2020", "Medina, New York, United States · On-site"])
-    lines = ["Full-time · 7 yrs", "Boston, Massachusetts, United States", role.title, *role.paragraphs, earlier.title, *earlier.paragraphs]
+    earlier = Entry("Intern", ["2019 - 2020", "Medina, New York, United States \u00b7 On-site"])
+    lines = [
+        "Full-time \u00b7 7 yrs",
+        "Boston, Massachusetts, United States",
+        role.title,
+        *role.paragraphs,
+        earlier.title,
+        *earlier.paragraphs,
+    ]
 
     for positions in ([], [role, earlier]):
         locations = job_locations(Entry("Example Co", lines, positions=positions))
-        assert list(locations) == ["Boston, Massachusetts, United States", "Medina, New York, United States · On-site"]
+        assert list(locations) == ["Boston, Massachusetts, United States", "Medina, New York, United States \u00b7 On-site"]
 
 
 def test_rendered_locations_escape_links_and_respect_job_filters(tmp_path: Path) -> None:
@@ -114,7 +121,7 @@ def test_rendered_locations_escape_links_and_respect_job_filters(tmp_path: Path)
         None: Dates, descriptions, other sections, and captured records are preserved without duplicate reference rows.
     """
     place = "Newfoundland & Labrador, Canada"
-    role = Entry("Engineer", ["Example Co", "2020 - Present", place + " · Hybrid", "Built services"])
+    role = Entry("Engineer", ["Example Co", "2020 - Present", place + " \u00b7 Hybrid", "Built services"])
     omitted = Entry("Intern", ["Another Co", "2018 - 2019", "Atlanta, Georgia, United States"])
     profile = Profile(
         "example-person",
@@ -125,9 +132,9 @@ def test_rendered_locations_escape_links_and_respect_job_filters(tmp_path: Path)
     source = render_profile(profile, config, tmp_path).read_text()
     assert source.count("https://www.google.com/maps/search/") == 1
     assert r"\href{https://www.google.com/maps/search/?api=1\&query=Newfoundland+\%26+Labrador\%2C+Canada}" in source
-    assert r"{Newfoundland \& Labrador, Canada} · Hybrid}" in source
+    assert "{Newfoundland \\& Labrador, Canada} \u00b7 Hybrid}" in source
     assert r"\profileparagraph{2020 - Present}" in source
     assert "Built services" in source
     assert "Atlanta" not in source
-    assert role.paragraphs[2] == place + " · Hybrid"
+    assert role.paragraphs[2] == place + " \u00b7 Hybrid"
     assert role.links == []

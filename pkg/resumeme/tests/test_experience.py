@@ -69,9 +69,9 @@ def test_job_attribution_cleanup_preserves_prose_and_grouped_snapshots(tmp_path:
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
-        ("Jan 2010 - Present · 16 yrs", EmploymentPeriod(date(2010, 1, 1), None)),
-        ("September 2019 – Oct. 2021 · 2 yrs", EmploymentPeriod(date(2019, 9, 1), date(2021, 10, 31))),
-        ("2010—2021", EmploymentPeriod(date(2010, 1, 1), date(2021, 12, 31))),
+        ("Jan 2010 - Present \u00b7 16 yrs", EmploymentPeriod(date(2010, 1, 1), None)),
+        ("September 2019 \u2013 Oct. 2021 \u00b7 2 yrs", EmploymentPeriod(date(2019, 9, 1), date(2021, 10, 31))),
+        ("2010\u20142021", EmploymentPeriod(date(2010, 1, 1), date(2021, 12, 31))),
         ("2020-02 - 2020-02", EmploymentPeriod(date(2020, 2, 1), date(2020, 2, 29))),
         ("2021-10-07 - 2026-10-07", EmploymentPeriod(date(2021, 10, 7), date(2026, 10, 7))),
         ("Built services from 2010 - 2021", None),
@@ -124,7 +124,7 @@ def test_trailing_years_includes_any_overlap(period: str, included: bool) -> Non
     Returns:
         None: Inclusion uses the whole employment interval and leaves source records unchanged.
     """
-    job = Entry("Engineer", ["Example · Full-time", period, "Complete description"])
+    job = Entry("Engineer", ["Example \u00b7 Full-time", period, "Complete description"])
     settings = Experience(last_years=5, as_of="2026-10-07")
     assert filter_experience([job], settings) == ([job] if included else [])
     assert job.paragraphs[-1] == "Complete description"
@@ -152,9 +152,9 @@ def test_job_selectors_match_all_supplied_fields() -> None:
         None: Explicit rules match normalized exact identities without substring matching.
     """
     jobs = [
-        Entry("DevOps Engineer", ["HqO · Full-time", "2020 - Present"]),
-        Entry("DevOps Engineer", ["Example · Full-time", "2020 - Present"]),
-        Entry("Senior DevOps Engineer", ["HqO · Full-time", "2020 - Present"]),
+        Entry("DevOps Engineer", ["HqO \u00b7 Full-time", "2020 - Present"]),
+        Entry("DevOps Engineer", ["Example \u00b7 Full-time", "2020 - Present"]),
+        Entry("Senior DevOps Engineer", ["HqO \u00b7 Full-time", "2020 - Present"]),
     ]
     settings = Experience(disable=[JobSelector(title=" devops   ENGINEER ", company="hqo")], last_years=5, as_of="2026-10-07")
     assert filter_experience(jobs, settings) == jobs[1:]
@@ -176,9 +176,9 @@ def test_grouped_roles_filter_before_templates_assets_and_skills(tmp_path: Path,
         None: Removed role text, media, links, and skill tags do not reach either template or cloud input.
     """
     html = """<main><h2>Experience</h2><ul><li class="artdeco-list__item"><p>Example Systems</p>
-        <ul><li><p>Staff Engineer</p><p>Jan 2020 – Present</p><p>Current infrastructure.</p>
+        <ul><li><p>Staff Engineer</p><p>Jan 2020 \u2013 Present</p><p>Current infrastructure.</p>
         <a href="/in/example-person/skill-associations-details/">Rust</a></li>
-        <li><p>Senior Engineer</p><p>2010 – Sep 2021</p><p>Removed narrative.</p>
+        <li><p>Senior Engineer</p><p>2010 \u2013 Sep 2021</p><p>Removed narrative.</p>
         <a href="https://example.org/removed">Removed project</a><img src="https://example.org/removed.png" alt="Removed figure">
         <a href="/in/example-person/skill-associations-details/">Python</a></li></ul></li></ul></main>"""
     section = parse_detail(html, "experience", "Experience")

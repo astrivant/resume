@@ -15,7 +15,7 @@ cat >"$project/data/profile.json" <<'JSON'
 {
   "username": "container-check",
   "name": "Container Check",
-  "intro": ["Engineering & plants 🪴"],
+  "intro": ["Engineering & plants \ud83e\udeb4"],
   "sections": [{"key": "skills", "title": "Skills", "entries": [
     {"title": "Python", "skills": [{"name": "Python", "endorsements": 3}]},
     {"title": "C++", "skills": [{"name": "C++", "endorsements": 1}]}

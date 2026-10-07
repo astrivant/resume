@@ -610,7 +610,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             _navigate(driver, "https://www.linkedin.com/login", config.capture)
 
         _login(driver, config.capture, headless=headless)
-        print("Login detected. Loading your profile…", flush=True)
+        print("Login detected. Loading your profile...", flush=True)
         username = config.linkedin.username
         _navigate(driver, f"https://www.linkedin.com/in/{username}/", config.capture)
 
@@ -648,7 +648,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
 
         for key, url in routes.items():
             title = next((section.title for section in profile.sections if section.key == key), key.replace("-", " ").title())
-            print(f"Capturing {title}…", flush=True)
+            print(f"Capturing {title}...", flush=True)
 
             try:
                 replacements[key] = retry(
@@ -670,7 +670,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             warnings.append("Profile contains tabbed content; verify all tab variants are represented before accepting the snapshot.")
 
         if f"/in/{username}/overlay/contact-info" in html:
-            print("Capturing Contact info…", flush=True)
+            print("Capturing Contact info...", flush=True)
             contact = retry(
                 partial(_contact, driver, username, config.capture),
                 attempts=config.capture.retry_attempts,
@@ -682,7 +682,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
 
         profile = evolve(profile, sections=sections, warnings=warnings, captured_at=datetime.now(UTC).isoformat())
 
-    print("Downloading profile images and linked project previews…", flush=True)
+    print("Downloading profile images and linked project previews...", flush=True)
 
     # Browser access is finished; checkpoint the text before independent media downloads can fail or be interrupted.
     save_profile(

@@ -35,7 +35,7 @@ def _role_metadata(entry: Entry) -> Entry:
         return entry
 
     metadata = entry.paragraphs[dated + 1].strip()
-    place, separator, mode = metadata.rpartition("·")
+    place, separator, mode = metadata.rpartition("\u00b7")
     mode = mode.strip()
 
     if mode.casefold() not in WORK_MODES or (separator and metadata not in job_locations(entry)):
@@ -43,12 +43,12 @@ def _role_metadata(entry: Entry) -> Entry:
 
     # Preserve any clickable place on its own row; never duplicate a mode already present in the date metadata.
     dates = entry.paragraphs[dated].rstrip()
-    existing_modes = {part.strip().casefold() for part in dates.split("·")[1:]} & WORK_MODES
+    existing_modes = {part.strip().casefold() for part in dates.split("\u00b7")[1:]} & WORK_MODES
 
     if existing_modes and mode.casefold() not in existing_modes:
         return entry
 
-    combined = dates if existing_modes else f"{dates} · {mode}"
+    combined = dates if existing_modes else f"{dates} \u00b7 {mode}"
     replacement = [combined, place.rstrip()] if separator else [combined]
     return evolve(entry, paragraphs=[*entry.paragraphs[:dated], *replacement, *entry.paragraphs[dated + 2 :]])
 
