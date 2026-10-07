@@ -21,6 +21,7 @@ from resumeme.compiler.pipeline import render_profile
 from resumeme.config import load_config, project_path
 from resumeme.linkedin.browser import capture_profile
 from resumeme.linkedin.media import cache_media
+from resumeme.linkedin.ownership import publish_ownership
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -66,6 +67,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         if name in {"render", "build"}:
             command.add_argument("--summary", type=Path, help="Generated summary JSON relative to the configuration directory")
 
+    ownership = commands.add_parser("publish-ownership", help="Update live LinkedIn About with a signed release's public key identity")
+    ownership.add_argument("--public-key", type=Path, required=True, help="Release cosign.pub path relative to the current directory")
+    ownership.add_argument("--dry-run", action="store_true", help="Read and preview About without submitting any changes")
+    ownership.add_argument("--headless", action="store_true", help="Use LINKEDIN_USERNAME and LINKEDIN_PASSWORD without a desktop")
+    ownership.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
+
     args = parser.parse_args(argv)
 
     try:
@@ -73,6 +80,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = load_config(args.config)
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
+
+        # Ownership maintenance reads the live editor; it does not depend on a snapshot or rewrite generated résumé content.
+        if args.command == "publish-ownership":
+            about = publish_ownership(
+                config, root, args.public_key, dry_run=args.dry_run, headless=args.headless, connect_port=args.connect_port
+            )
+            print(about if args.dry_run else "Confirmed the public signing identity in LinkedIn About.")
+            return 0
 
         if args.command in {"capture", "enrich"}:
             profile = (
@@ -117,16 +132,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(result)
     except KeyboardInterrupt:
         # Browser cleanup happens in its context manager; retain the profile so the next capture can reuse login.
-        print("\nresumeme: Capture cancelled; the local browser login is retained for next time.", file=sys.stderr)
+        print(
+            "\nresumeme: Browser operation cancelled; the local login is retained. Check live About if a Save was in progress.",
+            file=sys.stderr,
+        )
         return 130
     except NoSuchWindowException:
         print(
-            "resumeme: The capture window was closed. Run `resumeme capture` again and leave Firefox open until capture finishes.",
+            "resumeme: The browser window was closed. Rerun the command and leave Firefox open until it finishes.",
             file=sys.stderr,
         )
         return 2
     except TimeoutException:
-        print("resumeme: LinkedIn page loading timed out. Retry capture; increase capture.page_timeout_seconds if needed.", file=sys.stderr)
+        print("resumeme: LinkedIn timed out. Rerun the command; increase capture.page_timeout_seconds if needed.", file=sys.stderr)
         return 2
     except (OSError, ValueError, RuntimeError, ValidationError, yaml.YAMLError, WebDriverException, subprocess.TimeoutExpired) as error:
         print(f"resumeme: {error}", file=sys.stderr)

@@ -127,6 +127,18 @@ jobs:
       COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
       COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
 
+  # Profile writes are a separate opt-in stage; login failures leave the published release and container stage intact.
+  ownership-stage:
+    name: Publish signing identity to LinkedIn
+    needs: [source, release-stage]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    uses: ./.github/workflows/stage-ownership.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
+      LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+
   # Version tags publish the verified Python distributions; the PyPI credential reaches only this stage.
   pypi-stage:
     name: Publish Python package

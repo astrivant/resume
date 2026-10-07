@@ -28,11 +28,28 @@ __all__ = [
     "JobSelector",
     "LinkedIn",
     "Output",
+    "Ownership",
     "Style",
     "StyleOverrides",
     "load_config",
     "project_path",
 ]
+
+
+@frozen
+class Ownership:
+    """
+    Configure the public signing identity maintained in LinkedIn About.
+
+    Attributes:
+        update_about (bool): Update the live profile after publishing a signed release in CI.
+        repository (str | None): GitHub owner/repository; None uses Actions context or the local origin.
+        releases_url (str | None): Optional HTTPS short link to that repository's releases page.
+    """
+
+    update_about: bool = False
+    repository: str | None = None
+    releases_url: str | None = None
 
 
 @frozen
@@ -42,9 +59,11 @@ class LinkedIn:
 
     Attributes:
         username (str): Owner slug from the LinkedIn profile URL.
+        ownership (Ownership): Optional live About update and public release destination.
     """
 
     username: str
+    ownership: Ownership = field(factory=Ownership)
 
 
 @frozen

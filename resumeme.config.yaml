@@ -2,6 +2,16 @@
 linkedin:
   username: emmeowzing
 
+  # Opt in to updating your live About after a signed release; existing About text is preserved.
+  ownership:
+    update_about: true
+
+    # null uses GITHUB_REPOSITORY in Actions, or the local Git origin (OWNER/REPO).
+    repository: null
+
+    # Optional HTTPS short link to your releases page; null uses https://github.com/OWNER/REPO/releases.
+    releases_url: null
+
 # Optional public profile link; set username to null to hide it.
 github:
   username: emmeowzing

@@ -9,6 +9,31 @@
         "username": {
           "type": "string",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,99}$"
+        },
+        "ownership": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "update_about": {
+              "type": "boolean",
+              "default": false
+            },
+            "repository": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9_.-]+$"
+            },
+            "releases_url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri",
+              "pattern": "^https://[^\\s]+$"
+            }
+          }
         }
       },
       "required": [
@@ -380,7 +405,10 @@
     },
     "project_filter": {
       "description": "Python regex searched against resolved project source URLs, falling back to captured URLs. Null includes all projects, including unlinked entries.",
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "regex",
       "default": "(?i)^https?://(?:www\\.)?github\\.com(?:[/?#]|$)"
     },
