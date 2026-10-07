@@ -1,6 +1,6 @@
 # resumeme
 
-<img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="160" align="left">
+<img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220" align="left">
 
 **Your résumé deserves better than LinkedIn's PDF export.** Skip the clunky
 formatting and the copy-paste routine of maintaining a second résumé. `resumeme`
