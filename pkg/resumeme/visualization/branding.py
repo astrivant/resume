@@ -43,6 +43,10 @@ def render_logo(assets: Path, output: Path, seed: str) -> None:
     with Image.open(assets / "linkedin-base.png") as source:
         base = source.convert("RGBA").resize((_SIZE, _SIZE), Image.Resampling.LANCZOS)
 
+    # Mute the mark beneath the coffee while leaving the overlay's color and density independent of the base fade.
+    base = ImageEnhance.Color(base).enhance(0.8)
+    base.putalpha(base.getchannel("A").point([round(value * 0.8) for value in range(256)]))
+
     with Image.open(assets / "coffee-ring.png") as source:
         stain = source.convert("RGBA")
 

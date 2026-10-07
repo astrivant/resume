@@ -1,5 +1,5 @@
 """
-Collect a profile through interactive Firefox or an explicitly unattended authenticated session.
+Collect a profile through Firefox or Chrome with interactive or unattended authentication.
 """
 
 from __future__ import annotations
@@ -19,6 +19,8 @@ from urllib.parse import urlsplit
 from attrs import evolve
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, NoSuchWindowException, StaleElementReferenceException, TimeoutException
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
@@ -179,6 +181,71 @@ def _firefox(root: Path, connect_port: int | None, *, headless: bool = False) ->
                 pass
 
 
+@contextmanager
+def _chrome(root: Path, *, headless: bool = False) -> Iterator[WebDriver]:
+    """
+    Launch Chrome with a persistent project-owned profile and Selenium-managed driver.
+
+    Args:
+        root (Path): Configuration directory holding ignored browser state and diagnostics.
+        headless (bool): Launch without a visible window for unattended capture.
+
+    Yields:
+        WebDriver: Browser session closed on exit; the private login profile survives retries.
+    """
+    os.environ.setdefault("SE_CACHE_PATH", str(root / ".cache/selenium"))
+    os.environ.setdefault("SE_AVOID_STATS", "true")
+    diagnostics = root / ".cache/capture"
+    diagnostics.mkdir(parents=True, exist_ok=True)
+
+    # Keep automation separate from the user's daily browser and Firefox's incompatible profile format.
+    profile = (root / ".cache/chrome").resolve()
+    profile.mkdir(parents=True, exist_ok=True, mode=0o700)
+    profile.chmod(0o700)
+    options = ChromeOptions()
+    options.add_argument(f"--user-data-dir={profile}")
+    options.add_argument("--lang=en-US")
+    options.add_experimental_option(
+        "prefs", {"intl.accept_languages": "en-US,en", "credentials_enable_service": False, "profile.password_manager_enabled": False}
+    )
+
+    if headless:
+        options.add_argument("--headless=new")
+
+    # Selenium resolves the installed Chrome and matching driver; the context owns cleanup even after capture errors.
+    service = ChromeService(log_output=str(diagnostics / "chrome.log"))
+
+    with webdriver.Chrome(options=options, service=service) as driver:
+        yield driver
+
+
+@contextmanager
+def _browser(root: Path, settings: Capture, connect_port: int | None = None, *, headless: bool = False) -> Iterator[WebDriver]:
+    """
+    Select the configured browser without changing shared login or capture behavior.
+
+    Args:
+        root (Path): Configuration directory for the selected browser's local profile.
+        settings (Capture): Browser selection, defaulting to Firefox.
+        connect_port (int | None): Existing Firefox Marionette port; Chrome always launches a dedicated session.
+        headless (bool): Launch without a desktop window.
+
+    Yields:
+        WebDriver: Browser owned by the selected launcher.
+
+    Raises:
+        ValueError: Chrome was selected with a Firefox-only attachment port.
+    """
+    if settings.browser == "chrome" and connect_port is not None:
+        raise ValueError("--connect-port is only supported with capture.browser: firefox. Omit it to launch Chrome.")
+
+    # Both capture and ownership updates share selection so changing the config cannot route them to different sessions.
+    session = _chrome(root, headless=headless) if settings.browser == "chrome" else _firefox(root, connect_port, headless=headless)
+
+    with session as driver:
+        yield driver
+
+
 def _text_changed(previous: str) -> Callable[[WebDriver], bool]:
     """
     Bind the previous text for a typed Selenium wait predicate.
@@ -277,7 +344,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         WebDriverWait(driver, settings.page_timeout_seconds).until(_authenticated)
     except TimeoutException as error:
         raise ValueError(
-            "Unattended LinkedIn login did not complete. Check the LinkedIn secrets or complete the account challenge in Firefox; "
+            "Unattended LinkedIn login did not complete. Check the LinkedIn secrets or complete the account challenge in your browser; "
             "run local capture and commit its inputs if LinkedIn requires interactive authentication. Main was not updated."
         ) from error
 
@@ -576,7 +643,7 @@ def _contact(driver: WebDriver, username: str, settings: Capture) -> Section:
 
 def capture_profile(config: Config, root: Path, connect_port: int | None = None, *, headless: bool = False) -> Profile:
     """
-    Open Firefox for manual login, collect the owner profile, and cache its images.
+    Open the configured browser, collect the owner profile, and cache its images.
 
     Args:
         config (Config): Profile and capture settings.
@@ -592,17 +659,18 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
         ValueError: The profile is missing, redirected, or cannot be fully expanded.
     """
     if headless and connect_port is not None:
-        raise ValueError("Headless capture cannot attach to an interactive Firefox session.")
+        raise ValueError("Headless capture cannot attach to an interactive browser session.")
 
     # Missing secrets fail before a browser is started; interactive users keep their unlimited login wait.
     if headless and not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD")):
         raise ValueError("Headless capture requires LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD.")
 
-    print("Opening headless Firefox for LinkedIn capture." if headless else "Opening Firefox. Sign in to LinkedIn there.", flush=True)
+    name = config.capture.browser.title()
+    print(f"Opening headless {name} for LinkedIn capture." if headless else f"Opening {name}. Sign in to LinkedIn there.", flush=True)
     warnings: list[str] = []
 
     # Own one browser lifecycle across login, profile expansion, detail pages, and contact capture.
-    with _firefox(root, connect_port, headless=headless) as driver:
+    with _browser(root, config.capture, connect_port, headless=headless) as driver:
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)
         driver.set_window_size(1440, 1000)
 

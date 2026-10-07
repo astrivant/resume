@@ -44,9 +44,15 @@ def test_logo_changes_visible_stain_but_repeats_the_same_revision(tmp_path: Path
         # The transparent outer margin allows the README mark to sit on either a light or dark page.
         for image in (one, two):
             alpha = image.getchannel("A")
-            assert alpha.getextrema() == (0, 255)
+            assert alpha.getextrema()[0] == 0
             assert alpha.getpixel((0, 0)) == 0
             assert alpha.getpixel((767, 767)) == 0
+
+            # Unstained parts of the mark have 80% opacity; overlapping coffee adds density without making the base opaque.
+            histogram = alpha.histogram()
+            assert histogram[204] > 0
+            assert any(histogram[205:255])
+            assert histogram[255] == 0
 
 
 def test_logo_rejects_missing_seed_before_writing(tmp_path: Path) -> None:

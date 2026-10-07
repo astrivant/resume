@@ -386,7 +386,7 @@ def test_missing_credentials_fail_before_browser(tmp_path: Path, monkeypatch: Mo
     monkeypatch.delenv("LINKEDIN_USERNAME", raising=False)
     monkeypatch.delenv("LINKEDIN_PASSWORD", raising=False)
     firefox = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.ownership._firefox", firefox)
+    monkeypatch.setattr("resumeme.linkedin.ownership._browser", firefox)
 
     with pytest.raises(ValueError, match="require LINKEDIN"):
         publish_ownership(_config(), tmp_path, tmp_path / "missing.pub", headless=True)

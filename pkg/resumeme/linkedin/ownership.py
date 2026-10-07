@@ -13,7 +13,7 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-from resumeme.linkedin.browser import _firefox, _login, _navigate
+from resumeme.linkedin.browser import _browser, _login, _navigate
 from resumeme.linkedin.identity import ownership_block, reconcile_about, release_destination
 from resumeme.linkedin.retrying import retry
 from resumeme.signing import public_key_fingerprint
@@ -34,7 +34,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     Read a fresh owner-scoped About editor and its Save control.
 
     Args:
-        driver (WebDriver): Authenticated Firefox session.
+        driver (WebDriver): Authenticated browser session.
         config (Config): Expected profile owner and page timeout.
 
     Returns:
@@ -202,16 +202,17 @@ def publish_ownership(
         ValueError: Authentication options, public key, destination, or profile ownership are invalid.
     """
     if headless and connect_port is not None:
-        raise ValueError("Headless ownership updates cannot attach to interactive Firefox.")
+        raise ValueError("Headless ownership updates cannot attach to an interactive browser session.")
 
     if headless and not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD")):
         raise ValueError("Headless ownership updates require LINKEDIN_USERNAME and LINKEDIN_PASSWORD.")
 
     # Derive all public values before opening the browser; this command never receives the private signing key.
     block = ownership_block(public_key_fingerprint(public_key), release_destination(config.linkedin.ownership, root))
-    print("Opening Firefox to preview About." if dry_run else "Opening Firefox to update About.", flush=True)
+    name = config.capture.browser.title()
+    print(f"Opening {name} to preview About." if dry_run else f"Opening {name} to update About.", flush=True)
 
-    with _firefox(root, connect_port, headless=headless) as driver:
+    with _browser(root, config.capture, connect_port, headless=headless) as driver:
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)
         driver.set_window_size(1440, 1000)
 

@@ -10,8 +10,9 @@ CI renders a new composition only when it has a changed résumé or profile to
 commit. The verified source SHA controls the stain's rotation, reflection,
 proportions, position, saturation, brightness, and opacity. The ring sits off
 center toward a corner, with room for its entire outline and droplets. The blue
-mark stays fixed. A retry uses the same seed and locked Pillow dependency, and reproduces
-the same PNG bytes. No API key, network request, clock, or run counter is involved.
+mark stays fixed at 80% opacity and 80% saturation beneath the coffee layer.
+A retry uses the same seed and locked Pillow dependency, and reproduces the same
+PNG bytes. No API key, network request, clock, or run counter is involved.
 
 Preview a revision locally from the repository root:
 

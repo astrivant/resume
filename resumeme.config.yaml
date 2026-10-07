@@ -146,6 +146,9 @@ education:
     - school: Rochester Institute of Technology
 
 capture:
+  # firefox (default) or chrome; applies to interactive capture, headless CI, and live About updates.
+  # Install the selected browser locally. Logins persist separately under .cache/<browser>/.
+  browser: firefox
   page_timeout_seconds: 30
   max_scrolls: 60
   max_pages_per_section: 30

@@ -191,6 +191,7 @@ class Capture:
         retry_attempts (int): Total attempts for transient browser and HTTP failures.
         retry_backoff_seconds (int): Initial retry delay, doubled after every failed attempt.
         retry_max_backoff_seconds (int): Maximum exponential retry delay.
+        browser (Literal["firefox", "chrome"]): Selenium browser used for capture and live About updates.
     """
 
     page_timeout_seconds: int = 30
@@ -200,6 +201,7 @@ class Capture:
     retry_attempts: int = 5
     retry_backoff_seconds: int = 10
     retry_max_backoff_seconds: int = 300
+    browser: Literal["firefox", "chrome"] = "firefox"
 
 
 @frozen

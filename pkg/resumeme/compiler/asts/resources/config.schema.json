@@ -61,6 +61,12 @@
     "capture": {
       "type": "object",
       "properties": {
+        "browser": {
+          "type": "string",
+          "enum": ["firefox", "chrome"],
+          "default": "firefox",
+          "description": "Selenium browser for profile capture and live About updates. Each browser retains its own local login profile."
+        },
         "page_timeout_seconds": {
           "type": "integer",
           "minimum": 5,

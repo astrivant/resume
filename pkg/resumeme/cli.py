@@ -51,7 +51,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
 
     for name, help_text in (
-        ("capture", "Open Firefox, wait for login, and save your expanded profile and images"),
+        ("capture", "Open the configured browser, wait for login, and save your expanded profile and images"),
         ("enrich", "Discover text links, resolve destinations, and cache previews from the saved profile"),
         ("validate", "Validate configuration and snapshot ownership"),
         ("summary-prompt", "Prepare a Codex summary prompt and output schema from visible profile text"),
@@ -184,7 +184,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 130
     except NoSuchWindowException:
         print(
-            "resumeme: The browser window was closed. Rerun the command and leave Firefox open until it finishes.",
+            "resumeme: The browser window was closed. Rerun the command and leave the capture browser open until it finishes.",
             file=sys.stderr,
         )
         return 2
