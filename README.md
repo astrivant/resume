@@ -188,6 +188,13 @@ disable: [featured, interests, recommendations]
 
 This changes the generated resume while retaining the captured data. See
 [configuration](docs/README.md#configuration) for section keys and other options.
+The shipped configuration hides Contact info, Featured, Recommendations, Interests,
+Causes, Organizations, and Languages. Remove a section's key from `disable` to show it again.
+
+Projects and project attachments from visible jobs and Featured posts appear in
+one two-column Projects section. Matching resolved links merge into a single entry
+with their role associations; post text and inline links stay in Featured. Adding
+`projects` to `disable` also hides the relocated project cards.
 
 Filter individual jobs in the same file:
 
@@ -211,6 +218,12 @@ missing dates remain visible. Defaults keep all jobs (`disable: []`,
 
 The cover/background photo is hidden by default in `resume.config.yaml`. Set
 `style.show_header_photo` to `true` to display it again; the portrait stays visible.
+
+The identity column ends at the concise LinkedIn profile link. Connection details
+are optional: set `style.show_connection_count: true` to show the captured count,
+`style.show_connection_link: true` for a Connections link, or both to link the count.
+Both default to `false` and can also be overridden in inline themes. Re-enable the
+separate contact block by removing `contact` from `disable`.
 
 The top 20 skills appear as a word cloud scored by **references + 2 × endorsements**.
 Disabled sections contribute no references. Set `style.skills_word_cloud: false`

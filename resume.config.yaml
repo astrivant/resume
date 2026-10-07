@@ -4,7 +4,7 @@ linkedin:
 
 # Hide sections in the generated resume using their keys from data/profile.json.
 # Example: [featured, interests, recommendations]
-disable: [recommendations, interests]
+disable: [contact, featured, recommendations, interests, causes, organizations, languages]
 experience:
 
   # Match a job title, company, or both (case-insensitive).
@@ -43,6 +43,10 @@ style:
 
   # Set true to display the cover/background photo; the portrait stays visible.
   show_header_photo: false
+
+  # Optional connection metadata below the LinkedIn profile link. Enable either or both.
+  show_connection_count: false
+  show_connection_link: false
 
   # Show the top 20 skills by visible references plus twice each observed endorsement.
   skills_word_cloud: true

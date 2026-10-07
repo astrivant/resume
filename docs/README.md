@@ -44,6 +44,8 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; set to `false` in the reference config |
+| `style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |
+| `style.show_connection_link` | `false` | Link the count, or a concise Connections label, to the captured connections page |
 | `style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
 | `style.ink` | `191919` | Six-digit hexadecimal body text color |
 | `style.name_color` | `191919` | Six-digit hexadecimal profile name color |
@@ -76,6 +78,8 @@ The list applies to both the packaged template and custom templates. Disabled
 sections' text, links, and images are omitted from the generated resume; capture
 still collects them, and their data remains in the saved snapshot and repository.
 Removing a key from the list restores that section without another capture.
+The shipped `resume.config.yaml` hides Contact info, Featured, Recommendations,
+Interests, Causes, Organizations, and Languages.
 
 Use exact, lowercase `sections[].key` values from `data/profile.json`. Common keys
 are `contact`, `about`, `featured`, `experience`, `education`, `projects`, `skills`,
@@ -88,6 +92,18 @@ The reference config hides the cover/background photo with
 `style.show_header_photo: false`. Set it to `true` to restore the photo on the next
 build. This applies to packaged and custom templates, keeps the portrait and section
 images visible, and retains the captured photo so re-enabling it needs no recapture.
+
+The header omits standalone captured URLs and repeated connection metadata, leaving
+one concise LinkedIn profile link. Set `style.show_connection_count: true` for a
+plain connection count or `style.show_connection_link: true` for a Connections link.
+Enabling both makes the count clickable. These flags also work in inline themes;
+missing counts and destinations are never guessed. Contact info is independently
+controlled by the `contact` entry in `disable`.
+
+Captured intro text remains available, and URLs embedded in that prose retain
+their resolved destinations. Custom templates receive the same cleaned header
+plus `connection_count` and `connection_url`, which are empty when disabled or
+unavailable. The snapshot itself is unchanged.
 
 The Skills cloud shows at most 20 labels, ranked by **references + 2 × endorsements**,
 using only enabled sections. `disable: [skills]` hides it entirely. Set
@@ -142,7 +158,8 @@ run `resume capture` once so media and skill ownership can be separated correctl
 
 Whole-section `disable: [experience]` takes precedence over job filters. These
 settings apply before asset staging, skill scoring, and either packaged or custom
-templates. They do not filter other sections, such as Projects or the main Skills
+templates. Projects extracted from excluded jobs are omitted too. They do not filter
+independently captured entries in other sections, such as Projects or the main Skills
 list, where the same employer or skill might independently appear. Captured inputs
 stay intact, so removing a filter restores the content without another capture.
 
@@ -249,6 +266,22 @@ available. Older snapshots gain clickable prose links locally; network metadata
 requires capture or `enrich`. The `tex_links` filter accepts text and its associated
 links for custom templates, for example `paragraph|tex_links(entry.links)`.
 
+Before staging assets, `latex/projects.py` moves project links and attachments from
+visible Experience and Featured entries into Projects. Existing project descriptions
+take precedence, and repeated references add their role associations. Resolved URLs
+identify duplicates, falling back to original destinations when inspection has not
+run. Comparison ignores trailing slashes and fragments while preserving paths and
+queries, so a repository and its documentation page remain distinct. A URL-less
+project can match an unambiguous project name; LinkedIn's shared attachment viewer
+URL never merges unrelated projects. No external destination is guessed.
+
+Role descriptions, employer logos, and Featured post text remain in place. A
+Featured post's native preview accompanies its first external project reference.
+Inline links retain their resolved destinations after their cards move. Capture
+data remains unchanged. Disabling Projects hides all these cards; disabled source
+sections and excluded jobs never contribute cards. Custom templates receive the
+same consolidated profile view.
+
 `build` runs two pdfLaTeX passes in the digest-pinned
 [`drpsychick/texlive-pdflatex` image](https://hub.docker.com/r/drpsychick/texlive-pdflatex).
 The image is an amd64 image; Docker Desktop uses emulation on Apple Silicon.
@@ -261,6 +294,9 @@ The default layout uses white US Letter pages with 19 mm margins, EB Garamond
 type, and unboxed section headings. On the first page, the profile header and
 enabled contact information occupy the left column; About starts the right column,
 followed by the remaining enabled sections. Later pages use the full text width.
+Projects uses two top-aligned columns of entries; long entries continue across pages
+without truncation. If it would begin in the first-page identity layout, it starts
+on the next page instead. Sections after Projects resume full width.
 Disabling About starts the right column with the next enabled section. A minimal
 profile produces only its header, without empty section headings. Images and
 hyperlinks remain available. Image sizing follows the source's visual roles instead
@@ -366,6 +402,8 @@ The Python package separates capture from document generation:
 | `linkedin/media.py` | Link destination/title inspection, image previews, and portable PNG caching |
 | `linkedin/retrying.py` | Bounded exponential retries for browser operations |
 | `latex/escaping.py` | Literal text, emoji, and URL conversion for LaTeX |
+| `latex/header.py` | Concise identity text and optional connection counts and links |
+| `latex/projects.py` | Consolidated project cards, resolved-link deduplication, and retained role associations |
 | `latex/rendering.py` | Visibility filtering, asset staging, and strict Jinja rendering |
 | `latex/compilation.py` | Two-pass PDF compilation using the pinned TeX Live container |
 | `latex/resources/` | Packaged Jinja template and compiler image manifest |

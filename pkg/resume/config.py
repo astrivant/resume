@@ -111,6 +111,8 @@ class StyleOverrides(TypedDict, total=False):
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile cover photo.
+        show_connection_count (bool): Whether to display the captured connection count below the profile link.
+        show_connection_link (bool): Whether to link to the captured connections page.
         skills_word_cloud (bool): Whether to replace the Skills list with a cloud.
         ink (str): Six-digit hexadecimal body text color.
         name_color (str): Six-digit hexadecimal profile name color.
@@ -124,6 +126,8 @@ class StyleOverrides(TypedDict, total=False):
     background: str
     font_size: int
     show_header_photo: bool
+    show_connection_count: bool
+    show_connection_link: bool
     skills_word_cloud: bool
     ink: str
     name_color: str
@@ -143,6 +147,8 @@ class Style:
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile's cover/background photo.
+        show_connection_count (bool): Display the captured connection count below the profile link.
+        show_connection_link (bool): Link the count or a concise Connections label to its captured destination.
         skills_word_cloud (bool): Replace the Skills list with a cloud weighted by references and endorsements.
         ink (str): Six-digit hexadecimal body text color.
         name_color (str): Six-digit hexadecimal profile name color.
@@ -158,6 +164,8 @@ class Style:
     background: str = "FFFFFF"
     font_size: int = 10
     show_header_photo: bool = True
+    show_connection_count: bool = False
+    show_connection_link: bool = False
     skills_word_cloud: bool = True
     ink: str = "191919"
     name_color: str = "191919"

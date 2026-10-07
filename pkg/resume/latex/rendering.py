@@ -15,7 +15,9 @@ from jinja2 import Environment, StrictUndefined
 from resume.config import project_path
 from resume.latex.escaping import latex_escape, latex_linked_text, latex_url
 from resume.latex.experience import filter_experience
+from resume.latex.header import prepare_header
 from resume.latex.media import image_role, is_header_photo
+from resume.latex.projects import consolidate_projects
 from resume.latex.themes import resolve_style
 from resume.linkedin.links import discover_profile_links
 from resume.linkedin.sections import section_key
@@ -116,6 +118,12 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         ],
     )
 
+    # Connection counts are optional header metadata, not repeated intro prose or a second profile URL.
+    visible, connection_count, connection_url = prepare_header(visible, style)
+
+    # Consolidate only retained roles and posts, so exclusions cannot leak project cards back into the document.
+    visible, project_links = consolidate_projects(visible, enabled="projects" not in disabled)
+
     # Job tags can generate a Skills card even when LinkedIn did not provide a separate Skills section.
     scores = skill_scores(visible) if style.skills_word_cloud and "skills" not in disabled else {}
     skill_cloud = render_skill_cloud(scores, target.parent, colors=style.skill_colors, background=style.background)
@@ -166,8 +174,22 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
         comment_end_string="#))",
         keep_trailing_newline=True,
     )
+
+    def linked_text(value: str, links: list[Link]) -> str:
+        """
+        Keep relocated references available to hyperlinks embedded in source prose.
+
+        Args:
+            value (str): Visible text to escape and link.
+            links (list[Link]): References retained on this display block.
+
+        Returns:
+            str: Safe LaTeX with observed destinations for source and consolidated links.
+        """
+        return latex_linked_text(value, [*profile.links, *project_links, *links])
+
     environment.filters["tex"] = latex_escape
-    environment.filters["tex_links"] = latex_linked_text
+    environment.filters["tex_links"] = linked_text
     environment.filters["url"] = latex_url
     environment.tests["header_photo"] = is_header_photo
     environment.filters["image_role"] = image_role
@@ -178,6 +200,8 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     else:
         template = files("resume.latex").joinpath("resources/resume.tex.j2").read_text(encoding="utf-8")
 
-    content = environment.from_string(template).render(profile=prepared, style=style, skill_cloud=skill_cloud)
+    content = environment.from_string(template).render(
+        profile=prepared, style=style, skill_cloud=skill_cloud, connection_count=connection_count, connection_url=connection_url
+    )
     target.write_text(content, encoding="utf-8")
     return target

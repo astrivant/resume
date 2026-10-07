@@ -204,10 +204,24 @@
               },
               "skill_colors": {
                 "$ref": "#/properties/style/properties/skill_colors"
+              },
+              "show_connection_count": {
+                "$ref": "#/properties/style/properties/show_connection_count"
+              },
+              "show_connection_link": {
+                "$ref": "#/properties/style/properties/show_connection_link"
               }
             },
             "additionalProperties": false
           }
+        },
+        "show_connection_count": {
+          "description": "Display the captured connection count once below the LinkedIn profile link.",
+          "type": "boolean"
+        },
+        "show_connection_link": {
+          "description": "Link to the captured connections page, using the count or a concise Connections label.",
+          "type": "boolean"
         }
       },
       "required": [],

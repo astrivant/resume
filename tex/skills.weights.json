@@ -1,32 +1,42 @@
 {
-  "Python": {
-    "references": 11,
-    "endorsements": 2,
-    "weight": 15
-  },
-  "Kubernetes": {
-    "references": 13,
-    "endorsements": 0,
-    "weight": 13
-  },
   "Problem Solving": {
     "references": 1,
     "endorsements": 6,
     "weight": 13
   },
-  "GitHub": {
-    "references": 10,
+  "Kubernetes": {
+    "references": 11,
     "endorsements": 0,
-    "weight": 10
+    "weight": 11
   },
-  "Linux": {
+  "Python": {
+    "references": 7,
+    "endorsements": 2,
+    "weight": 11
+  },
+  "DevOps": {
     "references": 9,
     "endorsements": 0,
     "weight": 9
   },
+  "Linux": {
+    "references": 8,
+    "endorsements": 0,
+    "weight": 8
+  },
+  "CircleCI": {
+    "references": 6,
+    "endorsements": 0,
+    "weight": 6
+  },
   "Git": {
     "references": 4,
     "endorsements": 1,
+    "weight": 6
+  },
+  "GitHub": {
+    "references": 6,
+    "endorsements": 0,
     "weight": 6
   },
   "Terraform": {
@@ -37,11 +47,6 @@
   "Amazon Web Services (AWS)": {
     "references": 1,
     "endorsements": 2,
-    "weight": 5
-  },
-  "DevOps": {
-    "references": 5,
-    "endorsements": 0,
     "weight": 5
   },
   "Python (Programming Language)": {
@@ -74,21 +79,6 @@
     "endorsements": 0,
     "weight": 4
   },
-  "CircleCI": {
-    "references": 4,
-    "endorsements": 0,
-    "weight": 4
-  },
-  "Helm Charts": {
-    "references": 4,
-    "endorsements": 0,
-    "weight": 4
-  },
-  "Hypothesis Testing": {
-    "references": 4,
-    "endorsements": 0,
-    "weight": 4
-  },
   "Amazon EC2": {
     "references": 1,
     "endorsements": 1,
@@ -105,6 +95,11 @@
     "weight": 3
   },
   "HashiCorp": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Helm Charts": {
     "references": 3,
     "endorsements": 0,
     "weight": 3
@@ -280,6 +275,11 @@
     "weight": 1
   },
   "Hydroponics": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Hypothesis Testing": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
