@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Resumeme config",
+  "type": "object",
+  "properties": {
+    "disable": {
+      "description": "Section keys omitted from rendered output. Capture and the saved profile remain unchanged.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      }
+    },
+    "linkedin": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,99}$"
+        }
+      },
+      "required": [
+        "username"
+      ],
+      "additionalProperties": false
+    },
+    "capture": {
+      "type": "object",
+      "properties": {
+        "page_timeout_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 180
+        },
+        "max_scrolls": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "max_pages_per_section": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "fetch_link_previews": {
+          "type": "boolean"
+        },
+        "retry_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "retry_backoff_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 300
+        },
+        "retry_max_backoff_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "assets": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "tex": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "pdf": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "paper": {
+          "enum": [
+            "a4",
+            "letter"
+          ]
+        },
+        "accent": {
+          "description": "Six-digit hexadecimal hyperlink color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "theme": {
+          "description": "Optional key in style.themes; null leaves the base style unchanged.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "\\S"
+        },
+        "background": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "font_size": {
+          "enum": [
+            10,
+            11,
+            12
+          ]
+        },
+        "show_header_photo": {
+          "description": "Display the cover/background photo while retaining the portrait and section images.",
+          "type": "boolean"
+        },
+        "show_table_of_contents": {
+          "description": "Link visible sections below the LinkedIn profile link in the first-page identity column; enabled by default.",
+          "type": "boolean",
+          "default": true
+        },
+        "skills_word_cloud": {
+          "description": "Display the top 20 skills weighted by references plus twice each endorsement; disable skills to hide the cloud.",
+          "type": "boolean"
+        },
+        "ink": {
+          "description": "Body text color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "name_color": {
+          "description": "Profile name color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "heading_color": {
+          "description": "Section heading color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "entry_color": {
+          "description": "Entry heading color.",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$"
+        },
+        "skill_colors": {
+          "description": "Ordered hexadecimal color stops from zero to maximum displayed endorsements; one stop gives a uniform color.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Fa-f0-9]{6}$"
+          }
+        },
+        "themes": {
+          "description": "Inline partial style overrides; selected theme fields take precedence over base values.",
+          "type": "object",
+          "propertyNames": {
+            "pattern": "\\S"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "paper": {
+                "$ref": "#/properties/style/properties/paper"
+              },
+              "accent": {
+                "$ref": "#/properties/style/properties/accent"
+              },
+              "background": {
+                "$ref": "#/properties/style/properties/background"
+              },
+              "font_size": {
+                "$ref": "#/properties/style/properties/font_size"
+              },
+              "show_header_photo": {
+                "$ref": "#/properties/style/properties/show_header_photo"
+              },
+              "show_table_of_contents": {
+                "$ref": "#/properties/style/properties/show_table_of_contents"
+              },
+              "skills_word_cloud": {
+                "$ref": "#/properties/style/properties/skills_word_cloud"
+              },
+              "ink": {
+                "$ref": "#/properties/style/properties/ink"
+              },
+              "name_color": {
+                "$ref": "#/properties/style/properties/name_color"
+              },
+              "heading_color": {
+                "$ref": "#/properties/style/properties/heading_color"
+              },
+              "entry_color": {
+                "$ref": "#/properties/style/properties/entry_color"
+              },
+              "skill_colors": {
+                "$ref": "#/properties/style/properties/skill_colors"
+              },
+              "show_connection_count": {
+                "$ref": "#/properties/style/properties/show_connection_count"
+              },
+              "show_connection_link": {
+                "$ref": "#/properties/style/properties/show_connection_link"
+              },
+              "display_birthday": {
+                "$ref": "#/properties/style/properties/display_birthday"
+              },
+              "show_headline": {
+                "$ref": "#/properties/style/properties/show_headline"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "show_connection_count": {
+          "description": "Display the captured connection count once below the LinkedIn profile link.",
+          "type": "boolean"
+        },
+        "show_connection_link": {
+          "description": "Link to the captured connections page, using the count or a concise Connections label.",
+          "type": "boolean"
+        },
+        "display_birthday": {
+          "description": "Display the birthday field when contact information is enabled; hidden by default.",
+          "type": "boolean",
+          "default": false
+        },
+        "show_headline": {
+          "type": "boolean",
+          "default": false,
+          "description": "Display the captured headline beneath the portrait; hidden by default."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "template": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "experience": {
+      "description": "Filter displayed jobs without altering the captured snapshot.",
+      "type": "object",
+      "properties": {
+        "disable": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "company": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+          }
+        },
+        "last_years": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 9999,
+          "description": "Include employment overlapping the trailing calendar-year window; null includes all dates."
+        },
+        "as_of": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Quoted ISO date anchoring the window; null uses the current UTC date."
+        }
+      },
+      "additionalProperties": false
+    },
+    "github": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 39,
+          "pattern": "^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$",
+          "description": "Public GitHub username, or null to omit the header link."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "linkedin"
+  ],
+  "additionalProperties": false
+}

@@ -22,8 +22,8 @@ A profile with no optional content renders its name and LinkedIn URL. Empty
 sections are omitted from the document. Login pages and pages without an identity
 still fail capture.
 
-The [JSON Schema](../pkg/resumeme/resources/profile.schema.json) validates snapshots;
-[typed models](../pkg/resumeme/models.py) supply optional defaults. Existing version-1
+The [JSON Schema](../pkg/resumeme/compiler/asts/resources/profile.schema.json) validates snapshots;
+[typed models](../pkg/resumeme/compiler/asts/profile.py) supply optional defaults. Existing version-1
 snapshots remain valid.
 
 ## Section coverage

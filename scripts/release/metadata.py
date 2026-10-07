@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from resumeme.latex.compilation import tex_image
+from resumeme.compiler.backends.latex.compilation import tex_image
 
 directory = Path(sys.argv[1])
 

@@ -14,11 +14,11 @@ from jsonschema import ValidationError
 from PIL import Image
 
 from resumeme.cli import main
+from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile, safe_url
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, load_profile, save_profile
+from resumeme.compiler.backends.latex.escaping import latex_escape
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, load_config, project_path
-from resumeme.latex.escaping import latex_escape
-from resumeme.latex.rendering import render_profile
-from resumeme.linkedin.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile, safe_url
-from resumeme.models import Entry, Link, Media, Profile, Section, load_profile, save_profile
 
 
 @pytest.fixture

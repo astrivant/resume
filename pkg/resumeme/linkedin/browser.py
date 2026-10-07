@@ -24,10 +24,10 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 
+from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile
+from resumeme.compiler.asts.profile import save_profile
 from resumeme.linkedin.media import cache_media
-from resumeme.linkedin.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile
 from resumeme.linkedin.retrying import retry
-from resumeme.models import save_profile
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement
 
+    from resumeme.compiler.asts.profile import Entry, Profile, Section
     from resumeme.config import Capture, Config
-    from resumeme.models import Entry, Profile, Section
 
 __all__ = ["capture_profile"]
 

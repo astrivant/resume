@@ -9,10 +9,10 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
+from resumeme.compiler.asts.profile import Entry, Profile, Section
+from resumeme.compiler.passes.locations import job_locations
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn
-from resumeme.latex.locations import job_locations
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path

@@ -11,12 +11,12 @@ import pytest
 from attrs import evolve
 
 from resumeme.cli import main
+from resumeme.compiler.asts.links import discover_profile_links, text_links
+from resumeme.compiler.asts.parsing import parse_profile
+from resumeme.compiler.asts.profile import Entry, Link, Profile, Section, load_profile, save_profile
+from resumeme.compiler.backends.latex.escaping import latex_linked_text
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn
-from resumeme.latex.escaping import latex_linked_text
-from resumeme.latex.rendering import render_profile
-from resumeme.linkedin.links import discover_profile_links, text_links
-from resumeme.linkedin.parsing import parse_profile
-from resumeme.models import Entry, Link, Profile, Section, load_profile, save_profile
 
 if TYPE_CHECKING:
     from pathlib import Path

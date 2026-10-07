@@ -12,11 +12,11 @@ from attrs import evolve
 from jsonschema import ValidationError
 from PIL import Image
 
+from resumeme.compiler.asts.parsing import merge_profile_html, parse_detail, parse_profile
+from resumeme.compiler.asts.profile import Entry, Profile, Section, Skill, load_profile, save_profile
+from resumeme.compiler.asts.sections import SECTION_TITLES
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
-from resumeme.latex.rendering import render_profile
-from resumeme.linkedin.parsing import merge_profile_html, parse_detail, parse_profile
-from resumeme.linkedin.sections import SECTION_TITLES
-from resumeme.models import Entry, Profile, Section, Skill, load_profile, save_profile
 
 
 @pytest.mark.parametrize("filename", ["profile-minimal.html", "profile-maximal.html"])

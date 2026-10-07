@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from resumeme.compiler.asts.profile import Entry, Link, Profile, Section
+from resumeme.compiler.passes.lists import TextBlock, text_blocks
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
-from resumeme.latex.lists import TextBlock, text_blocks
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path

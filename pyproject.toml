@@ -28,8 +28,8 @@ resumeme = "resumeme.cli:main"
 [tool.poetry]
 packages = [{include = "resumeme", from = "pkg"}]
 include = [
-    {path = "pkg/resumeme/resources/**/*", format = ["sdist", "wheel"]},
-    {path = "pkg/resumeme/latex/resources/**/*", format = ["sdist", "wheel"]},
+    {path = "pkg/resumeme/compiler/asts/resources/**/*", format = ["sdist", "wheel"]},
+    {path = "pkg/resumeme/compiler/backends/latex/resources/**/*", format = ["sdist", "wheel"]},
 ]
 exclude = ["pkg/resumeme/tests"]
 

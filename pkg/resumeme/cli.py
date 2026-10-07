@@ -14,12 +14,12 @@ import yaml
 from jsonschema import ValidationError
 from selenium.common.exceptions import NoSuchWindowException, TimeoutException, WebDriverException
 
+from resumeme.compiler.asts.profile import load_profile, save_profile
+from resumeme.compiler.backends.latex.compilation import compile_pdf
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import load_config, project_path
-from resumeme.latex.compilation import compile_pdf
-from resumeme.latex.rendering import render_profile
 from resumeme.linkedin.browser import capture_profile
 from resumeme.linkedin.media import cache_media
-from resumeme.models import load_profile, save_profile
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

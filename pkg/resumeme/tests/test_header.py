@@ -12,13 +12,102 @@ from attrs import evolve
 from jsonschema import ValidationError
 from PIL import Image
 
-from resumeme.config import Config, LinkedIn, Style, load_config
-from resumeme.latex.header import prepare_header, prepare_header_logos
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Media, Profile, Section
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.passes.header import prepare_header, prepare_header_logos
+from resumeme.compiler.pipeline import render_profile
+from resumeme.config import Config, GitHub, LinkedIn, Style, load_config
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+@pytest.mark.parametrize("show", [False, True])
+@pytest.mark.parametrize("explicit", [False, True])
+def test_headline_visibility_preserves_company_location_and_source(show: bool, explicit: bool) -> None:
+    """
+    Hide only an identified headline, including legacy role-at-company text, and preserve the source for re-enabling.
+
+    Args:
+        show (bool): Effective headline visibility.
+        explicit (bool): Whether capture supplied a structured headline field.
+
+    Returns:
+        None: Company and location survive either setting and the saved profile stays intact.
+    """
+    headline = "Building useful systems" if explicit else "Owner @ Example"
+    intro = ["She/Her", headline, "Example Co.", "Boston, MA"]
+    profile = Profile("example-person", "Alex", intro=intro, headline=headline if explicit else "")
+    visible, _, _ = prepare_header(profile, Style(show_headline=show))
+    assert (headline in visible.intro) is show
+    assert visible.intro[-2:] == ["Example Co.", "Boston, MA"]
+    assert visible.intro[0] == "She/Her"
+    assert profile.intro == intro
+
+
+@pytest.mark.parametrize("intro", [[], ["Boston, MA"], ["Example Co.", "Boston, MA"]])
+def test_missing_headline_does_not_remove_minimal_identity(intro: list[str]) -> None:
+    """
+    Preserve header fields when no headline can be identified.
+
+    Args:
+        intro (list[str]): Minimal captured identity without a headline.
+
+    Returns:
+        None: Default visibility does not guess that the first company or location is a headline.
+    """
+    profile = Profile("example-person", "Alex", intro=intro)
+    assert prepare_header(profile, Style())[0].intro == intro
+
+
+@pytest.mark.parametrize("username", [None, "emmeowzing"])
+def test_social_links_follow_identity_with_platform_icons(tmp_path: Path, username: str | None) -> None:
+    """
+    Render the optional GitHub profile directly after LinkedIn with icons to each link's left.
+
+    Args:
+        tmp_path (Path): Isolated rendering directory.
+        username (str | None): Public GitHub account or an omitted link.
+
+    Returns:
+        None: Header order and URLs follow configuration without retaining the hidden headline.
+    """
+    profile = Profile("example-person", "Alex", intro=["Owner @ Example", "Example Co.", "Boston, MA"])
+    config = Config(LinkedIn(profile.username), github=GitHub(username))
+    source = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
+    assert "Owner @ Example" not in source
+    assert source.index("Example Co.") < source.index("Boston, MA") < source.index(r"\faLinkedin")
+    assert (r"\faGithub" in source) is bool(username)
+
+    if username:
+        assert source.index(r"\faLinkedin") < source.index(r"\faGithub")
+        assert rf"\href{{https://github.com/{username}}}" in source
+        assert f"GitHub: {username}" in source
+
+
+def test_headline_theme_and_github_config_validation(tmp_path: Path) -> None:
+    """
+    Validate optional social identity and apply headline visibility through normal theme precedence.
+
+    Args:
+        tmp_path (Path): Isolated config and template directory.
+
+    Returns:
+        None: The default hides headlines, theme overrides restore them, and unsafe usernames fail validation.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(
+        "linkedin:\n  username: example-person\ngithub:\n  username: emmeowzing\n"
+        "style:\n  theme: verbose\n  themes:\n    verbose:\n      show_headline: true\n",
+        encoding="utf-8",
+    )
+    config = load_config(path)
+    assert not config.style.show_headline
+    profile = Profile("example-person", "Alex", intro=["Owner @ Example"])
+    assert "Owner @ Example" in render_profile(profile, config, tmp_path).read_text()
+    path.write_text("linkedin:\n  username: example-person\ngithub:\n  username: bad/user\n", encoding="utf-8")
+
+    with pytest.raises(ValidationError):
+        load_config(path)
 
 
 @pytest.mark.parametrize("show_count", [False, True])
@@ -223,7 +312,7 @@ def test_header_company_logo_renders_inline_and_linked(tmp_path: Path, labeled: 
         images=[header_logo],
         sections=[] if labeled else [Section("experience", "Experience", [role])],
     )
-    source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
+    source = render_profile(profile, Config(LinkedIn(profile.username), style=Style(show_headline=True)), tmp_path).read_text()
     identity = source.split(r"\begin{document}", 1)[1].split(r"\textbf{LinkedIn profile}", 1)[0]
     assert identity.count(r"\companyline{") == 1
     assert identity.count(r"\includegraphics[") == 1

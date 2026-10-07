@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.config import Config, LinkedIn
-from resumeme.latex.compilation import compile_pdf
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -78,7 +78,7 @@ def test_compiler_backends_publish_after_both_passes(tmp_path: Path, monkeypatch
         (output / "custom.pdf").write_bytes(b"%PDF-1.7\ncompiled")
         return subprocess.CompletedProcess(command, 0, stdout="compiler output", stderr="")
 
-    monkeypatch.setattr("resumeme.latex.compilation.subprocess.run", run)
+    monkeypatch.setattr("resumeme.compiler.backends.latex.compilation.subprocess.run", run)
     assert compile_pdf(source, Config(LinkedIn("example-person")), tmp_path) == destination
     assert len(calls) == 2
     assert destination.read_bytes() == b"%PDF-1.7\ncompiled"
@@ -132,7 +132,7 @@ def test_failed_local_compilation_preserves_existing_pdf(tmp_path: Path, monkeyp
 
         return subprocess.CompletedProcess(command, int(calls == 2 and failure == "exit"), stdout="", stderr="compiler diagnostic")
 
-    monkeypatch.setattr("resumeme.latex.compilation.subprocess.run", run)
+    monkeypatch.setattr("resumeme.compiler.backends.latex.compilation.subprocess.run", run)
 
     # Check failure at the publication boundary, not just the subprocess result: no partial document may replace the prior PDF.
     with pytest.raises(subprocess.TimeoutExpired if failure == "timeout" else RuntimeError):

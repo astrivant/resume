@@ -34,11 +34,7 @@ capture your profile, and let a push to `main` build, sign, and publish it.
     - [Fork environment variables](#fork-environment-variables)
       - [Configure signing secrets](#configure-signing-secrets)
       - [LinkedIn authentication](#linkedin-authentication)
-    - [Container image](#container-image)
-  - [Development](#development)
-    - [Install and run checks](#install-and-run-checks)
-    - [Document checks](#document-checks)
-    - [Package layout and tooling](#package-layout-and-tooling)
+  - [Documentation](#documentation)
 
 ## Quick start
 
@@ -298,59 +294,9 @@ Set the profile slug in `resumeme.config.yaml` under `linkedin.username`, sign i
 locally with `resumeme capture`, and push the resulting snapshot and assets. Actions
 builds those committed inputs without signing in to LinkedIn.
 
-### Container image
+## Documentation
 
-Pushing a Git tag runs the pipeline and publishes the tested runtime image to
-`ghcr.io/<owner>/<repository>:<tag>`, plus `:sha-<full-commit-sha>`. Forks publish
-under their own repository names. The tag's release notes include the exact image
-paths and copyable `docker pull` commands. No extra registry secret is needed.
-
-After publishing a tag such as `v0.1.0`, build from your captured inputs with Docker:
-
-```bash
-docker run --rm --platform linux/amd64 --network=none \
-    --user "$(id -u):$(id -g)" \
-    --mount "type=bind,source=$PWD,target=/workspace" \
-    ghcr.io/OWNER/resumeme:v0.1.0 build
-```
-
-Replace `OWNER` with your lowercase GitHub owner name. The image includes Python,
-the locked runtime dependencies, Firefox, and the pinned TeX toolchain; PDF builds
-need no Docker socket or local Python installation. Capture still requires an
-interactive browser login. See [container usage and tag publishing](docs/containers.md)
-for local builds, browser display setup, and GHCR package visibility.
-
-## Development
-
-### Install and run checks
-
-```bash
-poetry install --with dev
-poetry run pre-commit install
-poetry run pre-commit run --all-files
-poetry run pytest --cov --cov-report=term-missing
-poetry build
-```
-
-Tests run in parallel by default using pytest-xdist, with coverage combined across
-workers. Local runs and CI use the same settings in `pyproject.toml`. Use
-`poetry run pytest -n 4` to choose a worker count or `poetry run pytest -n 0`
-to debug in a single process.
-
-### Document checks
-
-CI runs [TeXtidote Action](https://github.com/marketplace/actions/textidote-action)
-against this README and the generated LaTeX, with English spelling and grammar
-checks enabled. Download the `textidote-reports` artifact for annotated HTML;
-the job summary lists each document's finding count. Prose findings are advisory,
-while tool failures block CI and publication. See [document review](docs/README.md#document-review)
-for the pinned image and review policy.
-
-### Package layout and tooling
-
-Implementation and tests live in `pkg/resumeme/`: `linkedin/` handles capture and
-media, and `latex/` handles escaping, Jinja rendering, and PDF compilation.
-Configuration and profile models are shared at the package root. See
-[package responsibilities](docs/README.md#pipeline-and-ownership) for the module map.
-Repository tooling lives in `scripts/`. Local hooks and CI share Ruff, strict mypy,
-Google-style docstring checks, schema validation, ShellCheck, and shfmt.
+- [Configuration and operation](docs/README.md): capture, job filters, rendering, and signed releases.
+- [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
+- [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR.
+- [Development](docs/development.md): setup, parallel tests, tooling, and document checks.

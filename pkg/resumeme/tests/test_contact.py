@@ -11,10 +11,10 @@ import yaml
 from attrs import evolve
 from jsonschema import ValidationError
 
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.passes.contact import without_birthday
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, Style, load_config
-from resumeme.latex.contact import without_birthday
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Media, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path

@@ -18,14 +18,15 @@ from typing import TYPE_CHECKING
 from attrs import frozen
 from wordcloud import WordCloud
 
-from resumeme.linkedin.sections import section_key
-from resumeme.linkedin.skills import endorsement_count
-from resumeme.models import Skill
+from resumeme.compiler.asts.profile import Skill
+from resumeme.compiler.asts.sections import section_key
+from resumeme.compiler.asts.skills import endorsement_count
+from resumeme.compiler.constants.backend import CLOUD_FONT, LATEX_PACKAGE
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from resumeme.models import Profile
+    from resumeme.compiler.asts.profile import Profile
 
 __all__ = ["SkillScore", "endorsement_colors", "render_skill_cloud", "skill_scores"]
 
@@ -257,7 +258,7 @@ def render_skill_cloud(
     for attempt in range(3):
         cloud = WordCloud(
             # Match the document typography with the same pinned, locally bundled Garamond family.
-            font_path=str(files("resumeme.latex").joinpath("resources/fonts/EBGaramond-Regular.otf")),
+            font_path=str(files(LATEX_PACKAGE).joinpath(CLOUD_FONT)),
             width=1800,
             height=800 * (attempt + 1),
             background_color="#" + background,

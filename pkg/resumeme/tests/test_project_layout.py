@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING
 
 from PIL import Image
 
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.passes.project_layout import CompanyAffiliation, project_layout
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
-from resumeme.latex.project_layout import CompanyAffiliation, project_layout
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Media, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -131,7 +131,10 @@ def test_project_company_logos_render_inline_and_references_remain_clickable(tmp
     assert rf"\entrytitle{{\href{{{project_url}}}{{tool}}}}" in projects
     assert projects.count(r"\projectcompany{") == 1
     assert projects.count(r"\includegraphics[width=4mm,height=4mm,keepaspectratio]") == 1
-    assert projects.index(r"\projectcompany{") < projects.index("Example Co.") < projects.index(r"Engineer\par")
+    company_link = r"\hyperlink{resumeme-section-0-job-0}{Example Co.}"
+    role_link = r"\hyperlink{resumeme-section-0-job-0}{Engineer}"
+    assert projects.index(r"\projectcompany{") < projects.index(company_link) < projects.index(role_link)
+    assert source.count(r"\hypertarget{resumeme-section-0-job-0}{}") == 1
     assert projects.count("Example Co.") == 1
     assert "Associated with" not in projects
     assert rf"\href{{{company_url}}}{{%" in projects

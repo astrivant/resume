@@ -32,6 +32,8 @@ Disabled sections and jobs are excluded before templates run.
 | `entry\|job_locations` | Metadata lines mapped to Google Maps `Link` values |
 | `entry\|employer_badge` | `(paragraph_index, logo)` or `None`; index `-1` identifies the company heading |
 | `entry\|experience_layout` | Company-only metadata and nested `positions`; standalone entries are unchanged |
+| `company\|job_destination(roles=none)` | Anchor for the first matching visible company/role, or an empty string |
+| `line\|job_association` | `(prefix, label, anchor)` for a matched affiliation, or `None` |
 | `entry\|project_layout(show_title=true)` | Project presentation with `entry`, `title_url`, `affiliations`, `companies`, `metadata`, and `description` |
 | `profile\|header_logos` | Header display copy and inline logo mapping keyed by company text |
 | `image\|image_role(header=false)` | `cover`, `portrait`, `logo`, `icon`, or `preview` |
@@ -44,6 +46,11 @@ references. Render the company's metadata once, then its positions in order.
 Legacy flattened groups split at recognizable title/date boundaries; their media
 and links remain at company scope.
 
+The packaged template anchors employment headings with the section anchor plus
+`-job-<entry index>`, appending `-<position index>` for each nested role. Indices
+start at zero. Custom templates using the job navigation filters must emit these
+same destinations for their rendered employment hierarchy.
+
 `project_layout` separates dates and affiliations from descriptive text. Render
 `metadata` above project media and `description` below it. Pass `show_title=false`
 when omitting a project heading so its destination remains available elsewhere.
@@ -51,5 +58,5 @@ when omitting a project heading so its destination remains available elsewhere.
 `logo`. When rendering those rows, omit their original keys in `affiliations` from
 `metadata`; retain unmatched associations as text.
 
-The [packaged template](../pkg/resumeme/latex/resources/resume.tex.j2) defines the
+The [packaged template](../pkg/resumeme/compiler/backends/latex/resources/resume.tex.j2) defines the
 default layout and compilation requirements.

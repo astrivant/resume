@@ -12,12 +12,12 @@ import pytest
 from attrs import evolve
 from jsonschema import ValidationError
 
+from resumeme.compiler.asts.dates import EmploymentPeriod, employment_period
+from resumeme.compiler.asts.parsing import parse_detail
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, load_profile, save_profile
+from resumeme.compiler.passes.experience import clean_experience, filter_experience
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn, load_config
-from resumeme.latex.experience import clean_experience, filter_experience
-from resumeme.latex.rendering import render_profile
-from resumeme.linkedin.dates import EmploymentPeriod, employment_period
-from resumeme.linkedin.parsing import parse_detail
-from resumeme.models import Entry, Link, Media, Profile, Section, load_profile, save_profile
 
 if TYPE_CHECKING:
     from pathlib import Path

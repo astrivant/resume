@@ -11,11 +11,11 @@ from unittest.mock import MagicMock
 from attrs import evolve
 from PIL import Image
 
+from resumeme.compiler.asts.profile import Entry, Link, Profile, Section, Skill
+from resumeme.compiler.asts.skills import endorsement_count
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Capture, Config, LinkedIn
-from resumeme.latex.rendering import render_profile
 from resumeme.linkedin.browser import parse_detail_after_expansion
-from resumeme.linkedin.skills import endorsement_count
-from resumeme.models import Entry, Link, Profile, Section, Skill
 from resumeme.visualization.skills import SkillScore, endorsement_colors, render_skill_cloud, skill_scores
 
 if TYPE_CHECKING:

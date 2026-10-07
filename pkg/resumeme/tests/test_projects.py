@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING
 import pytest
 from attrs import evolve
 
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.passes.projects import consolidate_projects
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn
-from resumeme.latex.projects import consolidate_projects
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Media, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -155,7 +155,7 @@ def test_consolidated_projects_respect_sections_and_grouped_job_exclusions(tmp_p
     elif "experience" in disabled:
         assert "Kept project" not in source
     else:
-        assert source.count("Associated with Staff at Company") == 1
+        assert source.count(r"Associated with Staff at \hyperlink{resumeme-section-0-job-0-0}{Company}") == 1
 
     if "featured" in disabled:
         assert "Featured attachment" not in source

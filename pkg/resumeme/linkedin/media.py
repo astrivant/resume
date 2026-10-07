@@ -21,17 +21,17 @@ from PIL import Image, UnidentifiedImageError
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from resumeme.compiler.asts.links import discover_profile_links, safe_url
+from resumeme.compiler.asts.profile import Entry, Media
 from resumeme.config import project_path
-from resumeme.linkedin.links import discover_profile_links, safe_url
-from resumeme.models import Entry, Media
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from urllib3.response import BaseHTTPResponse
 
+    from resumeme.compiler.asts.profile import Profile
     from resumeme.config import Config
-    from resumeme.models import Profile
 
 __all__ = ["cache_media", "fetch_public"]
 

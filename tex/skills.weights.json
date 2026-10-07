@@ -4,15 +4,10 @@
     "endorsements": 6,
     "weight": 13
   },
-  "Kubernetes": {
-    "references": 11,
-    "endorsements": 0,
-    "weight": 11
-  },
   "Python": {
-    "references": 7,
+    "references": 6,
     "endorsements": 2,
-    "weight": 11
+    "weight": 10
   },
   "DevOps": {
     "references": 9,
@@ -24,17 +19,12 @@
     "endorsements": 0,
     "weight": 8
   },
-  "CircleCI": {
-    "references": 6,
+  "Kubernetes": {
+    "references": 7,
     "endorsements": 0,
-    "weight": 6
+    "weight": 7
   },
-  "Git": {
-    "references": 4,
-    "endorsements": 1,
-    "weight": 6
-  },
-  "GitHub": {
+  "CircleCI": {
     "references": 6,
     "endorsements": 0,
     "weight": 6
@@ -47,6 +37,11 @@
   "Amazon Web Services (AWS)": {
     "references": 1,
     "endorsements": 2,
+    "weight": 5
+  },
+  "Git": {
+    "references": 3,
+    "endorsements": 1,
     "weight": 5
   },
   "Python (Programming Language)": {
@@ -75,6 +70,11 @@
     "weight": 4
   },
   "Bash": {
+    "references": 4,
+    "endorsements": 0,
+    "weight": 4
+  },
+  "GitHub": {
     "references": 4,
     "endorsements": 0,
     "weight": 4

@@ -14,7 +14,21 @@ import yaml
 from attrs import field, frozen
 from jsonschema import Draft202012Validator, FormatChecker
 
-__all__ = ["Capture", "Config", "Experience", "JobSelector", "LinkedIn", "Output", "Style", "StyleOverrides", "load_config", "project_path"]
+from resumeme.compiler.constants.backend import AST_PACKAGE, CONFIG_SCHEMA
+
+__all__ = [
+    "Capture",
+    "Config",
+    "Experience",
+    "GitHub",
+    "JobSelector",
+    "LinkedIn",
+    "Output",
+    "Style",
+    "StyleOverrides",
+    "load_config",
+    "project_path",
+]
 
 
 @frozen
@@ -27,6 +41,18 @@ class LinkedIn:
     """
 
     username: str
+
+
+@frozen
+class GitHub:
+    """
+    Configure an optional public GitHub profile link without credentials.
+
+    Attributes:
+        username (str | None): GitHub account name, or None to omit the header link.
+    """
+
+    username: str | None = None
 
 
 @frozen
@@ -111,6 +137,7 @@ class StyleOverrides(TypedDict, total=False):
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile cover photo.
+        show_headline (bool): Whether to display the captured headline beneath the portrait.
         show_table_of_contents (bool): Whether to link visible sections beneath the LinkedIn profile link.
         show_connection_count (bool): Whether to display the captured connection count below the profile link.
         show_connection_link (bool): Whether to link to the captured connections page.
@@ -128,6 +155,7 @@ class StyleOverrides(TypedDict, total=False):
     background: str
     font_size: int
     show_header_photo: bool
+    show_headline: bool
     show_table_of_contents: bool
     show_connection_count: bool
     show_connection_link: bool
@@ -151,6 +179,7 @@ class Style:
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile's cover/background photo.
+        show_headline (bool): Display the captured headline beneath the portrait; hidden by default.
         show_table_of_contents (bool): Link visible sections beneath the LinkedIn profile link in the identity column.
         show_connection_count (bool): Display the captured connection count below the profile link.
         show_connection_link (bool): Link the count or a concise Connections label to its captured destination.
@@ -170,6 +199,7 @@ class Style:
     background: str = "FFFFFF"
     font_size: int = 10
     show_header_photo: bool = True
+    show_headline: bool = False
     show_table_of_contents: bool = True
     show_connection_count: bool = False
     show_connection_link: bool = False
@@ -197,6 +227,7 @@ class Config:
         template (str | None): Optional custom template path.
         disable (list[str]): Section keys omitted from rendered output while retaining the captured snapshot.
         experience (Experience): Job exclusions and optional employment date window.
+        github (GitHub): Optional public account linked beneath the LinkedIn profile.
     """
 
     linkedin: LinkedIn
@@ -206,6 +237,7 @@ class Config:
     template: str | None = None
     disable: list[str] = field(factory=list)
     experience: Experience = field(factory=Experience)
+    github: GitHub = field(factory=GitHub)
 
 
 def project_path(root: Path, value: str) -> Path:
@@ -249,7 +281,7 @@ def load_config(path: Path) -> Config:
 
     # Validate raw types before cattrs can coerce them, including real calendar dates for the job window.
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
-    schema = json.loads(files("resumeme").joinpath("resources/config.schema.json").read_text(encoding="utf-8"))
+    schema = json.loads(files(AST_PACKAGE).joinpath(CONFIG_SCHEMA).read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
 

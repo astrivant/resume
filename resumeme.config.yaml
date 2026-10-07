@@ -1,5 +1,9 @@
-# yaml-language-server: $schema=./pkg/resumeme/resources/config.schema.json
+# yaml-language-server: $schema=./pkg/resumeme/compiler/asts/resources/config.schema.json
 linkedin:
+  username: emmeowzing
+
+# Optional public profile link; set username to null to hide it.
+github:
   username: emmeowzing
 
 # Hide sections in the generated resume using their keys from data/profile.json.
@@ -9,14 +13,16 @@ experience:
 
   # Match a job title, company, or both (case-insensitive).
   # Example: [{title: DevOps Engineer, company: HqO}]
-  disable: []
+  disable:
+    - title: Founder
+      company: PremiScale
 
   # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
   last_years: null
 
   # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
   # null uses today's UTC date. Keep explicit dates quoted.
-  as_of: null
+  as_of: '2020-06-01'
 capture:
   page_timeout_seconds: 30
   max_scrolls: 60
@@ -31,6 +37,7 @@ output:
   tex: tex/resume.tex
   pdf: resume.pdf
 style:
+  show_headline: false
 
   # null uses the base style below; set tiger to apply the matching overrides in themes.
   theme: tiger

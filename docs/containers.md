@@ -90,7 +90,7 @@ docker run --rm --platform linux/amd64 --entrypoint /usr/bin/tini resumeme:dev -
 
 Dependencies install from `poetry.lock` without resolving new versions. The base
 Python and TeX images are pinned by digest. Keep the TeX digest in `Dockerfile`
-and `pkg/resumeme/latex/resources/toolchain.json` aligned; schema checks enforce this
+and `pkg/resumeme/compiler/backends/latex/resources/toolchain.json` aligned; schema checks enforce this
 shared toolchain contract. Dependabot tracks Docker and Actions updates.
 
 ## Publish on a tag

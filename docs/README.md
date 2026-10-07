@@ -11,6 +11,7 @@
 - [Container usage and tag publication](containers.md)
 - [Signed releases](#signed-releases)
 - [Pipeline and ownership](#pipeline-and-ownership)
+- [Development](development.md)
 - [Capture limits and recovery](#capture-limits-and-recovery)
 
 ## Configuration
@@ -59,7 +60,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `template` | `null` | Optional custom Jinja/LaTeX template |
 
 The configuration and profile JSON Schemas are packaged under
-`pkg/resumeme/resources/` and checked by pre-commit.
+`pkg/resumeme/compiler/asts/resources/` and checked by pre-commit.
 
 Select `style.theme: tiger` to use the autumn palette included in the reference
 config, or add your own entries under `style.themes`. The selected entry overrides
@@ -291,6 +292,12 @@ trailing slashes are ignored; paths and query strings are significant. Unlinked
 attachments can match an unambiguous title. Shared LinkedIn viewer URLs do not
 identify a unique project.
 
+Company names in Projects link to their associated role in Experience. When a
+project names multiple roles, the company name targets the first matching role
+in document order; each role label also links to its own position. Company-only
+associations target the first visible company entry. Excluded or unmatched jobs
+remain plain text. Company logos retain their captured external links.
+
 Text, titles, and media use captured link destinations. `capture` and `enrich`
 resolve redirects and fetch preview metadata; rendering does not make network
 requests. Distinct references remain available even when a duplicate heading or
@@ -303,7 +310,7 @@ See the [template interface](templates.md) for context variables, filters, and
 escaping requirements.
 
 Bundled font licenses and credits are in
-[`latex/resources/fonts/`](../pkg/resumeme/latex/resources/fonts/README.md).
+[`latex/resources/fonts/`](../pkg/resumeme/compiler/backends/latex/resources/fonts/README.md).
 Emoji use Twemoji graphics under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/),
 with attribution in PDF metadata. Unsupported Unicode characters fail compilation.
 

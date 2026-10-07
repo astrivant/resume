@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING
 import pytest
 from PIL import Image
 
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.passes.media import employer_badge, image_role
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
-from resumeme.latex.media import employer_badge, image_role
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Media, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path

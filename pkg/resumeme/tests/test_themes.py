@@ -13,10 +13,10 @@ from attrs import evolve
 from jsonschema import ValidationError
 from PIL import Image, ImageChops
 
+from resumeme.compiler.asts.profile import Entry, Media, Profile, Section, Skill
+from resumeme.compiler.passes.themes import resolve_style
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, Style, load_config
-from resumeme.latex.rendering import render_profile
-from resumeme.latex.themes import resolve_style
-from resumeme.models import Entry, Media, Profile, Section, Skill
 from resumeme.visualization.skills import SkillScore, render_skill_cloud
 
 if TYPE_CHECKING:

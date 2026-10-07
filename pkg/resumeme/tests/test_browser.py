@@ -16,8 +16,8 @@ from resumeme.linkedin.browser import _detail_tabs, _firefox
 if TYPE_CHECKING:
     from pytest import MonkeyPatch
 
+    from resumeme.compiler.asts.profile import Profile
     from resumeme.config import Config
-    from resumeme.models import Profile
 
 
 def test_macos_profile_survives_retries_locally(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:

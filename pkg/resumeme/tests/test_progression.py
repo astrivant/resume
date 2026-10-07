@@ -10,10 +10,10 @@ import pytest
 from attrs import evolve
 from PIL import Image
 
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.passes.progression import experience_layout
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn
-from resumeme.latex.progression import experience_layout
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Media, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -121,10 +121,13 @@ def test_role_progression_renders_once_after_job_filters(tmp_path: Path, filtere
     profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [group])])
     text = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert text.count(r"\begin{roleprogression}") == 1
-    assert text.count(r"\roletitle{Staff Engineer}") == 1
+    company_heading = r"\entrytitle{\hypertarget{resumeme-section-0-job-0}{}Example}"
+    current_heading = r"\roletitle{\hypertarget{resumeme-section-0-job-0-0}{}Staff Engineer}"
+    previous_heading = r"\roletitle{\hypertarget{resumeme-section-0-job-0-1}{}Engineer}"
+    assert text.count(current_heading) == 1
     assert text.count("Current delivery") == 1
     assert text.count(r"\includegraphics[") == 1
     assert "https://www.google.com/maps/search/" in text
-    assert (r"\roletitle{Engineer}" in text) is not filtered
+    assert (previous_heading in text) is not filtered
     assert ("Earlier delivery" in text) is not filtered
-    assert text.index(r"\entrytitle{Example}") < text.index(r"\begin{roleprogression}") < text.index(r"\roletitle{Staff Engineer}")
+    assert text.index(company_heading) < text.index(r"\begin{roleprogression}") < text.index(current_heading)

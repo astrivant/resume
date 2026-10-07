@@ -11,9 +11,9 @@ import pytest
 import yaml
 from jsonschema import ValidationError
 
+from resumeme.compiler.asts.profile import Entry, Link, Profile, Section, Skill
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn, load_config
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Profile, Section, Skill
 
 if TYPE_CHECKING:
     from pathlib import Path

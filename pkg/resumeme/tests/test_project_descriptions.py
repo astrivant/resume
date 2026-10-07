@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING
 import pytest
 from PIL import Image
 
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.passes.project_descriptions import partition_descriptions
+from resumeme.compiler.passes.projects import consolidate_projects
+from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
-from resumeme.latex.project_descriptions import partition_descriptions
-from resumeme.latex.projects import consolidate_projects
-from resumeme.latex.rendering import render_profile
-from resumeme.models import Entry, Link, Media, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -144,10 +144,12 @@ def test_project_description_follows_media_and_stays_out_of_experience(tmp_path:
     assert projects.count("for the architecture.") == 1
     assert rf"Read \href{{{url}}}{{{url}}} for the architecture." in projects.replace(r"\allowbreak{}", "")
 
+    association = r"Associated with \hyperlink{resumeme-section-0-job-0}{Engineer}"
+
     if illustrated:
-        assert projects.index("Associated with Engineer") < projects.index(r"\includegraphics[") < projects.index("for the architecture.")
+        assert projects.index(association) < projects.index(r"\includegraphics[") < projects.index("for the architecture.")
     else:
-        assert projects.index("Associated with Engineer") < projects.index("for the architecture.")
+        assert projects.index(association) < projects.index("for the architecture.")
 
 
 def test_featured_post_keeps_its_own_text_when_a_preview_moves() -> None:

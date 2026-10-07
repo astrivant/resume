@@ -13,11 +13,11 @@ import requests
 from attrs import evolve
 from PIL import Image
 
+from resumeme.compiler.asts.parsing import parse_detail
+from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
+from resumeme.compiler.passes.experience import filter_experience
 from resumeme.config import Config, Experience, JobSelector, LinkedIn
-from resumeme.latex.experience import filter_experience
 from resumeme.linkedin.media import cache_media, fetch_public
-from resumeme.linkedin.parsing import parse_detail
-from resumeme.models import Entry, Link, Media, Profile, Section
 
 if TYPE_CHECKING:
     from pathlib import Path
