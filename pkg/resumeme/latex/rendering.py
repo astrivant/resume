@@ -22,6 +22,7 @@ from resumeme.latex.headings import distinct_heading
 from resumeme.latex.lists import text_blocks
 from resumeme.latex.locations import job_locations
 from resumeme.latex.media import employer_badge, image_role, is_header_photo
+from resumeme.latex.progression import experience_layout
 from resumeme.latex.project_layout import company_logos, project_layout
 from resumeme.latex.projects import consolidate_projects
 from resumeme.latex.themes import resolve_style
@@ -213,6 +214,7 @@ def render_profile(profile: Profile, config: Config, root: Path, *, allow_incomp
     environment.filters["employer_badge"] = employer_badge
     environment.filters["text_blocks"] = text_blocks
     environment.filters["distinct_heading"] = distinct_heading
+    environment.filters["experience_layout"] = experience_layout
     environment.filters["job_locations"] = job_locations
     companies = company_logos(prepared)
     environment.filters["project_layout"] = partial(project_layout, companies=companies)

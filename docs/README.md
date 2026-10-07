@@ -53,7 +53,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `style.name_color` | `191919` | Six-digit hexadecimal profile name color |
 | `style.heading_color` | `191919` | Six-digit hexadecimal section heading color |
 | `style.entry_color` | `363636` | Six-digit hexadecimal entry heading color; matches body text by default |
-| `style.skill_colors` | `[555555]` | Nonempty list of hexadecimal cloud colors; one neutral tone by default |
+| `style.skill_colors` | `[777777, 363636]` | Ordered color stops from zero to maximum displayed endorsements |
 | `style.theme` | `null` | Optional name from `style.themes`; null uses the base style |
 | `style.themes` | `{}` | Inline partial style overrides; the reference config includes `tiger` |
 | `template` | `null` | Optional custom Jinja/LaTeX template |
@@ -75,61 +75,28 @@ disable:
   - recommendations
 ```
 
-Run `poetry run resumeme build` or push the configuration change to rebuild in CI.
-The list applies to both the packaged template and custom templates. Disabled
-sections' text, links, and images are omitted from the generated resume; capture
-still collects them, and their data remains in the saved snapshot and repository.
-Removing a key from the list restores that section without another capture.
-The shipped `resumeme.config.yaml` hides Contact info, Featured, Recommendations,
-Interests, Causes, Organizations, and Languages.
+Use lowercase `sections[].key` values from `data/profile.json`. Unknown keys have
+no effect; `[]` includes every captured section. Exclusions apply to PDF output,
+project consolidation, and skill scoring. The snapshot remains complete.
 
-Use exact, lowercase `sections[].key` values from `data/profile.json`. Common keys
-are `contact`, `about`, `featured`, `experience`, `education`, `projects`, `skills`,
-`recommendations`, `languages`, `organizations`, `interests`, and `causes`. Custom
-section keys are supported. Keys absent from the snapshot have no effect, and an
-empty list includes every captured section. The profile header remains visible,
-and existing capture-warning checks still apply.
+The shipped config disables `contact`, `featured`, `recommendations`, `interests`,
+`causes`, `organizations`, and `languages`. Rebuild locally with
+`poetry run resumeme build`, or push the config change for CI to rebuild.
 
-The reference config hides the cover/background photo with
-`style.show_header_photo: false`. Set it to `true` to restore the photo on the next
-build. This applies to packaged and custom templates, keeps the portrait and section
-images visible, and retains the captured photo so re-enabling it needs no recapture.
+### Header and skills
 
-Captured pronouns appear directly beneath the name, above the portrait in the
-first-page identity column, and are not repeated in the introductory text.
-The header omits standalone captured URLs and repeated connection metadata, leaving
-one concise LinkedIn profile link. Set `style.show_connection_count: true` for a
-plain connection count or `style.show_connection_link: true` for a Connections link.
-Enabling both makes the count clickable. These flags also work in inline themes;
-missing counts and destinations are never guessed. Contact info is independently
-controlled by the `contact` entry in `disable`.
+- `show_header_photo` controls the cover image; the portrait remains visible.
+- `show_table_of_contents` adds links to visible sections in document order.
+- `show_connection_count` and `show_connection_link` control connection metadata
+  independently. Enabling both links the count.
+- `display_birthday` applies only when `contact` is enabled.
+- `skills_word_cloud` replaces the Skills list with the top 20 weighted skills.
+  Size represents references plus twice the endorsement count. Color represents
+  endorsements relative to the highest count among those 20 skills.
 
-The first-page identity column includes a **Contents** heading and indented links
-directly beneath the LinkedIn profile link. Only rendered sections appear, in PDF
-order, including consolidated Projects and a generated Skills cloud. Empty or
-disabled sections have no link, and a header-only profile has no contents block.
-Set `style.show_table_of_contents: false` to hide it, or override the setting in an
-inline theme. Custom templates receive `section_navigation`, a list of
-`(anchor, section)` pairs with unique TeX-safe destinations in display order.
-
-Birthdays remain hidden even when Contact info is enabled. Set
-`style.display_birthday: true` to include the captured birthday field, or override
-it in an inline theme. The setting applies to packaged and custom templates and
-preserves the birthday in the snapshot. Disabling `contact` still hides the whole
-block, regardless of this setting.
-
-Captured intro text remains available, and URLs embedded in that prose retain
-their resolved destinations. Custom templates receive the same cleaned header
-plus `connection_count` and `connection_url`, which are empty when disabled or
-unavailable. The snapshot itself is unchanged.
-
-The Skills cloud shows at most 20 labels, ranked by **references + 2 × endorsements**,
-using only enabled sections. It displays at up to 75% of the body width, preserving
-its aspect ratio. `disable: [skills]` hides it entirely. Set
-`style.skills_word_cloud: false` to restore the captured Skills list. The PNG and
-`tex/skills.weights.json` are regenerated with the TeX. See the
-[profile schema and scoring rules](profile-schema.md) for supported sections,
-minimal profiles, legacy snapshots, and count interpretation.
+Set `skills_word_cloud: false` for the text list or add `skills` to `disable` to
+hide the section. See [skill scoring](profile-schema.md#scoring-and-rendering) and
+[theme configuration](themes.md). All style fields support inline theme overrides.
 
 ## Job filtering
 
@@ -168,19 +135,18 @@ years, and ISO dates. Month-only dates cover the entire month, and year-only dat
 cover the entire year: `Oct 2021` and `2021` end dates both overlap this cutoff.
 Missing, invalid, or unsupported date text stays visible rather than being guessed.
 
-Grouped company entries retain individual role boundaries on capture. Filtering
-removes only the excluded roles, along with their descriptions, links, images, and
-skill contributions. Retained roles keep their original text and dates; an employer
-with no retained roles disappears. Earlier snapshots may contain only flattened
-company groups: whole-group filtering works, but a partial selection asks you to
-run `resumeme capture` once so media and skill ownership can be separated correctly.
+Grouped employment renders under a single company heading, with nested role titles
+and a muted vertical rule. Structured `positions` retain role-specific descriptions,
+dates, locations, and references. Filtering removes excluded roles before rendering
+and scoring; companies with no retained roles are omitted.
 
-Whole-section `disable: [experience]` takes precedence over job filters. These
-settings apply before asset staging, skill scoring, and either packaged or custom
-templates. Projects extracted from excluded jobs are omitted too. They do not filter
-independently captured entries in other sections, such as Projects or the main Skills
-list, where the same employer or skill might independently appear. Captured inputs
-stay intact, so removing a filter restores the content without another capture.
+Legacy flattened groups support the same layout when title/date boundaries are
+recognizable. Partial job filtering still requires structured positions; run
+`resumeme capture` if the filter reports missing role boundaries.
+
+`disable: [experience]` overrides job filters. Excluded roles cannot contribute
+project attachments or skill references. Independently captured Projects and Skills
+entries remain subject to their own section settings.
 
 ## Environment variables
 
@@ -276,116 +242,65 @@ poetry run resumeme render
 poetry run resumeme build
 ```
 
-Rendering does not contact LinkedIn. It consumes the committed snapshot, copies
-only referenced PNGs into `tex/assets/`, escapes profile text, and renders the
-packaged `resume.tex.j2` with strict undefined-variable handling. Templates use
-`((( variable )))` for expressions and `((* statement *))` for control flow.
-Prose URLs become inline hyperlinks, using saved resolved destinations when
-available. Older snapshots gain clickable prose links locally; network metadata
-requires capture or `enrich`. The `tex_links` filter accepts text and its associated
-links for custom templates, for example `paragraph|tex_links(entry.links)`.
-
-List presentation is normalized during rendering, leaving captured text intact.
-Line-start dashes, ASCII bullets, Unicode bullets/arrows, checkboxes, emoji markers,
-and numbered or lettered lists become regular LaTeX bullets with hanging indentation.
-Nested indentation and explicitly indented continuations are preserved. Ambiguous
-initials need adjacent list items, and dates, negative numbers, versions, inline
-punctuation, and unrecognized prose stay unchanged. Custom templates can use
-`paragraphs|text_blocks` to obtain text and optional bullet depth, then apply
-`tex_links` to each block's text.
-
-Job location metadata links to Google Maps while retaining its captured wording.
-Individual roles and shared company locations in grouped jobs are supported;
-work arrangements such as Remote, Hybrid, and On-site remain plain text. Links
-use [Google's Maps URL format](https://developers.google.com/maps/documentation/urls/get-started)
-with an encoded location query, so builds need no geocoding request or API key.
-The snapshot stays unchanged. Custom templates can use `entry|job_locations`,
-which maps each recognized metadata line to a `Link` with its place label and URL.
-
-Before staging assets, `latex/projects.py` moves project links and attachments from
-visible Experience and Featured entries into Projects. Existing project descriptions
-take precedence, and repeated references add their role associations. Resolved URLs
-identify duplicates, falling back to original destinations when inspection has not
-run. Comparison ignores trailing slashes and fragments while preserving paths and
-queries, so a repository and its documentation page remain distinct. A URL-less
-project can match an unambiguous project name; LinkedIn's shared attachment viewer
-URL never merges unrelated projects. No external destination is guessed.
-
-Attachment descriptions move with their cards from Experience into Projects.
-Observed standalone card titles identify the following description text; another
-card, role title/date, or role-content heading ends that block. Ambiguous labels
-and inline mentions do not establish ownership. Role narrative, employer logos,
-and Featured post text remain in place. A Featured post's native preview accompanies its first external project reference.
-Inline links retain their resolved destinations after their cards move. Capture
-data remains unchanged. Disabling Projects hides all these cards; disabled source
-sections and excluded jobs never contribute cards. Custom templates receive the
-same consolidated profile view.
-
-Project company logos appear inline immediately before the company name, sized to
-1.1 em and linked to the captured company destination when available. Logos can be
-reused from visible jobs; unlabeled project logos are matched only when the company
-association is unambiguous. Project titles and previews carry their destinations,
-so duplicate standalone URL/link rows are omitted. Dates and affiliations appear
-above the media, with project descriptions below the image or logo. Projects
-without images still display their descriptions. Other distinct references remain
-visible. Custom templates can use `entry|project_layout` and its `metadata` and
-`description` lists for this presentation view without changing the snapshot.
-
-`build` runs two pdfLaTeX passes in the digest-pinned
+`render` reads the configured snapshot and cached assets, applies visibility rules,
+and writes LaTeX. It runs offline. `build` then compiles twice using the pinned
 [`drpsychick/texlive-pdflatex` image](https://hub.docker.com/r/drpsychick/texlive-pdflatex).
-The image is an amd64 image; Docker Desktop uses emulation on Apple Silicon.
-Compilation has networking and shell escape disabled. Inputs are mounted read-only,
-and a failed build leaves the previous PDF intact. Logs are in `.cache/build/`.
-Fixed PDF timestamps and metadata make identical inputs reproducible. When using
-`experience.last_years`, pin `experience.as_of` to keep the date window fixed too.
+Docker Desktop runs its amd64 toolchain under emulation on Apple Silicon.
 
-The default layout uses white US Letter pages with 19 mm margins, EB Garamond
-type, and unboxed section headings. On the first page, the profile header, linked
-contents, and enabled contact information occupy the left column; About starts the right column,
-followed by the remaining enabled sections. Later pages use the full text width.
-Projects uses two top-aligned columns of entries; long entries continue across pages
-without truncation. If it would begin in the first-page identity layout, it starts
-on the next page instead. Sections after Projects resume full width.
-Disabling About starts the right column with the next enabled section. A minimal
-profile produces only its header, without empty section headings. Images and
-hyperlinks remain available.
+Compilation disables networking and shell escape. Failed builds preserve the
+previous PDF; compiler logs are in `.cache/build/`. Identical inputs and dependency
+versions produce reproducible output. Pin `experience.as_of` when using a date
+window in a reproducible build.
 
-Child headings that repeat their parent section title are omitted, so a Languages
-section does not contain another Languages heading. Comparison normalizes Unicode
-presentation forms, case, and whitespace; distinct titles and ordinary body text
-remain intact. Paragraphs, images, and link destinations survive even when a heading
-is suppressed. This presentation rule leaves captured data unchanged. Custom
-templates can apply `entry.title|distinct_heading(section.title)` before rendering
-an entry heading; an empty result means omit the heading.
+### Document layout
 
-Image sizing follows the source's visual roles instead
-of download resolution: the profile portrait is a 36.4 mm circle, company/school
-logos fit within 8 mm, and site icons fit within 3.5 mm. Featured and Activity images
-are larger illustrations; job and project attachments fit within 24 × 14 mm.
-Experience logos sit to the left of the employer name, including company headings
-for grouped roles, and are not repeated below the job description. Missing logos
-leave the company text in place without an empty image placeholder.
-The first-page identity column uses the same logo-and-name row for captured header
-companies, displaying each matched company once. Labels or identical staged logos
-from visible Experience entries establish ownership; unmatched logos stay in the
-header gallery. Custom templates can use the `header_logos` filter to obtain the
-header display copy and its inline badges without changing the profile snapshot.
-The linked logo replaces the separate text reference to the same employer URL;
-jobs without a linked logo keep that reference. Rendering also removes LinkedIn's
-"helped me get this job" attribution and its repeated fragments from experience,
-including the data supplied to custom templates. Captured snapshots remain intact.
-Only portraits are cropped to a circle; other images retain their aspect ratio
-and full content. These are print proportions, not pixel-for-pixel browser sizes.
+The default is US Letter with 19 mm margins and bundled EB Garamond. Set
+`style.paper: a4` for ISO A4 and `style.font_size` for 10, 11, or 12 point body text.
+The first page has an identity column and a content column starting with About;
+subsequent pages use the full text width. Projects uses two columns.
 
-Garamond is bundled for offline builds in both compiler backends and used for
-the skills cloud too. Font credits and licenses are in
-[`pkg/resumeme/latex/resources/fonts/`](../pkg/resumeme/latex/resources/fonts/README.md).
-Set `style.paper: a4` for ISO A4; `style.font_size` controls the body text.
-Emoji use the image-based `twemojis` package from the
-compiler image. Twemoji graphics are copyright Twitter and contributors, licensed
-under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); attribution is also
-included in PDF metadata. pdfLaTeX supports the configured Latin font repertoire;
-unsupported Unicode characters fail compilation rather than silently disappearing.
+| Content | Presentation |
+| --- | --- |
+| Profile | Round portrait, pronouns beneath the name, company logo beside its name |
+| Grouped experience | Company heading followed by nested roles joined by a muted left rule; long groups continue across pages |
+| Projects | Dates and affiliations above media; descriptions below; inline company logos |
+| Skills | Up to 20 words; size by combined score, color by relative endorsement count |
+| Headings | Child headings identical to their parent are omitted, ignoring case and Unicode/whitespace formatting |
+| Lists | Recognized ASCII, Unicode, checkbox, and ordered markers render as bullets with nested indentation |
+| Locations | Captured job locations link to Google Maps; work arrangements remain plain text |
+| Images | Portrait: 36.4 mm; organization logos: up to 8 mm; icons: up to 3.5 mm; attachments: up to 24 × 14 mm |
+
+Photos and logos retain their proportions; only portraits are cropped. Section and
+entry text remains complete across page breaks. LinkedIn UI attribution, repeated
+header company names, and redundant standalone references are omitted.
+
+### Project consolidation and links
+
+Projects includes attachments from visible Experience and Featured entries.
+Descriptions associated with an attachment move with it; role narrative and
+Featured post text remain in their source sections. Disabling Projects also hides
+these consolidated attachments.
+
+Deduplication uses resolved URLs, falling back to captured URLs. Fragments and
+trailing slashes are ignored; paths and query strings are significant. Unlinked
+attachments can match an unambiguous title. Shared LinkedIn viewer URLs do not
+identify a unique project.
+
+Text, titles, and media use captured link destinations. `capture` and `enrich`
+resolve redirects and fetch preview metadata; rendering does not make network
+requests. Distinct references remain available even when a duplicate heading or
+standalone URL is omitted.
+
+### Templates and assets
+
+Set `template` to a project-relative Jinja file to replace the packaged layout.
+See the [template interface](templates.md) for context variables, filters, and
+escaping requirements.
+
+Bundled font licenses and credits are in
+[`latex/resources/fonts/`](../pkg/resumeme/latex/resources/fonts/README.md).
+Emoji use Twemoji graphics under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/),
+with attribution in PDF metadata. Unsupported Unicode characters fail compilation.
 
 ## Signed releases
 
@@ -475,6 +390,7 @@ The Python package separates capture from document generation:
 | `latex/escaping.py` | Literal text, emoji, and URL conversion for LaTeX |
 | `latex/header.py` | Concise identity text and optional connection counts and links |
 | `latex/headings.py` | Immediate parent/child heading comparison without changing captured content |
+| `latex/progression.py` | Company context and nested employment role views |
 | `latex/lists.py` | List-marker recognition, indentation, and literal prose blocks for rendering |
 | `latex/locations.py` | Job location metadata and Google Maps destinations |
 | `latex/projects.py` | Consolidated project cards, resolved-link deduplication, and retained role associations |
@@ -498,25 +414,14 @@ browser, test, build, and signing data. The reference projects are not dependenc
 
 ### Document review
 
-The test stage runs [TeXtidote Action](https://github.com/marketplace/actions/textidote-action)
-in a read-only job alongside Python checks. It renders the saved profile with the
-committed configuration, then checks `README.md` and the configured `output.tex`
-using `--check en`. Relative LaTeX inputs resolve from the generated file's directory.
+CI runs [TeXtidote Action](https://github.com/marketplace/actions/textidote-action)
+against `README.md` and generated LaTeX with `--check en`. The action container is
+pinned by digest in `stage-test.yml`.
 
-The workflow invokes the upstream action's published `gokhlayeh/textidote` image
-by digest. Its default `action.yml` points at `latest`, so pinning only the action's
-Git commit would still allow the executable image to change. The workflow records
-the image digest explicitly for reproducible reviews.
-
-Annotated HTML reports are retained for 14 days in the `textidote-reports` artifact,
-including completed reports when another check fails. Counts appear in the job
-summary and findings produce a workflow warning. Spelling, grammar, and style
-findings are advisory: technical names, résumé fragments, and custom LaTeX commands
-can produce false positives. Review the report before editing the README or the
-source LinkedIn profile. TeXtidote never rewrites captured text.
-Container execution, invalid inputs, and report-generation failures fail the test
-stage and therefore block the shared publication gate. No LinkedIn credentials or
-signing secrets are passed to this job.
+Findings are advisory; execution and report-generation failures block publication.
+Annotated HTML reports are retained for 14 days in `textidote-reports`, and counts
+appear in the job summary. Review technical names and LaTeX-specific findings
+before editing source text.
 
 ## Capture limits and recovery
 
@@ -543,8 +448,7 @@ your LinkedIn profile does not automatically update the snapshot: capture again,
 review the changes, and commit the new inputs. CI then builds a new signed release.
 
 Retries use exponential delays: 10, 20, 40, 80, 160, then at most 300 seconds,
-reminiscent of Kubernetes image-pull backoff. The default five attempts use the
-first four delays. HTTP 429 and transient 5xx responses honor Retry-After within
+with the default five attempts using the first four delays. HTTP 429 and transient 5xx responses honor Retry-After within
 the same cap. Browser timeouts retry reads; schema, ownership, parsing, and signature
 validation errors fail visibly. CI network commands use matching defaults through
 `RETRY_ATTEMPTS`, `RETRY_BACKOFF_SECONDS`, and `RETRY_MAX_BACKOFF_SECONDS`.

@@ -1,0 +1,52 @@
+# Template interface
+
+Set `template` in `resumeme.config.yaml` to a project-relative Jinja file.
+Rendering uses strict undefined-variable checks and these delimiters:
+
+- Expressions: `((( value )))`
+- Statements: `((* statement *))`
+- Comments: `((# comment #))`
+
+## Context
+
+| Variable | Contract |
+| --- | --- |
+| `profile` | Filtered profile with consolidated projects and staged image paths |
+| `style` | Effective style after theme overrides |
+| `skill_cloud` | Relative PNG path, or `None` |
+| `connection_count`, `connection_url` | Enabled captured values, otherwise empty strings |
+| `section_navigation` | `(anchor, section)` pairs in display order with unique TeX-safe anchors |
+
+Filters return presentation values without changing the captured snapshot.
+Disabled sections and jobs are excluded before templates run.
+
+## Filters
+
+| Expression | Result |
+| --- | --- |
+| `text\|tex` | Escaped literal LaTeX text |
+| `destination\|url` | Escaped URL for a LaTeX link destination |
+| `text\|tex_links(links)` | Escaped text with resolved inline hyperlinks |
+| `paragraphs\|text_blocks` | Blocks with `text` and optional bullet `depth` |
+| `entry.title\|distinct_heading(parent_title)` | Original title, or empty when it repeats its parent |
+| `entry\|job_locations` | Metadata lines mapped to Google Maps `Link` values |
+| `entry\|employer_badge` | `(paragraph_index, logo)` or `None`; index `-1` identifies the company heading |
+| `entry\|experience_layout` | Company-only metadata and nested `positions`; standalone entries are unchanged |
+| `entry\|project_layout(show_title=true)` | Project presentation with `entry`, `title_url`, `affiliations`, `metadata`, and `description` |
+| `profile\|header_logos` | Header display copy and inline logo mapping keyed by company text |
+| `image\|image_role(header=false)` | `cover`, `portrait`, `logo`, `icon`, or `preview` |
+
+Escape user text and URL destinations explicitly. Render paragraphs through
+`text_blocks` and `tex_links` to preserve list structure and inline links.
+
+`experience_layout` exposes each role's dates, location, description, and owned
+references. Render the company's metadata once, then its positions in order.
+Legacy flattened groups split at recognizable title/date boundaries; their media
+and links remain at company scope.
+
+`project_layout` separates dates and affiliations from descriptive text. Render
+`metadata` above project media and `description` below it. Pass `show_title=false`
+when omitting a project heading so its destination remains available elsewhere.
+
+The [packaged template](../pkg/resumeme/latex/resources/resume.tex.j2) defines the
+default layout and compilation requirements.

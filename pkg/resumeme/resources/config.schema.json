@@ -159,7 +159,7 @@
           "pattern": "^[A-Fa-f0-9]{6}$"
         },
         "skill_colors": {
-          "description": "Deterministic skill-cloud palette.",
+          "description": "Ordered hexadecimal color stops from zero to maximum displayed endorsements; one stop gives a uniform color.",
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,

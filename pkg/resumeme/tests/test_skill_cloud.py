@@ -16,12 +16,53 @@ from resumeme.latex.rendering import render_profile
 from resumeme.linkedin.browser import parse_detail_after_expansion
 from resumeme.linkedin.skills import endorsement_count
 from resumeme.models import Entry, Link, Profile, Section, Skill
-from resumeme.visualization.skills import SkillScore, render_skill_cloud, skill_scores
+from resumeme.visualization.skills import SkillScore, endorsement_colors, render_skill_cloud, skill_scores
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from pytest import MonkeyPatch
+
+
+def test_endorsement_colors_use_relative_counts_not_references_or_spelling() -> None:
+    """
+    Map zero, intermediate, and maximum endorsements to ordered palette stops.
+
+    Returns:
+        None: Equal endorsement counts share a color and reference-heavy skills do not acquire a stronger endorsement color.
+    """
+    scores = {
+        "References only": SkillScore(100, 0),
+        "One quarter": SkillScore(1, 1),
+        "One half": SkillScore(1, 2),
+        "Another half": SkillScore(40, 2),
+        "Maximum": SkillScore(1, 4),
+    }
+    colors = endorsement_colors(scores, ("808080", "404040", "000000"))
+    assert colors == {
+        "References only": "#808080",
+        "One quarter": "#606060",
+        "One half": "#404040",
+        "Another half": "#404040",
+        "Maximum": "#000000",
+    }
+    assert endorsement_colors(dict(reversed(list(scores.items()))), ("808080", "404040", "000000")) == colors
+
+
+def test_missing_endorsements_and_single_color_palettes_remain_defined() -> None:
+    """
+    Handle empty, zero-endorsement, and explicitly monochrome skill clouds.
+
+    Returns:
+        None: Zero counts use the low stop and a single stop applies to every endorsement level.
+    """
+    scores = {"Python": SkillScore(4, 0), "Rust": SkillScore(1, 0)}
+    assert endorsement_colors(scores, ("808080", "202020")) == {"Python": "#808080", "Rust": "#808080"}
+    assert endorsement_colors({"Python": SkillScore(4, 9), "Rust": SkillScore(1, 0)}, ("6B2737",)) == {
+        "Python": "#6b2737",
+        "Rust": "#6b2737",
+    }
+    assert endorsement_colors({}, ("808080", "202020")) == {}
 
 
 def test_scores_combine_references_tags_and_endorsements() -> None:
@@ -239,6 +280,9 @@ def test_cloud_limits_display_to_twenty_skills_and_preserves_all_scores(tmp_path
     factory.assert_called_once()
     cloud.generate_from_frequencies.assert_called_once()
     assert factory.call_args.kwargs["max_words"] == 20
+    color = factory.call_args.kwargs["color_func"]
+    assert color("Endorsed") == "#363636"
+    assert color("Referenced") == "#777777"
     assert list(cloud.generate_from_frequencies.call_args.args[0]) == expected
     assert scores == original
 

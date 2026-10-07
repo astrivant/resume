@@ -40,7 +40,7 @@ style:
 
   # Green consistently identifies clickable text; neutral headings use size and weight for hierarchy.
   accent: '3F6248'
-  skill_colors: ['555555']
+  skill_colors: ['777777', '363636']
   background: FFFFFF
   font_size: 10
 
@@ -61,7 +61,7 @@ style:
   # Display the birthday only when Contact info is enabled (remove contact from disable).
   display_birthday: false
 
-  # Show the top 20 skills by visible references plus twice each observed endorsement.
+  # Size the top 20 skills by references + 2 * endorsements; skill_colors runs from 0% to 100% of the highest displayed count.
   skills_word_cloud: true
 
   # Each named theme can override any presentation field above, or the text/cloud colors below.
@@ -70,14 +70,14 @@ style:
     tiger:
 
       # Name > section headings > entry titles/body: burgundy, burnt orange, then soft charcoal.
-      # Green is reserved for links; a single cloud color leaves skill strength to word size.
+      # Green marks links; skill colors progress from muted brown to burgundy as endorsement counts increase.
       # Source and palette roles: docs/themes.md
       accent: '3F6248'
       ink: '363636'
       name_color: '6B2737'
       heading_color: 'A44813'
       entry_color: '363636'
-      skill_colors: ['86543B']
+      skill_colors: ['9A7663', '6B2737']
 
 # Optional exact template override; otherwise the package template is used.
 template: null

@@ -228,8 +228,7 @@ Below the LinkedIn profile link, a compact contents list links to each visible
 section in PDF order. Set `style.show_table_of_contents: false` to hide it;
 it defaults to `true` and supports inline theme overrides.
 
-Connection details
-are optional: set `style.show_connection_count: true` to show the captured count,
+Connection details are optional: set `style.show_connection_count: true` to show the captured count,
 `style.show_connection_link: true` for a Connections link, or both to link the count.
 Both default to `false` and can also be overridden in inline themes. Re-enable the
 separate contact block by removing `contact` from `disable`.
@@ -239,6 +238,8 @@ this setting defaults to `false` and supports inline theme overrides.
 ### Skills
 
 The top 20 skills appear as a word cloud scored by **references + 2 × endorsements**.
+Size reflects this score; color reflects endorsements relative to the most-endorsed
+displayed skill. `style.skill_colors` defines the gradient from 0% to 100%.
 Disabled sections contribute no references. Set `style.skills_word_cloud: false`
 for the text list, or add `skills` to `disable` to hide it. Profiles with no optional
 sections also work. See the [profile schema and scoring rules](docs/profile-schema.md).

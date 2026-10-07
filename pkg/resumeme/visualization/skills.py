@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
     from resumeme.models import Profile
 
-__all__ = ["SkillScore", "render_skill_cloud", "skill_scores"]
+__all__ = ["SkillScore", "endorsement_colors", "render_skill_cloud", "skill_scores"]
 
 _HASHTAG = re.compile(r"(?<!\w)#([^\W\d]\w*)", re.UNICODE)
 _MAX_CLOUD_SKILLS = 20
@@ -70,23 +70,54 @@ def _normalized(value: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", value).casefold().split())
 
 
-def _word_color(*args: object, colors: tuple[str, ...], **kwargs: object) -> str:
+def endorsement_colors(scores: dict[str, SkillScore], colors: tuple[str, ...]) -> dict[str, str]:
     """
-    Assign each label a stable theme color without consuming the layout's random state.
+    Map endorsement counts onto an ordered palette independently of reference counts.
+
+    Args:
+        scores (dict[str, SkillScore]): Displayed skills whose maximum endorsement count defines 100 percent.
+        colors (tuple[str, ...]): Nonempty hexadecimal color stops from zero to maximum endorsements.
+
+    Returns:
+        dict[str, str]: CSS hexadecimal color for each label; zero-count profiles use the first stop.
+
+    Raises:
+        ValueError: The palette is empty.
+    """
+    if not colors:
+        raise ValueError("The skill cloud requires at least one theme color.")
+
+    maximum = max((score.endorsements for score in scores.values()), default=0)
+    stops = [tuple(int(color[offset : offset + 2], 16) for offset in (0, 2, 4)) for color in colors]
+    result: dict[str, str] = {}
+
+    for label, score in scores.items():
+        # Interpolate adjacent RGB stops without changing WordCloud's random state or size calculation.
+        position = (score.endorsements / maximum if maximum else 0) * (len(stops) - 1)
+        lower = int(position)
+        upper = min(lower + 1, len(stops) - 1)
+        fraction = position - lower
+        channels = [round(low + (high - low) * fraction) for low, high in zip(stops[lower], stops[upper], strict=True)]
+        result[label] = "#" + "".join(f"{channel:02x}" for channel in channels)
+
+    return result
+
+
+def _word_color(*args: object, colors: dict[str, str], **kwargs: object) -> str:
+    """
+    Return the endorsement color assigned to a selected skill.
 
     Args:
         *args (object): WordCloud's word and layout arguments.
-        colors (tuple[str, ...]): Nonempty palette of six-digit hexadecimal colors.
+        colors (dict[str, str]): Selected labels mapped to CSS hexadecimal colors.
         **kwargs (object): Additional WordCloud color callback arguments.
 
     Returns:
-        str: Hexadecimal color selected deterministically from the word's spelling.
+        str: Endorsement-based color independent of placement and font size.
     """
 
-    # A stable digest avoids Python's process-randomized hash and keeps a color-only change from rearranging words.
     word = str(args[0] if args else kwargs.get("word", ""))
-    index = int.from_bytes(hashlib.sha256(word.encode("utf-8")).digest()[:4], "big") % len(colors)
-    return "#" + colors[index]
+    return colors[word]
 
 
 def skill_scores(profile: Profile) -> dict[str, SkillScore]:
@@ -167,7 +198,7 @@ def skill_scores(profile: Profile) -> dict[str, SkillScore]:
 
 
 def render_skill_cloud(
-    scores: dict[str, SkillScore], directory: Path, *, colors: tuple[str, ...] = ("555555",), background: str = "FFFFFF"
+    scores: dict[str, SkillScore], directory: Path, *, colors: tuple[str, ...] = ("777777", "363636"), background: str = "FFFFFF"
 ) -> str | None:
     """
     Draw the twenty highest-weighted skills and write all scores beside generated LaTeX.
@@ -179,7 +210,7 @@ def render_skill_cloud(
     Args:
         scores (dict[str, SkillScore]): Nonnegative counts for each known label, in any order.
         directory (Path): Generated TeX directory with an assets subdirectory.
-        colors (tuple[str, ...]): Nonempty theme palette of six-digit hexadecimal text colors.
+        colors (tuple[str, ...]): Ordered hexadecimal stops from zero to maximum displayed endorsements.
         background (str): Six-digit hexadecimal page color, shared by the PNG canvas.
 
     Returns:
@@ -216,6 +247,7 @@ def render_skill_cloud(
 
     # Select before scaling so the cloud stays readable; equal weights use the same stable name ordering as the score manifest.
     selected = dict(sorted(scores.items(), key=lambda item: (-item[1].weight, _normalized(item[0])))[:_MAX_CLOUD_SKILLS])
+    word_colors = endorsement_colors(selected, colors)
 
     # Compress the visual range and give low-frequency labels a floor so heavily endorsed skills cannot make other labels unreadable.
     maximum = max(score.weight for score in selected.values())
@@ -229,7 +261,7 @@ def render_skill_cloud(
             width=1800,
             height=800 * (attempt + 1),
             background_color="#" + background,
-            color_func=partial(_word_color, colors=colors),
+            color_func=partial(_word_color, colors=word_colors),
             max_words=_MAX_CLOUD_SKILLS,
             min_font_size=28,
             max_font_size=140,

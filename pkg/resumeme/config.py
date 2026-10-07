@@ -120,7 +120,7 @@ class StyleOverrides(TypedDict, total=False):
         name_color (str): Six-digit hexadecimal profile name color.
         heading_color (str): Six-digit hexadecimal section heading color.
         entry_color (str): Six-digit hexadecimal entry heading color.
-        skill_colors (tuple[str, ...]): Nonempty palette of six-digit hexadecimal cloud colors.
+        skill_colors (tuple[str, ...]): Ordered hexadecimal stops from zero to maximum displayed skill endorsements.
     """
 
     paper: str
@@ -160,7 +160,7 @@ class Style:
         name_color (str): Six-digit hexadecimal profile name color.
         heading_color (str): Six-digit hexadecimal section heading color.
         entry_color (str): Six-digit hexadecimal entry heading color.
-        skill_colors (tuple[str, ...]): Nonempty palette of six-digit hexadecimal cloud colors.
+        skill_colors (tuple[str, ...]): Ordered hexadecimal stops from zero to maximum displayed skill endorsements.
         theme (str | None): Selected key in themes; None uses the base style unchanged.
         themes (dict[str, StyleOverrides]): Inline themes containing partial style overrides.
     """
@@ -179,7 +179,7 @@ class Style:
     name_color: str = "191919"
     heading_color: str = "191919"
     entry_color: str = "363636"
-    skill_colors: tuple[str, ...] = ("555555",)
+    skill_colors: tuple[str, ...] = ("777777", "363636")
     theme: str | None = None
     themes: dict[str, StyleOverrides] = field(factory=dict)
 

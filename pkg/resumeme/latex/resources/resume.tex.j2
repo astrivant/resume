@@ -27,10 +27,11 @@
 ((* if badge[1].link *))}((* endif *))%
 }{((* if heading *))\entrytitle{((* endif *))((( text|tex_links(links) )))((* if heading *))}((* endif *))}
 ((* endmacro *))
-((* macro render_entry(entry, section) *))
+((* macro render_entry(entry, section, role=false, parent_title=none) *))
+((* set entry = entry|experience_layout if section.key == 'experience' else entry *))
 ((* set text_links = entry.links *))
 ((# Deduplicate only the immediate child heading; all paragraphs, illustrations, and references remain renderable. #))
-((* set heading = entry.title|distinct_heading(section.title) *))
+((* set heading = entry.title|distinct_heading(parent_title if parent_title is not none else section.title) *))
 ((* set project = entry|project_layout(show_title=heading != '') if section.key == 'projects' else none *))
 ((* set entry = project.entry if project else entry *))
 ((* set badge = entry|employer_badge if section.key == 'experience' else none *))
@@ -40,11 +41,13 @@
 ((* if section.key == 'about' *))
 ((( render_text([heading], entry.links) )))
 ((* elif heading *))
-\Needspace{((* if section.key == 'education' *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
+\Needspace{((* if entry.positions *))12((* elif section.key == 'education' *))8((* elif badge *))6((* else *))3((* endif *))\baselineskip}
 ((* if badge and badge[0] == -1 *))
 ((( company_name(badge, heading, entry.links, heading=true) )))
 ((* elif project and project.title_url *))
 \entrytitle{\href{((( project.title_url|url )))}{((( heading|tex )))}}
+((* elif role *))
+\roletitle{((( heading|tex_links(entry.links) )))}
 ((* else *))
 \entrytitle{((( heading|tex_links(entry.links) )))}
 ((* endif *))
@@ -89,6 +92,15 @@
 \profileparagraph{{\small\href{((( (link.resolved_url or link.url)|url )))}{((( (link.title if link.label == link.url else link.label)|tex )))}}}
 ((* endif *))
 ((* endfor *))
+((# Roles retain their own dates, locations, and descriptions inside one breakable company progression. #))
+((* if entry.positions *))
+\begin{roleprogression}
+((* for position in entry.positions *))
+((* if not loop.first *))\par\addvspace{9pt}((* endif *))
+((( render_entry(position, section, role=true, parent_title=entry.title) )))
+((* endfor *))
+\end{roleprogression}
+((* endif *))
 ((* endmacro *))
 ((* macro section_heading(section, anchor) *))
 ((# Emit each destination with the heading after pagination has selected its final page. #))
@@ -107,6 +119,9 @@
 ((* if section.key == 'skills' and skill_cloud *))
 % Scale both bounds to 75% of the original display size without changing the cloud's proportions or weights.
 \includegraphics[width=0.75\linewidth,height=0.4125\textheight,keepaspectratio]{((( skill_cloud )))}\par
+((* if style.skill_colors|length > 1 *))
+{\footnotesize Endorsements: \textcolor{skilllow}{0\%}\enspace--\enspace\textcolor{skillhigh}{100\% of highest count}}\par
+((* endif *))
 \end{minipage}
 ((* elif section.key == 'projects' *))
 ((* for pair in section.entries|batch(2) *))
@@ -128,7 +143,7 @@
 \pdfmapfile{+EBGaramond.map}
 \usepackage[lining]{ebgaramond}
 \usepackage{microtype}
-\usepackage{xcolor,graphicx,needspace}
+\usepackage{xcolor,graphicx,needspace,framed}
 \usepackage{tikz}
 \usepackage{twemojis}
 \usepackage{flowfram}
@@ -140,6 +155,8 @@
 \definecolor{profilename}{HTML}{((( style.name_color )))}
 \definecolor{sectionheading}{HTML}{((( style.heading_color )))}
 \definecolor{entryheading}{HTML}{((( style.entry_color )))}
+\definecolor{skilllow}{HTML}{((( style.skill_colors[0] )))}
+\definecolor{skillhigh}{HTML}{((( style.skill_colors[-1] )))}
 % Every text link uses the same color, including links nested inside headings; color marks clickability.
 \hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,filecolor=accent,citecolor=accent,
   pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) — Resume}}
@@ -157,7 +174,13 @@
 \clubpenalty=10000
 % Limit theme colors to their semantic roles; groups prevent heading colors leaking into body text.
 \newcommand{\entrytitle}[1]{{\color{entryheading}\large\bfseries #1}\par\nopagebreak}
+\newcommand{\roletitle}[1]{{\color{entryheading}\normalsize\bfseries #1}\par\nopagebreak}
 \newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{3pt}}
+% A left rule connects roles within a company and continues on subsequent pages without boxing the whole history.
+\newenvironment{roleprogression}{%
+  \def\FrameCommand##1{\hspace{3mm}{\color{ink!25}\vrule width0.6pt}\hspace{3mm}##1}%
+  \MakeFramed{\advance\hsize-\width\FrameRestore}%
+}{\endMakeFramed}
 % Scale to cover the circle without stretching, then clip only the portrait in the PDF.
 % Original captured images stay untouched, and logos retain their rectangular outlines.
 \newsavebox{\portraitmeasure}
