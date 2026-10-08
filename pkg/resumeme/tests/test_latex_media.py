@@ -89,6 +89,10 @@ def test_employer_logos_render_once_beside_the_company_name(tmp_path: Path, grou
     path = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path)
     body = path.read_text().split(r"\begin{document}", 1)[1]
     image_path = "assets/" + next((path.parent / "assets").glob("*.png")).name
+
+    # The sidebar repeats the latest employer; Experience still owns exactly one logo beside its company heading.
+    identity, body = body.split(r"\sectiontitle{Experience}", 1)
+    assert identity.count(image_path) == 1
     assert body.count(image_path) == 1
     badge = body.index(r"\companyline{")
     assert badge < body.index(image_path) < body.index(r"Example \& Company") < body.index("Built systems")
@@ -170,7 +174,7 @@ def test_organization_reference_is_replaced_only_by_a_clickable_logo(
         resolved (bool): Whether capture resolved the original organization reference to a different destination.
 
     Returns:
-        None: The organization destination appears once, as either a linked logo or its retained text reference.
+        None: The section's organization destination appears once, as either a linked logo or its retained text reference.
     """
     Image.new("RGB", (20, 20), "blue").save(tmp_path / "logo.png")
     organization = "school" if section_key == "education" else "company"
@@ -185,6 +189,9 @@ def test_organization_reference_is_replaced_only_by_a_clickable_logo(
     )
     profile = Profile("example-person", "Alex", sections=[Section(section_key, section_key.title(), [entry])])
     source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
+
+    # An independent current-employer link in the identity column must not count as a duplicate section reference.
+    source = source.split(rf"\sectiontitle{{{section_key.title()}}}", 1)[1]
     assert source.count(r"\href{" + destination + "}") == 1
     assert (r"\allowbreak{}" + organization + "/" in source) is (logo_state != "linked")
     assert len(entry.links) == 1

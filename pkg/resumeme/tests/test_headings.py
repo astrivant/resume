@@ -75,6 +75,10 @@ def test_duplicate_headings_keep_body_images_and_links(tmp_path: Path, key: str)
     config = Config(LinkedIn(profile.username), style=Style(show_table_of_contents=False), project_filter=None)
     text = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert text.count(rf"\sectiontitle{{{title}}}") == 1
+
+    # Deduplication is scoped to the section; the sidebar can independently repeat the current employer's logo.
+    identity, text = text.split(rf"\sectiontitle{{{title}}}", 1)
+    assert identity.count(r"\includegraphics[") == int(key == "experience")
     assert r"\entrytitle{" not in text
     assert "Retained details" in text
     assert text.count(rf"\profileparagraph{{{title}}}") == 1

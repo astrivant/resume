@@ -110,7 +110,7 @@ def test_role_progression_renders_once_after_job_filters(tmp_path: Path, filtere
         filtered (bool): Whether an older role is explicitly excluded.
 
     Returns:
-        None: Employer branding and each retained role appear once; excluded roles contribute no visible content.
+        None: Experience contains one employer logo and each retained role once; excluded roles contribute no visible content.
     """
     Image.new("RGB", (20, 20), "blue").save(tmp_path / "logo.png")
     logo = Media("https://example.org/logo.png", alt="Example logo", path="logo.png", link="https://www.linkedin.com/company/example/")
@@ -129,6 +129,12 @@ def test_role_progression_renders_once_after_job_filters(tmp_path: Path, filtere
 
     profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [group])])
     text = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
+
+    # Job anchors belong to Experience, after the separate current-employer identity block on the first page.
+    identity, text = text.split(r"\sectiontitle{Experience}", 1)
+    assert identity.count(r"\companytext{Example}") == 1
+    assert identity.count(r"\includegraphics[") == 1
+    assert "Earlier delivery" not in identity
     assert text.count(r"\begin{roleprogression}") == 1
 
     # Filtering down to one role restores the normal connector rather than suggesting a remaining progression.
