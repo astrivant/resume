@@ -44,7 +44,12 @@ COPY pyproject.toml poetry.lock README.md LICENSE ./
 RUN poetry check --lock \
     && poetry install --only main --no-root --no-interaction --no-ansi
 COPY pkg/resumeme ./pkg/resumeme
-RUN poetry build --format wheel \
+COPY scripts/release/package-version.sh ./scripts/release/package-version.sh
+
+# Use the same tag-derived package metadata as the wheel and source archive without invalidating the dependency layer.
+ARG RELEASE_TAG=""
+RUN bash scripts/release/package-version.sh \
+    && poetry build --format wheel \
     && python -m pip install --no-cache-dir --no-deps dist/*.whl
 
 FROM builder AS development

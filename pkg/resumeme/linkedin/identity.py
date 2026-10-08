@@ -30,7 +30,7 @@ def release_destination(settings: Ownership, root: Path, *, allow_missing: bool 
     Args:
         settings (Ownership): Repository override and optional user-managed short link.
         root (Path): Checkout used to discover origin outside Actions.
-        allow_missing (bool): Permit ordinary local builds without a configured repository.
+        allow_missing (bool): Permit ordinary local builds without a configured repository or installed Git.
 
     Returns:
         str: HTTPS destination, or an empty string when discovery is optional and no repository exists.
@@ -57,12 +57,17 @@ def release_destination(settings: Ownership, root: Path, *, allow_missing: bool 
     repository = settings.repository or os.environ.get("GITHUB_REPOSITORY")
 
     if not repository:
-        result = subprocess.run(
-            ["git", "-C", str(root), "remote", "get-url", "origin"], capture_output=True, text=True, check=False, timeout=10
-        )
-        origin = result.stdout.strip()
-        match = re.fullmatch(r"(?:git@github\.com:|https://github\.com/|ssh://git@github\.com/)([^\s]+)", origin)
-        repository = match.group(1).removesuffix(".git") if result.returncode == 0 and match else ""
+        # Installed builds can run without Git; publishing still requires an explicit or discoverable destination.
+        try:
+            result = subprocess.run(
+                ["git", "-C", str(root), "remote", "get-url", "origin"], capture_output=True, text=True, check=False, timeout=10
+            )
+        except FileNotFoundError:
+            repository = ""
+        else:
+            origin = result.stdout.strip()
+            match = re.fullmatch(r"(?:git@github\.com:|https://github\.com/|ssh://git@github\.com/)([^\s]+)", origin)
+            repository = match.group(1).removesuffix(".git") if result.returncode == 0 and match else ""
 
     if not repository and allow_missing:
         return ""

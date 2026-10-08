@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# Print the committed distribution version and reject version tags that disagree with it.
+# Apply version tags to the disposable build checkout and report the distribution version.
 set -euo pipefail
-version=$(poetry version --short)
 
-# Ordinary branch builds need no release tag; tagged publication must identify this exact package version.
-if [[ -n "${RELEASE_TAG:-}" && "$RELEASE_TAG" != "v$version" ]]; then
-    echo "::error::Release tag must be v$version to match pyproject.toml. Update and commit the package version before tagging." >&2
-    exit 1
+# Require an explicit Python release version so tag input cannot invoke Poetry's relative bump commands.
+if [[ -n "${RELEASE_TAG:-}" ]]; then
+    if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?(\.post[0-9]+)?(\.dev[0-9]+)?$ ]]; then
+        echo '::error::Use vMAJOR.MINOR.PATCH with an optional Python suffix, such as v0.2.0rc1.' >&2
+        exit 1
+    fi
+
+    # Keep stdout machine-readable for publication; only the checkout's package metadata changes, never the lockfile.
+    poetry version "${RELEASE_TAG#v}" >&2
 fi
 
-printf '%s\n' "$version"
+poetry version --short

@@ -2,7 +2,7 @@
 # Build distributable packages and stage the configured PDF for publication.
 set -euo pipefail
 
-# Require version tags to match the committed metadata, keeping the wheel, source archive, and container version aligned.
+# Apply the tag's package version before building the wheel and source archive, retaining locked dependencies.
 bash scripts/release/package-version.sh
 
 # Clean stale distributions before building the exact wheel and source archive that PyPI publication will consume.

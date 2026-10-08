@@ -111,6 +111,11 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
+Package version tags such as `v0.1.0` set the version installed in the container
+to match the Python distributions. Other tags and branch builds use the committed
+package version. CI applies this metadata during the build without committing it;
+see [package releases](development.md#publish-to-pypi).
+
 All pushed tags trigger the existing pipeline. Ordinary branches and pull requests
 also build and smoke-test the container. Publication happens only for tag pushes,
 after both the test and build stages succeed:

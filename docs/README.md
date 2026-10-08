@@ -749,7 +749,7 @@ for the tag release's pull instructions; see
 Only the PDF commit, signed release, and container publication jobs have `contents: write`. Every external action is pinned by SHA,
 Poetry installs from the lockfile, and development tools stay out of runtime installs.
 
-Version tags matching the committed package version also publish `resumeme` to
+Version tags set the package version in CI and also publish `resumeme` to
 PyPI through `stage-pypi.yml`, using `PYPI_API_TOKEN` from the organization,
 repository, or `pypi` environment. This stage uploads the verified distributions
 with read-only repository access. See [package releases](development.md#publish-to-pypi).

@@ -187,7 +187,7 @@ Browser state, diagnostics, API credentials, and signing keys stay out of commit
 | Coffee branding | Project READMEs keep the generated coffee-stained logo and linked Brew date badge. Accepted updates retain a fading recent stain trail; retries do not add stains. [Branding renderer](docs/assets/branding/README.md). |
 | Pages | `resumeme site` prepares files only. Enable `pages.enabled` and GitHub Actions as the Pages source to deploy the accepted PDF. `pages.path` selects the site directory; `custom_domain` checks an existing setup and does not configure DNS. [Pages setup](docs/pages.md). |
 | User-created tag | Sign the generic PDF already committed at that revision, including its release/key footer, and release the PDF, signature bundles, public key, fingerprint, hashes, and provenance. The tag also publishes the verified GHCR image and adds pull commands to release notes. |
-| Package version tag | `v<project.version>` additionally publishes `resumeme` to PyPI using `PYPI_API_TOKEN`. This is for package maintainers; use a résumé tag such as `resume-2026-10` for personal releases. [Package publishing](docs/development.md#publish-to-pypi). |
+| Package version tag | Tags such as `v0.2.0` set the package version in CI for the wheel, source archive, and container, then publish `resumeme` to PyPI using `PYPI_API_TOKEN`. No metadata commit is required. This is for package maintainers; use a résumé tag such as `resume-2026-10` for personal releases. [Package publishing](docs/development.md#publish-to-pypi). |
 
 For requested key setup, use [setup-signing.sh](scripts/release/setup-signing.sh)
 with `--repo OWNER/REPO`. It generates an OpenSSL P-256 key, imports it for Cosign,

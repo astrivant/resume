@@ -42,9 +42,11 @@ variable. The token must authorize uploads to `resumeme`; the first upload needs
 a token permitted to create the project. Resume-only forks do not need this token.
 Environment protection rules apply before the publishing job starts.
 
-Set and commit the version before tagging. Tags must exactly match the committed
-`project.version` prefixed with `v`; for example, version `0.1.0` uses `v0.1.0`, and
-`0.2.0rc1` uses `v0.2.0rc1`.
+CI derives the package version from the tag and updates `project.version` in each
+disposable build checkout. For example, `v0.1.0` produces version `0.1.0`, and
+`v0.2.0rc1` produces `0.2.0rc1`. The wheel, source archive, and package installed in
+the container use the same version. No version edit or metadata commit is required;
+the source commit and dependency lockfile remain unchanged.
 
 ```bash
 # For the initial 0.1.0 release, commit the reviewed release changes first.
@@ -53,10 +55,13 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-For later releases, run `poetry version <version>`, commit the metadata, and push
-the corresponding tag. Non-version tags, ordinary pushes, manual runs, and pull
-requests do not upload to PyPI. Missing credentials, mismatched versions, or
-missing distributions fail publication. Transient upload failures use exponential
+For later releases, commit the reviewed changes and push a new version tag.
+Tags use `vMAJOR.MINOR.PATCH`, optionally followed by Python prerelease (`a1`,
+`b1`, `rc1`), postrelease (`.post1`), or development (`.dev1`) suffixes.
+Non-version tags, ordinary pushes, manual runs, and pull requests do not upload
+to PyPI. Branch and personal resume tags retain the committed package version.
+Missing credentials, invalid version tags, or missing distributions fail publication.
+Transient upload failures use exponential
 backoff; reruns skip files PyPI already accepted. Changed package contents require
 a new version.
 

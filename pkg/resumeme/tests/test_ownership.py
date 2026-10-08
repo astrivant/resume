@@ -80,13 +80,35 @@ def test_destination_prefers_explicit_fork_then_actions(tmp_path: Path, monkeypa
 
     Args:
         tmp_path (Path): Checkout-independent configuration directory.
-        monkeypatch (MonkeyPatch): Scoped Actions repository environment.
+        monkeypatch (MonkeyPatch): Scoped Actions repository environment without Git installed.
 
     Returns:
         None: Explicit repository and short link override automatic Actions context.
     """
+    monkeypatch.setenv("PATH", str(tmp_path))
     monkeypatch.setenv("GITHUB_REPOSITORY", "organization/fork")
     assert release_destination(Ownership(), tmp_path) == "https://github.com/organization/fork/releases"
+    assert release_destination(Ownership(repository="person/project"), tmp_path) == "https://github.com/person/project/releases"
+    assert release_destination(Ownership(releases_url="https://example.org/cv"), tmp_path) == "https://example.org/cv"
+
+
+def test_required_destination_without_git_needs_configuration(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """
+    Require a release destination for publication even when Git cannot discover one.
+
+    Args:
+        tmp_path (Path): Empty directory with neither executables nor a checkout.
+        monkeypatch (MonkeyPatch): Remove optional Git and Actions repository discovery.
+
+    Returns:
+        None: Publication receives an actionable configuration error while explicit destinations remain usable.
+    """
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+    monkeypatch.setenv("PATH", str(tmp_path))
+
+    with pytest.raises(ValueError, match=r"Set linkedin\.ownership\.repository to OWNER/REPO"):
+        release_destination(Ownership(), tmp_path)
+
     assert release_destination(Ownership(repository="person/project"), tmp_path) == "https://github.com/person/project/releases"
     assert release_destination(Ownership(releases_url="https://example.org/cv"), tmp_path) == "https://example.org/cv"
 

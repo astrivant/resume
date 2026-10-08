@@ -228,18 +228,25 @@ def test_invalid_release_identity_is_rejected(url: str, fingerprint: str | None)
         release_footer(b"not read", url, fingerprint)
 
 
-def test_local_build_without_origin_has_no_invented_release(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+@pytest.mark.parametrize("git_available", [False, True])
+def test_local_build_without_origin_has_no_invented_release(tmp_path: Path, monkeypatch: MonkeyPatch, git_available: bool) -> None:
     """
     Keep installed CLI builds usable outside a Git checkout.
 
     Args:
         tmp_path (Path): Directory without a repository or origin remote.
         monkeypatch (MonkeyPatch): Clear the runner's optional repository identity.
+        git_available (bool): Whether Git is installed, covering the production container's minimal runtime.
 
     Returns:
         None: Local output is visibly unsigned without an unrelated upstream release link.
     """
     monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+
+    # Resolve a real missing executable rather than mocking away the container failure.
+    if not git_available:
+        monkeypatch.setenv("PATH", str(tmp_path))
+
     url = release_destination(Ownership(), tmp_path, allow_missing=True)
     assert url == ""
     result = PdfReader(BytesIO(release_footer(_document(1), url)))

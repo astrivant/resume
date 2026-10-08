@@ -78,7 +78,7 @@ def test_projects_link_only_to_visible_employment(tmp_path: Path, disabled: str)
     source = render_profile(profile, config, tmp_path).read_text()
     projects = source.split(r"\projectrow[", 1)[1]
     target = "resumeme-section-0-job-0-1"
-    expected = rf"Associated with Engineer at \hyperlink{{{target}}}{{Example \& Co.}}"
+    expected = rf"Associated with Engineer at \hyperlink{{{target}}}{{\companytext{{Example \& Co.}}}}"
     assert (expected in projects) is (disabled == "none")
 
     if disabled == "none":
@@ -113,7 +113,7 @@ def test_repeated_titles_and_suppressed_headings_keep_unique_destinations(tmp_pa
     )
     source = render_profile(profile, Config(LinkedIn(profile.username), project_filter=None), tmp_path).read_text()
     projects = source.split(r"\projectrow[", 1)[1]
-    assert r"\hyperlink{resumeme-section-0-job-2}{Experience}" in projects
-    assert r"\hyperlink{resumeme-section-0-job-1}{Two}" in projects
+    assert r"\hyperlink{resumeme-section-0-job-2}{\companytext{Experience}}" in projects
+    assert r"\hyperlink{resumeme-section-0-job-1}{\companytext{Two}}" in projects
     anchors = re.findall(r"\\hypertarget\{(resumeme-section-0-job-[^}]+)\}", source)
     assert len(anchors) == len(set(anchors)) == 5
