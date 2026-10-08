@@ -96,7 +96,7 @@ def update_project_branding(root: Path, config: Config, brewed_on: date, *, repo
         repository = releases.removeprefix("https://github.com/").removesuffix("/releases")
         assets = f"https://raw.githubusercontent.com/{repository}/main/docs/assets/branding"
         pdf = "./" + quote(Path(config.output.pdf).as_posix(), safe="/")
-        badge = f'<a href="{pdf}"><img src="{assets}/brew-date.svg" alt="Brew date: {brewed_on.isoformat()} (UTC)" height="20"></a>'
+        badge = f'<a href="{pdf}"><img src="{assets}/brew-date.svg" alt="Brew date {brewed_on.isoformat()} (UTC)" height="20"></a>'
 
         # A separate inline marker keeps the date alongside user-maintained badges; older READMEs retain their original placement.
         legacy_badge = f"<br>\n  {badge}" if _BREW_START not in original else ""

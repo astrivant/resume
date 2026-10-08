@@ -14,7 +14,51 @@ from resumeme.compiler.constants.escaping import ESCAPES as _ESCAPES
 if TYPE_CHECKING:
     from resumeme.compiler.asts.profile import Link
 
-__all__ = ["latex_escape", "latex_linked_text", "latex_url"]
+__all__ = ["latex_contact_text", "latex_escape", "latex_linked_text", "latex_url"]
+
+
+def latex_contact_text(value: str, links: list[Link]) -> str:
+    """
+    Attach captured contact destinations to their labels without printing a separate URL list.
+
+    Args:
+        value (str): Untrusted contact label or value.
+        links (list[Link]): References owned by this contact field.
+
+    Returns:
+        str: Escaped text with unambiguous captured captions linked inline; explicit URLs remain clickable.
+    """
+    labels: dict[str, set[str]] = {}
+
+    for link in links:
+        if link.label.strip():
+            labels.setdefault(link.label, set()).add(link.resolved_url or link.url)
+
+    # A shared caption cannot identify two destinations. Leave that caption plain instead of inventing an association.
+    destinations = {label: next(iter(urls)) for label, urls in labels.items() if len(urls) == 1}
+
+    if not destinations:
+        return latex_linked_text(value, links)
+
+    pattern = re.compile(
+        r"(?<![\w@./])(?:" + "|".join(re.escape(label) for label in sorted(destinations, key=len, reverse=True)) + r")(?![\w./])"
+    )
+    urls = text_links(value)
+    parts: list[str] = []
+    offset = 0
+
+    for match in pattern.finditer(value):
+        # Explicit URLs own their full span; a domain caption must not split a longer URL into mismatched pieces.
+        if any(start < match.end() and match.start() < end for start, end, _ in urls):
+            continue
+
+        parts.append(latex_linked_text(value[offset : match.start()], links))
+        label = match.group()
+        parts.append(r"\href{" + latex_url(destinations[label]) + "}{" + latex_escape(label) + "}")
+        offset = match.end()
+
+    parts.append(latex_linked_text(value[offset:], links))
+    return "".join(parts)
 
 
 def latex_escape(value: str) -> str:

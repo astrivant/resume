@@ -9,16 +9,97 @@ from urllib.parse import urlsplit
 
 from attrs import evolve
 
+from resumeme.compiler.asts.names import company_key
+from resumeme.compiler.asts.presentation import HeaderPosition
+from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.constants.header import COUNT as _COUNT
 from resumeme.compiler.constants.header import LEGACY_HEADLINE
 from resumeme.compiler.constants.header import PRONOUNS as _PRONOUNS
-from resumeme.compiler.passes.media import image_role
+from resumeme.compiler.passes.media import employer_badge, employer_name_index, image_role
+from resumeme.compiler.passes.progression import experience_layout
 
 if TYPE_CHECKING:
-    from resumeme.compiler.asts.profile import Media, Profile
+    from resumeme.compiler.asts.profile import Entry, Media, Profile
     from resumeme.config import Style
 
-__all__ = ["is_pronouns", "prepare_header", "prepare_header_logos"]
+__all__ = ["is_pronouns", "prepare_header", "prepare_header_logos", "prepare_header_position"]
+
+
+def _position(entry: Entry) -> HeaderPosition:
+    """
+    Extract one employer and its first listed role without carrying descriptions into the sidebar.
+
+    Args:
+        entry (Entry): Standalone job, structured company group, or legacy flattened group.
+
+    Returns:
+        HeaderPosition: Minimal captured identity, with optional employer logo.
+    """
+    # Structured groups already record role order; only legacy groups need the display parser to recover boundaries.
+    layout = entry if entry.positions else experience_layout(entry)
+    index = employer_name_index(layout)
+    badge = employer_badge(layout)
+    company = ""
+    title = layout.title
+
+    if index == -1:
+        company = layout.title
+        title = layout.positions[0].title if layout.positions else ""
+    elif index is not None:
+        company = layout.paragraphs[index].split("\u00b7", 1)[0].strip()
+
+    return HeaderPosition(title, company, badge[1] if badge else None)
+
+
+def prepare_header_position(profile: Profile, *, captured: Profile, display: bool | None) -> tuple[Profile, HeaderPosition | None]:
+    """
+    Replace captured header employment with the selected visible or unfiltered Experience identity.
+
+    Args:
+        profile (Profile): Display profile after section/job filtering and header cleanup.
+        captured (Profile): Original profile used to recognize stale employer rows and explicitly select excluded roles.
+        display (bool | None): None follows visible Experience, True ignores its filters, and False hides the employment block.
+
+    Returns:
+        tuple[Profile, HeaderPosition | None]: Header copy without redundant employer text/images and the selected sidebar identity.
+    """
+    original = [_position(entry) for section in captured.sections if section_key(section.key) == "experience" for entry in section.entries]
+    candidates = (
+        original
+        if display is True
+        else [_position(entry) for section in profile.sections if section_key(section.key) == "experience" for entry in section.entries]
+    )
+    selected = next((position for position in candidates if position.title or position.company), None) if display is not False else None
+    names = {company_key(position.company) for position in original if position.company}
+    titles = {company_key(position.title) for position in original if position.title}
+    logos = [position.logo for position in original if position.logo]
+    company_images: list[Media] = []
+
+    # Identify company branding by captured associations or company-specific URLs; portraits and school branding remain independent.
+    for image in profile.images:
+        if image_role(image, header=True) != "logo":
+            continue
+
+        label = company_key(image.alt.removesuffix(" logo"))
+        known = label in names or any(image.url == logo.url or (image.path and image.path == logo.path) for logo in logos)
+        company_url = "/company/" in urlsplit(image.link).path or "company-logo" in urlsplit(image.url).path
+
+        if known or company_url:
+            company_images.append(image)
+
+            if label and label != "logo":
+                names.add(label)
+
+    # A header-only logo can supply branding for a known selected employer without reviving other excluded assets.
+    if selected and selected.company and selected.logo is None:
+        logo = next(
+            (image for image in company_images if company_key(image.alt.removesuffix(" logo")) == company_key(selected.company)), None
+        )
+        selected = evolve(selected, logo=logo)
+
+    # Keep independently enabled headline copy, pronouns, location, and non-employment identity text in their original order.
+    intro = [line for line in profile.intro if line == profile.headline or company_key(line) not in names | titles]
+    return evolve(profile, intro=intro, images=[image for image in profile.images if image not in company_images]), selected
 
 
 def is_pronouns(value: str) -> bool:
@@ -87,20 +168,19 @@ def prepare_header(profile: Profile, style: Style) -> tuple[Profile, str, str]:
             if _COUNT.fullmatch(label):
                 count = count or label
 
+    # Older snapshots lack an explicit headline field. Recognize only an initial role-at-company phrase.
+    headline = profile.headline
+
+    if not headline:
+        first = next((line for line in intro if not is_pronouns(line)), "")
+        headline = first if LEGACY_HEADLINE.search(first) else ""
+
     # Omit the standalone header reference list; inline prose links are resolved separately by the renderer.
     if not style.show_headline:
-        headline = profile.headline
-
-        # Older snapshots lack an explicit headline field. Only recognize an initial role-at-company phrase;
-        # removing the first arbitrary row could discard a minimal profile's employer or location.
-        if not headline:
-            first = next((line for line in intro if not is_pronouns(line)), "")
-            headline = first if LEGACY_HEADLINE.search(first) else ""
-
         intro = [line for line in intro if not headline or " ".join(line.split()) != " ".join(headline.split())]
 
     return (
-        evolve(profile, intro=intro, links=[], headline=profile.headline if style.show_headline else ""),
+        evolve(profile, intro=intro, links=[], headline=headline if style.show_headline else ""),
         count if style.show_connection_count else "",
         destination if style.show_connection_link else "",
     )

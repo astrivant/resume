@@ -10,16 +10,18 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
 import requests
-from attrs import asdict, evolve
+from attrs import asdict
 from bs4 import BeautifulSoup
 
 from resumeme.codex.request import prepare_summary
+from resumeme.compiler.asts.contributions import calendar_window, validate_calendar
 from resumeme.compiler.asts.summary import CompanyEvidence, load_summary
 from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.compiler.passes.summary import summary_digest
 from resumeme.compiler.pipeline import render_profile
-from resumeme.config import project_path
+from resumeme.config import company_config, project_path
 from resumeme.exceptions import SummaryError
+from resumeme.github.contributions import fetch_calendar
 from resumeme.linkedin.media import fetch_public
 from resumeme.linkedin.retrying import retry
 
@@ -184,19 +186,20 @@ def prepare_companies(profile: Profile, config: Config, root: Path) -> list[Path
     companies: dict[str, str] = {}
 
     for target in config.codex.companies:
+        settings = company_config(config, target, root=root)
         company_url = f"https://www.linkedin.com/company/{target.username}/about/"
 
         # Multiple jobs at one employer share a fetch, but each explicit company override remains independent.
         if not target.company_context and company_url not in companies:
-            companies[company_url] = _fetch_context(company_url, config, job=False)
+            companies[company_url] = _fetch_context(company_url, settings, job=False)
 
         company = target.company_context or companies[company_url]
-        job = target.job_context or _fetch_context(target.job_url, config, job=True)
+        job = target.job_context or _fetch_context(target.job_url, settings, job=True)
 
         if any(not text.strip() or len(text) > _MAX_CONTEXT for text in (company, job)):
             raise SummaryError("Company and job context must be nonempty and at most 40000 characters each.")
 
-        directories.append(prepare_summary(profile, config, root, CompanyEvidence(target, company, job)))
+        directories.append(prepare_summary(profile, settings, root, CompanyEvidence(target, company, job)))
 
     return directories
 
@@ -216,8 +219,13 @@ def load_company(path: Path, target: CompanyTarget) -> CompanyEvidence:
         SummaryError: The artifact is malformed, belongs to another target, or no longer matches its configuration.
     """
     raw: object = json.loads(path.read_text(encoding="utf-8"))
+    recorded = raw.get("target") if isinstance(raw, dict) else None
 
-    if not isinstance(raw, dict) or set(raw) != {"target", "company", "job"} or raw["target"] != asdict(target):
+    # Bundles created before partial configs omitted this field; absent overrides still mean an unchanged inherited config.
+    if isinstance(recorded, dict):
+        recorded = {"overrides": {}, **recorded}
+
+    if not isinstance(raw, dict) or set(raw) != {"target", "company", "job"} or recorded != asdict(target):
         raise SummaryError("Company summary target changed. Prepare and generate this company's summary again.")
 
     company, job = raw["company"], raw["job"]
@@ -230,23 +238,6 @@ def load_company(path: Path, target: CompanyTarget) -> CompanyEvidence:
         raise SummaryError("Company summary evidence must include bounded, nonempty company and job descriptions.")
 
     return CompanyEvidence(target, company, job)
-
-
-def company_config(config: Config, target: CompanyTarget) -> Config:
-    """
-    Select separate outputs while retaining the applicant's template, visibility, and styling.
-
-    Args:
-        config (Config): Generic configuration with shared profile and assets.
-        target (CompanyTarget): Employer and job owning these outputs.
-
-    Returns:
-        Config: Configuration writing one additional PDF under single-origin and its TeX under the ignored cache.
-    """
-    return evolve(
-        config,
-        output=evolve(config.output, tex=f".cache/single-origin/{target.key}/tex/resume.tex", pdf=f"single-origin/{target.key}/resume.pdf"),
-    )
 
 
 def render_companies(
@@ -267,7 +258,7 @@ def render_companies(
         root (Path): Configuration directory.
         summaries (Path): Explicit directory containing company/job artifact folders.
         compile_documents (bool): Compile PDFs when True, otherwise produce TeX for review.
-        contributions (ContributionCalendar | None): The same acquired activity calendar used by the generic resume.
+        contributions (ContributionCalendar | None): Generic calendar reused for matching target accounts/windows; others are fetched once.
 
     Returns:
         list[Path]: Configured company's PDFs or TeX sources in configuration order.
@@ -275,21 +266,35 @@ def render_companies(
     Raises:
         SummaryError: A required summary is stale, malformed, or belongs to another company or applicant.
     """
-    selected: list[tuple[CompanyEvidence, Path]] = []
+    selected: list[tuple[CompanyEvidence, Path, Config]] = []
 
     # Missing or invalid variants must fail before any existing target PDF is replaced.
     for target in config.codex.companies:
         directory = project_path(summaries, target.key)
         company = load_company(directory / "company.json", target)
         response = directory / "summary.json"
-        load_summary(response, username=profile.username, source_digest=summary_digest(profile, config, company), settings=config.codex)
-        selected.append((company, response))
+        settings = company_config(config, target, root=root)
+        load_summary(response, username=profile.username, source_digest=summary_digest(profile, settings, company), settings=settings.codex)
+        selected.append((company, response, settings))
 
     results: list[Path] = []
+    calendars = {(contributions.username, contributions.start, contributions.end): contributions} if contributions else {}
 
-    for company, response in selected:
-        settings = company_config(config, company.target)
-        source = render_profile(profile, settings, root, summary_path=response, contributions=contributions, company=company)
+    for company, response, settings in selected:
+        calendar = None
+
+        # Reuse exact observations across targets; disabling the graph must not pass a calendar to the offline renderer.
+        if settings.github.contributions.enabled and settings.github.username:
+            start, end = calendar_window(settings.github.contributions)
+            key = (settings.github.username, start.isoformat(), end.isoformat())
+
+            if key not in calendars:
+                calendars[key] = fetch_calendar(settings)
+
+            calendar = calendars[key]
+            validate_calendar(calendar, settings.github.username, start, end)
+
+        source = render_profile(profile, settings, root, summary_path=response, contributions=calendar, company=company)
         results.append(compile_pdf(source, settings, root) if compile_documents else source)
 
     return results

@@ -339,9 +339,10 @@ def test_ci_shares_one_summary_without_key_exposure() -> None:
     assert "permission-profile: ':read-only'" in stage and "safety-strategy: drop-sudo" in stage
     assert "OPENAI_API_KEY:" not in stage.split("jobs:", 1)[1]
     jobs = yaml.safe_load(stage)["jobs"]
-    assert jobs["prepare"]["outputs"]["effort"] == "${{ steps.prepare.outputs.effort }}"
+    assert jobs["prepare"]["outputs"]["matrix"] == "${{ steps.prepare.outputs.matrix }}"
     generator = next(step for step in jobs["summary"]["steps"] if step.get("uses", "").startswith("openai/codex-action@"))
-    assert generator["with"]["effort"] == "${{ needs.prepare.outputs.effort }}"
+    assert generator["with"]["effort"] == "${{ matrix.effort }}"
+    assert generator["with"]["model"] == "${{ matrix.model }}"
 
     for name in ["test", "build"]:
         job = pipeline["jobs"][f"{name}-stage"]
@@ -397,6 +398,7 @@ def test_ci_preparation_requires_opt_in_trust_and_key(
 
     runpy.run_path(str(script))
     assert f"enabled={str(enabled and trusted).lower()}" in output.read_text()
-    assert "model=gpt-6-astra\n" in output.read_text()
-    assert f"effort={effort or ''}\n" in output.read_text()
+    values = dict(line.split("=", 1) for line in output.read_text().splitlines())
+    generic = json.loads(values["matrix"])["include"][0]
+    assert generic["model"] == "gpt-6-astra" and generic["effort"] == (effort or "")
     assert (tmp_path / ".cache/codex/prompt.txt").is_file() is (enabled and trusted)

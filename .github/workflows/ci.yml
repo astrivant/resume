@@ -175,7 +175,8 @@ jobs:
       sha: ${{ needs.source.outputs.sha }}
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
     secrets:
-      RESUME_PUBLISH_TOKEN: ${{ secrets.RESUME_PUBLISH_TOKEN }}
+      # The upstream organization shares its protected-branch publication token; forks use their own dedicated secret.
+      RESUME_PUBLISH_TOKEN: ${{ secrets.RESUME_PUBLISH_TOKEN || (github.repository == 'astrivant/resumeme' && secrets.BENCHMARK_PUBLISH_TOKEN) || '' }}
 
   # Pages consumes the accepted main commit in this run; bot commits do not trigger another workflow with GITHUB_TOKEN.
   pages-stage:

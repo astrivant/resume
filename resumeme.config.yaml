@@ -14,7 +14,7 @@ linkedin:
     # null preserves LinkedIn's recruiter-sharing setting; true enables it and false disables it after upload.
     share_with_recruiters: true
 
-  # Opt in to updating your live About after a signed release; existing About text is preserved.
+  # Opt in to updating your live About with artifact signing details after a release; existing About text is preserved.
   ownership:
     update_about: true
 
@@ -89,17 +89,23 @@ codex:
 
   # Additional tailored PDFs under single-origin/<company>/job-<id>/resume.pdf; the generic resume.pdf stays separate.
   companies: []
+  # Each target accepts partial root config under overrides; mappings merge, lists/null replace. See docs/codex.md.
   # companies:
   #   - username: example-company
   #     job_url: https://www.linkedin.com/jobs/view/1234567890/
   #     context: Emphasize platform reliability and developer tooling.
   #     company_context: ''  # Optional company description instead of fetching its LinkedIn About page.
+  #     overrides:
+  #       style: {display_current_position: false}
+  #       experience: {disable: [], since: '2020-06-01'}
+  #       codex: {about_max_words: 70}
   #     job_context: ''      # Optional full job description for login-only or expired postings.
 
 # Enabled sections in PDF/contents order. Reorder entries; comment out a key to hide that section.
 # Uncomment it to restore the section. Missing/empty sections are skipped; [] renders only the profile header.
 # Add unfamiliar keys from data/profile.json to include them. Featured uses the same tiles as Projects.
 section_order:
+  # Contact groups social links, the profile contribution graph, and captured fields above Contents.
   - contact
   - about
   # - featured
@@ -226,6 +232,9 @@ style:
 
   show_headline: false
 
+  # Sidebar company/logo/title: null uses the latest visible Experience role; true ignores its filters; false hides the block.
+  display_current_position: null
+
   # null uses the base style below; set tiger to apply the matching overrides in themes.
   theme: tiger
 
@@ -262,8 +271,14 @@ style:
   show_connection_count: false
   show_connection_link: false
 
-  # Display the birthday only when Contact info is enabled (uncomment contact in section_order).
+  # Display the birthday only when Contact is enabled (uncomment contact in section_order).
   display_birthday: false
+
+  # Captured Website fields (such as linktr.ee) are hidden independently of LinkedIn, Email, and GitHub.
+  display_websites: false
+
+  # Optional local image path or direct public image/favicon URL, e.g. https://example.org/favicon.ico.
+  website_icon: null
 
   # Size the top 20 skills by references + 2 * endorsements; skill_colors runs from 0% to 100% of the highest displayed count.
   skills_word_cloud: true

@@ -51,20 +51,23 @@ def test_contents_follow_visible_sections_in_display_order(tmp_path: Path) -> No
     )
     text = render_profile(profile, config, tmp_path).read_text()
     links = re.findall(r"\\hyperlink\{(resumeme-section-\d+)\}\{([^}]*)\}", text)
-    expected = ["Contact info", "About", "Education", r"Research \& writing", r"Research \& writing"]
+    expected = ["Contact", "About", "Education", r"Research \& writing", r"Research \& writing"]
     assert [title for _, title in links] == expected
     assert len({anchor for anchor, _ in links}) == len(expected)
-    assert [title for title in re.findall(r"\\sectiontitle\{([^}]*)\}", text)] == expected
+    assert [title for title in re.findall(r"\\sectiontitle\{([^}]*)\}", text)] == expected[1:]
 
-    # Every link targets a single heading, after the contents and before that heading's content.
+    # Contact links back to the identity block; body links lead forward to their single rendered headings.
     for anchor, title in links:
         target = rf"\hypertarget{{{anchor}}}{{}}"
         assert text.count(target) == 1
-        assert text.index(rf"\hyperlink{{{anchor}}}") < text.index(target)
-        assert text.index(target) < text.index(rf"\sectiontitle{{{title}}}", text.index(target))
+        if title == "Contact":
+            assert text.index(target) < text.index(r"\identityheading{Contact}") < text.index(rf"\hyperlink{{{anchor}}}")
+        else:
+            assert text.index(rf"\hyperlink{{{anchor}}}") < text.index(target)
+            assert text.index(target) < text.index(rf"\sectiontitle{{{title}}}", text.index(target))
 
-    contents = text.index(r"\bfseries Contents}")
-    assert text.index(r"\textbf{LinkedIn profile}") < contents < text.index(r"\sectiontitle{Contact info}")
+    contents = text.index(r"\identityheading{Contents}")
+    assert text.index(r"\identityheading{Contact}") < text.index(r"\textbf{LinkedIn profile}") < contents
     assert all(label not in text for label in ("Interests", "Hidden role", "Empty section"))
     assert len(profile.sections) == 8
 
@@ -122,7 +125,7 @@ def test_contents_style_default_and_theme_precedence(tmp_path: Path, base: bool 
     assert config.style.show_table_of_contents == (True if base is None else base)
     profile = Profile("example-person", "Alex", sections=[Section("about", "About", [Entry("Profile narrative")])])
     text = render_profile(profile, config, tmp_path).read_text()
-    assert (r"\bfseries Contents}" in text) is visible
+    assert (r"\identityheading{Contents}" in text) is visible
     assert (r"\hyperlink{" in text) is visible
     assert r"\sectiontitle{About}" in text
     assert "Profile narrative" in text
@@ -165,6 +168,6 @@ def test_header_only_profiles_have_no_empty_contents(tmp_path: Path, disabled: b
     profile = Profile("example-person", "Alex", sections=sections)
     config = Config(LinkedIn(profile.username), section_order=[key for key in DEFAULT_SECTION_ORDER if key not in (["about"])])
     text = render_profile(profile, config, tmp_path).read_text()
-    assert r"\bfseries Contents}" not in text
+    assert r"\identityheading{Contents}" not in text
     assert r"\hyperlink{" not in text
     assert r"\hypertarget{" not in text

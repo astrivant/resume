@@ -17,10 +17,11 @@ from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.header import prepare_header, prepare_header_logos
 from resumeme.compiler.pipeline import render_profile
-from resumeme.config import Config, GitHub, LinkedIn, Style, load_config
+from resumeme.config import Config, Experience, GitHub, JobSelector, LinkedIn, Style, load_config
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from typing import Literal
 
 
 @pytest.mark.parametrize("show", [False, True])
@@ -62,25 +63,35 @@ def test_missing_headline_does_not_remove_minimal_identity(intro: list[str]) -> 
 
 
 @pytest.mark.parametrize("username", [None, "emmeowzing"])
-def test_social_links_follow_identity_with_platform_icons(tmp_path: Path, username: str | None) -> None:
+@pytest.mark.parametrize("contact_enabled", [False, True])
+def test_social_links_follow_identity_with_platform_icons(tmp_path: Path, username: str | None, contact_enabled: bool) -> None:
     """
     Render the optional GitHub profile directly after LinkedIn with icons to each link's left.
 
     Args:
         tmp_path (Path): Isolated rendering directory.
         username (str | None): Public GitHub account or an omitted link.
+        contact_enabled (bool): Whether the Contact block and its social links are enabled.
 
     Returns:
         None: Header order and URLs follow configuration without retaining the hidden headline.
     """
     profile = Profile("example-person", "Alex", intro=["Owner @ Example", "Example Co.", "Boston, MA"])
-    config = Config(LinkedIn(profile.username), github=GitHub(username))
+    config = Config(
+        LinkedIn(profile.username),
+        github=GitHub(username),
+        section_order=list(DEFAULT_SECTION_ORDER) if contact_enabled else [],
+    )
     source = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert "Owner @ Example" not in source
-    assert source.index("Example Co.") < source.index("Boston, MA") < source.index(r"\faLinkedin")
-    assert (r"\faGithub" in source) is bool(username)
+    assert source.index("Example Co.") < source.index("Boston, MA")
+    assert (r"\faLinkedin" in source) is contact_enabled
+    assert (r"\faGithub" in source) is (bool(username) and contact_enabled)
 
-    if username:
+    if contact_enabled:
+        assert source.index("Boston, MA") < source.index(r"\identityheading{Contact}") < source.index(r"\faLinkedin")
+
+    if username and contact_enabled:
         assert source.index(r"\faLinkedin") < source.index(r"\faGithub")
         assert rf"\href{{https://github.com/{username}}}" in source
         assert f"GitHub: {username}" in source
@@ -167,7 +178,7 @@ def test_connection_display_flags_are_independent(tmp_path: Path, show_count: bo
     source = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert source.count("214 connections") == int(show_count)
     assert (connections in source) is show_link
-    assert source.count(r"\textbf{LinkedIn profile}") == 1
+    assert r"\textbf{LinkedIn profile}" not in source
     assert "isSelfProfile" not in source
     assert "Private contact block" not in source
     assert "Contact info" not in source
@@ -176,8 +187,8 @@ def test_connection_display_flags_are_independent(tmp_path: Path, show_count: bo
         label = "214 connections" if show_count else "Connections"
         assert rf"\href{{{connections}}}{{{label}}}" in source
     elif not show_count:
-        # With contact disabled, the default identity column really ends at the primary profile link.
-        tail = source.split(r"\textbf{LinkedIn profile}}\par", 1)[1]
+        # Disabling Contact hides its social links too, while independent connection flags retain their contract.
+        tail = source.split(r"\profileparagraph{Staff engineer}", 1)[1]
         assert "".join(tail.split()) == r"\end{document}"
 
     assert profile.intro[-1] == "214 connections"
@@ -315,13 +326,17 @@ def test_unmatched_or_ambiguous_header_logos_stay_in_the_gallery(ambiguous: bool
 
 
 @pytest.mark.parametrize("labeled", [False, True])
-def test_header_company_logo_renders_inline_and_linked(tmp_path: Path, labeled: bool) -> None:
+@pytest.mark.parametrize("hidden", ["none", "job", "section"])
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_header_company_logo_renders_inline_and_linked(tmp_path: Path, labeled: bool, hidden: str, side: Literal["left", "right"]) -> None:
     """
     Use the existing employer row for header logos with direct labels or matching captured employment images.
 
     Args:
         tmp_path (Path): Isolated rendering directory with captured logo bytes.
-        labeled (bool): Whether the header label supplies identity without an Experience section.
+        labeled (bool): Whether the header logo has a company label or needs its captured employment association.
+        hidden (str): Keep Experience visible, exclude its job, or omit the entire section.
+        side (Literal["left", "right"]): First-page identity column placement.
 
     Returns:
         None: One linked logo precedes one company name in the identity column, with headline and location retained.
@@ -329,16 +344,28 @@ def test_header_company_logo_renders_inline_and_linked(tmp_path: Path, labeled: 
     Image.new("RGB", (20, 20), "blue").save(tmp_path / "logo.png")
     url = "https://www.linkedin.com/company/example/"
     logo = Media("https://example.org/company-logo.png", alt="Example & Co. logo", path="logo.png", link=url)
-    role = Entry("Engineer", ["Example & Co.", "2020 - Present"], images=[logo])
-    header_logo = logo if labeled else evolve(logo, alt="", link="")
+    role = Entry("Engineer", ["Example & Co.", "2020 - Present", "Private role description"], images=[logo])
+    header_logo = logo if labeled else evolve(logo, url="https://example.org/header-company-logo.png", alt="", link="")
+
+    if hidden != "none":
+        # Hidden attachments need not exist locally, even when the job supplies identity for a retained header logo.
+        role = evolve(role, images=[logo, Media("https://example.org/private.png", path="missing-private.png")])
+
     profile = Profile(
         "example-person",
         "Alex",
         intro=["Engineer at Example & Co.", " Example & Co. ", "Boston", "EXAMPLE & CO"],
         images=[header_logo],
-        sections=[] if labeled else [Section("experience", "Experience", [role])],
+        sections=[Section("experience", "Experience", [role])],
     )
-    source = render_profile(profile, Config(LinkedIn(profile.username), style=Style(show_headline=True)), tmp_path).read_text()
+    config = Config(LinkedIn(profile.username), style=Style(show_headline=True, display_current_position=True, profile_column_side=side))
+
+    if hidden == "job":
+        config = evolve(config, experience=Experience(disable=[JobSelector(company="Example & Co.")]))
+    elif hidden == "section":
+        config = evolve(config, section_order=[])
+
+    source = render_profile(profile, config, tmp_path).read_text()
     identity = source.split(r"\begin{document}", 1)[1].split(r"\textbf{LinkedIn profile}", 1)[0]
     assert identity.count(r"\companyline{") == 1
     assert identity.count(r"\includegraphics[") == 1
@@ -347,3 +374,9 @@ def test_header_company_logo_renders_inline_and_linked(tmp_path: Path, labeled: 
     assert "EXAMPLE & CO" not in identity
     assert "Boston" in identity
     assert identity.index(r"Engineer at Example \& Co.") < identity.index(r"\companyline{")
+
+    if hidden != "none":
+        assert "Private role description" not in source
+        assert "missing-private" not in source
+
+    assert profile.images == [header_logo]

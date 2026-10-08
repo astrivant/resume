@@ -12,7 +12,7 @@ from resumeme.codex.companies import load_company
 from resumeme.compiler.asts.profile import load_profile
 from resumeme.compiler.asts.summary import load_summary
 from resumeme.compiler.passes.summary import summary_digest
-from resumeme.config import load_config, project_path
+from resumeme.config import company_config, load_config, project_path
 
 root = Path.cwd()
 config = load_config(root / "resumeme.config.yaml")
@@ -26,8 +26,9 @@ if key and target is None:
 relative = f"companies/{key}" if target else ""
 directory = project_path(root, f".cache/codex/{relative}")
 company = load_company(directory / "company.json", target) if target else None
+settings = company_config(config, target, root=root) if target else config
 load_summary(
-    directory / "summary.json", username=profile.username, source_digest=summary_digest(profile, config, company), settings=config.codex
+    directory / "summary.json", username=profile.username, source_digest=summary_digest(profile, settings, company), settings=settings.codex
 )
 
 # Transfer only validated JSON. Prompts and incidental runner state do not belong in the response artifact.

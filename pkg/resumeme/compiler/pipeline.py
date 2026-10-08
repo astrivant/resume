@@ -19,7 +19,8 @@ from resumeme.compiler.asts.links import discover_profile_links
 from resumeme.compiler.asts.profile import Section
 from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.asts.summary import load_summary
-from resumeme.compiler.backends.latex.escaping import latex_escape, latex_linked_text, latex_url
+from resumeme.compiler.backends.latex.assets import stage_website_icon
+from resumeme.compiler.backends.latex.escaping import latex_contact_text, latex_escape, latex_linked_text, latex_url
 from resumeme.compiler.constants.backend import (
     BLOCK_END,
     BLOCK_START,
@@ -31,8 +32,8 @@ from resumeme.compiler.constants.backend import (
     VARIABLE_START,
 )
 from resumeme.compiler.constants.contributions import CONTRIBUTION_COLORS
-from resumeme.compiler.passes.contact import without_birthday
-from resumeme.compiler.passes.header import is_pronouns, prepare_header, prepare_header_logos
+from resumeme.compiler.passes.contact import contact_email_url, is_contact_website, prepare_contact
+from resumeme.compiler.passes.header import is_pronouns, prepare_header, prepare_header_logos, prepare_header_position
 from resumeme.compiler.passes.headings import distinct_heading, is_body_heading
 from resumeme.compiler.passes.lists import text_blocks
 from resumeme.compiler.passes.locations import job_locations
@@ -81,7 +82,7 @@ def render_profile(
         root (Path): Configuration directory.
         allow_incomplete (bool): Explicitly accept capture warnings or missing assets.
         summary_path (Path | None): Explicit generated-copy artifact, validated against this capture and configuration.
-        contributions (ContributionCalendar | None): Acquired public activity for the optional GitHub graph; rendering performs no requests.
+        contributions (ContributionCalendar | None): Acquired public activity for the optional GitHub graph; never fetched by this function.
         company (CompanyEvidence | None): Employer evidence bound to a tailored summary; None selects generic copy.
 
     Returns:
@@ -168,19 +169,38 @@ def render_profile(
     # Connection counts are optional header metadata, not repeated intro prose or a second profile URL.
     summary_headline = " ".join(summary.headline.split()) if summary else ""
     visible, connection_count, connection_url = prepare_header(visible, evolve(style, show_headline=False) if summary_headline else style)
+    visible, current_position = prepare_header_position(visible, captured=profile, display=style.display_current_position)
+
+    # An explicit unfiltered header opt-in stages only the selected company logo, never the excluded role's projects or attachments.
+    if current_position and current_position.logo:
+        staged = stage([current_position.logo], [])
+        current_position = evolve(current_position, logo=staged[0] if staged else None)
 
     if summary:
         visible = apply_summary(visible, summary, about_enabled="about" in enabled)
 
-    # Apply field visibility before scoring or staging, including the view supplied to custom templates.
-    if not style.display_birthday:
-        visible = evolve(
-            visible,
-            sections=[
-                evolve(section, entries=without_birthday(section.entries)) if section.key == "contact" else section
-                for section in visible.sections
-            ],
-        )
+    # Normalize contact labels, links, and privacy before scoring or staging, including the view supplied to custom templates.
+    visible = evolve(
+        visible,
+        sections=[
+            evolve(
+                section,
+                title="Contact",
+                entries=prepare_contact(section.entries, display_birthday=style.display_birthday, display_websites=style.display_websites),
+            )
+            if section.key == "contact"
+            else section
+            for section in visible.sections
+        ],
+    )
+
+    # Resolve branding only for retained Website fields, so hidden contacts need neither icon files nor network access.
+    website_icon = None
+
+    if style.website_icon and any(
+        is_contact_website(entry) for section in visible.sections if section.key == "contact" for entry in section.entries
+    ):
+        website_icon = stage_website_icon(style.website_icon, config, root, asset_directory)
 
     # Consolidate only retained roles and posts, so exclusions cannot leak project cards back into the document.
     visible, project_links = consolidate_projects(
@@ -230,7 +250,7 @@ def render_profile(
         images=stage(
             [
                 image
-                for image in profile.images
+                for image in visible.images
                 if (style.show_header_photo or not is_header_photo(image))
                 and (style.display_profile_photo or image_role(image, header=True) != "portrait")
             ],
@@ -242,7 +262,7 @@ def render_profile(
                 entries=[stage_entry(entry, cloud=bool(skill_cloud and section.key == "skills")) for entry in section.entries],
             )
             for section in visible.sections
-            if section.entries or (skill_cloud and section.key == "skills")
+            if section.entries or section.key == "contact" or (skill_cloud and section.key == "skills")
         ],
     )
 
@@ -277,9 +297,12 @@ def render_profile(
 
     environment.filters["tex"] = latex_escape
     environment.filters["tex_links"] = linked_text
+    environment.filters["tex_contact"] = latex_contact_text
+    environment.filters["contact_email_url"] = contact_email_url
     environment.filters["url"] = latex_url
     environment.tests["header_photo"] = is_header_photo
     environment.tests["pronouns"] = is_pronouns
+    environment.tests["contact_website"] = is_contact_website
     environment.filters["image_role"] = image_role
     environment.filters["employer_badge"] = employer_badge
     environment.filters["employer_name_index"] = employer_name_index
@@ -294,6 +317,7 @@ def render_profile(
     environment.filters["job_locations"] = job_locations
     companies = company_logos(prepared)
     environment.filters["project_layout"] = partial(project_layout, companies=companies)
+
     environment.filters["header_logos"] = partial(prepare_header_logos, companies=companies)
 
     # Custom templates receive the same filtered view as the packaged template, so presentation cannot bypass exclusions.
@@ -326,6 +350,9 @@ def render_profile(
         contributions=contributions,
         contribution_colors=CONTRIBUTION_COLORS,
         contribution_placement=config.github.contributions.placement,
+        contact_enabled="contact" in enabled,
+        website_icon=website_icon,
+        current_position=current_position,
         section_navigation=section_navigation,
     )
     target.write_text(content, encoding="utf-8")

@@ -53,7 +53,7 @@ def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(
     assert markdown.startswith(before.encode())
     assert markdown.endswith(after.encode())
     assert b'href="./documents/cv.pdf"' in markdown
-    assert b"Brew date: 2026-01-02 (UTC)" in markdown
+    assert b"Brew date 2026-01-02 (UTC)" in markdown
 
     if inline_badge:
         assert markdown.index(b"example.org/badge.svg") < markdown.index(b"brew-date.svg") < markdown.index(b"resumeme-logo.png")
@@ -71,7 +71,7 @@ def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(
     svg = ElementTree.fromstring(first)
     assert svg.attrib["width"] == "158"
     assert svg.attrib["height"] == "20"
-    assert svg.findtext("{http://www.w3.org/2000/svg}title") == "Brew date: 2026-01-02 (UTC)"
+    assert svg.findtext("{http://www.w3.org/2000/svg}title") == "Brew date 2026-01-02 (UTC)"
     assert "https://" not in first.decode()
     update_project_branding(tmp_path, config, date(2026, 1, 2))
     assert path.read_bytes() == markdown

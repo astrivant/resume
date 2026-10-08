@@ -68,7 +68,10 @@ gh secret set LINKEDIN_PASSWORD
   requires reviews or status checks. Use a repository-scoped contents-write token
   owned by an administrator or another actor permitted to bypass both rules.
   It is used only by the verified main publication job; unprotected forks can omit
-  it. See [repository settings](development.md#repository-settings-and-reviews)
+  it. Only `astrivant/resumeme` falls back to the organization's existing
+  `BENCHMARK_PUBLISH_TOKEN` when this dedicated secret is absent. That token must
+  allow contents writes to this repository and bypass its reviews and checks.
+  See [repository settings](development.md#repository-settings-and-reviews)
   before enabling the protection declared in `.github/settings.yml`.
 - `PYPI_API_TOKEN`: package maintainers only. Version-tag releases map the organization,
   repository, or `pypi` environment secret to `POETRY_PYPI_TOKEN_PYPI`. Resume-only

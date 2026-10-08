@@ -1,5 +1,5 @@
 """
-Provide explicit capture, validation, rendering, and PDF build commands.
+Provide explicit configuration linting, capture, validation, rendering, and PDF build commands.
 """
 
 from __future__ import annotations
@@ -95,6 +95,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "--companies", action="store_true", help="Also acquire configured employer/job context and prepare each prompt"
             )
 
+    configuration = commands.add_parser("config", help="Validate local configuration without a captured profile")
+    config_commands = configuration.add_subparsers(dest="config_command", required=True)
+    lint = config_commands.add_parser("lint", help="Validate configuration schemas and merged settings without capture or rendering")
+    lint.add_argument("paths", type=Path, nargs="*", metavar="PATH", help="Config files to validate; defaults to --config")
+
     site = commands.add_parser("site", help="Prepare a GitHub Pages site in .cache/pages from the existing PDF")
     site.add_argument("--repository", help="Publishing OWNER/REPO; defaults to GITHUB_REPOSITORY or the local Git origin")
 
@@ -126,6 +131,33 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run(args)
 
 
+def _lint_configs(paths: Sequence[Path]) -> int:
+    """
+    Validate each requested configuration independently without loading profile data or producing artifacts.
+
+    Args:
+        paths (Sequence[Path]): Configuration filenames relative to the working directory, or absolute paths.
+
+    Returns:
+        int: Zero when every config passes, otherwise two after reporting all invalid files.
+    """
+    result = 0
+
+    # Pre-commit supplies a batch of filenames; a broken config must not prevent diagnostics for the remaining files.
+    for path in paths:
+        try:
+            load_config(path)
+        except (OSError, ValueError, ValidationError, yaml.YAMLError) as error:
+            # Report the field path and concise schema message rather than dumping the full config into hook output.
+            detail = f"{error.json_path}: {error.message}" if isinstance(error, ValidationError) else str(error)
+            _LOGGER.error("Invalid configuration %s: %s", path, detail, extra={"file.path": str(path), "error.type": type(error).__name__})
+            result = 2
+        else:
+            print(f"Valid configuration: {path}")
+
+    return result
+
+
 def _run(args: argparse.Namespace) -> int:
     """
     Execute a parsed command inside its caller-owned logging context.
@@ -141,6 +173,10 @@ def _run(args: argparse.Namespace) -> int:
 
         if override:
             set_log_level(override)
+
+        # Config lint accepts pre-commit's filenames and must run before the ordinary pipeline opens its snapshot.
+        if args.command == "config":
+            return _lint_configs(args.paths or [args.config])
 
         # Anchor every stage to the config directory, regardless of where the command was invoked.
         config = load_config(args.config)
@@ -261,7 +297,7 @@ def _run(args: argparse.Namespace) -> int:
         result = compile_pdf(source, config, root) if args.command == "build" else source
         print(result)
 
-        # All variants share the same capture and calendar; explicit response bundles keep ordinary builds offline.
+        # Variants share the capture and reuse matching calendars; per-job overrides may request a different public activity window.
         if args.company_summaries:
             for result in render_companies(
                 profile,
@@ -297,3 +333,7 @@ def _run(args: argparse.Namespace) -> int:
         return 2
 
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

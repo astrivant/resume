@@ -29,6 +29,38 @@ raw GitHub URL works independently of the resume's Pages site. No additional
 secret or coverage service is required. Forks retaining the project README can
 replace `astrivant/resumeme` in the badge's image and destination URLs.
 
+## Configuration lint hook
+
+[`.pre-commit-hooks.yaml`](../.pre-commit-hooks.yaml) exports
+`resumeme-config-validator`, which runs `resumeme config lint` on changed
+`resumeme.config*.yaml` or `.yml` files. It validates configuration without
+captured LinkedIn data or a PDF build. See the [CLI reference](CLI.md#resumeme-config-lint)
+for direct use with arbitrary filenames.
+
+This checkout uses a `repo: local` entry in
+[`.pre-commit-config.yaml`](../.pre-commit-config.yaml), so validation always runs
+the latest checkout's code with the existing Poetry environment. Check both
+maintained configurations explicitly with:
+
+```bash
+poetry run pre-commit run resumeme-config-validator --files resumeme.config.yaml resumeme.config.ref.yaml
+```
+
+Other repositories can install the published hook with Python 3.13 available:
+
+```yaml
+repos:
+  - repo: https://github.com/astrivant/resumeme
+    rev: <tag-or-commit-containing-the-hook>
+    hooks:
+      - id: resumeme-config-validator
+```
+
+Replace the revision placeholder with a tag or commit containing the hook; after
+release, `pre-commit autoupdate` selects the latest tagged version. Override
+`files` on the hook entry to select other config filenames. Pre-commit passes
+every matching filename to the validator, and any invalid file fails the hook.
+
 ## Repository settings and reviews
 
 [`.github/settings.yml`](../.github/settings.yml) is applied by the
@@ -54,6 +86,19 @@ can omit it and retain `GITHUB_TOKEN` publication.
 ```bash
 gh secret set RESUME_PUBLISH_TOKEN --repo OWNER/REPO
 ```
+
+In `astrivant/resumeme`, the organization secret `BENCHMARK_PUBLISH_TOKEN` supplies
+the publication credential when `RESUME_PUBLISH_TOKEN` is absent. Its owner must
+have bypass permission and its repository scope must include `astrivant/resumeme`.
+This fallback is restricted to the upstream repository; forks use the dedicated
+secret described above. Both credentials reach only the verified publication job.
+
+If publication reports `GH006`, check the job's `RESUMEME_PUBLISH_USES_TOKEN`
+value. `false` means neither publication secret was supplied, so checkout used
+`GITHUB_TOKEN`. `true` means a token was supplied; verify its owner and repository
+scope. The parent commit's successful CI check does not apply to the new generated
+commit. After changing the workflow, push it and start a new run; rerunning an
+older run uses its original workflow and secret mapping.
 
 Publication-token commits include a `Resumeme-Publication: true` trailer. Their
 pushes run normal CI and Scorecard; only repeated PDF publication is skipped.

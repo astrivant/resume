@@ -28,6 +28,29 @@
 ((* endif *))
 ((* endfor *))
 ((* endmacro *))
+((* macro render_contact_fields(section) *))
+((# Field labels and their first values share a row; subsequent values keep their own captured destinations. #))
+((* for entry in section.entries *))
+((* if entry.title|lower == 'email' *))
+((* for value in entry.paragraphs *))
+((* set destination = value|contact_email_url *))
+((* if destination *))
+\href{((( destination|url )))}{\makebox[1.3em][l]{\faEnvelope}\textbf{Email}}\par
+((* else *))
+\profileparagraph{\textbf{Email}: ((( value|tex_contact(entry.links) )))}
+((* endif *))
+((* endfor *))
+((* else *))
+\profileparagraph{((* if website_icon and entry is contact_website *))\makebox[1.3em][l]{\raisebox{-0.15ex}{\includegraphics[width=1em,height=1em,keepaspectratio]{((( website_icon )))}}}((* endif *))((* if entry.title *))\textbf{((( entry.title|tex_contact(entry.links) )))}((* if entry.paragraphs *)): ((* endif *))((* endif *))((* if entry.paragraphs *))((( entry.paragraphs[0]|tex_contact(entry.links) )))((* endif *))}
+((* for value in entry.paragraphs[1:] *))
+\profileparagraph{((( value|tex_contact(entry.links) )))}
+((* endfor *))
+((* endif *))
+((* for image in entry.images *))
+\profileparagraph{((* if image.link *))\href{((( image.link|url )))}{((* endif *))\includegraphics[width=8mm,height=8mm,keepaspectratio]{((( image.path )))}((* if image.link *))}((* endif *))}
+((* endfor *))
+((* endfor *))
+((* endmacro *))
 ((* macro company_label(text, links) -*))
 ((# Employment type remains body-sized metadata even when it shares the employer's row. #))
 ((* set name, separator, metadata = text.partition('\u00b7') -*))
@@ -645,6 +668,12 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \endgroup
 }
 \urlstyle{same}
+% Contact and Contents use the same compact hierarchy in the identity column.
+\newcommand{\identityheading}[1]{%
+  \par\addvspace{12pt}%
+  \Needspace{3\baselineskip}%
+  {\color{sectionheading}\large\bfseries #1}\par\nopagebreak\vspace{0.5\baselineskip}%
+}
 % Allocate 26% to identity and 69% to the body, retaining a 5% gutter on either side.
 ((* if style.profile_column_side == 'right' *))
 \newsavebox{\profileidentitybox}
@@ -661,8 +690,9 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % Flow frames reset their text color on entry; inherit the configured body ink in every column and continuation page.
 \setallflowframes{textcolor=ink}
 \begin{document}
-((# Contact starts in the identity column only when it leads the requested visible order. #))
-((* set contact_first = section_navigation and section_navigation[0][1].key == 'contact' *))
+((# Contact always belongs above Contents in the identity column; other sections retain their configured body order. #))
+((* set contacts = section_navigation|selectattr('1.key', 'equalto', 'contact')|list *))
+((* set body = section_navigation|rejectattr('1.key', 'equalto', 'contact')|list *))
 ((# Relocate observed header branding beside its name, using the same linked company row as Experience. #))
 ((* set header, header_badges = profile|header_logos *))
 ((* if style.profile_column_side == 'right' *))
@@ -693,19 +723,51 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* if summary_headline *))
 \profileparagraph{((( summary_headline|tex )))}
 ((* endif *))
-((( render_text(header.intro|reject('pronouns')|list, profile.links, badges=header_badges, company_labels=true) )))
+((* if header.headline *))
+\profileparagraph{((( header.headline|tex_links(profile.links) )))}
+((* endif *))
+((# Sidebar employment is selected before staging; unfiltered opt-in cannot restore excluded descriptions or project media. #))
+((* if current_position *))
+((* if current_position.company *))
+((* if current_position.logo *))
+((( company_name((0, current_position.logo), current_position.company, []) )))
+((* else *))
+\profileparagraph{((( company_label(current_position.company, []) )))}
+((* endif *))
+((* endif *))
+((* if current_position.title *))
+\profileparagraph{((( current_position.title|tex )))}
+((* endif *))
+((* endif *))
+((( render_text(header.intro|reject('pronouns')|reject('equalto', header.headline)|list, profile.links, badges=header_badges, company_labels=true) )))
+((* if contact_enabled *))
+((* for anchor, section in contacts *))
+\hypertarget{((( anchor )))}{}%
+((* endfor *))
+\identityheading{Contact}
 \href{https://www.linkedin.com/in/((( profile.username|url )))/}{\makebox[1.3em][l]{\faLinkedin}\textbf{LinkedIn profile}}\par
+((* for anchor, section in contacts *))
+((( render_contact_fields(section) )))
+((* endfor *))
+((* endif *))
+((# Optional connection metadata keeps its independent visibility controls and precedes the final GitHub group. #))
+((* if connection_url *))
+\href{((( connection_url|url )))}{((( (connection_count or 'Connections')|tex )))}\par
+((* elif connection_count *))
+((( connection_count|tex )))\par
+((* endif *))
+((# GitHub and its graph stay adjacent and last in Contact, immediately above Contents. #))
+((* if contact_enabled *))
 ((* if github_username *))
 \href{https://github.com/((( github_username|url )))}{\makebox[1.3em][l]{\faGithub}\textbf{GitHub: ((( github_username|tex )))}}\par
 ((* endif *))
 ((* if contributions and contribution_placement == 'profile' *))
 ((( render_contributions() )))
 ((* endif *))
+((* endif *))
 ((# A compact hierarchy links only rendered headings, including synthesized Projects and Skills sections. #))
-((* if style.show_table_of_contents and (section_navigation or (contributions and contribution_placement == 'appendix')) *))
-\par\addvspace{12pt}
-\Needspace{3\baselineskip}
-{\color{sectionheading}\large\bfseries Contents}\par\nopagebreak\vspace{0.5\baselineskip}
+((* if style.show_table_of_contents and (body or (contributions and contribution_placement == 'appendix')) *))
+\identityheading{Contents}
 ((* for anchor, section in section_navigation *))
 \noindent\hangindent=0.6em\hangafter=1\hspace*{0.6em}\hyperlink{((( anchor )))}{((( section.title|tex )))}\par
 ((* endfor *))
@@ -713,15 +775,6 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \noindent\hspace*{0.6em}\hyperlink{github-contributions}{GitHub contributions}\par
 ((* endif *))
 \par\addvspace{6pt}
-((* endif *))
-((* if connection_url *))
-\href{((( connection_url|url )))}{((( (connection_count or 'Connections')|tex )))}\par
-((* elif connection_count *))
-((( connection_count|tex )))\par
-((* endif *))
-((* if contact_first *))
-\par\addvspace{12pt}
-((( render_section(section_navigation[0][1], section_navigation[0][0]) )))
 ((* endif *))
 ((* if style.profile_column_side == 'right' *))
 }
@@ -748,11 +801,10 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \fi
 ((* endif *))
 ((# A header-only profile does not need a forced break or an empty body heading. #))
-((* set body = section_navigation[1:] if contact_first else section_navigation *))
 ((* if body *))
 \framebreak
 ((* if style.profile_column_side == 'right' *))\profilebodytrue((* endif *))
-% Follow the configured section order in the body, including About and any relocated Contact info.
+% Follow the configured section order for body sections; Contact remains with the identity block.
 ((* for anchor, section in body *))
 ((( render_section(section, anchor) )))
 ((* endfor *))

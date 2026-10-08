@@ -116,14 +116,75 @@ codex:
 | `context` | No | Additional writing preferences for this target |
 | `company_context` | No | Company description to use instead of fetching its LinkedIn About page |
 | `job_context` | No | Job description to use instead of fetching the job URL |
+| `overrides` | No | Partial root configuration inherited only by this company/job variant |
 
 CI creates a summary matrix containing the generic request plus one item per
 company/job pair, with up to four generation jobs running concurrently. Each
-item uses the same pinned Codex Action and shared word limits. Adding a company
+item uses the same pinned Codex Action with its resolved model, reasoning effort,
+and word limits. Adding a company
 does not change the generic request. Employer requirements remain separate from
 the applicant's facts: the prompt asks for relevant emphasis, not invented skills,
 achievements, or employment at the target company. Section, job, education, and
-project filters apply to every variant.
+project filters apply to every variant after its overrides are merged.
+
+### Per-posting configuration
+
+`overrides` uses the same field names and validation as `resumeme.config.yaml`.
+Omitted fields inherit the base config. Mappings merge recursively; lists replace
+the inherited list. Scalars, `false`, and `null` replace the inherited value.
+For example, `experience.disable: []` clears inherited job exclusions, while an
+omitted `disable` preserves them. An empty mapping changes nothing.
+
+```yaml
+codex:
+  enabled: true
+  companies:
+    - username: example-company
+      job_url: https://www.linkedin.com/jobs/view/1234567890/
+      context: Emphasize platform reliability.
+      overrides: &platform_resume
+        section_order: [contact, about, experience, projects, skills]
+        experience:
+          since: '2020-06-01'
+          disable: []
+        projects:
+          include:
+            - affiliation: Example Company
+        style:
+          theme: null
+          font_size: 10
+          display_current_position: false
+        codex:
+          about_max_words: 70
+          headline_max_words: 12
+    - username: another-company
+      job_url: https://careers.example.com/jobs/platform-engineer
+      context: Emphasize developer experience.
+      overrides: *platform_resume
+```
+
+YAML anchors reuse partials without extra files or a separate preset language.
+YAML's `<<` merge also works, but merges at one mapping level; nested values in
+each final partial then merge recursively with the base config.
+
+Supported root sections are `style`, `section_order`, `experience`, `education`,
+`projects`, `project_filter`, `template`, `github`, and `capture`. Under `codex`,
+override `context`, `model`, `reasoning_effort`, `about_max_words`, or
+`headline_max_words`. `codex.context` replaces the shared writing context;
+the target's sibling `context` remains additional guidance. Theme precedence
+still applies: set `style.theme: null` to use direct style values, or override
+the selected entry under `style.themes`.
+
+The LinkedIn capture, account publication settings, Pages/README settings,
+logging, summary enablement, skill publication, and target matrix remain global.
+Output paths stay matrix-owned under `single-origin/`; those fields are rejected
+inside `overrides`. Per-target `capture` settings apply to public company/job and
+icon/calendar requests, not a separate browser capture. Relative template and
+icon paths remain relative to the main config directory.
+
+Merged settings drive both the prompt's filtered evidence and the resulting PDF.
+Changed target overrides invalidate its saved summary bundle. The generic resume
+and sibling targets retain their own settings.
 
 Public company/job text is fetched before generation using the configured
 timeouts and exponential retries. Supported pages expose LinkedIn description
@@ -211,7 +272,8 @@ poetry run resumeme summary-prompt --companies
 ```
 
 Run the same Codex command for each emitted directory, using its `prompt.txt` and
-`schema.json` and writing the result to its `summary.json`. Keep each `company.json`
+`schema.json` and writing the result to its `summary.json`. Use the model and
+reasoning effort recorded in that prompt when a target overrides them. Keep each `company.json`
 beside its response. Then build the complete set, or replace `build` with `render`
 to inspect the TeX without compiling PDFs:
 
@@ -221,7 +283,9 @@ poetry run resumeme build \
     --company-summaries .cache/codex/companies
 ```
 
-The compiler acquires an enabled GitHub calendar once and shares it across the
-generic and tailored versions. `--github-calendar` can reuse an existing calendar
-snapshot for a fully offline build. No additional secrets are required for company
-variants beyond the existing `OPENAI_API_KEY` used by generation.
+Enabled GitHub calendars are shared when account and date window match. A target
+can hide the graph or move it to the appendix independently; a different account
+or window fetches its own calendar once. `--github-calendar` reuses matching
+observations from an existing snapshot. For offline builds, all enabled target
+graphs must match that snapshot, and configured icons must use local paths.
+No additional secrets are required beyond `OPENAI_API_KEY` used by generation.

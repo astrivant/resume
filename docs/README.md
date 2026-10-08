@@ -120,7 +120,10 @@ See [logging controls and record fields](CLI.md#logging).
 | `style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
 | `style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |
 | `style.show_connection_link` | `false` | Link the count, or a concise Connections label, to the captured connections page |
-| `style.display_birthday` | `false` | Show the birthday field when Contact info is enabled |
+| `style.display_birthday` | `false` | Show the birthday field when Contact is enabled |
+| `style.display_websites` | `false` | Show captured Website fields in Contact; independent of LinkedIn, Email, and GitHub |
+| `style.website_icon` | `null` | Local image path relative to the config directory, or direct public image/favicon URL, beside enabled Website fields |
+| `style.display_current_position` | `null` | Sidebar company/logo/title: latest visible role; `true` uses the latest captured role regardless of filters, `false` hides it |
 | `style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
 | `style.skills_allow_vertical` | `false` | Allow mixed vertical and horizontal cloud labels; enabled in this repository |
 | `style.skills_size_legend` | `false` | Show character-size examples for 0, 1+, and 5+ endorsements beneath the cloud's color scale |
@@ -173,7 +176,7 @@ package's full default list. Use lowercase `sections[].key` values from
 `data/profile.json`; add unfamiliar keys explicitly to include them. Known aliases
 are accepted, with their first occurrence setting the position.
 
-[resumeme.config.yaml](../resumeme.config.yaml) lists every known section, with
+[resumeme.config.ref.yaml](../resumeme.config.ref.yaml) lists every known section, with
 `contact`, `featured`, `recommendations`, `interests`, `causes`, `organizations`, and
 `languages` commented out. The same visibility rules apply before project
 consolidation, skill scoring, and Codex summary generation. The captured snapshot
@@ -184,8 +187,27 @@ The former top-level `disable` key is no longer accepted. To migrate an older
 config, remove it and comment out those keys in `section_order` instead.
 `experience.disable` and `education.disable` control individual jobs and education entries.
 
-Contact info occupies the first-page identity column when it leads the visible
-order. Move `contact` later in the array to place it among the body sections.
+Contact occupies the first-page identity column above Contents whenever `contact`
+is enabled, with both headings at the same size. It groups the LinkedIn and GitHub
+links, the profile contribution graph, and captured contact fields. Commenting out
+`contact` hides this block; an explicitly configured contribution appendix remains independent.
+The compiler removes repeated LinkedIn profile URLs and edit controls, and links
+website captions inline. Birthday visibility still follows `style.display_birthday`.
+Email addresses display as an envelope icon and a clickable `Email` label.
+GitHub and its contribution graph follow the other contact links, immediately above Contents.
+Captured Website fields, such as linktr.ee, are hidden by default. Set
+`style.display_websites: true` to show them. Optionally set `style.website_icon`
+to an image path relative to the configuration directory, such as
+`docs/assets/website.png`, or a direct public URL such as
+`https://example.org/favicon.ico`. PNG, JPEG, WebP, and ICO favicons are decoded
+with [Pillow](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#ico)
+and staged as PNG at the same inline scale as the social icons. URLs must point
+to image bytes; HTML pages and SVG are unsupported. Public URLs are downloaded
+during rendering using `capture` timeouts and exponential retries, without login
+credentials. Use a local path for offline builds. Invalid or unavailable enabled
+icons fail the build with a configuration-specific error.
+`null` keeps the text-only website row; hidden or absent websites require no icon
+file or download. Both settings support inline theme overrides.
 About has no forced position beyond its place in the default array.
 
 Projects and Featured use the same two-column tiles with a subtle gray background
@@ -196,8 +218,15 @@ their project previews still consolidate into Projects.
 ### Header and skills
 
 - `show_headline` controls the captured headline beneath the portrait; it defaults
-  to false. It leaves the company and location visible. Older snapshots use a
+  to false. Location and the selected employment block are independent. Older snapshots use a
   conservative role-at-company match when an explicit headline field is absent.
+- `display_current_position` controls the company, logo, and role title in either
+  profile-column layout. `null` selects the first retained Experience role after
+  job exclusions, date windows, and section visibility; `true` selects from the
+  original capture instead. `false` hides the block. Selection follows LinkedIn's
+  listed order, including the first retained role within a company group. With
+  no eligible experience, no employment block is shown. This setting also supports
+  theme overrides and never restores excluded job descriptions or project assets.
 - `github.username` adds a public GitHub link below LinkedIn; `null` hides it.
   Both links have platform icons. This setting is top-level identity configuration.
 - `show_header_photo` controls the cover image; `display_profile_photo` independently

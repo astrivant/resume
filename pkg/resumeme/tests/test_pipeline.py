@@ -310,7 +310,8 @@ def test_opening_columns_respect_section_visibility(tmp_path: Path, disabled: li
     rendered = render_profile(profile, config, tmp_path).read_text(encoding="utf-8").split(r"\begin{document}", 1)[1]
 
     for key in ("about", "contact", "projects"):
-        assert (f"\\sectiontitle{{{key.title()}}}" in rendered) == (key not in disabled)
+        heading = "identityheading" if key == "contact" else "sectiontitle"
+        assert (f"\\{heading}{{{key.title()}}}" in rendered) == (key not in disabled)
 
     if "projects" in disabled:
         assert "\\framebreak" not in rendered

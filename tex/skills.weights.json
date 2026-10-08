@@ -5,9 +5,9 @@
     "weight": 13
   },
   "Kubernetes": {
-    "references": 6,
+    "references": 7,
     "endorsements": 0,
-    "weight": 6
+    "weight": 7
   },
   "Python": {
     "references": 2,
@@ -39,6 +39,11 @@
     "endorsements": 0,
     "weight": 5
   },
+  "Python (Programming Language)": {
+    "references": 4,
+    "endorsements": 0,
+    "weight": 4
+  },
   "Amazon EC2": {
     "references": 1,
     "endorsements": 1,
@@ -69,11 +74,6 @@
     "endorsements": 1,
     "weight": 3
   },
-  "Python (Programming Language)": {
-    "references": 3,
-    "endorsements": 0,
-    "weight": 3
-  },
   "Vault": {
     "references": 3,
     "endorsements": 0,
@@ -94,7 +94,17 @@
     "endorsements": 0,
     "weight": 2
   },
+  "Bash": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
   "CircleCI": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Compilers": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -104,12 +114,27 @@
     "endorsements": 0,
     "weight": 2
   },
-  "Graph Theory": {
+  "Docker Products": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Google Cloud Platform (GCP)": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Hydroponics": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
   },
   "Hypothesis Testing": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Information Security": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -125,11 +150,6 @@
     "weight": 2
   },
   "Mathematics": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "Orchids": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -174,17 +194,7 @@
     "endorsements": 0,
     "weight": 1
   },
-  "Bash": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
   "Business Ownership": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "Compilers": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -200,11 +210,6 @@
     "weight": 1
   },
   "Databases": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "Docker Products": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -229,27 +234,17 @@
     "endorsements": 0,
     "weight": 1
   },
-  "Google Cloud Platform (GCP)": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
   "Google Kubernetes Engine (GKE)": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
   },
-  "Hydroponics": {
+  "Graph Theory": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
   },
   "Hyper-V": {
-    "references": 1,
-    "endorsements": 0,
-    "weight": 1
-  },
-  "Information Security": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -289,12 +284,22 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Orchids": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "Platform Architecture": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
   },
   "Powershell": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Python (Programming Language) and Graph Theory": {
     "references": 1,
     "endorsements": 0,
     "weight": 1

@@ -77,11 +77,16 @@ codex:
 
   # Additional employer/job resumes under single-origin/; the generic resume.pdf is retained.
   companies: []
+  # Each target accepts partial root config under overrides; mappings merge, lists/null replace. See docs/codex.md.
   # companies:
   #   - username: example-company
   #     job_url: https://www.linkedin.com/jobs/view/1234567890/
   #     context: Emphasize platform reliability and developer tooling.
   #     company_context: ''  # Optional supplied company description instead of fetching it.
+  #     overrides:
+  #       style: {display_current_position: false}
+  #       experience: {disable: [], since: '2020-06-01'}
+  #       codex: {about_max_words: 70}
   #     job_context: ''      # Optional supplied job description for login-only or expired postings.
 
   skills:
@@ -98,6 +103,7 @@ codex:
 # All known sections in package-default order. Remove or comment out a key to hide it; reorder to move sections.
 # Missing/empty sections are skipped. [] shows only the profile header. Review contact fields before publishing.
 section_order:
+  # Contact groups social links, the profile contribution graph, and captured fields above Contents.
   # - contact
   - about
   # - featured
@@ -226,11 +232,21 @@ style:
   show_header_photo: true
   display_profile_photo: true
   show_headline: false
+
+  # Sidebar company/logo/title: null uses the latest visible Experience role; true ignores its filters; false hides the block.
+  display_current_position: null
+
   show_table_of_contents: true
   highlight_job_subheadings: true
   show_connection_count: false
   show_connection_link: false
   display_birthday: false
+
+  # Enable captured Website fields in Contact; LinkedIn, Email, and GitHub remain independent.
+  display_websites: false
+
+  # Optional local image path or direct public image/favicon URL, e.g. https://example.org/favicon.ico.
+  website_icon: null
 
   # Top 20 skills by references + 2 * endorsements; false restores the text list.
   skills_word_cloud: true

@@ -7,7 +7,7 @@ from __future__ import annotations
 __all__ = ["SECTION_TITLES", "DEFAULT_SECTION_ORDER", "ALIASES"]
 
 SECTION_TITLES: dict[str, str] = {
-    "contact": "Contact info",
+    "contact": "Contact",
     "about": "About",
     "featured": "Featured",
     "activity": "Activity",

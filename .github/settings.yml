@@ -32,6 +32,6 @@ branches:
       allow_force_pushes: false
       allow_deletions: false
 
-      # Administrators retain bypass; protected PDF publication needs RESUME_PUBLISH_TOKEN.
+      # Administrators retain bypass; publication uses RESUME_PUBLISH_TOKEN or the documented upstream fallback.
       enforce_admins: false
       restrictions: null

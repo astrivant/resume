@@ -22,13 +22,13 @@ __all__ = ["CompanyAffiliation", "ProjectLayout", "company_logos", "project_layo
 
 def company_logos(profile: Profile) -> dict[str, Media]:
     """
-    Index staged employer logos from visible employment for reuse by associated projects.
+    Index observed employer logos for associated projects and header identity.
 
     Args:
-        profile (Profile): Display profile after section/job exclusions and asset staging.
+        profile (Profile): Captured or display profile; the caller owns section visibility and asset staging.
 
     Returns:
-        dict[str, Media]: Normalized employer names mapped to their captured, staged branding.
+        dict[str, Media]: Normalized employer names mapped to branding with the input's original or staged paths.
     """
     result: dict[str, Media] = {}
 

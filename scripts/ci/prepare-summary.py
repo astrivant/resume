@@ -12,13 +12,21 @@ from pathlib import Path
 from resumeme.codex.companies import prepare_companies
 from resumeme.codex.request import prepare_summary
 from resumeme.compiler.asts.profile import load_profile
-from resumeme.config import load_config, project_path
+from resumeme.config import company_config, load_config, project_path
 from resumeme.telemetry import logging_context
 
 root = Path.cwd()
 config = load_config(root / "resumeme.config.yaml")
 enabled = config.codex.enabled and os.environ.get("GENERATE_SUMMARY") == "true"
-matrix = [{"key": "generic", "company": "", "directory": ".cache/codex"}]
+matrix = [
+    {
+        "key": "generic",
+        "company": "",
+        "directory": ".cache/codex",
+        "model": config.codex.model or "",
+        "effort": config.codex.reasoning_effort or "",
+    }
+]
 
 # Only the action receives the credential; this setup step sees its presence as a boolean.
 if enabled:
@@ -33,16 +41,18 @@ if enabled:
         prepare_companies(profile, config, root)
 
     # Matrix keys are artifact-safe; prompt paths and compiler outputs retain the readable company/job hierarchy.
-    matrix.extend(
-        {
-            "key": "company-" + hashlib.sha256(target.key.encode("utf-8")).hexdigest()[:16],
-            "company": target.key,
-            "directory": f".cache/codex/companies/{target.key}",
-        }
-        for target in config.codex.companies
-    )
+    for target in config.codex.companies:
+        settings = company_config(config, target, root=root)
+        matrix.append(
+            {
+                "key": "company-" + hashlib.sha256(target.key.encode("utf-8")).hexdigest()[:16],
+                "company": target.key,
+                "directory": f".cache/codex/companies/{target.key}",
+                "model": settings.codex.model or "",
+                "effort": settings.codex.reasoning_effort or "",
+            }
+        )
 
 with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
-    output.write(f"enabled={str(enabled).lower()}\nmodel={config.codex.model or ''}\n")
-    output.write(f"effort={config.codex.reasoning_effort or ''}\n")
+    output.write(f"enabled={str(enabled).lower()}\n")
     output.write("matrix=" + json.dumps({"include": matrix}) + "\n")

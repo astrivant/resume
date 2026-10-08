@@ -23,7 +23,7 @@ from resumeme.compiler.asts.contributions import (
     save_calendar,
     validate_calendar,
 )
-from resumeme.compiler.asts.profile import Profile, save_profile
+from resumeme.compiler.asts.profile import Entry, Link, Profile, Section, save_profile
 from resumeme.compiler.constants.contributions import CONTRIBUTION_COLORS
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, GitHub, GitHubContributions, LinkedIn, load_config
@@ -286,6 +286,57 @@ def test_template_places_linked_cells_in_configured_location(tmp_path: Path, sid
         assert graph < source.index("\\sbox{\\profileidentitybox}") if side == "right" else True
 
     assert load_calendar(tmp_path / "tex/github-contributions.json") == calendar
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+@pytest.mark.parametrize("placement", ["profile", "appendix"])
+def test_contact_owns_profile_graph_but_not_appendix(tmp_path: Path, enabled: bool, placement: str) -> None:
+    """
+    Keep social links and the sidebar graph together above Contents, with independent appendix visibility.
+
+    Args:
+        tmp_path (Path): Isolated configuration and rendering directory.
+        enabled (bool): Whether Contact is included in section_order.
+        placement (str): Requested contribution placement.
+
+    Returns:
+        None: Graph cells occur once in their requested visible location and Contact and Contents share heading styling.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(
+        "linkedin: {username: example-person}\n"
+        "style: {show_connection_link: true, display_websites: true}\n"
+        f"section_order: {['about', 'contact'] if enabled else ['about']}\n"
+        "github:\n  username: example-person\n  contributions:\n"
+        f"    enabled: true\n    placement: {placement}\n    as_of: '2026-10-07'\n"
+    )
+    config = load_config(path)
+    calendar = _calendar(config.github.contributions)
+    connections = "https://www.linkedin.com/mynetwork/invite-connect/connections/"
+    website = Link("Portfolio", "https://example.org/alex")
+    profile = Profile(
+        "example-person",
+        "Alex",
+        links=[Link("Connections", connections)],
+        sections=[
+            Section("about", "About", [Entry("Build systems")]),
+            Section("contact", "Contact info", [Entry("Website", ["Portfolio"], links=[website]), Entry("Email", ["alex@example.org"])]),
+        ],
+    )
+    source = render_profile(profile, config, tmp_path, contributions=calendar).read_text()
+    body = source.split(r"\begin{document}", 1)[1]
+    assert (r"\identityheading{Contact}" in body) is enabled
+    assert r"\identityheading{Contents}" in body
+    assert body.count("tab=overview") == (len(calendar.days) if enabled or placement == "appendix" else 0)
+
+    if enabled:
+        assert body.index(r"\identityheading{Contact}") < body.index("LinkedIn profile") < body.index("GitHub: example-person")
+        assert body.index("LinkedIn profile") < body.index("https://example.org/alex") < body.index("mailto:alex@example.org")
+        assert body.index("mailto:alex@example.org") < body.index(connections) < body.index("GitHub: example-person")
+        assert body.index("GitHub: example-person") < body.index(r"\identityheading{Contents}")
+
+        if placement == "profile":
+            assert body.index("GitHub: example-person") < body.index("tab=overview") < body.index(r"\identityheading{Contents}")
 
 
 def test_cli_disabled_and_offline_calendar_paths_do_not_fetch(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:

@@ -310,7 +310,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
         assert 'href="./resume.pdf"' in markdown
         assert 'src="https://raw.githubusercontent.com/example/my-cv/main/docs/assets/branding/resumeme-logo.png"' in markdown
         assert 'src="https://raw.githubusercontent.com/example/my-cv/main/docs/assets/branding/brew-date.svg"' in markdown
-        assert "Brew date: 2026-01-02 (UTC)" in markdown
+        assert "Brew date 2026-01-02 (UTC)" in markdown
         assert markdown.endswith("Custom introduction\n")
 
     # Model a new user commit arriving after the first PDF publication; a retry must not publish that older build as current.

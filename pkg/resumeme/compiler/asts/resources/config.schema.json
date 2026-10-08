@@ -367,8 +367,17 @@
               "display_birthday": {
                 "$ref": "#/properties/style/properties/display_birthday"
               },
+              "display_websites": {
+                "$ref": "#/properties/style/properties/display_websites"
+              },
+              "website_icon": {
+                "$ref": "#/properties/style/properties/website_icon"
+              },
               "show_headline": {
                 "$ref": "#/properties/style/properties/show_headline"
+              },
+              "display_current_position": {
+                "$ref": "#/properties/style/properties/display_current_position"
               },
               "profile_column_side": {
                 "$ref": "#/properties/style/properties/profile_column_side"
@@ -390,10 +399,29 @@
           "type": "boolean",
           "default": false
         },
+        "display_websites": {
+          "description": "Display captured Website fields in Contact; hidden by default. Social links remain independent.",
+          "type": "boolean",
+          "default": false
+        },
+        "website_icon": {
+          "description": "Optional local raster path or direct public HTTP(S) image/favicon URL; normalized to PNG for LaTeX.",
+          "anyOf": [
+            {"type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_./-]+$"},
+            {"type": "string", "format": "uri", "pattern": "^https?://[^\\s]+$"},
+            {"type": "null"}
+          ],
+          "default": null
+        },
         "show_headline": {
           "type": "boolean",
           "default": false,
           "description": "Display the captured headline beneath the portrait; hidden by default."
+        },
+        "display_current_position": {
+          "type": ["boolean", "null"],
+          "default": null,
+          "description": "Sidebar company, logo, and title: null selects the latest visible Experience role, true selects the latest captured role regardless of filters, false hides it."
         },
         "profile_column_side": {
           "description": "First-page profile placement: left keeps full-height columns; right wraps body content beside and below the profile.",
@@ -651,6 +679,34 @@
               "job_context": {
                 "type": "string",
                 "maxLength": 40000
+              },
+              "overrides": {
+                "type": "object",
+                "default": {},
+                "additionalProperties": false,
+                "description": "Partial per-job config: mappings merge recursively; lists, scalars, and null replace inherited values. Capture identity, publication, and output paths remain shared or matrix-owned.",
+                "properties": {
+                  "style": {"$ref": "#/properties/style"},
+                  "section_order": {"$ref": "#/properties/section_order"},
+                  "experience": {"$ref": "#/properties/experience"},
+                  "education": {"$ref": "#/properties/education"},
+                  "projects": {"$ref": "#/properties/projects"},
+                  "project_filter": {"$ref": "#/properties/project_filter"},
+                  "template": {"$ref": "#/properties/template"},
+                  "github": {"$ref": "#/properties/github"},
+                  "capture": {"$ref": "#/properties/capture"},
+                  "codex": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "context": {"$ref": "#/properties/codex/properties/context"},
+                      "model": {"$ref": "#/properties/codex/properties/model"},
+                      "reasoning_effort": {"$ref": "#/properties/codex/properties/reasoning_effort"},
+                      "about_max_words": {"$ref": "#/properties/codex/properties/about_max_words"},
+                      "headline_max_words": {"$ref": "#/properties/codex/properties/headline_max_words"}
+                    }
+                  }
+                }
               }
             }
           }

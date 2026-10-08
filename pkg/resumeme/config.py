@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from copy import deepcopy
 from importlib.resources import files
 from pathlib import Path
 from typing import Literal, TypedDict
@@ -14,9 +15,10 @@ from urllib.parse import urlsplit
 
 import cattrs
 import yaml
-from attrs import field, frozen
+from attrs import asdict, evolve, field, frozen
 from jsonschema import Draft202012Validator, FormatChecker
 
+from resumeme.compiler.asts.links import safe_url
 from resumeme.compiler.constants.backend import AST_PACKAGE, CONFIG_SCHEMA
 from resumeme.compiler.constants.links import DEFAULT_PROJECT_FILTER
 from resumeme.compiler.constants.lists import BODY_HEADINGS
@@ -48,6 +50,7 @@ __all__ = [
     "Style",
     "StyleOverrides",
     "load_config",
+    "company_config",
     "project_path",
 ]
 
@@ -185,6 +188,7 @@ class CompanyTarget:
         context (str): Additional tailoring preferences for this target.
         company_context (str): Company text supplied instead of fetching LinkedIn; empty fetches the company page.
         job_context (str): Job description supplied instead of fetching its URL; empty fetches the job page.
+        overrides (dict[str, object]): Partial configuration merged into this target's inherited generation and presentation settings.
     """
 
     username: str
@@ -192,6 +196,7 @@ class CompanyTarget:
     context: str = ""
     company_context: str = ""
     job_context: str = ""
+    overrides: dict[str, object] = field(factory=dict)
 
     @property
     def key(self) -> str:
@@ -402,11 +407,14 @@ class StyleOverrides(TypedDict, total=False):
         show_header_photo (bool): Whether to display the profile cover photo.
         display_profile_photo (bool): Whether to display the profile portrait.
         show_headline (bool): Whether to display the captured headline beneath the portrait.
+        display_current_position (bool | None): Latest visible role when None, latest captured role when True, or hidden when False.
         show_table_of_contents (bool): Whether to link visible sections beneath the LinkedIn profile link.
         highlight_job_subheadings (bool): Whether to emphasize recognized job subsection labels; False keeps their text plain.
         show_connection_count (bool): Whether to display the captured connection count below the profile link.
         show_connection_link (bool): Whether to link to the captured connections page.
         display_birthday (bool): Whether to display the birthday field in enabled contact information.
+        display_websites (bool): Whether to display captured Website fields in Contact.
+        website_icon (str | None): Configuration-relative raster path or direct public image/favicon URL for displayed websites.
         skills_word_cloud (bool): Whether to replace the Skills list with a cloud.
         skills_allow_vertical (bool): Whether the cloud may mix vertical and horizontal labels.
         skills_size_legend (bool): Whether to show character-size examples beneath the endorsement color scale.
@@ -427,11 +435,14 @@ class StyleOverrides(TypedDict, total=False):
     show_header_photo: bool
     display_profile_photo: bool
     show_headline: bool
+    display_current_position: bool | None
     show_table_of_contents: bool
     highlight_job_subheadings: bool
     show_connection_count: bool
     show_connection_link: bool
     display_birthday: bool
+    display_websites: bool
+    website_icon: str | None
     skills_word_cloud: bool
     skills_allow_vertical: bool
     skills_size_legend: bool
@@ -458,11 +469,14 @@ class Style:
         show_header_photo (bool): Whether to display the profile's cover/background photo.
         display_profile_photo (bool): Display the profile portrait; enabled by default.
         show_headline (bool): Display the captured headline beneath the portrait; hidden by default.
+        display_current_position (bool | None): Latest visible role when None, latest captured role when True, or hidden when False.
         show_table_of_contents (bool): Link visible sections beneath the LinkedIn profile link in the identity column.
         highlight_job_subheadings (bool): Emphasize recognized job subsection labels; False keeps their text plain.
         show_connection_count (bool): Display the captured connection count below the profile link.
         show_connection_link (bool): Link the count or a concise Connections label to its captured destination.
         display_birthday (bool): Display the birthday field when contact information is enabled.
+        display_websites (bool): Display captured Website fields in Contact; hidden by default.
+        website_icon (str | None): Configuration-relative raster path or direct public image/favicon URL for displayed websites.
         skills_word_cloud (bool): Replace the Skills list with a cloud weighted by references and endorsements.
         skills_allow_vertical (bool): Allow a mix of vertical and horizontal cloud labels; False keeps all labels horizontal.
         skills_size_legend (bool): Show character-size examples beneath the endorsement color scale; hidden by default.
@@ -485,11 +499,14 @@ class Style:
     show_header_photo: bool = True
     display_profile_photo: bool = True
     show_headline: bool = False
+    display_current_position: bool | None = None
     show_table_of_contents: bool = True
     highlight_job_subheadings: bool = True
     show_connection_count: bool = False
     show_connection_link: bool = False
     display_birthday: bool = False
+    display_websites: bool = False
+    website_icon: str | None = None
     skills_word_cloud: bool = True
     skills_allow_vertical: bool = False
     skills_size_legend: bool = False
@@ -583,11 +600,101 @@ def load_config(path: Path) -> Config:
         ConfigurationError: A configured date window, identity, theme, or project path is inconsistent.
     """
 
+    return _parse_config(yaml.safe_load(path.read_text(encoding="utf-8")), path, validate_companies=True)
+
+
+def _override_value(value: object, target_type: type[object]) -> object:
+    """
+    Preserve schema-validated partial values without coercing nulls, booleans, or nested collections.
+
+    Args:
+        value (object): Validated override value.
+        target_type (type[object]): cattrs target type for the open partial mapping.
+
+    Returns:
+        object: Independent copy retaining YAML value types.
+    """
+    return deepcopy(value)
+
+
+def _merge_config(base: object, override: object) -> object:
+    """
+    Merge mappings recursively while replacing sequences and scalar values exactly.
+
+    Args:
+        base (object): Inherited structured configuration values.
+        override (object): Validated partial configuration, including meaningful nulls and empty lists.
+
+    Returns:
+        object: Independent merged tree; neither input is mutated.
+    """
+    if isinstance(base, dict) and isinstance(override, dict):
+        result = deepcopy(base)
+
+        for key, value in override.items():
+            result[key] = _merge_config(base.get(key), value)
+
+        return result
+
+    return deepcopy(override)
+
+
+def company_config(config: Config, target: CompanyTarget, *, root: Path | None = None) -> Config:
+    """
+    Resolve a job's partial configuration and validate its isolated output contract.
+
+    Args:
+        config (Config): Generic configuration inherited by the target.
+        target (CompanyTarget): Employer/job identity and partial overrides.
+        root (Path | None): Configuration directory for path checks; None uses the working directory.
+
+    Returns:
+        Config: Validated settings with independent nested values and fixed single-origin PDF/cache destinations.
+
+    Raises:
+        jsonschema.ValidationError: Overrides contain unknown fields or invalid values.
+        ConfigurationError: Merged settings have incompatible dates, themes, or paths.
+    """
+    schema = json.loads(files(AST_PACKAGE).joinpath(CONFIG_SCHEMA).read_text(encoding="utf-8"))
+    overrides_schema = {"$ref": "#/properties/codex/properties/companies/items/properties/overrides", "properties": schema["properties"]}
+    Draft202012Validator(overrides_schema, format_checker=FormatChecker()).validate(target.overrides)
+
+    # Each variant shares the capture but owns its output paths; nested targets must not recurse into another matrix.
+    isolated = evolve(
+        config,
+        codex=evolve(config.codex, companies=[]),
+        output=evolve(config.output, tex=f".cache/single-origin/{target.key}/tex/resume.tex", pdf=f"single-origin/{target.key}/resume.pdf"),
+    )
+
+    # Omit absent attrs fields, including sparse selector keys; explicit nulls in the partial mapping remain meaningful.
+    # Normalize attrs tuples into JSON arrays before applying the same schema used for YAML inputs.
+    inherited = asdict(isolated, filter=lambda attribute, value: value is not None)
+    merged = _merge_config(json.loads(json.dumps(inherited)), target.overrides)
+    return _parse_config(merged, (root or Path.cwd()) / "resumeme.config.yaml", validate_companies=False)
+
+
+def _parse_config(raw: object, path: Path, *, validate_companies: bool) -> Config:
+    """
+    Validate complete base or merged configuration values using one schema and cross-field contract.
+
+    Args:
+        raw (object): Loaded YAML or merged structured configuration.
+        path (Path): Config location anchoring relative paths.
+        validate_companies (bool): Resolve each base target once; False validates an already isolated target.
+
+    Returns:
+        Config: Fully validated settings with defaults applied.
+
+    Raises:
+        jsonschema.ValidationError: A field or raw value violates the configuration schema.
+        ConfigurationError: Settings conflict with each other or escape the configuration directory.
+    """
     # Validate raw types before cattrs can coerce them, including real calendar dates for the job window.
-    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     schema = json.loads(files(AST_PACKAGE).joinpath(CONFIG_SCHEMA).read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
-    config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
+    converter = cattrs.Converter(forbid_extra_keys=True)
+    converter.register_structure_hook_func(lambda target_type: target_type is object, _override_value)
+    config = converter.structure(raw, Config)
 
     # A publish opt-in must have a corresponding proposal producer.
     if config.codex.skills.publish and not config.codex.skills.enabled:
@@ -611,6 +718,24 @@ def load_config(path: Path) -> Config:
     if config.style.theme is not None and config.style.theme not in config.style.themes:
         raise ConfigurationError(f"Unknown style.theme {config.style.theme!r}; define it under style.themes or use null.")
 
+    # Validate paths and URL syntax without reading files or making requests during configuration loading.
+    icons = [config.style.website_icon, *(theme.get("website_icon") for theme in config.style.themes.values())]
+
+    for icon in icons:
+        if icon is None:
+            continue
+
+        if urlsplit(icon).scheme in {"http", "https"}:
+            try:
+                valid = bool(safe_url(icon)) and urlsplit(icon).port in {None, 80, 443}
+            except ValueError:
+                valid = False
+
+            if not valid:
+                raise ConfigurationError("style.website_icon requires a public HTTP(S) image URL on a standard port.")
+        else:
+            project_path(path.resolve().parent, icon)
+
     # Inputs, templates, and outputs share one root but must never resolve to the same file or directory.
     paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf, config.readme.output]
     paths.extend(f"single-origin/{key}/resume.pdf" for key in company_keys)
@@ -626,5 +751,10 @@ def load_config(path: Path) -> Config:
     # Generated Markdown must not replace the configuration needed by the next publication.
     if project_path(path.resolve().parent, config.readme.output) == path.resolve():
         raise ConfigurationError("readme.output must not replace the configuration file.")
+
+    # Fail invalid partials during ordinary config validation, before network acquisition or any target PDF can be replaced.
+    if validate_companies:
+        for target in config.codex.companies:
+            company_config(config, target, root=path.resolve().parent)
 
     return config

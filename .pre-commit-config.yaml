@@ -3,6 +3,14 @@ default_language_version:
 repos:
   - repo: local
     hooks:
+      # Run the published hook command against the latest checkout, using the project's existing locked environment.
+      - id: resumeme-config-validator
+        name: Validate resumeme configurations
+        entry: bash scripts/tooling/project-python.sh -m resumeme.cli config lint
+        language: system
+        files: '^resumeme\.config(?:\.ref)?\.yaml$'
+        types: [yaml]
+        require_serial: true
       - id: pydocstyle
         name: Google docstring style
         entry: bash scripts/tooling/project-python.sh -m pydocstyle --config=pyproject.toml

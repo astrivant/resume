@@ -35,7 +35,7 @@ def render_brew_badge(output: Path, brewed_on: date) -> None:
     Returns:
         None: A deterministic, accessible badge is written without external image requests.
     """
-    label = f"Brew date: {brewed_on.isoformat()} (UTC)"
+    label = f"Brew date {brewed_on.isoformat()} (UTC)"
 
     # Match standard README badges at 20 px high, with compact padding around the fixed-width ISO date.
     content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="158" height="20" viewBox="0 0 158 20" role="img" aria-labelledby="title">
@@ -46,7 +46,7 @@ def render_brew_badge(output: Path, brewed_on: date) -> None:
     <rect x="70" width="88" height="20" fill="#F7EADD"/>
   </g>
   <g font-family="Verdana,DejaVu Sans,sans-serif" font-size="11" text-anchor="middle">
-    <text x="35" y="14" fill="#FFFFFF">Brew date:</text>
+    <text x="35" y="14" fill="#FFFFFF">Brew date</text>
     <text x="114" y="14" fill="#363636">{brewed_on.isoformat()}</text>
   </g>
 </svg>

@@ -14,6 +14,7 @@ in collapsible blocks, plus command behavior and examples.
   - [resumeme capture](#resumeme-capture)
   - [resumeme enrich](#resumeme-enrich)
   - [resumeme validate](#resumeme-validate)
+  - [resumeme config lint](#resumeme-config-lint)
   - [resumeme summary-prompt](#resumeme-summary-prompt)
   - [resumeme render](#resumeme-render)
   - [resumeme build](#resumeme-build)
@@ -50,12 +51,12 @@ and [environment variables](../README.md#fork-environment-variables).
 ~~~text
 usage: resumeme [-h] [--config CONFIG]
                 [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-                {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,publish-resume,skills-prompt,publish-skills} ...
+                {capture,enrich,validate,summary-prompt,render,build,config,site,publish-ownership,publish-resume,skills-prompt,publish-skills} ...
 
 Capture your LinkedIn profile and build an illustrated PDF résumé.
 
 positional arguments:
-  {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,publish-resume,skills-prompt,publish-skills}
+  {capture,enrich,validate,summary-prompt,render,build,config,site,publish-ownership,publish-resume,skills-prompt,publish-skills}
     capture             Open the configured browser, wait for login, and save
                         your expanded profile and images
     enrich              Discover text links, resolve destinations, and cache
@@ -66,6 +67,8 @@ positional arguments:
     render              Generate tex/resume.tex from the saved profile
     build               Render LaTeX and compile resume.pdf with Docker or the
                         bundled container toolchain
+    config              Validate local configuration without a captured
+                        profile
     site                Prepare a GitHub Pages site in .cache/pages from the
                         existing PDF
     publish-ownership   Update live LinkedIn About with a signed release's
@@ -212,6 +215,42 @@ usage: resumeme validate [-h] [--allow-incomplete]
 options:
   -h, --help          show this help message and exit
   --allow-incomplete  Explicitly accept recorded capture warnings or missing images
+~~~
+
+</details>
+
+### resumeme config lint
+
+Validate one or more YAML configurations against the packaged schema and check
+their effective settings, including themes and per-company overrides. No saved
+profile, browser, credentials, or PDF toolchain is required.
+
+```bash
+resumeme config lint resumeme.config.yaml resumeme.config.ref.yaml
+resumeme config lint ./profiles/custom.yaml
+```
+
+Paths resolve from the working directory; absolute paths are also accepted. With
+no positional paths, lint uses the global `--config` value or its default,
+`resumeme.config.yaml`. Each file is checked even if an earlier file fails. Success
+prints each filename; failures identify the file and invalid field and exit with
+status `2`. Files are never rewritten.
+
+Use [the pre-commit hook](development.md#configuration-lint-hook) to check changed
+configs before commits. Use `resumeme validate` when you also need to validate a
+saved profile and its ownership.
+
+<details>
+<summary>resumeme config lint</summary>
+
+~~~text
+usage: resumeme config lint [-h] [PATH ...]
+
+positional arguments:
+  PATH        Config files to validate; defaults to --config
+
+options:
+  -h, --help  show this help message and exit
 ~~~
 
 </details>

@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import json
 import runpy
+from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -19,9 +20,22 @@ from jsonschema import ValidationError
 from resumeme.cli import main
 from resumeme.codex.companies import company_config, load_company, prepare_companies, render_companies
 from resumeme.codex.request import prepare_summary
+from resumeme.compiler.asts.contributions import ContributionCalendar, ContributionDay, calendar_window
 from resumeme.compiler.asts.profile import Entry, Profile, Section, save_profile
 from resumeme.compiler.passes.summary import summary_digest
-from resumeme.config import Capture, Codex, CompanyTarget, Config, LinkedIn, load_config
+from resumeme.config import (
+    Capture,
+    Codex,
+    CompanyTarget,
+    Config,
+    Experience,
+    GitHub,
+    GitHubContributions,
+    JobSelector,
+    LinkedIn,
+    load_config,
+)
+from resumeme.exceptions import ConfigurationError
 from resumeme.github.company_artifacts import restore_companies, stage_companies
 
 if TYPE_CHECKING:
@@ -84,12 +98,13 @@ def _responses(root: Path, profile: Profile, config: Config) -> Path:
 
     for index, directory in enumerate(directories):
         company = load_company(directory / "company.json", config.codex.companies[index - 1]) if index else None
+        settings = company_config(config, company.target, root=root) if company else config
         label = f"Tailored variant {index}" if index else "Generic summary"
         (directory / "summary.json").write_text(
             json.dumps(
                 {
                     "username": profile.username,
-                    "source_digest": summary_digest(profile, config, company),
+                    "source_digest": summary_digest(profile, settings, company),
                     "about": label + " About",
                     "headline": label + " Headline",
                 }
@@ -170,6 +185,7 @@ def test_prompts_separate_applicant_facts_from_employer_requirements(profile: Pr
     assert "example-company" not in generic and "developer experience" not in generic
     assert summary_digest(profile, config) == summary_digest(profile, evolve(config, codex=evolve(config.codex, companies=[])))
     first, second = [load_company(bundle / "companies" / target.key / "company.json", target) for target in config.codex.companies]
+    assert "overrides" not in json.loads((bundle / "companies" / first.target.key / "company.json").read_text())["target"]
     assert summary_digest(profile, config, first) != summary_digest(profile, config, second)
     assert summary_digest(profile, config, first) != summary_digest(profile, config, evolve(first, job="Different requirements"))
     prompt = (bundle / "companies" / first.target.key / "prompt.txt").read_text()
@@ -405,6 +421,13 @@ def test_ci_matrix_and_response_artifact_keep_generic_plus_all_targets(
     Returns:
         None: Generic and company entries share one consumer contract with distinct paths and artifact names.
     """
+    # Per-target generation controls must reach the action as well as prompt construction and response validation.
+    target = evolve(
+        config.codex.companies[0], overrides={"codex": {"model": "target-model", "reasoning_effort": "low", "about_max_words": 50}}
+    )
+    config = evolve(
+        config, codex=evolve(config.codex, model="base-model", reasoning_effort="medium", companies=[target, config.codex.companies[1]])
+    )
     scripts = Path(__file__).resolve().parents[3] / "scripts/ci"
     (tmp_path / "resumeme.config.yaml").write_text(yaml.safe_dump(asdict(config)))
     save_profile(profile, tmp_path / config.output.profile)
@@ -418,6 +441,11 @@ def test_ci_matrix_and_response_artifact_keep_generic_plus_all_targets(
     matrix = json.loads(values["matrix"])["include"]
     assert values["enabled"] == "true" and len(matrix) == 3
     assert matrix[0]["company"] == "" and len({item["key"] for item in matrix}) == 3
+    assert [(item["model"], item["effort"]) for item in matrix] == [
+        ("base-model", "medium"),
+        ("target-model", "low"),
+        ("base-model", "medium"),
+    ]
     _responses(tmp_path, profile, config)
 
     for item in matrix:
@@ -428,3 +456,215 @@ def test_ci_matrix_and_response_artifact_keep_generic_plus_all_targets(
     assert (result / "summary.json").is_file()
     assert len(list(result.rglob("summary.json"))) == 3 and len(list(result.rglob("company.json"))) == 2
     assert not list(result.rglob("prompt.txt"))
+
+
+def test_partial_configs_merge_without_changing_base_or_siblings(config: Config, tmp_path: Path) -> None:
+    """
+    Merge nested maps while preserving explicit nulls, empty lists, and isolation between targets.
+
+    Args:
+        config (Config): Two employer targets with inherited defaults.
+        tmp_path (Path): Configuration directory.
+
+    Returns:
+        None: Each target receives an independent validated config with matrix-owned output paths.
+    """
+    target = evolve(
+        config.codex.companies[0],
+        overrides={
+            "style": {"theme": None, "display_current_position": False, "themes": {"custom": {"accent": "123456"}}},
+            "experience": {"disable": [], "since": None},
+            "section_order": ["about", "experience"],
+            "projects": {"include": []},
+            "project_filter": None,
+            "codex": {"about_max_words": 40},
+        },
+    )
+    config = evolve(
+        config,
+        style=evolve(config.style, theme="custom", themes={"custom": {"accent": "333333", "ink": "363636"}}),
+        experience=Experience(disable=[JobSelector(title="Owner")], since="2020-01-01", last_years=5),
+        codex=evolve(config.codex, companies=[target, config.codex.companies[1]]),
+    )
+    original = asdict(config)
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(yaml.safe_dump(asdict(config, filter=lambda attribute, value: value is not None)))
+    loaded = load_config(path)
+    first = company_config(loaded, loaded.codex.companies[0], root=tmp_path)
+    second = company_config(loaded, loaded.codex.companies[1], root=tmp_path)
+    assert first.style.theme is None and first.style.display_current_position is False
+    assert first.style.themes["custom"] == {"accent": "123456", "ink": "363636"}
+    assert first.experience.disable == [] and first.experience.since is None and first.experience.last_years == 5
+    assert first.projects.include == [] and first.project_filter is None and first.section_order == ["about", "experience"]
+    assert first.codex.about_max_words == 40 and second.codex.about_max_words == config.codex.about_max_words
+    assert first.output.profile == second.output.profile == config.output.profile
+    assert first.output.pdf != second.output.pdf != config.output.pdf
+
+    # Mutable nested containers must not leak changes across siblings or back into YAML aliases on the loaded base.
+    first.style.themes["custom"]["ink"] = "000000"
+    first.section_order.clear()
+    assert second.style.themes["custom"]["ink"] == loaded.style.themes["custom"]["ink"] == "363636"
+    assert loaded.section_order == config.section_order
+    assert asdict(config) == original
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"style": {"unknown": True}},
+        {"style": {"display_current_position": "false"}},
+        {"style": {"theme": "missing"}},
+        {"style": {"website_icon": "../outside.png"}},
+        {"experience": {"since": "2026-01-01", "as_of": "2025-01-01"}},
+        {"output": {"pdf": "resume.pdf"}},
+        {"linkedin": {"username": "someone-else"}},
+        {"codex": {"companies": []}},
+        {"codex": {"enabled": False}},
+        {"template": "../outside.tex.j2"},
+    ],
+)
+def test_invalid_partials_fail_during_config_loading(config: Config, tmp_path: Path, overrides: dict[str, object]) -> None:
+    """
+    Validate partial types and complete merged constraints before fetching employer pages or writing outputs.
+
+    Args:
+        config (Config): Base configuration inherited by the target.
+        tmp_path (Path): Isolated configuration directory.
+        overrides (dict[str, object]): Invalid, conflicting, or matrix-owned fields.
+
+    Returns:
+        None: Both YAML loading and direct target resolution reject invalid partials.
+    """
+    target = evolve(config.codex.companies[0], overrides=overrides)
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(yaml.safe_dump(asdict(evolve(config, codex=evolve(config.codex, companies=[target])))))
+
+    with pytest.raises((ConfigurationError, ValidationError)):
+        load_config(path)
+
+    with pytest.raises((ConfigurationError, ValidationError)):
+        company_config(config, target, root=tmp_path)
+
+
+def test_partial_filters_drive_prompt_and_render_with_stale_override_rejection(profile: Profile, config: Config, tmp_path: Path) -> None:
+    """
+    Bind generated copy and rendered sections to one effective configuration while preserving the generic resume.
+
+    Args:
+        profile (Profile): Applicant evidence including an Engineer role.
+        config (Config): Generic settings and two company targets.
+        tmp_path (Path): Isolated prompts and output directory.
+
+    Returns:
+        None: Target-only exclusions affect prompt and TeX consistently; changed overrides invalidate saved company artifacts.
+    """
+    target = evolve(
+        config.codex.companies[0],
+        overrides={
+            "experience": {"disable": [{"title": "Engineer"}]},
+            "style": {"font_size": 12},
+            "codex": {"context": "Prefer concise SRE evidence."},
+        },
+    )
+    config = evolve(config, codex=evolve(config.codex, companies=[target, config.codex.companies[1]]))
+    digest = summary_digest(profile, config)
+    bundle = _responses(tmp_path, profile, config)
+    prompt = (bundle / "companies" / target.key / "prompt.txt").read_text()
+    assert "Built platforms" not in prompt and "Prefer concise SRE evidence." in prompt
+    assert "Built platforms" in (bundle / "prompt.txt").read_text()
+    rendered = render_companies(profile, config, tmp_path, bundle / "companies", compile_documents=False)
+    assert "Built platforms" not in rendered[0].read_text()
+    assert "Built platforms" in rendered[1].read_text()
+    assert "12pt" in rendered[0].read_text()
+    before = [path.read_bytes() for path in rendered]
+    changed = evolve(target, overrides={"experience": {"disable": []}})
+    revised = evolve(config, codex=evolve(config.codex, companies=[changed, config.codex.companies[1]]))
+    assert summary_digest(profile, revised) == digest
+
+    with pytest.raises(ValueError, match="target changed"):
+        render_companies(profile, revised, tmp_path, bundle / "companies", compile_documents=False)
+
+    assert [path.read_bytes() for path in rendered] == before
+
+
+def test_yaml_anchors_reuse_partial_configs(config: Config, tmp_path: Path) -> None:
+    """
+    Reuse one native YAML partial across postings without adding a parallel preset language.
+
+    Args:
+        config (Config): Base target identities for the fixture.
+        tmp_path (Path): Isolated configuration directory.
+
+    Returns:
+        None: Shared anchors resolve through the same independent per-target merge.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(
+        "linkedin: {username: example-person}\ncodex:\n  companies:\n"
+        "    - username: example-company\n      job_url: https://www.linkedin.com/jobs/view/123/\n"
+        "      overrides: &platform\n        style: {display_current_position: false}\n        education: {disable: []}\n"
+        "    - username: example-company\n      job_url: https://www.linkedin.com/jobs/view/456/\n      overrides: *platform\n"
+    )
+    loaded = load_config(path)
+    assert [target.key for target in loaded.codex.companies] == [target.key for target in config.codex.companies]
+    assert all(company_config(loaded, target, root=tmp_path).style.display_current_position is False for target in loaded.codex.companies)
+
+
+@pytest.mark.parametrize("distinct", [False, True])
+def test_company_calendar_overrides_hide_reuse_or_fetch_once(
+    profile: Profile, config: Config, tmp_path: Path, monkeypatch: MonkeyPatch, distinct: bool
+) -> None:
+    """
+    Hide a target graph independently and share observations only between matching accounts and windows.
+
+    Args:
+        profile (Profile): Shared applicant evidence.
+        config (Config): Company target fixture.
+        tmp_path (Path): Isolated request and render directory.
+        monkeypatch (MonkeyPatch): Replace public calendar acquisition with complete deterministic observations.
+        distinct (bool): Whether enabled variants request another account and date window.
+
+    Returns:
+        None: Hidden graphs stage no calendar; matching targets reuse supplied data, and distinct targets fetch once.
+    """
+    graph = GitHub("example-person", GitHubContributions(enabled=True, as_of="2026-10-07"))
+    first = evolve(config.codex.companies[0], overrides={"github": {"contributions": {"enabled": False}}})
+    second = evolve(
+        config.codex.companies[1],
+        overrides={
+            "github": {
+                "username": "another-person" if distinct else graph.username,
+                "contributions": {"months": 2 if distinct else 1, "placement": "appendix"},
+            }
+        },
+    )
+    third = evolve(second, job_url="https://www.linkedin.com/jobs/view/789/")
+    config = evolve(config, github=graph, codex=evolve(config.codex, companies=[first, second, third]))
+    fetched: list[str] = []
+
+    def observations(settings: Config) -> ContributionCalendar:
+        """
+        Return complete calendar days for the exact requested identity and interval.
+
+        Args:
+            settings (Config): Effective target configuration.
+
+        Returns:
+            ContributionCalendar: Deterministic zero-count observations for every requested day.
+        """
+        assert settings.github.username
+        fetched.append(settings.github.username)
+        start, end = calendar_window(settings.github.contributions)
+        days = [ContributionDay((start + timedelta(days=index)).isoformat(), 0, 0) for index in range((end - start).days + 1)]
+        return ContributionCalendar(settings.github.username, start.isoformat(), end.isoformat(), days)
+
+    supplied = observations(config)
+    fetched.clear()
+    monkeypatch.setattr("resumeme.codex.companies.fetch_calendar", observations)
+    bundle = _responses(tmp_path, profile, config)
+    outputs = render_companies(profile, config, tmp_path, bundle / "companies", compile_documents=False, contributions=supplied)
+    assert fetched == (["another-person"] if distinct else [])
+    assert not (outputs[0].parent / "github-contributions.json").exists()
+    calendars = [(source.parent / "github-contributions.json").read_bytes() for source in outputs[1:]]
+    assert calendars[0] == calendars[1]
+    assert "GitHub contributions" in outputs[1].read_text()

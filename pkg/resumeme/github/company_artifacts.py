@@ -40,7 +40,7 @@ def stage_companies(root: Path, config: Config, artifact: Path, *, generated: bo
     files: list[dict[str, str]] = []
 
     for target in config.codex.companies if generated else []:
-        relative = company_config(config, target).output.pdf
+        relative = company_config(config, target, root=root).output.pdf
         content = project_path(root, relative).read_bytes()
 
         if not content.startswith(b"%PDF-"):
@@ -82,7 +82,9 @@ def restore_companies(root: Path, config: Config, artifact: Path) -> list[str]:
         raise PublicationError("Invalid single-origin publication manifest.")
 
     entries = raw["files"]
-    expected = {target.key: company_config(config, target).output.pdf for target in config.codex.companies} if raw["generated"] else {}
+    expected = (
+        {target.key: company_config(config, target, root=root).output.pdf for target in config.codex.companies} if raw["generated"] else {}
+    )
 
     if not isinstance(entries, list) or len(entries) != len(expected):
         raise PublicationError("The company PDF artifact is incomplete.")

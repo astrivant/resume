@@ -20,6 +20,9 @@ Rendering uses strict undefined-variable checks and these delimiters:
 | `contributions` | Validated `ContributionCalendar` with `username`, `start`, `end`, `days`, `weeks`, and `total`, or `None` |
 | `contribution_colors` | GitHub light-theme hex colors indexed by intensity level 0 through 4 |
 | `contribution_placement` | `profile` or `appendix` |
+| `contact_enabled` | Whether `contact` is included in `section_order`; controls the identity column's contact and social block |
+| `website_icon` | Staged PNG path for the optional website icon, or `None` when unused; use this instead of the configured path or public URL |
+| `current_position` | Selected sidebar employment (`title`, `company`, optional staged `logo`), or `None`; independent of body Experience visibility |
 | `section_navigation` | `(anchor, section)` pairs in display order with unique TeX-safe anchors |
 
 Filters return presentation values without changing the captured snapshot.
@@ -37,6 +40,8 @@ template shares its tiled row renderer between Projects and Featured.
 | `text\|tex` | Escaped literal LaTeX text |
 | `destination\|url` | Escaped URL for a LaTeX link destination |
 | `text\|tex_links(links)` | Escaped text with resolved inline hyperlinks |
+| `text\|tex_contact(links)` | Escaped contact captions linked to their captured destinations, including labels without a URL scheme |
+| `value\|contact_email_url` | Encoded mailto destination for a single captured email address, or an empty string |
 | `paragraphs\|text_blocks` | Blocks with `text` and optional bullet `depth` |
 | `entry.title\|distinct_heading(parent_title)` | Original title, or empty when it repeats its parent |
 | `entry\|job_locations` | Metadata lines mapped to Google Maps `Link` values |

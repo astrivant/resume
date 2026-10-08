@@ -9,7 +9,23 @@ from attrs import frozen
 from resumeme.compiler.asts.names import company_key
 from resumeme.compiler.asts.profile import Entry, Media
 
-__all__ = ["TextBlock", "CompanyAffiliation", "ProjectLayout", "JobTarget"]
+__all__ = ["TextBlock", "CompanyAffiliation", "ProjectLayout", "JobTarget", "HeaderPosition"]
+
+
+@frozen
+class HeaderPosition:
+    """
+    Represent sidebar employment identity independently of role descriptions and attachments.
+
+    Attributes:
+        title (str): Observed role title, empty when only an employer is identifiable.
+        company (str): Observed employer name, empty when unavailable.
+        logo (Media | None): Employer branding only, with its observed link and original or staged path.
+    """
+
+    title: str
+    company: str = ""
+    logo: Media | None = None
 
 
 @frozen

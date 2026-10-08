@@ -82,7 +82,7 @@ def test_configured_order_controls_body_contents_and_generated_sections(tmp_path
 
     Args:
         tmp_path (Path): Isolated rendering directory.
-        contact_first (bool): Whether Contact leads the requested sequence in the identity column.
+        contact_first (bool): Whether Contact leads the configured navigation sequence.
 
     Returns:
         None: Body headings and contents agree, with every generated destination present exactly once.
@@ -108,15 +108,15 @@ def test_configured_order_controls_body_contents_and_generated_sections(tmp_path
 
     config = Config(LinkedIn(profile.username), section_order=order, project_filter=None)
     text = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
-    titles = ["Projects", "Skills", "Experience", "Contact info", "About", "Custom"]
+    titles = ["Projects", "Skills", "Experience", "Contact", "About", "Custom"]
 
     if contact_first:
-        titles.remove("Contact info")
-        titles.insert(0, "Contact info")
+        titles.remove("Contact")
+        titles.insert(0, "Contact")
 
-    assert re.findall(r"\\sectiontitle\{([^}]+)\}", text) == titles
+    assert re.findall(r"\\sectiontitle\{([^}]+)\}", text) == [title for title in titles if title != "Contact"]
     assert re.findall(r"\\hyperlink\{resumeme-section-\d+\}\{([^}]+)\}", text) == titles
-    assert (text.index(r"\sectiontitle{Contact info}") < text.index(r"\framebreak")) is contact_first
+    assert text.index(r"\identityheading{Contact}") < text.index(r"\identityheading{Contents}") < text.index(r"\framebreak")
     anchors = re.findall(r"\\hypertarget\{([^}]+)\}", text)
     assert len(anchors) == len(set(anchors))
     assert all(target in anchors for target in re.findall(r"\\hyperlink\{([^}]+)\}", text))

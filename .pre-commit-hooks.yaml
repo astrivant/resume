@@ -1,0 +1,9 @@
+- id: resumeme-config-validator
+  name: Validate resumeme configurations
+  description: Validate resumeme config schemas and merged settings without a profile, browser, or PDF build.
+  entry: resumeme config lint
+  language: python
+  language_version: python3.13
+  files: '(^|/)resumeme\.config(?:\.[^/]+)?\.ya?ml$'
+  types: [yaml]
+  require_serial: true

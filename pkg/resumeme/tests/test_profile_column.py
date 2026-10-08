@@ -72,7 +72,7 @@ def test_both_layouts_preserve_visible_content_and_navigation(tmp_path: Path, si
     Args:
         tmp_path (Path): Isolated template rendering directory.
         side (Literal["left", "right"]): Selected profile-column position.
-        contact_first (bool): Whether Contact belongs with the profile or later in the body.
+        contact_first (bool): Whether Contact is listed first or last in the configuration.
 
     Returns:
         None: Each enabled section appears once and hidden profile text stays excluded.
@@ -96,8 +96,9 @@ def test_both_layouts_preserve_visible_content_and_navigation(tmp_path: Path, si
     assert source.count("Delivered systems") == 1
     assert "Engineer at Example" not in source
     before, after = source.split(r"\framebreak", 1)
-    assert ("Contact evidence" in before) is contact_first
-    assert ("Contact evidence" in after) is not contact_first
+    assert "Contact evidence" in before
+    assert "Contact evidence" not in after
+    assert before.index(r"\identityheading{Contact}") < before.index("Contact evidence") < before.index(r"\identityheading{Contents}")
 
     for index, title in enumerate(["Contact", "About", "Experience"] if contact_first else ["About", "Experience", "Contact"]):
         assert source.count(rf"\hypertarget{{resumeme-section-{index}}}") == 1

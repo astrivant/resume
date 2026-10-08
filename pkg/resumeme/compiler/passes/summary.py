@@ -97,7 +97,13 @@ def summary_evidence(profile: Profile, config: Config, company: CompanyEvidence 
 
     # Generic evidence deliberately excludes the target list, so adding employers cannot alter the generic summary.
     if company is not None:
-        evidence["employer"] = asdict(company)
+        employer = asdict(company)
+
+        # Empty partials preserve existing target fingerprints; only configured overrides add generation inputs.
+        if not company.target.overrides:
+            employer["target"].pop("overrides")
+
+        evidence["employer"] = employer
 
     return evidence
 

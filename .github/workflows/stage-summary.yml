@@ -31,8 +31,6 @@ jobs:
     outputs:
       generated: ${{ steps.prepare.outputs.enabled }}
       matrix: ${{ steps.prepare.outputs.matrix }}
-      model: ${{ steps.prepare.outputs.model }}
-      effort: ${{ steps.prepare.outputs.effort }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -93,8 +91,8 @@ jobs:
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           codex-version: 0.161.0
-          model: ${{ needs.prepare.outputs.model }}
-          effort: ${{ needs.prepare.outputs.effort }}
+          model: ${{ matrix.model }}
+          effort: ${{ matrix.effort }}
           permission-profile: ':read-only'
           safety-strategy: drop-sudo
           prompt-file: ${{ matrix.directory }}/prompt.txt

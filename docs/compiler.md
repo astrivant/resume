@@ -1,8 +1,11 @@
 # Compiler architecture
 
-`compiler/` owns the offline translation from captured HTML or snapshot JSON to
+`compiler/` owns the translation from captured HTML or snapshot JSON to
 typed profile records, presentation structures, LaTeX, and PDF. Browser sessions,
-authentication, HTTP requests, retries, and image downloads remain in `linkedin/`.
+authentication, and profile capture remain in `linkedin/`. Compilation uses saved
+assets; an explicitly configured public website icon is downloaded during TeX
+rendering through the shared credential-free media client. Local icon paths keep
+rendering offline, and the PDF compiler runs without network access.
 
 | Package | Responsibility |
 | --- | --- |
@@ -33,6 +36,21 @@ records describe output layout without replacing the saved source schema.
 Passes return display copies; they do not modify the snapshot or fetch remote
 data. Exclusions precede scoring, media staging, and destination generation.
 Hidden jobs therefore cannot contribute assets or dangling internal PDF links.
+
+`passes/contact.py` splits flattened contact dialogs into field/value entries,
+removes LinkedIn profile navigation and edit controls, and applies birthday
+and website visibility before asset staging. Captured labels retain their observed link
+destinations; the LaTeX backend renders them inline without a duplicate URL list.
+Contact stays in the identity column above Contents, independently of body order.
+`backends/latex/assets.py` normalizes a configured local or remote website icon to
+a content-addressed PNG only when a Website field survives filtering.
+
+`passes/header.py` selects sidebar employment independently from headline copy.
+The default uses filtered Experience; an explicit `true` selects from the original
+capture, and `false` omits it. The `HeaderPosition` record carries only company,
+title, and logo. Stale captured employer rows are removed before staging, so the
+sidebar and custom templates use the same selected identity without restoring
+excluded descriptions or project attachments.
 
 Optional [Codex summaries](codex.md) are generated outside the compiler. An explicit
 `--summary` artifact must match the profile owner, filtered evidence, and generation
