@@ -27,10 +27,13 @@ github:
     # null uses today's UTC date. Pin a quoted ISO date when rebuilding saved calendar JSON offline.
     as_of: null
 
-# Forks replace the project README with a personal landing page and a clickable first-page PDF preview.
-# project preserves your README; resume enables generation even outside a GitHub fork.
+# Generate a personal landing page and clickable first-page PDF preview at the configured destination.
+# auto generates on forks; project disables generation; resume also generates in the upstream repository.
 readme:
-  mode: auto
+  mode: resume
+
+  # This repository publishes an example. Set README.md in your fork to replace the project landing page.
+  output: FORK_EXAMPLE.md
 
   # Optional plain-text introduction; null uses the shared boilerplate. The heading uses your captured name.
   introduction: null

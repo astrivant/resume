@@ -60,6 +60,8 @@ or uploaded capture artifacts.
 
 ## Personal README
 
+See [the fork example](../FORK_EXAMPLE.md) for the generated landing page using this project's current profile and PDF.
+
 On a fork's first successful publication to `main`, CI replaces the inherited logo
 and project instructions with the owner's name, a short introduction, a first-page
 image linked to the complete PDF, and LinkedIn, optional GitHub, and release links.

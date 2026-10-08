@@ -117,10 +117,12 @@ class Readme:
     Attributes:
         mode (Literal["auto", "project", "resume"]): Auto generates on forks, project preserves the README, resume always generates.
         introduction (str | None): Optional plain-text introduction; None uses the shared resume introduction.
+        output (str): Repository-relative Markdown destination, separate from the project README when overridden.
     """
 
     mode: Literal["auto", "project", "resume"] = "auto"
     introduction: str | None = None
+    output: str = "README.md"
 
 
 @frozen
@@ -534,7 +536,7 @@ def load_config(path: Path) -> Config:
         raise ValueError(f"Unknown style.theme {config.style.theme!r}; define it under style.themes or use null.")
 
     # Inputs, templates, and outputs share one root but must never resolve to the same file or directory.
-    paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf]
+    paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf, config.readme.output]
     paths.extend(f"single-origin/{key}/resume.pdf" for key in company_keys)
 
     if config.template:
@@ -544,5 +546,9 @@ def load_config(path: Path) -> Config:
 
     if len(resolved) != len(set(resolved)):
         raise ValueError("Input, output, and template paths must be distinct.")
+
+    # Generated Markdown must not replace the configuration needed by the next publication.
+    if project_path(path.resolve().parent, config.readme.output) == path.resolve():
+        raise ValueError("readme.output must not replace the configuration file.")
 
     return config

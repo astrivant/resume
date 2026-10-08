@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import html
 import os
+import posixpath
 import re
 import shutil
 import subprocess
@@ -121,12 +122,12 @@ def render_readme(profile: Profile, config: Config, repository: str, pages: int)
 
     Args:
         profile (Profile): Validated captured identity, without exposing contact or headline fields.
-        config (Config): PDF destination, optional GitHub account, and introduction.
+        config (Config): Markdown and PDF destinations, optional GitHub account, and introduction.
         repository (str): Publishing GitHub owner/repository, independent of inherited release overrides.
         pages (int): Actual number of pages in the published working PDF.
 
     Returns:
-        str: Complete UTF-8 Markdown ready to replace the inherited project README.
+        str: Complete UTF-8 Markdown with links relative to the configured destination.
 
     Raises:
         ValueError: The snapshot owner, repository identifier, or page count is invalid.
@@ -141,7 +142,19 @@ def render_readme(profile: Profile, config: Config, repository: str, pages: int)
 
     name = _plain_text(profile.name.strip() or profile.username)
     introduction = _plain_text(config.readme.introduction or _BOILERPLATE)
-    pdf = "./" + quote(Path(config.output.pdf).as_posix(), safe="/")
+
+    # An example or nested landing page must resolve the same repository files as the root README.
+    directory = Path(config.readme.output).parent.as_posix()
+    targets = {
+        name: quote(posixpath.relpath(value, directory), safe="/")
+        for name, value in {
+            "pdf": config.output.pdf,
+            "preview": PREVIEW_PATH,
+            "config": "resumeme.config.yaml",
+            "automation": "docs/automation.md",
+        }.items()
+    }
+    pdf = "./" + targets["pdf"]
     page_label = "page" if pages == 1 else "pages"
     links = [
         f"**[View résumé (PDF - {pages} {page_label})]({pdf})**",
@@ -159,10 +172,10 @@ def render_readme(profile: Profile, config: Config, repository: str, pages: int)
         f"# {name} - Résumé\n\n"
         f"{introduction}\n\n"
         f"{' - '.join(links)}\n\n"
-        f"[![First page of {name}'s résumé]({PREVIEW_PATH})]({pdf})\n\n"
+        f"[![First page of {name}'s résumé]({targets['preview']})]({pdf})\n\n"
         "*Preview of page 1. Click to open the complete PDF.*\n\n"
         "Built with [resumeme](https://github.com/astrivant/resume). "
-        "[Configuration](resumeme.config.yaml) - [Automation](docs/automation.md).\n"
+        f"[Configuration]({targets['config']}) - [Automation]({targets['automation']}).\n"
     )
 
 
@@ -294,14 +307,16 @@ def restore_readme(root: Path, config: Config) -> tuple[str, str]:
 
         image.verify()
 
-    paths = ("README.md", PREVIEW_PATH)
+    paths = (config.readme.output, PREVIEW_PATH)
     destinations = tuple(project_path(root, path) for path in paths)
-    inputs = [config.output.pdf, config.output.profile, config.output.tex, config.output.assets]
+    inputs = [config.output.pdf, config.output.profile, config.output.tex, config.output.assets, "resumeme.config.yaml"]
 
     if config.template:
         inputs.append(config.template)
 
-    if any(destination == project_path(root, value) for destination in destinations for value in inputs):
+    if len(set(destinations)) != len(destinations) or any(
+        destination == project_path(root, value) for destination in destinations for value in inputs
+    ):
         raise ValueError("Personal README paths must be distinct from configured inputs and outputs.")
 
     for destination, data in zip(destinations, (markdown, preview), strict=True):

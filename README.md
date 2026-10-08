@@ -14,7 +14,7 @@ Build and release your résumé like software: fork the project, set your userna
 capture your profile, and keep `main` current with monthly refreshes. Tag the
 version you want to share to get a signed release.
 
-**[View the résumé (PDF)](resume.pdf)** - [Fork this project](https://github.com/astrivant/resume/fork)
+**[View the résumé (PDF)](resume.pdf)** - [Preview a fork's README](FORK_EXAMPLE.md) - [Fork this project](https://github.com/astrivant/resume/fork)
 
 ## Why use this tool?
 

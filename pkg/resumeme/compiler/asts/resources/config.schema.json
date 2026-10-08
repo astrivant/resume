@@ -38,6 +38,12 @@
           "pattern": "\\S",
           "default": null,
           "description": "Optional plain-text introduction for the personal README."
+        },
+        "output": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_./-]+\\.md$",
+          "default": "README.md",
+          "description": "Repository-relative Markdown destination; links are relative to this file."
         }
       }
     },

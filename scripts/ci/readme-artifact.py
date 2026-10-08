@@ -9,7 +9,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from resumeme.config import load_config
+from resumeme.config import load_config, project_path
 from resumeme.github.readme import personal_readme, restore_readme, stage_readme
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -27,5 +27,6 @@ if enabled:
         paths = restore_readme(root, config)
         subprocess.run(["git", "add", "--", *paths], check=True)
 
-# Publish uses this explicit result to keep coffee-stain branding only for project READMEs.
-print("resume" if enabled else "project")
+# An alternate Markdown output leaves the root project README and its coffee branding active.
+replaces_readme = enabled and project_path(root, config.readme.output) == (root / "README.md").resolve()
+print("resume" if replaces_readme else "project")
