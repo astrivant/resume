@@ -125,9 +125,10 @@ projects:
   # null keeps all projects allowed by project_filter; [] hides every project tile.
   # Filter by name, affiliation, or both. Every supplied field must match; separate list entries are alternatives.
   # Matching ignores case and repeated spaces. The source URL filter above still applies.
-  include: null
-  # include:
-  #   - name: resumeme
+  include:
+    - name: resumeme
+    - name: orchidarium
+    - name: pass-operator
   #   - affiliation: Another Company
   #   - name: Deployment platform
   #     affiliation: Example Company
