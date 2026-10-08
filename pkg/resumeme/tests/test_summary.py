@@ -93,7 +93,7 @@ def test_summary_updates_only_display_copy(profile: Profile, tmp_path: Path) -> 
     document = source.split(r"\begin{document}", 1)[1]
     assert "Builds reliable services for engineering teams." in document
     assert r"Platform engineer \& systems builder" in document
-    assert document.index(r"Platform engineer \& systems builder") < document.index(r"\profileparagraph{Example}")
+    assert document.index(r"Platform engineer \& systems builder") < document.index(r"\companytext{Example}")
     assert "Original About" not in document and "Engineer at Example" not in document
     assert "Boston, MA" in document and "Built services" in document
     assert profile.headline == "Engineer at Example" and profile.sections[0].entries[0].title == "Original About"

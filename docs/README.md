@@ -54,12 +54,17 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `linkedin.username` | `emmeowzing` | Profile slug from `/in/<username>/` |
 | `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
 | `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
+| `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after signed tag releases; enabled in this repository |
+| `codex.skills.publish` | `false` | Opt in to adding missing skills to LinkedIn; existing skills and endorsements are always retained |
+| `codex.skills.max_skills` | `20` | Maximum suggested skill names per tagged release |
+| `codex.skills.context` | Empty | Skill selection preferences; [generation and publishing instructions](skills.md) |
 | `linkedin.ownership.update_about` | `false` | Update live About with the public signing fingerprint after a signed release |
 | `linkedin.ownership.repository` | `null` | Release repository (`OWNER/REPO`); defaults to Actions context or local origin |
 | `linkedin.ownership.releases_url` | `null` | Optional HTTPS short link; otherwise use the repository releases page |
 | `section_order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
 | `project_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
 | `projects.include` | `null` | Project selectors requiring `name` with optional `affiliation`; `null` keeps all names, `[]` selects none |
+| `projects.exclude` | `[]` | Omit matching name/affiliation selectors; exclusions override `include` |
 | `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
 | `experience.last_years` | `null` | Trailing N calendar years when `since` is unset; null keeps all dates |
 | `experience.since` | `null` | Inclusive fixed start date; overrides `last_years` when set |
@@ -102,6 +107,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `style.show_connection_link` | `false` | Link the count, or a concise Connections label, to the captured connections page |
 | `style.display_birthday` | `false` | Show the birthday field when Contact info is enabled |
 | `style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
+| `style.skills_allow_vertical` | `false` | Allow mixed vertical and horizontal cloud labels; enabled in this repository |
 | `style.ink` | `363636` | Six-digit hexadecimal body text color; soft charcoal by default |
 | `style.name_color` | `191919` | Six-digit hexadecimal profile name color |
 | `style.heading_color` | `191919` | Six-digit hexadecimal section heading color |
@@ -186,6 +192,8 @@ their project previews still consolidate into Projects.
 - `skills_word_cloud` replaces the Skills list with the top 20 weighted skills.
   Size represents references plus twice the endorsement count. Color represents
   endorsements relative to the highest count among those 20 skills.
+- `skills_allow_vertical` allows vertical labels alongside horizontal ones in the cloud.
+  The package default is `false`; this repository enables it.
 
 Set `skills_word_cloud: false` for the text list or comment out `skills` in `section_order` to
 hide the section. See [skill scoring](profile-schema.md#scoring-and-rendering) and
@@ -572,7 +580,7 @@ validation. Filtering leaves the snapshot and inline links in role/post narrativ
 intact. Excluded project entries contribute no media, skill weights, or Codex
 summary evidence. It does not change the visibility of other sections.
 
-To select individual projects, set `projects.include`:
+Use `projects.include` to select individual projects and `projects.exclude` to omit matches:
 
 ```yaml
 projects:
@@ -580,6 +588,9 @@ projects:
     - name: resumeme
     - name: Deployment platform
       affiliation: Example Company
+  exclude:
+    - name: resumeme
+      affiliation: Former Company
 ```
 
 Each selector requires the exact **displayed project name**. Add `affiliation` to
@@ -589,18 +600,23 @@ also ignores a trailing period, consistent with company-logo matching. These are
 literal matches, not substring searches or regexes. For example, `Deployment
 platform` does not match `Deployment platform v2`.
 
-Both fields in a selector must match. Any matching selector includes the project;
+Both fields in a selector must match. Any matching inclusion selector includes the project;
 the existing project order is preserved. `include: null` (the default) adds no
 name restriction. `include: []` selects no project tiles. `project_filter` still
 applies: set it to `null` when selecting projects without GitHub or source links.
 Projects must also remain enabled in `section_order`.
+
+`exclude` uses the same selectors and removes a tile if any selector matches,
+even if `include` also matches. Its default, `[]`, excludes nothing. To keep
+everything except specific projects, use `include: null` with an `exclude` list.
 
 Selection runs after consolidation, so it covers native Projects, attachments
 from visible jobs, and previews from enabled Featured posts. Affiliations come
 from captured `Associated with COMPANY` metadata or the company associated with
 an extracted role. Mentions in descriptions do not establish an affiliation.
 When several companies reference the same resolved URL, they share one project
-tile; matching any of its affiliations retains that tile and its complete context.
+tile; an inclusion matching any affiliation retains that tile and its complete context,
+while an exclusion matching any affiliation removes the entire tile.
 If the affiliation was not captured, a selector requiring it does not match.
 Excluded tiles contribute no media, skill weights, or summary evidence; captured
 inputs and ordinary job/post narrative remain intact.
@@ -634,17 +650,32 @@ User-created tag releases require `COSIGN_PRIVATE_KEY` and, for an encrypted key
 `COSIGN_PASSWORD`. See the [fork environment variable list](automation.md#configure-a-fork)
 for their exact values and the automatically supplied publication token.
 
-Use the [copyable OpenSSL and GitHub CLI setup](../README.md#configure-signing-secrets)
-to generate an encrypted Cosign key and install both secrets on macOS or Linux.
-It keeps a private backup outside the checkout and prints that directory's path.
-If an upload fails, reuse those files instead of generating another signing identity:
+Run the [signing setup script](../scripts/release/setup-signing.sh) from the checkout
+on macOS or Linux. It requires Bash, OpenSSL, Cosign 3.x, and an authenticated GitHub
+CLI account that can manage your fork's Actions secrets. On macOS,
+`brew install openssl@3 cosign gh` installs the tools. On Linux, install
+[Cosign](https://docs.sigstore.dev/cosign/system_config/installation/),
+[gh](https://github.com/cli/cli#installation), and your distribution's OpenSSL package.
+Run `gh auth login` once before setup.
 
 ```bash
-signing_repo="YOUR-USERNAME/YOUR-FORK"
-signing_dir="/path/printed/by/setup"
-gh secret set COSIGN_PRIVATE_KEY --repo "$signing_repo" <"$signing_dir/cosign.key"
-gh secret set COSIGN_PASSWORD --repo "$signing_repo" <"$signing_dir/cosign.password"
-gh secret list --repo "$signing_repo"
+bash scripts/release/setup-signing.sh --repo YOUR-USERNAME/YOUR-FORK
+```
+
+The script generates an OpenSSL P-256 key, imports it into Cosign's encrypted
+format, uploads both secrets through `gh`, and prints the public-key fingerprint.
+The explicit `--repo` prevents an upstream repository default from selecting the
+wrong destination. Key contents and passwords are passed through stdin.
+
+Keep the printed backup directory secure. It contains `cosign.key`, `cosign.pub`,
+and `cosign.password` beneath `${XDG_DATA_HOME:-$HOME/.local/share}/resumeme/signing/`.
+The temporary unencrypted OpenSSL key is removed when the script exits.
+Running setup again without `--key-dir` creates a new identity and replaces the
+repository secrets. If an upload fails, retry with the same files:
+
+```bash
+bash scripts/release/setup-signing.sh --repo YOUR-USERNAME/YOUR-FORK \
+    --key-dir /path/printed/by/setup
 ```
 
 For an existing key without a saved password file, `gh secret set COSIGN_PASSWORD
@@ -653,6 +684,8 @@ must contain the imported `cosign.key`, not the original OpenSSL PEM. Keep the
 private key and password in your own secure storage. `*.key` is ignored as a precaution;
 the signing workflow reads the secret using `env://COSIGN_PRIVATE_KEY` without
 writing it to the workspace or passing its contents as a command argument.
+See [Cosign key import](https://docs.sigstore.dev/cosign/key_management/import-keypair/)
+and [`gh secret set`](https://cli.github.com/manual/gh_secret_set) for the upstream contracts.
 
 The tag release adds provenance to the PDF committed at the tagged revision,
 then signs it with pinned Cosign 3.1.3, creates a SHA-256 manifest, signs that manifest, and verifies both signatures

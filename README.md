@@ -145,14 +145,18 @@ The PDF and preview links stay relative to your fork and follow `output.pdf`.
 
 Open your checkout in an agent with terminal access and give it this prompt:
 
-> Read `SKILL.md` and generate my résumé PDF from LinkedIn username `YOUR-USERNAME`.
-> Handle setup, capture, validation, and the build. Let me sign in to the browser,
-> then give me the finished PDF.
+> Read `SKILL.md` in this checkout and generate my résumé for LinkedIn username
+> `YOUR-USERNAME`. Preserve my configuration choices. Handle setup, capture or
+> reuse of my matching saved profile, validation, PDF generation, and visual checks.
+> Let me complete browser login and MFA when needed, then return the finished PDF
+> and what you verified.
 
-The portable [agent skill](SKILL.md) covers first-run setup, the browser login
-handoff, retries, saved-profile rebuilds, and optional GitHub publication. For
-layout changes, tell the agent to reuse the saved profile. Add "publish through
-my fork's GitHub Actions workflow" when you also want a signed release.
+The portable [agent skill](SKILL.md) also covers filters and themes, GitHub activity,
+Codex summaries and employer-specific PDFs, signing, monthly refreshes, personal
+READMEs, and Pages. Add the specific operation you want: for example, "publish to
+my fork's main branch" or "create a signed résumé release from the accepted PDF
+commit." Live LinkedIn About updates and skill additions are separate requests.
+See the [CLI reference](docs/CLI.md) for commands and options.
 
 ## How it works
 
@@ -253,10 +257,14 @@ projects:
     - name: resumeme
     - name: Deployment platform
       affiliation: Example Company
+  exclude:
+    - name: resumeme
+      affiliation: Former Company
 ```
 
 Matching ignores case and extra spaces. `include: null` keeps all names;
-`include: []` hides every project tile. The URL filter still applies. See
+`include: []` hides every project tile. `exclude` uses the same selectors and wins
+when both lists match; `exclude: []` excludes nothing. The URL filter still applies. See
 [project filtering](docs/README.md#project-consolidation-and-links) for examples.
 
 ### Job history
@@ -377,10 +385,10 @@ features you use. GitHub supplies the publication token:
 - **`LINKEDIN_PASSWORD` - required for monthly refresh.** The login password. These
   two secrets reach capture on refresh runs and the optional
   [LinkedIn signing identity update](docs/ownership.md) after signed releases.
-- **`OPENAI_API_KEY` - required only when `codex.enabled: true`.** An API key from
+- **`OPENAI_API_KEY` - required when `codex.enabled` or `codex.skills.enabled` is `true`.** An API key from
   your OpenAI project, stored as an Actions repository secret. The Codex summary
-  job receives it; ordinary builds and pull-request checks do not. API usage is
-  billed to that project. See [Codex setup](docs/codex.md).
+  jobs receive it; pull-request checks do not. API usage is billed to that project.
+  See [Codex setup](docs/codex.md) and [tag-only skill suggestions](docs/skills.md).
 - **`COSIGN_PRIVATE_KEY` - required for signed releases.** Set this to the complete
   PEM contents of your own Cosign private key, including the header, footer, and
   newlines. The value is the key itself, not a filename.
@@ -401,58 +409,13 @@ features you use. GitHub supplies the publication token:
 
 #### Configure signing secrets
 
-Requires Bash, OpenSSL, Cosign 3.x, and the GitHub CLI on macOS or Linux.
-On macOS, `brew install openssl@3 cosign gh` installs the tools; on Linux, install
-[Cosign](https://docs.sigstore.dev/cosign/system_config/installation/),
-[gh](https://github.com/cli/cli#installation), and your distribution's OpenSSL package.
-Run `gh auth login` once with an account that can manage your fork's Actions secrets.
+With OpenSSL, Cosign 3.x, and an authenticated GitHub CLI installed, run
+`bash scripts/release/setup-signing.sh --repo YOUR-USERNAME/YOUR-FORK`.
 
-Set `signing_repo` below to your fork's `OWNER/REPOSITORY`, then paste the whole
-block. It generates an OpenSSL P-256 key, imports it into Cosign's encrypted format,
-and installs both repository secrets through `gh`, without using the GitHub settings UI.
-
-```bash
-bash <<'BASH'
-set -euo pipefail
-set +x
-umask 077
-signing_repo="YOUR-USERNAME/YOUR-FORK"
-
-# Select the destination explicitly so a fork cannot inherit gh's upstream default.
-gh repo view "$signing_repo" --json nameWithOwner --jq .nameWithOwner
-signing_root="${XDG_DATA_HOME:-$HOME/.local/share}/resumeme/signing"
-mkdir -p "$signing_root"
-signing_dir="$(mktemp -d "$signing_root/key.XXXXXX")"
-printf 'Local signing-key backup: %s\n' "$signing_dir"
-trap 'rm -f "$signing_dir/openssl.key"' EXIT
-
-# Keep the password out of command arguments and preserve its exact bytes for CI.
-COSIGN_PASSWORD="$(openssl rand -hex 32)"
-export COSIGN_PASSWORD
-printf '%s' "$COSIGN_PASSWORD" >"$signing_dir/cosign.password"
-openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 \
-    -out "$signing_dir/openssl.key"
-cosign import-key-pair --key "$signing_dir/openssl.key" \
-    --output-key-prefix "$signing_dir/cosign"
-
-# Upload the imported key and its password, then show the public fingerprint.
-gh secret set COSIGN_PRIVATE_KEY --repo "$signing_repo" <"$signing_dir/cosign.key"
-gh secret set COSIGN_PASSWORD --repo "$signing_repo" <"$signing_dir/cosign.password"
-openssl pkey -pubin -in "$signing_dir/cosign.pub" -outform DER | openssl dgst -sha256
-gh secret list --repo "$signing_repo"
-BASH
-```
-
-Keep the printed backup directory secure: it contains `cosign.key`, `cosign.pub`,
-and `cosign.password`. Running the whole block again creates a new signing identity
-and replaces the repository secrets. To retry an upload with the same key, use
-[the saved-key commands](docs/README.md#signed-releases).
-
-The workflow uses the imported key directly from `COSIGN_PRIVATE_KEY`. See
-[Cosign key import](https://docs.sigstore.dev/cosign/key_management/import-keypair/)
-and [`gh secret set`](https://cli.github.com/manual/gh_secret_set) for the upstream
-contracts, and [release verification](docs/README.md#signed-releases) for sharing
-the public key and checking signed PDFs.
+The script creates an encrypted signing key, retains a local backup, and sets
+`COSIGN_PRIVATE_KEY` and `COSIGN_PASSWORD` on your fork. To reuse a saved key,
+add `--key-dir /path/to/backup`. See [signing setup and recovery](docs/README.md#signed-releases)
+for prerequisites, key storage, and verification.
 
 #### LinkedIn authentication
 
@@ -465,8 +428,10 @@ interaction. See [automation setup and recovery](docs/automation.md).
 
 ## Documentation
 
+- [CLI reference](docs/CLI.md): complete command help, options, examples, and exit status.
 - [Configuration and operation](docs/README.md): capture, job filters, rendering, and signed releases.
 - [Monthly refresh and release](docs/automation.md): LinkedIn secrets, scheduling, and shareable signed PDFs.
+- [Suggested LinkedIn skills](docs/skills.md): tag-only Codex proposals and optional additions that preserve existing skills and endorsements.
 - [GitHub Pages](docs/pages.md): automatic website updates, publication paths, and custom domains.
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
 - [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR.

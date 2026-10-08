@@ -582,7 +582,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \ifdim\dimexpr\ht#1+\dp#1\relax>0pt
     % Round only the background; preserve the measured content, padding, and row baseline.
     \tikz[baseline=(projecttile.base)]{%
-      \node[fill=projectbackground,rounded corners=2pt,inner sep=\fboxsep,outer sep=0pt] (projecttile) {%
+      \node[fill=projectbackground,rounded corners=4pt,inner sep=\fboxsep,outer sep=0pt] (projecttile) {%
         \vtop to\projectheight{\hrule height0pt width\projectwidth\unvbox#1\vfil}%
       };%
     }%

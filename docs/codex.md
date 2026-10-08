@@ -2,8 +2,9 @@
 
 Codex can write the résumé's About paragraph and a short description beneath the
 portrait from the visible profile and your additional context. The original
-LinkedIn snapshot is retained. Generated text changes the PDF only; it does not
-edit your LinkedIn account.
+LinkedIn snapshot is retained. Summary text changes the PDF only. A separate
+[tag-only skill proposal flow](skills.md) can optionally add missing profile skills
+to LinkedIn while retaining every existing skill and endorsement.
 
 ## Enable in your fork
 
@@ -35,8 +36,9 @@ CLI's default; set a model ID available to your API project to override it.
 API usage is billed to that project.
 
 Push to `main` or manually dispatch the pipeline on `main`. Generation is off by
-default. Pull requests, other branches, and tag builds use captured copy without
-calling Codex. Enabling generation without the secret fails with a setup message.
+default. Summary generation does not run on pull requests, other branches, or tags.
+Tags can run the separately enabled skill proposal flow. Enabling either generator
+without the API secret fails with a setup message.
 
 ## Inputs and output
 

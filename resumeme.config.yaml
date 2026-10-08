@@ -57,6 +57,15 @@ codex:
   about_max_words: 100
   headline_max_words: 18
 
+  # Independent of résumé summaries: generate proposals only on a tag push, using captured profile evidence.
+  skills:
+    enabled: true
+
+    # Opt in to live additions after the signed release. All existing skills and endorsements are retained.
+    publish: false
+    max_skills: 20
+    context: ''
+
   # Add target roles, audience, tone, or additional factual background here. Never put an API key in this file.
   context: ''
 
@@ -110,6 +119,13 @@ projects:
   #   - name: resumeme
   #   - name: Deployment platform
   #     affiliation: Example Company
+
+  # Omit matching tiles even when include also matches. Uses the same name/affiliation rules; [] excludes nothing.
+  exclude: []
+  # exclude:
+  #   - name: Archived tool
+  #   - name: Deployment platform
+  #     affiliation: Former Company
 
 experience:
 
@@ -220,6 +236,9 @@ style:
 
   # Size the top 20 skills by references + 2 * endorsements; skill_colors runs from 0% to 100% of the highest displayed count.
   skills_word_cloud: true
+
+  # Mix vertical and horizontal labels in the cloud; false keeps every label horizontal.
+  skills_allow_vertical: true
 
   # Each named theme can override any presentation field above, or the text/cloud colors below.
   # Theme fields win over base style fields; omitted fields keep their base values.

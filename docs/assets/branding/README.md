@@ -8,8 +8,9 @@ image-generation tool; no Overleaf package files or artwork were copied.
 
 CI renders a new composition only when it has a changed résumé or profile to
 commit. The verified source SHA controls the stain's rotation, reflection,
-proportions, position, saturation, brightness, and opacity. The ring sits off
-center toward a corner, with room for its entire outline and droplets. The blue
+position, saturation, brightness, and opacity. Each ring matches the visible
+LinkedIn mark's width and height, excluding its transparent canvas margins.
+The ring sits off center toward a corner, with room for its entire outline and droplets. The blue
 mark stays fixed at 80% opacity and 80% saturation beneath the coffee layers.
 
 Each update shows a seeded random selection of the latest two to five stains,

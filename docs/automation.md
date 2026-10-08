@@ -37,8 +37,8 @@ gh secret set LINKEDIN_PASSWORD
   profile slug in `resumeme.config.yaml`.
 - `LINKEDIN_PASSWORD`: account password, passed only to capture or an explicitly enabled
   ownership update.
-- `OPENAI_API_KEY`: needed only if `codex.enabled` is true; monthly builds then
-  regenerate the About and portrait summaries from that same fresh capture.
+- `OPENAI_API_KEY`: needed if `codex.enabled` or `codex.skills.enabled` is true.
+  The first enables main-branch summaries; the second enables tag-only skill proposals.
 - `COSIGN_PRIVATE_KEY` and optional `COSIGN_PASSWORD`: needed when publishing a
   signed tag release, not for monthly refreshes. The private-key secret contains
   the entire Cosign PEM, including its header, footer, and newlines; the password
@@ -170,6 +170,11 @@ generated summaries, then signs the PDF including that footer. It releases
 the PDF, Cosign signature bundles, public key, SHA-256 manifest, key fingerprint,
 and source revision. The container stage then appends its pull instructions to
 the same release. See [signature verification](README.md#signed-releases).
+
+When `codex.skills.enabled` is true, a separate stage generates an evidence-backed
+`resumeme-skills` artifact. Set `codex.skills.publish: true` to add missing skills
+to LinkedIn after publication. All existing skills and endorsements are retained;
+see [skill proposals and publication](skills.md).
 
 Tag releases do not update `main` or choose a newer document. If
 `linkedin.ownership.update_about` is enabled, a separate job signs in after

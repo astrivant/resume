@@ -217,7 +217,13 @@ def load_skill_suggestions(path: Path, profile: Profile, config: Config, root: P
         quote = normalize_skill(skill.evidence)
         mentioned = re.search(r"(?<![\w+#])" + re.escape(name) + r"(?![\w+#])", quote)
 
-        if not name or not quote or not mentioned or not any(quote in line for line in lines):
+        if (
+            not name
+            or any(unicodedata.category(character).startswith("C") for character in skill.name)
+            or not quote
+            or not mentioned
+            or not any(quote in line for line in lines)
+        ):
             raise ValueError(f"Proposed skill {skill.name!r} needs a captured quote containing that exact skill name.")
 
     return proposal

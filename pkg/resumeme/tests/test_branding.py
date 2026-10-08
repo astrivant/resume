@@ -157,10 +157,10 @@ def test_older_stains_fade_without_moving_or_mutating_the_source() -> None:
     """
     source = Image.new("RGBA", (20, 20), (100, 50, 20, 255))
     original = source.tobytes()
-    fresh = _coffee_layer(source, "fixed-revision", 0).getchannel("A")
+    fresh = _coffee_layer(source, "fixed-revision", 0, mark_size=(606, 628)).getchannel("A")
 
     for age in range(1, 5):
-        faded = _coffee_layer(source, "fixed-revision", age).getchannel("A")
+        faded = _coffee_layer(source, "fixed-revision", age, mark_size=(606, 628)).getchannel("A")
         assert ImageChops.subtract(faded, fresh).getbbox() is None
         previous_peak = fresh.getextrema()[1]
         assert isinstance(previous_peak, (int, float))

@@ -1,156 +1,229 @@
 ---
 name: resumeme
 description: >-
-  Generate a resume PDF from a user's LinkedIn profile with this repository's
-  Python CLI. Use for first-time setup, interactive browser capture, rebuilding
-  saved profile data, or applying resume configuration changes. Includes optional
-  GitHub publication when requested.
+  Build and maintain LinkedIn résumé PDFs with the resumeme repository and CLI.
+  Use for setup, browser capture, saved-profile rebuilds, configuration and layout
+  changes, Codex summaries and employer variants, or requested signing, GitHub
+  publication, and LinkedIn profile updates.
 ---
 
-# Generate a LinkedIn résumé PDF
+# Build and publish a LinkedIn résumé
 
-Produce the user's PDF using this project's existing capture, validation, and
-build commands. A successful local build is the default deliverable. This file
-is plain Markdown with skill frontmatter: agents can read it directly without a
-particular editor, plugin, or skill installer.
+Use the existing CLI and configuration to deliver the requested PDF or publication.
+This is a portable Markdown skill: agents can read it from the checkout without
+an editor plugin or skill installer. Read the [CLI reference](docs/CLI.md) for
+complete command help and only the guides relevant to the requested operation.
 
-## Establish the inputs
+## Establish owner, inputs, and scope
 
-Work in the existing `resumeme` checkout containing `pyproject.toml`, `poetry.lock`,
-and `resumeme.config.yaml`. If this skill was copied elsewhere, locate the checkout
-first; all paths below are relative to that checkout. Inspect `git status --short`
-and preserve existing changes.
+Work in the existing checkout containing `pyproject.toml`, `poetry.lock`, and
+`resumeme.config.yaml`. If its location is unknown, ask for it rather than creating
+another project. Paths in this skill are relative to that checkout. Inspect
+`git status --short` and preserve existing edits and staged work.
 
-Use the LinkedIn username supplied or previously confirmed by the user. For a
-profile URL, use the slug after `/in/`. A new fork can still contain the original
-author's username, snapshot, and PDF; establish whose profile is wanted before
-reusing those inputs. Ask for the username only when the conversation and existing
-configuration do not establish it.
+Use the user's confirmed LinkedIn slug, or extract it after `/in/` in their profile
+URL. A fork may retain the author's configuration, snapshot, and PDF; changing
+`linkedin.username` does not fetch new data. Reuse a snapshot only when it belongs
+to the intended owner. Ask for missing identity information only when it cannot
+be established from the conversation and configuration.
 
-Set `linkedin.username` in `resumeme.config.yaml`, preserving comments and other
-settings. Apply section exclusions, job filters, or styling changes only as
-requested; see [configuration](docs/README.md#configuration) and
-[themes](docs/themes.md). Paths in `output` are relative to the config directory.
-For a custom config, put the global option before the subcommand:
+Review inherited `github.username`, job and school exclusions, date windows,
+README destination, Pages domain, and optional Codex/live-update settings when
+setting up a new owner. Apply the user's choices while preserving YAML comments.
+The checked-in configuration contains personal overrides; do not assume it is the
+package's default configuration. Minimal profiles and missing sections are valid;
+do not invent content to fill them. See [profile coverage](docs/profile-schema.md).
 
-```bash
-poetry run resumeme --config path/to/config.yaml build
-```
+Place a custom `--config` before the subcommand. Configured outputs and artifact
+arguments such as `--summary` resolve beneath the configuration directory;
+`--public-key` resolves from the working directory. See [path rules](docs/CLI.md#invocation-and-paths).
+Carry existing authorization forward. A local PDF request does not authorize
+GitHub writes, key rotation, model usage, or live LinkedIn edits; use those modes
+when requested or already authorized.
 
-Choose the appropriate starting point:
+## Choose the operation
 
-- First run, a different owner, or requested LinkedIn updates: capture first.
-- Layout-only changes or a requested rebuild: reuse the matching saved snapshot.
-  Validation checks ownership; changing the username does not fetch new data.
-- Link resolution or preview refresh on acquired text: run `poetry run resumeme enrich`
-  against the saved snapshot, then validate and build. This makes bounded public
-  HTTP requests and needs no browser session. Original text and URLs are retained;
-  the snapshot gains resolved destinations, page titles, and cached previews.
+| Request | Command or route | Result and relevant constraint |
+| --- | --- | --- |
+| First run, new owner, or fresh LinkedIn data | `resumeme capture` | Browser capture plus downloaded media; complete login before continuing |
+| Resolve links or refresh previews | `resumeme enrich` | Public HTTP requests update the saved snapshot and assets without a browser |
+| Check inputs | `resumeme validate` | Validate config, snapshot schema, owner, and recorded warnings |
+| Inspect generated LaTeX | `resumeme render` | Generate TeX and staged assets without PDF compilation |
+| Rebuild or change layout | `resumeme build` | Reuse the matching snapshot and produce `output.pdf` |
+| Generate About/portrait copy or employer variants | `resumeme summary-prompt` with optional `--companies` | Prepare model inputs; use the [Codex workflow](docs/codex.md) for generation and response selection |
+| Prepare a website | `resumeme site --repository OWNER/REPO` | Build `.cache/pages/` from the existing PDF; [deployment is separate](docs/pages.md) |
+| Publish a signing identity to About | `resumeme publish-ownership` | Preview or update the live profile using a verified release public key |
+| Propose or add LinkedIn skills | `resumeme skills-prompt` / `resumeme publish-skills` | Requires a matching tagged checkout; generation and live additions have separate opt-ins |
+| Commit PDFs, refresh monthly, release, or publish packages | [GitHub workflows](docs/automation.md) | Select the correct event and destination; see publication below |
 
-## Prepare the local environment
+## Prepare the environment
 
-Use Python 3.13+, Poetry 2.5.1, Firefox or Chrome for capture, and a running Docker daemon
-for the default local PDF build. On macOS, follow the
-[Homebrew bootstrap](docs/README.md#install); `Brewfile` supplies host tools, and
-the bootstrap installs the pinned Poetry version. On other hosts, use equivalent
-tools and a graphical session for the selected browser. Reuse an existing working environment.
-`capture.browser` selects `firefox` (default) or `chrome`; install the selected browser.
-On macOS, Chrome is optional via `brew install --cask google-chrome`.
+For a source checkout, use Python 3.13+, Poetry 2.5.1, and the committed lockfile.
+Reuse the project environment, not an unrelated inherited virtualenv. Follow the
+[installation guide](docs/README.md#install) and `Brewfile` on macOS when tools are
+missing. Install Firefox (default) or Chrome for capture according to
+`capture.browser`. A normal local PDF build needs a running Docker daemon.
 
-Install runtime dependencies from the committed lockfile:
+Install runtime dependencies with `poetry install --only main --no-interaction`
+and verify `poetry run resumeme --help`. Keep dependency resolution fixed;
+ordinary PDF generation does not require `poetry update` or development packages.
+Set `MPLCONFIGDIR` to the checkout's `.cache/matplotlib` when the agent cannot write
+to the host's default cache. Prefix the command examples with `poetry run` when
+using the source environment.
 
-```bash
-export POETRY_VIRTUALENVS_IN_PROJECT=true
-export POETRY_KEYRING_ENABLED=false
-export POETRY_INSTALLER_RE_RESOLVE=false
-export MPLCONFIGDIR="$PWD/.cache/matplotlib"
-poetry check --lock
-poetry install --only main --no-interaction
-poetry run resumeme --help
-```
+The [runtime container](docs/containers.md) includes the CLI, Firefox, Tini, and
+TeX for `linux/amd64`; it compiles without a nested Docker daemon. Chrome capture
+requires a host installation. Use the published image path from the selected
+release, mount the existing inputs, and retain its documented user and path rules.
 
-Use the project environment even if the agent inherited an unrelated activated
-virtualenv. Follow the bootstrap's `poetry env use` step when selecting Python.
-Keep the committed dependency resolution; normal PDF generation does not need
-`poetry update`, a new lockfile, or development dependencies.
+## Capture and recover
 
-## Capture with the user present
+Run `resumeme capture` in a persistent process. Once its browser opens, let the
+user sign in, complete MFA, and leave the window open. Login completion is detected
+automatically without a login deadline. Keep polling the same process while the
+user signs in; do not start duplicate captures or impose a short overall timeout.
 
-Run capture in a persistent process whose lifetime allows the user to sign in:
+`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD` can supply credentials; neither belongs
+in chat, config, or commits. Interactive capture still permits manual challenges.
+`--headless` is for unattended execution and fails if a challenge needs interaction.
+`--connect-port` attaches only to an explicitly opened local Firefox Marionette
+session. Read [capture and attachment instructions](docs/README.md#local-capture)
+when that mode is needed.
 
-```bash
-poetry run resumeme capture
-```
+Successful capture writes `output.profile` and `output.assets`, normally
+`data/profile.json` and `data/assets/`. Preserve ignored `.cache/firefox/` or
+`.cache/chrome/` sessions for retries; the browsers have separate logins. The CLI
+already uses capped exponential backoff through `capture.retry_*`.
 
-Once the configured browser opens, tell the user to sign in there, complete any MFA, and leave
-the window open. The command detects login completion automatically and has no
-login deadline. Keep the process running while the user finds their password;
-poll its status without imposing a short overall command timeout or starting
-duplicate captures. Login credentials can be entered in the browser or supplied using
-`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD`; never request or print secret values
-in chat. Interactive capture still waits for manual MFA. The explicit `--headless`
-mode is for unattended CI and fails when an account challenge requires interaction.
+Incomplete capture or enrichment saves diagnostics under `.cache/capture/` without
+replacing accepted inputs. Inspect the reported cause before retrying. Use
+`--allow-incomplete` only when the user accepts those omissions. After a closed
+window or failed headless login, use interactive capture to resolve the challenge;
+do not bypass it or repeatedly submit credentials. Preserve the last good snapshot.
 
-Wait for capture to finish successfully before validating or building. It saves
-the snapshot and downloaded media at the configured paths, normally
-`data/profile.json` and `data/assets/`. The session persists under ignored
-`.cache/firefox/` or `.cache/chrome/`; preserve it for retries. Each browser needs its
-own initial login. Capture already applies capped
-exponential backoff to transient failures. See
-[local capture](docs/README.md#local-capture) for browser attachment and diagnostics.
+## Apply configuration and presentation choices
 
-If the window closes, rerun capture after addressing that failure. If capture
-reports incomplete content, inspect `.cache/capture/` and the reported error;
-correct the cause before retrying. Avoid repeated full captures without a changed
-condition. Use `--allow-incomplete` only when the user explicitly accepts the
-reported omissions; otherwise surface the blocker and retain the last good inputs.
+Use the config rather than deleting captured records or patching generated TeX.
+Follow these settings and their linked contracts:
 
-## Validate, build, and inspect
+| Capability | Configuration and behavior |
+| --- | --- |
+| Section visibility and order | Reorder `section_order`; remove or comment out keys to hide them. There is no separate top-level `disable` list. Empty sections are skipped. [Section rules](docs/README.md#section-visibility-order-and-tiles). |
+| Project selection | `project_filter` matches resolved source URLs and defaults to GitHub. `projects.include` selects exact displayed names with optional affiliation; `projects.exclude` uses the same rules and wins. `include: null` allows all names, `include: []` selects none, and `exclude: []` excludes nothing. [Project consolidation](docs/README.md#project-consolidation-and-links). |
+| Job history | `experience.disable` matches title/company. `since` supplies a fixed inclusive start and overrides `last_years`; `as_of` fixes the endpoint. Include jobs overlapping the window, not just jobs starting within it. [Job filters](docs/README.md#job-filtering). |
+| Education | `education.disable` matches school, degree, major, or their combination. Omit `education` from `section_order` to hide the whole section. [Education filters](docs/README.md#education-filtering). |
+| Job text | Tune `experience.reflow_soft_breaks`, literal `experience.subheadings`, and `style.highlight_job_subheadings` to preserve paragraphs while recognizing small headers. [Text parsing](docs/README.md#job-text-and-subheadings). |
+| Header and page style | `style.profile_column_side` selects left or floating upper-right placement. Configure paper, headline, cover photo, contact/birthday/connection visibility, and contents links through the [header options](docs/README.md#header-and-skills). |
+| Themes and company hierarchy | `style.theme` selects an entry in `style.themes`, whose values override base fields. Use `tiger`, inline palettes, company font size/color, and link/skill colors as requested. [Themes](docs/themes.md). |
+| Skills | The cloud shows at most 20 skills, sized by references plus twice observed endorsements and colored by relative endorsements. `style.skills_allow_vertical` allows rotated labels; `skills_word_cloud: false` uses the list. Raw scores remain in `tex/skills.weights.json`. [Scoring](docs/profile-schema.md#scoring-and-rendering). |
+| GitHub activity | `github.username` supplies the profile link. `github.contributions` selects enabled state, months, profile/appendix placement, and `as_of`. [Calendar behavior](docs/README.md#github-contribution-graph). |
+| Custom layouts | `template` selects a Jinja/LaTeX template. Read its [interface](docs/templates.md) and the [compiler architecture](docs/compiler.md) before changing rendering code. |
 
-Run these sequentially, proceeding only after each succeeds:
+Project selection runs after deduplication across native Projects, visible roles,
+and enabled Featured posts. Exclusions also apply to project media, skill scores,
+and Codex evidence. Projects and Featured use shared rounded tiles; skills/tags
+stay centralized in Skills and cannot be re-enabled inside project tiles. Preserve
+role progression, linked company/school logos, inline links, and project-to-role
+anchors when changing templates. These are display transformations, not edits to
+LinkedIn or the source snapshot.
 
-```bash
-poetry run resumeme validate
-docker info >/dev/null
-poetry run resumeme build
-```
+## Generate optional Codex outputs
 
-Start Docker Desktop on macOS if needed. The build renders Jinja templates and
-runs two pdfLaTeX passes in the pinned TeX image. A host LaTeX installation is
-unnecessary. For a render-only diagnosis, run `poetry run resumeme render`; generated
-TeX alone is not the finished deliverable. Compiler logs are in `.cache/build/`.
+For requested summaries, set `codex.enabled` and relevant context/model/word limits.
+`summary-prompt` writes the filtered prompt and schema; it does not call a model.
+Use the existing upstream action in CI or the pinned CLI and invocation in
+[local generation](docs/codex.md#local-generation-and-preview). `OPENAI_API_KEY`
+is required for generation. Summary text changes the PDF's About and portrait
+copy, not the live LinkedIn About section.
 
-Confirm that this build succeeded and that the configured PDF exists and is
-nonempty. An older `resume.pdf` may remain after a failed build, so its presence
-alone is not success. Inspect the new PDF with the available viewer or PDF tools,
-checking the owner's identity, enabled sections, text clipping, images, and links.
-The skill cloud displays at most 20 skills ranked by references plus twice each
-endorsement; the score manifest retains all scored skills.
+`codex.companies` pairs a company username with a job URL and optional context.
+Use `summary-prompt --companies`, generate each response, and pass both
+`--summary .cache/codex/summary.json` and
+`--company-summaries .cache/codex/companies` to `build` or `render`.
+The generic PDF remains; variants go under `single-origin/<company>/<job>/`.
+Preserve each `company.json` with its response. Supplied company/job context can
+replace remote fetches. Employer requirements guide emphasis, not invented
+qualifications. Responses are bound to owner and evidence; regenerate stale
+responses rather than bypassing validation. Builds never auto-apply cached copy.
 
-Return a link to the actual output path (normally `resume.pdf`), note whether the
-snapshot was refreshed or reused, and report validation/build results and any
-remaining limitation. If browser or Docker access is unavailable, identify the
-missing capability and the next runnable command instead of claiming completion.
+## Build and inspect the result
 
-## Publish when requested
+Run `resumeme validate`, then `resumeme build`. A host build renders Jinja and runs
+two pdfLaTeX passes in the pinned Docker image; it needs no host TeX installation.
+`render` is useful for diagnosis but generated TeX is not a completed PDF.
+Compilation logs are in `.cache/build/`.
 
-For an authorized push or signed release, continue with the
-[fork setup](docs/automation.md#configure-a-fork) and
-[signed release workflow](docs/README.md#signed-releases). Reuse authorization
-already given in the conversation; local PDF generation alone does not require
-GitHub setup or publication.
+An enabled contribution graph makes a public GitHub request during render/build.
+For offline replay, pass `--github-calendar tex/github-contributions.json` with
+matching username, month window, and `github.contributions.as_of` set to the saved
+calendar's end date. Do not silently replace the requested date window or disable
+the graph to make a build pass. Other saved-profile rendering needs no capture.
 
-Review the captured contact information and media that will be published. Stage
-only the intended config, snapshot, and assets, using their configured paths;
-preserve unrelated staged work. Keep browser sessions, diagnostics, and signing
-keys outside commits. Configure the fork's `COSIGN_PRIVATE_KEY` and, for an
-encrypted key, `COSIGN_PASSWORD` through GitHub secrets without printing their
-contents. Actions supplies the publication token.
+Check the successful process result as well as the output: a failed compilation
+can leave an older PDF intact. Inspect the new PDF for the intended owner, section
+order, clipping, wrapping, logos, tiles, cloud/legend, and clickable links. Verify
+company variants separately when requested. For code changes, run relevant
+[development checks](docs/development.md); pytest runs in parallel by default.
+A styling-only task does not require recapture or a full test matrix.
 
-A push to `main` builds the committed snapshot and commits the PDF back. Monthly
-or manually requested refreshes authenticate to LinkedIn with Actions secrets and
-commit fresh inputs alongside the PDF after verification. User-created tags sign
-the PDF already committed at that revision and publish its verification artifacts.
-Follow [monthly refresh and release](docs/automation.md); report hosted success
-only after the corresponding pipeline completes. Container publication follows
-the signed release on the same tag.
+Return the actual output link, whether capture was refreshed or reused, what was
+verified, and any concrete blocker. Distinguish a local build from a hosted CI
+success. If browser or compiler access is unavailable, retain valid inputs and
+report the failing stage instead of presenting an old PDF as newly built.
+
+## Publish through the fork when requested
+
+Use the explicit intended repository and existing authorization. Check inherited
+live-update and model-generation settings before triggering a tag. Configure only
+the secrets needed for selected features; see the [fork environment list](docs/automation.md#configure-a-fork).
+Stage intended inputs/config/assets while preserving unrelated staged work.
+Browser state, diagnostics, API credentials, and signing keys stay out of commits.
+
+| Event or output | Behavior and setup |
+| --- | --- |
+| Push or manual build on `main` | Verify committed inputs, optionally generate enabled generic/company summaries, and commit accepted PDFs back to `main`. |
+| Monthly schedule or manual `refresh=true` on `main` | Capture with LinkedIn login secrets, then verify and commit fresh inputs and PDFs. Interactive challenges leave `main` unchanged. |
+| Personal README | Set `readme.output: README.md` for a fork landing page with its name, clickable first-page preview, and links. This repository uses `FORK_EXAMPLE.md`; forks inherit that override. `mode: project` preserves handwritten content. [README publication](docs/automation.md#personal-readme). |
+| Coffee branding | Project READMEs keep the generated coffee-stained logo and linked Brew date badge. Accepted updates retain a fading recent stain trail; retries do not add stains. [Branding renderer](docs/assets/branding/README.md). |
+| Pages | `resumeme site` prepares files only. Enable `pages.enabled` and GitHub Actions as the Pages source to deploy the accepted PDF. `pages.path` selects the site directory; `custom_domain` checks an existing setup and does not configure DNS. [Pages setup](docs/pages.md). |
+| User-created tag | Sign the generic PDF already committed at that revision, including its release/key footer, and release the PDF, signature bundles, public key, fingerprint, hashes, and provenance. The tag also publishes the verified GHCR image and adds pull commands to release notes. |
+| Package version tag | `v<project.version>` additionally publishes `resumeme` to PyPI using `PYPI_API_TOKEN`. This is for package maintainers; use a résumé tag such as `resume-2026-10` for personal releases. [Package publishing](docs/development.md#publish-to-pypi). |
+
+For requested key setup, use [setup-signing.sh](scripts/release/setup-signing.sh)
+with `--repo OWNER/REPO`. It generates an OpenSSL P-256 key, imports it for Cosign,
+saves a local backup, and uploads `COSIGN_PRIVATE_KEY` and `COSIGN_PASSWORD`.
+Use `--key-dir` with the printed backup directory after a failed upload; running
+without it creates a new identity. Do not rotate an existing key merely to retry.
+Follow [signing and verification](docs/README.md#signed-releases).
+
+Wait for the accepted PDF commit on `main` before tagging it. Tags do not select a
+newer PDF or update `main`. Check the actual Actions run and outputs before
+reporting publication success. Stale runs cannot overwrite newer `main`; rerun
+against the new revision rather than force-pushing. Public release PDFs are not
+replaced on retries. See [automation and recovery](docs/automation.md).
+
+## Update LinkedIn only within the requested scope
+
+Both publishers use the configured browser/login and retry by rereading live
+state. An interrupted Save may already have succeeded; inspect or rerun the
+command to reconcile rather than blindly submitting again. Stop on ambiguous
+ownership, missing required controls, or validation failure. Detailed recovery
+and private backup locations are in the linked guides.
+
+- **Signing identity:** `publish-ownership --public-key cosign.pub --dry-run`
+  previews the About text. Omit `--dry-run` only for an authorized live update.
+  Use the verified release public key; the CLI preserves surrounding About text.
+  The local command writes regardless of the CI `update_about` setting.
+  Tag CI uses `linkedin.ownership.update_about` after a verified signed release.
+  See [ownership publication](docs/ownership.md).
+- **Skill proposals:** `codex.skills.enabled` is independent of résumé summaries.
+  `skills-prompt --tag TAG` prepares evidence-backed suggestions; the model call
+  is separate. In Actions this runs only after a signed tag release. Proposals
+  are self-declared skills, not connection endorsements. See [skill generation](docs/skills.md).
+- **Skill additions:** `publish-skills --tag TAG --suggestions PATH --dry-run`
+  compares the validated proposal with the live profile. Live additions require
+  `codex.skills.publish: true` and omission of `--dry-run`. Both commands require
+  the tag to match the checkout; Actions also requires its tag-push event.
+  Add only missing skills. Never remove, rename, replace, reorder, or alter
+  existing skills or endorsements; a full list stops publication. Capture again
+  to bring additions into the snapshot/PDF. See [publication and retries](docs/skills.md#preservation-and-retry-behavior).

@@ -154,6 +154,19 @@ jobs:
       LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
       LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
 
+  # Skill proposals and optional additions run only after a signed tag release, independently of main's summary jobs.
+  skills-stage:
+    name: Propose and optionally publish LinkedIn skills
+    needs: [source, release-stage]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    uses: ./.github/workflows/stage-skills.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
+      LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+
   # Version tags publish the verified Python distributions; the PyPI credential reaches only this stage.
   pypi-stage:
     name: Publish Python package

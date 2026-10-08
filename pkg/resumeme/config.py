@@ -329,9 +329,11 @@ class Projects:
 
     Attributes:
         include (list[ProjectSelector] | None): Alternative selectors; None allows all names, while an empty list selects none.
+        exclude (list[ProjectSelector]): Matching selectors remove tiles even when include also matches; empty excludes nothing.
     """
 
     include: list[ProjectSelector] | None = None
+    exclude: list[ProjectSelector] = field(factory=list)
 
 
 @frozen
@@ -370,6 +372,7 @@ class StyleOverrides(TypedDict, total=False):
         show_connection_link (bool): Whether to link to the captured connections page.
         display_birthday (bool): Whether to display the birthday field in enabled contact information.
         skills_word_cloud (bool): Whether to replace the Skills list with a cloud.
+        skills_allow_vertical (bool): Whether the cloud may mix vertical and horizontal labels.
         ink (str): Six-digit hexadecimal body text color.
         name_color (str): Six-digit hexadecimal profile name color.
         heading_color (str): Six-digit hexadecimal section heading color.
@@ -392,6 +395,7 @@ class StyleOverrides(TypedDict, total=False):
     show_connection_link: bool
     display_birthday: bool
     skills_word_cloud: bool
+    skills_allow_vertical: bool
     ink: str
     name_color: str
     heading_color: str
@@ -420,6 +424,7 @@ class Style:
         show_connection_link (bool): Link the count or a concise Connections label to its captured destination.
         display_birthday (bool): Display the birthday field when contact information is enabled.
         skills_word_cloud (bool): Replace the Skills list with a cloud weighted by references and endorsements.
+        skills_allow_vertical (bool): Allow a mix of vertical and horizontal cloud labels; False keeps all labels horizontal.
         ink (str): Six-digit hexadecimal body text color.
         name_color (str): Six-digit hexadecimal profile name color.
         heading_color (str): Six-digit hexadecimal section heading color.
@@ -444,6 +449,7 @@ class Style:
     show_connection_link: bool = False
     display_birthday: bool = False
     skills_word_cloud: bool = True
+    skills_allow_vertical: bool = False
     ink: str = "363636"
     name_color: str = "191919"
     heading_color: str = "191919"
@@ -473,7 +479,7 @@ class Config:
         project_filter (str | None): Source URL regex selecting Projects entries, or None to retain every project.
         education (Education): School, degree, and major exclusions.
         readme (Readme): Automatic personal README publication on forks.
-        projects (Projects): Optional project names and affiliations to include alongside the source URL filter.
+        projects (Projects): Project names and affiliations to include or exclude alongside the source URL filter.
         pages (Pages): Optional static site publication and its location within GitHub Pages.
     """
 

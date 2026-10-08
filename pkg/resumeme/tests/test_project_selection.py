@@ -44,6 +44,26 @@ def test_project_include_configuration(tmp_path: Path, include: list[dict[str, s
     assert config.project_filter == DEFAULT_PROJECT_FILTER
 
 
+@pytest.mark.parametrize("exclude", [[], [{"name": "Tool"}], [{"name": "Tool", "affiliation": "Example Co."}]])
+def test_project_exclude_configuration(tmp_path: Path, exclude: list[dict[str, str]]) -> None:
+    """
+    Load typed exclusion selectors without changing the default inclusion policy.
+
+    Args:
+        tmp_path (Path): Isolated configuration directory.
+        exclude (list[dict[str, str]]): Serialized exclusion rules.
+
+    Returns:
+        None: Exclusion defaults to an empty list and supplied selectors retain their fields.
+    """
+    assert Projects().exclude == []
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(yaml.safe_dump({"linkedin": {"username": "example-person"}, "projects": {"exclude": exclude}}), encoding="utf-8")
+    config = load_config(path)
+    assert config.projects == Projects(exclude=[ProjectSelector(**item) for item in exclude])
+
+
+@pytest.mark.parametrize("field", ["include", "exclude"])
 @pytest.mark.parametrize(
     "include",
     [
@@ -59,19 +79,20 @@ def test_project_include_configuration(tmp_path: Path, include: list[dict[str, s
         [{"name": "Tool", "company": "Acme"}],
     ],
 )
-def test_invalid_project_selectors_fail_schema_validation(tmp_path: Path, include: object) -> None:
+def test_invalid_project_selectors_fail_schema_validation(tmp_path: Path, include: object, field: str) -> None:
     """
     Reject empty selectors, unknown fields, and coerced or ambiguous values.
 
     Args:
         tmp_path (Path): Isolated configuration directory.
         include (object): Invalid serialized selector or collection.
+        field (str): Selector list to validate against the shared schema.
 
     Returns:
         None: Invalid values fail before rendering rather than silently broadening selection.
     """
     path = tmp_path / "resumeme.config.yaml"
-    path.write_text(yaml.safe_dump({"linkedin": {"username": "example-person"}, "projects": {"include": include}}), encoding="utf-8")
+    path.write_text(yaml.safe_dump({"linkedin": {"username": "example-person"}, "projects": {field: include}}), encoding="utf-8")
 
     with pytest.raises(ValidationError):
         load_config(path)
@@ -171,6 +192,44 @@ def test_grouped_role_affiliations_survive_featured_deduplication() -> None:
     assert len(projects[0].links) == 1
 
 
+@pytest.mark.parametrize("affiliation", [None, "  FIRST   company. "])
+def test_exclusions_override_includes_after_role_and_featured_consolidation(affiliation: str | None) -> None:
+    """
+    Exclude complete consolidated tiles without removing unrelated namesakes or retained source prose.
+
+    Args:
+        affiliation (str | None): Optional company restriction, normalized like inclusion selectors.
+
+    Returns:
+        None: Exclusions win after native, role, and Featured references merge; other names and source text remain intact.
+    """
+    link = Link("Tool", "https://github.com/first/tool")
+    kept = Entry("Tool", ["Associated with Second Company"], [Link("Tool", "https://github.com/second/tool")])
+    similar = Entry("Tool v2", links=[Link("Tool v2", "https://github.com/first/tool-v2")])
+    profile = Profile(
+        "example-person",
+        "Alex",
+        sections=[
+            Section("projects", "Projects", [Entry("tool", links=[link]), kept, similar]),
+            Section("experience", "Experience", [Entry("Engineer", ["First Company", "2024 - Present", "Role prose"], [link])]),
+            Section("featured", "Featured", [Entry("Post", ["Post prose"], [Link("Tool", "https://lnkd.in/tool", link.url)])]),
+        ],
+    )
+    selected, references = consolidate_projects(
+        profile,
+        enabled=True,
+        project_filter=DEFAULT_PROJECT_FILTER,
+        include=[ProjectSelector("Tool"), ProjectSelector("Tool v2")],
+        exclude=[ProjectSelector("  TOOL ", affiliation)],
+    )
+    projects = next(section.entries for section in selected.sections if section.key == "projects")
+    assert projects == ([similar] if affiliation is None else [kept, similar])
+    assert "Role prose" in selected.sections[1].entries[0].paragraphs
+    assert "Post prose" in selected.sections[2].entries[0].paragraphs
+    assert link in references
+    assert profile.sections[0].entries[0].title == "tool"
+
+
 def test_unknown_affiliation_and_prose_cannot_join_or_select_different_employers() -> None:
     """
     Leave ambiguous descriptions unassigned instead of guessing their company from a mention.
@@ -191,13 +250,15 @@ def test_unknown_affiliation_and_prose_cannot_join_or_select_different_employers
 
 
 @pytest.mark.parametrize("custom", [False, True])
-def test_selection_precedes_media_skills_navigation_and_summary(tmp_path: Path, custom: bool) -> None:
+@pytest.mark.parametrize("exclusion", [False, True])
+def test_selection_precedes_media_skills_navigation_and_summary(tmp_path: Path, custom: bool, exclusion: bool) -> None:
     """
     Keep excluded project content out of rendering and summary evidence without changing source snapshots.
 
     Args:
         tmp_path (Path): Isolated render directory.
         custom (bool): Whether to inspect a custom-template profile or the packaged LaTeX.
+        exclusion (bool): Whether an explicit exclusion overrides an inclusion matching both projects.
 
     Returns:
         None: Excluded tiles do not stage missing images, contribute skill scores, or enter generated summaries.
@@ -211,7 +272,12 @@ def test_selection_precedes_media_skills_navigation_and_summary(tmp_path: Path, 
         [Skill("Excludedskill", 20)],
     )
     profile = Profile("example-person", "Alex", sections=[Section("projects", "Projects", [kept, excluded])])
-    config = Config(LinkedIn(profile.username), projects=Projects(include=[ProjectSelector("Tool", "Kept Company")]))
+    selection = (
+        Projects(include=[ProjectSelector("Tool")], exclude=[ProjectSelector("Tool", "Excluded Company")])
+        if exclusion
+        else Projects(include=[ProjectSelector("Tool", "Kept Company")])
+    )
+    config = Config(LinkedIn(profile.username), projects=selection)
 
     if custom:
         (tmp_path / "custom.tex.j2").write_text("((( profile )))", encoding="utf-8")

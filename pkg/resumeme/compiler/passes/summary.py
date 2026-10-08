@@ -60,6 +60,7 @@ def summary_evidence(profile: Profile, config: Config, company: CompanyEvidence 
         enabled="projects" in {section_key(key) for key in config.section_order},
         project_filter=config.project_filter,
         include=config.projects.include,
+        exclude=config.projects.exclude,
     )
 
     # Company groups retain their role boundaries without repeating each child's description in the parent.

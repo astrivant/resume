@@ -163,7 +163,7 @@ def test_consolidated_projects_respect_sections_and_grouped_job_exclusions(tmp_p
     else:
         # Featured precedes Experience in the default order, but an excluded section consumes no destination index.
         index = 0 if "featured" in disabled else 1
-        assert source.count(rf"Associated with Staff at \hyperlink{{resumeme-section-{index}-job-0-0}}{{Company}}") == 1
+        assert source.count(rf"Associated with Staff at \hyperlink{{resumeme-section-{index}-job-0-0}}{{\companytext{{Company}}}}") == 1
 
     if "featured" in disabled:
         assert "Featured attachment" not in source

@@ -209,6 +209,11 @@
           "description": "Display the top 20 skills weighted by references plus twice each endorsement; disable skills to hide the cloud.",
           "type": "boolean"
         },
+        "skills_allow_vertical": {
+          "description": "Allow vertical labels alongside horizontal labels in the skill cloud.",
+          "type": "boolean",
+          "default": false
+        },
         "ink": {
           "description": "Body text color.",
           "type": "string",
@@ -284,6 +289,9 @@
               },
               "skills_word_cloud": {
                 "$ref": "#/properties/style/properties/skills_word_cloud"
+              },
+              "skills_allow_vertical": {
+                "$ref": "#/properties/style/properties/skills_allow_vertical"
               },
               "ink": {
                 "$ref": "#/properties/style/properties/ink"
@@ -616,6 +624,12 @@
               "affiliation": {"type": "string", "pattern": "\\S"}
             }
           }
+        },
+        "exclude": {
+          "type": "array",
+          "default": [],
+          "description": "Project names and optional affiliations to omit after consolidation. Exclusions override include; [] excludes nothing.",
+          "items": {"$ref": "#/properties/projects/properties/include/items"}
         }
       }
     },

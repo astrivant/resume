@@ -60,14 +60,14 @@ def render_logo(assets: Path, output: Path, seed: str, *, previous: Path | None 
     Args:
         assets (Path): Directory containing linkedin-base.png and coffee-ring.png source layers.
         output (Path): Destination PNG; parent directories are created and an existing output is replaced.
-        seed (str): Source revision determining the stain's orientation, proportions, position, and density.
+        seed (str): Source revision determining the stain's orientation, position, and density.
         previous (Path | None): Prior logo containing stain history; absent files or None start a new history.
 
     Returns:
         None: A composed logo is written without modifying either source layer or contacting an image service.
 
     Raises:
-        ValueError: The seed is empty, saved history is invalid, or the stain has no visible pixels.
+        ValueError: The seed is empty, saved history is invalid, or a source layer has no visible pixels.
         OSError: Source layers cannot be read or the destination cannot be written.
     """
     if not seed:
@@ -80,6 +80,14 @@ def render_logo(assets: Path, output: Path, seed: str, *, previous: Path | None 
 
     with Image.open(assets / "linkedin-base.png") as source:
         base = source.convert("RGBA").resize((_SIZE, _SIZE), Image.Resampling.LANCZOS)
+
+    # Size each impression against the visible mark rather than its transparent canvas margins.
+    mark_bounds = base.getbbox()
+
+    if mark_bounds is None:
+        raise ValueError("The LinkedIn mark must contain visible pixels.")
+
+    mark_size = (mark_bounds[2] - mark_bounds[0], mark_bounds[3] - mark_bounds[1])
 
     # Mute the mark beneath the coffee while leaving the overlay's color and density independent of the base fade.
     base = ImageEnhance.Color(base).enhance(0.8)
@@ -98,7 +106,7 @@ def render_logo(assets: Path, output: Path, seed: str, *, previous: Path | None 
 
     # Recompose immutable layers oldest first; old rings fade independently while the newest ring stays prominent.
     for age in reversed(range(len(visible))):
-        base.alpha_composite(_coffee_layer(stain, visible[age], age))
+        base.alpha_composite(_coffee_layer(stain, visible[age], age, mark_size=mark_size))
 
     # Retain five actual revisions even when fewer rings are visible, so a later draw can show a longer recent trail.
     metadata = PngInfo()
@@ -155,7 +163,7 @@ def _stain_history(previous: Path | None) -> list[str]:
     return history
 
 
-def _coffee_layer(stain: Image.Image, seed: str, age: int) -> Image.Image:
+def _coffee_layer(stain: Image.Image, seed: str, age: int, *, mark_size: tuple[int, int]) -> Image.Image:
     """
     Recreate a revision's original coffee impression at an opacity determined by its age.
 
@@ -163,6 +171,7 @@ def _coffee_layer(stain: Image.Image, seed: str, age: int) -> Image.Image:
         stain (Image.Image): Cropped RGBA source layer; the caller retains ownership and it is not modified.
         seed (str): Revision fixing this impression's geometry and color.
         age (int): Number of newer revisions, zero for the fresh stain.
+        mark_size (tuple[int, int]): Visible mark width and height used for every impression.
 
     Returns:
         Image.Image: Transparent logo-sized RGBA layer with the transformed, faded impression.
@@ -174,11 +183,14 @@ def _coffee_layer(stain: Image.Image, seed: str, age: int) -> Image.Image:
 
     angle = int.from_bytes(digest[1:3]) * 360 / 65536
     stain = stain.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
-    stain = stain.crop(stain.getbbox())
 
-    # A slightly smaller cup impression leaves room for a clear offset without clipping the ring or its droplets.
-    width = round(_SIZE * (0.65 + 0.08 * digest[3] / 255))
-    height = round(_SIZE * (0.65 + 0.08 * digest[4] / 255))
+    # Ignore near-transparent rotation noise when measuring the ring so its visible outline fills the target dimensions.
+    visible = stain.getchannel("A").point([255 if value > 1 else 0 for value in range(256)])
+    stain = stain.crop(visible.getbbox() or stain.getbbox())
+
+    # Match the mark's dimensions, retaining an outer margin for the seeded offset and droplets.
+    margin = round(_SIZE * 0.025)
+    width, height = (min(dimension, _SIZE - 2 * margin) for dimension in mark_size)
     stain = stain.resize((width, height), Image.Resampling.LANCZOS)
     stain = ImageEnhance.Color(stain).enhance(0.7 + 0.3 * digest[5] / 255)
     stain = ImageEnhance.Brightness(stain).enhance(0.8 + 0.2 * digest[6] / 255)
@@ -186,7 +198,6 @@ def _coffee_layer(stain: Image.Image, seed: str, age: int) -> Image.Image:
     stain.putalpha(stain.getchannel("A").point([round(value * opacity) for value in range(256)]))
 
     # Choose a corner with a little positional variation; keep the ring off center so it reads as a stain rather than a border.
-    margin = round(_SIZE * 0.025)
     x = margin + round((_SIZE - width - 2 * margin) * 0.1 * digest[8] / 255)
     y = margin + round((_SIZE - height - 2 * margin) * 0.1 * digest[9] / 255)
 

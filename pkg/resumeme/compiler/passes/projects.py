@@ -18,6 +18,8 @@ from resumeme.compiler.passes.media import image_role
 from resumeme.compiler.passes.project_descriptions import partition_descriptions
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from resumeme.compiler.asts.profile import Media, Profile
     from resumeme.config import ProjectSelector
 
@@ -64,6 +66,22 @@ def _affiliations(entry: Entry) -> set[str]:
                     result.add(company_key(company))
 
     return result
+
+
+def _matches(entry: Entry, selector: ProjectSelector) -> bool:
+    """
+    Apply the same literal name and affiliation rules to inclusion and exclusion selectors.
+
+    Args:
+        entry (Entry): Consolidated project with all captured associations.
+        selector (ProjectSelector): Required name and optional affiliation.
+
+    Returns:
+        bool: Whether every supplied field matches the project.
+    """
+    return _name_key(selector.name) == _name_key(entry.title) and (
+        selector.affiliation is None or company_key(selector.affiliation) in _affiliations(entry)
+    )
 
 
 def _association(entry: Entry) -> str:
@@ -211,7 +229,12 @@ def _merge(left: Entry, right: Entry) -> Entry:
 
 
 def consolidate_projects(
-    profile: Profile, *, enabled: bool, project_filter: str | None = None, include: list[ProjectSelector] | None = None
+    profile: Profile,
+    *,
+    enabled: bool,
+    project_filter: str | None = None,
+    include: list[ProjectSelector] | None = None,
+    exclude: Sequence[ProjectSelector] = (),
 ) -> tuple[Profile, list[Link]]:
     """
     Move role and Featured project attachments into one deduplicated display section.
@@ -224,6 +247,7 @@ def consolidate_projects(
         enabled (bool): Whether the Projects section is enabled; false still removes relocated cards.
         project_filter (str | None): Python regex searched against source URLs after deduplication; None includes unlinked projects too.
         include (list[ProjectSelector] | None): Alternative name/affiliation selectors applied after consolidation; None keeps all names.
+        exclude (Sequence[ProjectSelector]): Matching selectors remove consolidated tiles even when include also matches.
 
     Returns:
         tuple[Profile, list[Link]]: Display profile and moved source references for inline hyperlink resolution.
@@ -384,19 +408,14 @@ def consolidate_projects(
             del merged[index]
 
     # Merge first so an unlinked explicit entry can inherit its observed attachment's destination before filtering.
+    # Exclusions win over inclusion and apply to the whole tile, including any deduplicated role or Featured references.
     # Keep moved references available for hyperlinks in retained role narrative and Featured post text.
     entries = [
         entry
         for _, entry in merged
         if (pattern is None or any(pattern.search(url) for url in _sources(entry)))
-        and (
-            include is None
-            or any(
-                _name_key(selector.name) == _name_key(entry.title)
-                and (selector.affiliation is None or company_key(selector.affiliation) in _affiliations(entry))
-                for selector in include
-            )
-        )
+        and (include is None or any(_matches(entry, selector) for selector in include))
+        and not any(_matches(entry, selector) for selector in exclude)
     ]
     projects = Section("projects", "Projects", entries)
     result: list[Section] = []

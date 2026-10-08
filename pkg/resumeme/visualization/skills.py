@@ -199,7 +199,12 @@ def skill_scores(profile: Profile) -> dict[str, SkillScore]:
 
 
 def render_skill_cloud(
-    scores: dict[str, SkillScore], directory: Path, *, colors: tuple[str, ...] = ("777777", "363636"), background: str = "FFFFFF"
+    scores: dict[str, SkillScore],
+    directory: Path,
+    *,
+    colors: tuple[str, ...] = ("777777", "363636"),
+    background: str = "FFFFFF",
+    allow_vertical: bool = False,
 ) -> str | None:
     """
     Draw the twenty highest-weighted skills and write all scores beside generated LaTeX.
@@ -213,6 +218,7 @@ def render_skill_cloud(
         directory (Path): Generated TeX directory with an assets subdirectory.
         colors (tuple[str, ...]): Ordered hexadecimal stops from zero to maximum displayed endorsements.
         background (str): Six-digit hexadecimal page color, shared by the PNG canvas.
+        allow_vertical (bool): Permit rotated labels while favoring horizontal text; False keeps the cloud entirely horizontal.
 
     Returns:
         str | None: Relative PNG path, or None when no skills are present.
@@ -266,7 +272,8 @@ def render_skill_cloud(
             max_words=_MAX_CLOUD_SKILLS,
             min_font_size=28,
             max_font_size=140,
-            prefer_horizontal=1.0,
+            # Optional rotation gives the layout more freedom without changing skill weights or the deterministic seed.
+            prefer_horizontal=0.8 if allow_vertical else 1.0,
             relative_scaling=0.5,
             random_state=0,
         ).generate_from_frequencies(frequencies)

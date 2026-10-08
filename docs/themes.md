@@ -68,6 +68,11 @@ and keep the company color; other links continue to use `accent`.
 
 ## Skill endorsement gradient
 
+Set `skills_allow_vertical: true` to mix vertical and horizontal labels while
+favoring horizontal text. The package default is `false`; this repository enables
+it. Inline themes can override the setting. Orientation changes keep the same
+top 20 skills, scores, colors, and legend.
+
 `skill_colors` is an ordered list of hexadecimal color stops. The first represents
 zero endorsements; the last represents the highest endorsement count among the
 20 displayed skills. Intermediate counts interpolate between the stops.

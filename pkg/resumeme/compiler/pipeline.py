@@ -180,7 +180,11 @@ def render_profile(
 
     # Consolidate only retained roles and posts, so exclusions cannot leak project cards back into the document.
     visible, project_links = consolidate_projects(
-        visible, enabled="projects" in enabled, project_filter=config.project_filter, include=config.projects.include
+        visible,
+        enabled="projects" in enabled,
+        project_filter=config.project_filter,
+        include=config.projects.include,
+        exclude=config.projects.exclude,
     )
 
     # LinkedIn's collapsed counts refer to captured tags or reverse Skills associations, not printable skill names.
@@ -188,7 +192,9 @@ def render_profile(
 
     # Job tags can generate a Skills card even when LinkedIn did not provide a separate Skills section.
     scores = skill_scores(visible) if style.skills_word_cloud and "skills" in enabled else {}
-    skill_cloud = render_skill_cloud(scores, target.parent, colors=style.skill_colors, background=style.background)
+    skill_cloud = render_skill_cloud(
+        scores, target.parent, colors=style.skill_colors, background=style.background, allow_vertical=style.skills_allow_vertical
+    )
 
     if skill_cloud and not any(section.key == "skills" for section in visible.sections):
         visible = evolve(visible, sections=[*visible.sections, Section("skills", "Skills")])

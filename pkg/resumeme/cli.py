@@ -16,6 +16,7 @@ from selenium.common.exceptions import NoSuchWindowException, TimeoutException, 
 
 from resumeme.codex.companies import prepare_companies, render_companies
 from resumeme.codex.request import prepare_summary
+from resumeme.codex.skills import prepare_skills
 from resumeme.compiler.asts.contributions import load_calendar
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.compiler.backends.latex.compilation import compile_pdf
@@ -27,6 +28,7 @@ from resumeme.linkedin.browser import capture_profile
 from resumeme.linkedin.identity import release_destination
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.ownership import publish_ownership
+from resumeme.linkedin.skills import publish_skills
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -94,6 +96,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     ownership.add_argument("--headless", action="store_true", help="Use LINKEDIN_USERNAME and LINKEDIN_PASSWORD without a desktop")
     ownership.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
 
+    skills_prompt = commands.add_parser("skills-prompt", help="Prepare an evidence-backed Codex skill proposal for the checked-out tag")
+    skills_prompt.add_argument("--tag", required=True, help="Existing Git tag pointing to the checked-out commit")
+    skills = commands.add_parser("publish-skills", help="Add missing proposed skills to LinkedIn without changing existing skills")
+    skills.add_argument("--suggestions", type=Path, required=True, help="Generated skills JSON relative to the configuration directory")
+    skills.add_argument("--tag", required=True, help="Existing Git tag matching the proposal and checked-out commit")
+    skills.add_argument("--dry-run", action="store_true", help="Compare with live skills and print additions without saving")
+    skills.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
+    skills.add_argument("--connect-port", type=int, help="Attach to an existing local Firefox Marionette port")
+
     args = parser.parse_args(argv)
 
     try:
@@ -101,6 +112,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = load_config(args.config)
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
+
+        # Skill publication validates the tagged proposal before opening the browser or changing live profile state.
+        if args.command == "publish-skills":
+            names = publish_skills(
+                config,
+                root,
+                project_path(root, str(args.suggestions)),
+                args.tag,
+                dry_run=args.dry_run,
+                headless=args.headless,
+                connect_port=args.connect_port,
+            )
+            print(("Proposed additions: " if args.dry_run else "Confirmed additions: ") + (", ".join(names) or "none"))
+            return 0
 
         # Ownership maintenance reads the live editor; it does not depend on a snapshot or rewrite generated résumé content.
         if args.command == "publish-ownership":
@@ -129,6 +154,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         # Enforce ownership on every offline path so a fork cannot accidentally publish the previous owner's resume.
         profile = load_profile(snapshot, config.linkedin.username)
+
+        if args.command == "skills-prompt":
+            print(prepare_skills(profile, config, root, args.tag))
+            return 0
 
         if args.command == "site":
             # Resolve the actual publishing repository without inheriting a release URL override from an upstream fork.

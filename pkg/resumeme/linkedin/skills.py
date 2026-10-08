@@ -50,7 +50,9 @@ def _check_owner(driver: WebDriver, config: Config) -> str:
     """
     path = f"/in/{config.linkedin.username}/"
     _navigate(driver, f"https://www.linkedin.com{path}", config.capture)
-    WebDriverWait(driver, config.capture.page_timeout_seconds).until(lambda page: page.find_elements(By.CSS_SELECTOR, "main h1"))
+    WebDriverWait(driver, config.capture.page_timeout_seconds).until(
+        lambda page: page.find_elements(By.CSS_SELECTOR, 'main h1, section[aria-label="Primary content"] h2')
+    )
     location = urlsplit(driver.current_url)
 
     if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path.rstrip("/") != path.rstrip("/"):
@@ -210,12 +212,13 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
     Raises:
         ValueError: The proposal exceeds available skill slots or the live owner/form is ambiguous.
     """
-    policy = {
-        "attempts": config.capture.retry_attempts,
-        "backoff": config.capture.retry_backoff_seconds,
-        "max_backoff": config.capture.retry_max_backoff_seconds,
-    }
-    current = retry(lambda: _current_skills(driver, config), exceptions=_TRANSIENT, **policy)
+    current = retry(
+        lambda: _current_skills(driver, config),
+        exceptions=_TRANSIENT,
+        attempts=config.capture.retry_attempts,
+        backoff=config.capture.retry_backoff_seconds,
+        max_backoff=config.capture.retry_max_backoff_seconds,
+    )
     missing = [name for name in names if normalize_skill(name) not in current]
 
     if len(current) + len(missing) > _MAX_PROFILE_SKILLS:
@@ -231,6 +234,9 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
     with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=directory, prefix="before-", suffix=".json", delete=False) as backup:
         json.dump(sorted(current), backup, ensure_ascii=False, indent=2)
 
+    # Keep the preservation baseline across retries, including when Save succeeds but its response is lost.
+    preserved = set(current)
+
     for name in missing:
 
         def reconcile(name: str = name) -> None:
@@ -245,6 +251,11 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
             """
             observed = _current_skills(driver, config)
 
+            if not preserved.issubset(observed):
+                raise ValueError("Existing LinkedIn skills changed during publication. Stopped without removing or replacing any skill.")
+
+            preserved.update(observed)
+
             if normalize_skill(name) in observed:
                 return
 
@@ -252,11 +263,24 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
                 raise ValueError("LinkedIn's skill list filled during publication. No existing skills were removed.")
 
             _add_skill(driver, config, name)
+            confirmed = _current_skills(driver, config)
 
-            if normalize_skill(name) not in _current_skills(driver, config):
+            # Never proceed after an unexpected loss; additions must preserve every previously observed skill.
+            if not preserved.issubset(confirmed):
+                raise ValueError("Existing LinkedIn skills changed during publication. Stopped without removing or replacing any skill.")
+
+            preserved.update(confirmed)
+
+            if normalize_skill(name) not in confirmed:
                 raise TimeoutException("LinkedIn has not confirmed the saved skill; reread before any retry.")
 
-        retry(reconcile, exceptions=_TRANSIENT, **policy)
+        retry(
+            reconcile,
+            exceptions=_TRANSIENT,
+            attempts=config.capture.retry_attempts,
+            backoff=config.capture.retry_backoff_seconds,
+            max_backoff=config.capture.retry_max_backoff_seconds,
+        )
 
     return missing
 
@@ -295,11 +319,11 @@ def publish_skills(
     profile = load_profile(project_path(root, config.output.profile), config.linkedin.username)
     proposal = load_skill_suggestions(suggestions, profile, config, root, tag)
 
-    if headless and (connect_port is not None or not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD"))):
-        raise ValueError("Headless skill publication requires LinkedIn login secrets and cannot attach to an interactive browser.")
-
     if not proposal.skills:
         return []
+
+    if headless and (connect_port is not None or not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD"))):
+        raise ValueError("Headless skill publication requires LinkedIn login secrets and cannot attach to an interactive browser.")
 
     with _browser(root, config.capture, connect_port, headless=headless) as driver:
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)
