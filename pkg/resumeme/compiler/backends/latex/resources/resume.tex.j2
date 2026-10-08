@@ -568,8 +568,11 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newcommand{\projecttile}[1]{%
   % Do not paint an empty partner when the final row is odd or one long card has already finished.
   \ifdim\dimexpr\ht#1+\dp#1\relax>0pt
-    \colorbox{projectbackground}{%
-      \vtop to\projectheight{\hrule height0pt width\projectwidth\unvbox#1\vfil}%
+    % Round only the background; preserve the measured content, padding, and row baseline.
+    \tikz[baseline=(projecttile.base)]{%
+      \node[fill=projectbackground,rounded corners=2pt,inner sep=\fboxsep,outer sep=0pt] (projecttile) {%
+        \vtop to\projectheight{\hrule height0pt width\projectwidth\unvbox#1\vfil}%
+      };%
     }%
   \else
     \hbox to\dimexpr\projectwidth+2\fboxsep\relax{\hfil}%
