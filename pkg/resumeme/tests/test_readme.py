@@ -125,9 +125,22 @@ def test_readme_mode_overrides_fork_detection(tmp_path: Path, mode: str, fork: b
     config = load_config(path)
     assert personal_readme(config, fork) is (mode == "resume" or (mode == "auto" and fork))
     assert Config(LinkedIn("example")).readme == Readme()
+    assert Readme().output == "README.md"
 
 
-@pytest.mark.parametrize("settings", ["mode: always", "introduction: 42", "introduction: ' '", "enabled: true"])
+@pytest.mark.parametrize(
+    "settings",
+    [
+        "mode: always",
+        "introduction: 42",
+        "introduction: ' '",
+        "enabled: true",
+        "output: null",
+        "output: 42",
+        "output: ''",
+        "output: page.txt",
+    ],
+)
 def test_invalid_readme_configuration_is_rejected(tmp_path: Path, settings: str) -> None:
     """
     Reject ambiguous modes, unknown fields, and non-text introductions.
@@ -176,6 +189,40 @@ def test_personal_readme_uses_only_selected_public_identity() -> None:
     assert "[GitHub]" not in minimal
 
 
+def test_nested_readme_links_resolve_from_its_destination() -> None:
+    """
+    Keep all repository links usable when the landing page is published below the repository root.
+
+    Returns:
+        None: Nested Markdown targets the same PDF, preview, config, and automation documentation.
+    """
+    config = Config(LinkedIn("example"), output=Output(pdf="documents/cv.pdf"), readme=Readme(output="docs/examples/resume.md"))
+    markdown = render_readme(Profile("example", "Jane"), config, "example/cv", 2)
+    assert markdown.count("](./../../documents/cv.pdf)") == 2
+    assert "](../assets/resume-preview.png)" in markdown
+    assert "[Configuration](../../resumeme.config.yaml)" in markdown
+    assert "[Automation](../automation.md)" in markdown
+
+
+@pytest.mark.parametrize("output", ["../outside.md", "/tmp/outside.md", "data/profile.md"])
+def test_readme_output_rejects_escapes_and_input_collisions(tmp_path: Path, output: str) -> None:
+    """
+    Validate Markdown destinations before capture, artifact staging, or publication.
+
+    Args:
+        tmp_path (Path): Configuration root used for containment checks.
+        output (str): Escaping path or a path shared with the configured profile input.
+
+    Returns:
+        None: Invalid destinations fail configuration loading.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(f"linkedin: {{username: example}}\noutput: {{profile: data/profile.md}}\nreadme: {{output: {output}}}\n")
+
+    with pytest.raises(ValueError, match="within the configuration directory|paths must be distinct"):
+        load_config(path)
+
+
 def test_readme_rejects_a_snapshot_from_another_owner() -> None:
     """
     Prevent inherited upstream names from appearing under a new owner's links.
@@ -188,7 +235,10 @@ def test_readme_rejects_a_snapshot_from_another_owner() -> None:
 
 
 @pytest.mark.parametrize("damage", [None, "pdf", "preview", "markdown"])
-def test_readme_bundle_is_bound_to_the_published_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, damage: str | None) -> None:
+@pytest.mark.parametrize("output", ["README.md", "FORK_EXAMPLE.md", "docs/examples/resume.md"])
+def test_readme_bundle_is_bound_to_the_published_pdf(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, damage: str | None, output: str
+) -> None:
     """
     Stage the complete fork presentation and reject stale or incomplete bundles before replacement.
 
@@ -196,11 +246,12 @@ def test_readme_bundle_is_bound_to_the_published_pdf(tmp_path: Path, monkeypatch
         tmp_path (Path): Isolated profile, artifact, and destination directory.
         monkeypatch (pytest.MonkeyPatch): Replace only the external Docker renderer.
         damage (str | None): Artifact to damage after staging, or None for successful restoration.
+        output (str): Root or nested Markdown destination selected by the user.
 
     Returns:
         None: Valid publication is deterministic and rejected artifacts preserve the existing README and image.
     """
-    config = Config(LinkedIn("example"))
+    config = Config(LinkedIn("example"), readme=Readme(output=output))
     artifact = tmp_path / ".cache/publication/resume.pdf"
     artifact.parent.mkdir(parents=True)
     writer = PdfWriter()
@@ -233,7 +284,10 @@ def test_readme_bundle_is_bound_to_the_published_pdf(tmp_path: Path, monkeypatch
 
     # Reject inconsistent downloads before replacing either tracked file, while keeping all extra cache contents unselected.
     (tmp_path / "README.md").write_text("Original project README")
-    (tmp_path / PREVIEW_PATH).parent.mkdir(parents=True)
+    destination = tmp_path / output
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text("Original landing page")
+    (tmp_path / PREVIEW_PATH).parent.mkdir(parents=True, exist_ok=True)
     (tmp_path / PREVIEW_PATH).write_bytes(b"original preview")
     (bundle / "cookies.sqlite").write_bytes(b"unrelated private state")
 
@@ -247,10 +301,13 @@ def test_readme_bundle_is_bound_to_the_published_pdf(tmp_path: Path, monkeypatch
         with pytest.raises((ValueError, OSError)):
             restore_readme(tmp_path, config)
 
-        assert (tmp_path / "README.md").read_text() == "Original project README"
+        assert destination.read_text() == "Original landing page"
         assert (tmp_path / PREVIEW_PATH).read_bytes() == b"original preview"
     else:
-        assert restore_readme(tmp_path, config) == ("README.md", PREVIEW_PATH)
-        assert (tmp_path / "README.md").read_bytes() == before["README.md"]
+        assert restore_readme(tmp_path, config) == (output, PREVIEW_PATH)
+        assert destination.read_bytes() == before["README.md"]
         assert (tmp_path / PREVIEW_PATH).read_bytes() == before["resume-preview.png"]
         assert not (tmp_path / "cookies.sqlite").exists()
+
+    if output != "README.md":
+        assert (tmp_path / "README.md").read_text() == "Original project README"

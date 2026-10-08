@@ -62,8 +62,8 @@ or uploaded capture artifacts.
 
 See [the fork example](../FORK_EXAMPLE.md) for the generated landing page using this project's current profile and PDF.
 
-On a fork's first successful publication to `main`, CI replaces the inherited logo
-and project instructions with the owner's name, a short introduction, a first-page
+With the default destination, a fork's first successful publication to `main` replaces
+the inherited logo and project instructions with the owner's name, a short introduction, a first-page
 image linked to the complete PDF, and LinkedIn, optional GitHub, and release links.
 The preview is committed at `docs/assets/resume-preview.png`. The PDF link follows
 `output.pdf`; release links always target the publishing repository. The page count
@@ -73,6 +73,7 @@ Hidden headline and contact fields are not copied into the introduction.
 ```yaml
 readme:
   mode: auto
+  output: README.md
   introduction: null
 ```
 
@@ -81,8 +82,19 @@ readme:
 | `mode: auto` | Default: generate on repositories GitHub identifies as forks; preserve the upstream project README |
 | `mode: resume` | Generate a personal page even in a standalone repository |
 | `mode: project` | Preserve the existing README, including manual customizations |
+| `output: README.md` | Default destination; replace the repository landing page |
+| `output: FORK_EXAMPLE.md` | Publish the same page separately and retain the project README and its coffee branding |
 | `introduction: null` | Use the shared résumé introduction |
 | `introduction: "Platform engineer building reliable developer infrastructure."` | Replace the introduction with plain text; Markdown and HTML are escaped |
+
+This repository sets `mode: resume` and `output: FORK_EXAMPLE.md` to exercise the
+publication flow and keep a current example for adopters. Forks inherit that
+configuration; set `output: README.md` to use the generated page as your landing
+page. `mode: auto` restricts generation to forks; `mode: resume` also generates in
+standalone repositories. Nested paths such as `docs/examples/resume.md` are
+supported, with PDF, preview, configuration, and documentation links relative to
+the destination. Paths must stay inside the repository and must not overwrite
+configured inputs or other outputs.
 
 Names, profile links, and PDF paths are parameterized automatically. After changing
 owners, capture the new owner's profile before pushing; a username mismatch fails
@@ -96,7 +108,7 @@ packages are needed. The preview retains the PDF's paper proportions and colors.
 Retries produce identical output, and unchanged artifacts do not create extra commits.
 Preview failures block publication; stale runs cannot overwrite newer `main` commits.
 
-Generated README edits are overwritten on the next publication. Set `mode: project`
+Edits to the configured output are overwritten on the next publication. Set `mode: project`
 before maintaining your own page; the current README and preview remain in place.
 Tag releases, pull requests, and non-main branches never replace the tracked README.
 Configuration and operation instructions remain available in [the documentation](README.md),

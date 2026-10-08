@@ -116,8 +116,10 @@ def _git(root: Path, *arguments: str) -> str:
 
 @pytest.mark.parametrize("advanced", [False, True])
 @pytest.mark.parametrize("refresh", [False, True])
-@pytest.mark.parametrize("fork", [False, True])
-def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: Path, advanced: bool, refresh: bool, fork: bool) -> None:
+@pytest.mark.parametrize("fork, readme_output", [(False, None), (True, "README.md"), (False, "FORK_EXAMPLE.md")])
+def test_publication_resumes_only_for_the_identical_generated_commit(
+    tmp_path: Path, advanced: bool, refresh: bool, fork: bool, readme_output: str | None
+) -> None:
     """
     Reproduce a PDF and logo publication on retries while rejecting unrelated source changes.
 
@@ -126,6 +128,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         advanced (bool): Whether a source change supersedes the completed PDF commit.
         refresh (bool): Whether publication also includes a newly captured profile and media.
         fork (bool): Whether the generated README replaces project branding on this repository.
+        readme_output (str | None): Generated Markdown destination, or None to retain only project branding.
 
     Returns:
         None: Reruns preserve the published tree; only changed resume inputs create a fresh logo and commit.
@@ -158,7 +161,12 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(project / relative, destination)
 
-    (root / "resumeme.config.yaml").write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
+    configuration = "linkedin:\n  username: example-person\n"
+
+    if readme_output and not fork:
+        configuration += f"readme:\n  mode: resume\n  output: {readme_output}\n"
+
+    (root / "resumeme.config.yaml").write_text(configuration, encoding="utf-8")
     (root / "README.md").write_text(
         "# Project\n\n<!-- resumeme:branding:start -->\nInitial branding\n<!-- resumeme:branding:end -->\n\nCustom introduction\n"
     )
@@ -171,8 +179,8 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     artifact.write_bytes(b"%PDF-1.7\nfixture")
     artifact.with_name("brew-date.txt").write_text("2026-01-02\n", encoding="ascii")
 
-    # Build artifacts arrive together; publication must stage only the prepared README and image on forks.
-    if fork:
+    # Build artifacts arrive together; publication must stage the configured Markdown path and preview.
+    if readme_output:
         bundle = artifact.parent / "readme"
         bundle.mkdir()
         (bundle / "README.md").write_text("# Fresh owner - Résumé\n", encoding="utf-8")
@@ -223,7 +231,15 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         if fork
         else ["README.md", "docs/assets/branding/resumeme-logo.png", "docs/assets/branding/brew-date.svg", "resume.pdf"]
     )
+
+    if readme_output and not fork:
+        expected_files.extend([readme_output, "docs/assets/resume-preview.png"])
+
     assert files == sorted(["data/assets/logo.png", "data/profile.json", *expected_files] if refresh else expected_files)
+
+    if readme_output:
+        assert (root / readme_output).read_text() == "# Fresh owner - Résumé\n"
+
     logo = root / ("docs/assets/resume-preview.png" if fork else "docs/assets/branding/resumeme-logo.png")
     published_logo = logo.read_bytes()
 
@@ -274,7 +290,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         artifact.write_bytes(b"%PDF-1.7\nupdated fixture")
         artifact.with_name("brew-date.txt").write_text("2026-02-03\n", encoding="ascii")
 
-        if fork:
+        if readme_output:
             (bundle / "pdf.sha256").write_text(hashlib.sha256(artifact.read_bytes()).hexdigest())
             Image.new("RGB", (20, 30), "green").save(bundle / "resume-preview.png")
 
