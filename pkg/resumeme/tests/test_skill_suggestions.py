@@ -21,7 +21,8 @@ from resumeme.cli import main
 from resumeme.codex.skills import load_skill_suggestions, prepare_skills, skill_digest, skill_evidence, tag_revision
 from resumeme.compiler.asts.profile import Entry, Profile, Section, Skill, save_profile
 from resumeme.config import Capture, Codex, CodexSkills, Config, Experience, JobSelector, LinkedIn, load_config
-from resumeme.linkedin.skills import _add_skill, _check_owner, _update_skills, publish_skills
+from resumeme.linkedin.account import check_owner
+from resumeme.linkedin.skills import _add_skill, _update_skills, publish_skills
 
 if TYPE_CHECKING:
     from pytest import MonkeyPatch
@@ -488,10 +489,10 @@ def test_non_owner_profile_never_reaches_edit_route(monkeypatch: MonkeyPatch) ->
     driver = MagicMock()
     driver.current_url = "https://www.linkedin.com/in/example-person/"
     driver.find_elements.side_effect = [[MagicMock()], []]
-    monkeypatch.setattr("resumeme.linkedin.skills._navigate", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.account._navigate", MagicMock())
 
     with pytest.raises(ValueError, match="No owner edit control"):
-        _check_owner(driver, _config())
+        check_owner(driver, _config())
 
 
 def test_ci_contract_is_tag_only_and_keeps_model_and_linkedin_credentials_separate() -> None:

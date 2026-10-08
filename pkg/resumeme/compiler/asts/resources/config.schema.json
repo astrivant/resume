@@ -66,6 +66,17 @@
           "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9_-]{1,99}|(?:https?://|//)?(?:(?:www|[a-z]{2})\\.)?linkedin\\.com/in/[A-Za-z0-9][A-Za-z0-9_-]{1,99}/?(?:[?#][^\\s]*)?)$",
           "description": "Public profile username or LinkedIn /in/ URL; normalized to the username when loaded. Login credentials belong in environment variables."
         },
+        "resume": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "publish": {
+              "type": "boolean",
+              "default": false,
+              "description": "Upload the verified signed tag release PDF to LinkedIn's saved application resumes; retain existing sharing settings."
+            }
+          }
+        },
         "ownership": {
           "type": "object",
           "additionalProperties": false,

@@ -7,6 +7,10 @@ logging:
 linkedin:
   username: emmeowzing
 
+  # Upload the signed release PDF to LinkedIn's saved application resumes on tag; sharing settings stay unchanged.
+  resume:
+    publish: false
+
   # Opt in to updating your live About after a signed release; existing About text is preserved.
   ownership:
     update_about: true

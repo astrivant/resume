@@ -18,6 +18,7 @@ from resumeme.codex.skills import load_skill_suggestions, normalize_skill
 from resumeme.compiler.asts.profile import load_profile
 from resumeme.config import project_path
 from resumeme.exceptions import BrowserElementError, BrowserError, BrowserWaitError
+from resumeme.linkedin.account import check_owner
 from resumeme.linkedin.browser import _browser, _details, _login, _navigate
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.retrying import retry
@@ -36,44 +37,6 @@ _MAX_PROFILE_SKILLS = 100
 _TRANSIENT = (TimeoutException, StaleElementReferenceException, NoSuchElementException)
 
 
-def _check_owner(driver: WebDriver, config: Config) -> str:
-    """
-    Confirm the configured profile exposes owner edit controls before visiting skill routes.
-
-    Args:
-        driver (WebDriver): Authenticated browser owned by the caller.
-        config (Config): Expected LinkedIn owner and navigation policy.
-
-    Returns:
-        str: Verified owner-scoped profile path.
-
-    Raises:
-        BrowserError: A redirect or missing owner controls prevents profile mutation.
-    """
-    path = f"/in/{config.linkedin.username}/"
-    _navigate(driver, f"https://www.linkedin.com{path}", config.capture)
-    WebDriverWait(driver, config.capture.page_timeout_seconds).until(
-        lambda page: page.find_elements(By.CSS_SELECTOR, 'main h1, section[aria-label="Primary content"] h2')
-    )
-    location = urlsplit(driver.current_url)
-
-    if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path.rstrip("/") != path.rstrip("/"):
-        raise BrowserError("LinkedIn redirected away from the configured owner; skills were not edited.")
-
-    # An intro edit link also identifies owners whose Skills section is still empty.
-    editable = any(
-        link.is_displayed()
-        and urlsplit(link.get_attribute("href") or "").hostname == "www.linkedin.com"
-        and urlsplit(link.get_attribute("href") or "").path in {f"{path}edit/intro/", f"{path}edit/forms/skill/new/"}
-        for link in driver.find_elements(By.CSS_SELECTOR, "a[href]")
-    )
-
-    if not editable:
-        raise BrowserError("No owner edit control found. Sign in as linkedin.username before publishing skills.")
-
-    return path
-
-
 def _current_skills(driver: WebDriver, config: Config) -> set[str]:
     """
     Read all current skill names using the existing bounded scrolling and pagination parser.
@@ -88,7 +51,7 @@ def _current_skills(driver: WebDriver, config: Config) -> set[str]:
     Raises:
         BrowserError: Ownership changes, navigation redirects, or complete pagination cannot be established.
     """
-    path = _check_owner(driver, config) + "details/skills/"
+    path = check_owner(driver, config) + "details/skills/"
     section = _details(driver, f"https://www.linkedin.com{path}", "skills", "Skills", config.capture)
     location = urlsplit(driver.current_url)
 

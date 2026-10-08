@@ -37,6 +37,7 @@ __all__ = [
     "GitHubContributions",
     "JobSelector",
     "LinkedIn",
+    "LinkedInResume",
     "Logging",
     "Output",
     "Ownership",
@@ -80,6 +81,18 @@ class Ownership:
 
 
 @frozen
+class LinkedInResume:
+    """
+    Opt in to saving a released PDF for future LinkedIn job applications.
+
+    Attributes:
+        publish (bool): Upload the verified PDF after a signed tag release.
+    """
+
+    publish: bool = False
+
+
+@frozen
 class LinkedIn:
     """
     Identify the profile owner without storing authentication material.
@@ -87,10 +100,12 @@ class LinkedIn:
     Attributes:
         username (str): Owner slug, normalized from a username or public LinkedIn profile URL.
         ownership (Ownership): Optional live About update and public release destination.
+        resume (LinkedInResume): Optional upload to the account's saved application resumes.
     """
 
     username: str = field(converter=profile_username)
     ownership: Ownership = field(factory=Ownership)
+    resume: LinkedInResume = field(factory=LinkedInResume)
 
 
 @frozen
