@@ -6,6 +6,20 @@ otherwise. Fork changes, custom templates, alternate actions, and runner setting
 can change these boundaries. See [SECURITY.md](../SECURITY.md) for reporting and
 maintainer responsibilities.
 
+## Contents
+
+- [Before capturing or publishing](#before-capturing-or-publishing)
+- [Credentials and who can use them](#credentials-and-who-can-use-them)
+- [Local files and their lifetime](#local-files-and-their-lifetime)
+- [Encrypted browser sessions in CI](#encrypted-browser-sessions-in-ci)
+- [Key creation, backups, and rotation](#key-creation-backups-and-rotation)
+- [CI artifacts, commits, and public output](#ci-artifacts-commits-and-public-output)
+- [Optional AI processing](#optional-ai-processing)
+- [Other network recipients and live writes](#other-network-recipients-and-live-writes)
+- [Logs and debugging](#logs-and-debugging)
+- [Disable, delete, or respond to exposure](#disable-delete-or-respond-to-exposure)
+- [Implementation references](#implementation-references)
+
 ## Before capturing or publishing
 
 **The captured profile can contain more personal information than the PDF shows.**
@@ -204,6 +218,10 @@ assets, earlier variants, forks, and downloaded artifacts can retain older data;
 removing a reference is not a repository-wide purge. Ordinary branch builds and
 PR checks can upload artifacts containing already-committed personal data without
 receiving any login secret.
+
+Manually committed documents and conversation transcripts are publications too.
+Review them for personal details, internal URLs, and credentials before committing;
+the pipeline does not automatically redact their contents.
 
 Tag releases attach the generic PDF and its verification files; employer PDFs in
 the build artifact are not individually signed by the current signing script.

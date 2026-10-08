@@ -21,10 +21,11 @@ encryption boundary, cleanup limit, and recovery procedure. In particular:
 
 - **Hidden PDF content remains in captured source.** Section, job, school, photo,
   and birthday visibility settings do not redact the snapshot. Refreshes upload
-  and commit the full accepted profile and referenced images, which can expose
+  the full accepted profile and referenced images; main publication also commits
+  them. This can expose
   contact details and other information absent from the PDF.
 - **Browser sessions are account credentials.** Ordinary local capture retains
-  an unencrypted dedicated browser profile. CI's optional encrypted session cache
+  a dedicated browser profile without resumeme encryption. CI's optional encrypted session cache
   protects stored copies, while the active job uses plaintext. Runner compromise,
   exposed decrypting keys, or incomplete cleanup can expose that login.
 - **Most outputs are intended to be shared.** Profile/build artifacts, prompts,
