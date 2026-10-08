@@ -131,10 +131,10 @@ when it exits, so repeated calls do not duplicate records.
 
 Open Firefox or Chrome, wait for authentication, and save the expanded profile
 and downloaded assets to `output.profile` and `output.assets`. Interactive login
-waits until you finish. `--headless` requires `LINKEDIN_LOGIN` (email/phone) and
-`LINKEDIN_PASSWORD`; a legacy login email/phone in `LINKEDIN_USERNAME` also works.
-Public usernames and profile URLs are detected but require a separate login
-identifier. See [credential setup](automation.md#configure-a-fork).
+waits until you finish. `--headless` requires `LINKEDIN_USERNAME` (email/phone) and
+`LINKEDIN_PASSWORD`. The same username variable accepts public usernames and
+profile URLs, which are normalized and use manual login without `--headless`.
+See [credential setup](automation.md#configure-a-fork).
 `--connect-port` attaches to an existing Firefox Marionette
 session and requires `capture.browser: firefox`.
 

@@ -116,7 +116,6 @@ def test_secrets_are_redacted_from_messages_attributes_and_exceptions(monkeypatc
     monkeypatch.setenv("LINKEDIN_PASSWORD", "synthetic-password")
     monkeypatch.setenv("OPENAI_API_KEY", "synthetic-api-key")
     monkeypatch.setenv("LINKEDIN_USERNAME", "login@example.org")
-    monkeypatch.setenv("LINKEDIN_LOGIN", "explicit-login@example.org")
     output = StringIO()
 
     with logging_context("DEBUG", stream=output):
@@ -129,7 +128,7 @@ def test_secrets_are_redacted_from_messages_attributes_and_exceptions(monkeypatc
                 "synthetic-api-key",
                 extra={
                     "headers": {"Authorization": "private-header", "Cookie": "private-cookie"},
-                    "details": ["synthetic-password", "explicit-login@example.org"],
+                    "details": ["synthetic-password"],
                 },
             )
 
@@ -139,7 +138,6 @@ def test_secrets_are_redacted_from_messages_attributes_and_exceptions(monkeypatc
         "synthetic-password",
         "synthetic-api-key",
         "login@example.org",
-        "explicit-login@example.org",
         "credential",
         "hidden-query",
         "hidden-fragment",

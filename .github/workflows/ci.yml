@@ -49,7 +49,6 @@ jobs:
       - name: Refresh LinkedIn profile and downloaded media
         if: steps.source.outputs.refresh == 'true'
         env:
-          LINKEDIN_LOGIN: ${{ secrets.LINKEDIN_LOGIN }}
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
         run: poetry run resumeme capture --headless
@@ -152,7 +151,6 @@ jobs:
     with:
       sha: ${{ needs.source.outputs.sha }}
     secrets:
-      LINKEDIN_LOGIN: ${{ secrets.LINKEDIN_LOGIN }}
       LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
       LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
 
@@ -167,7 +165,6 @@ jobs:
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      LINKEDIN_LOGIN: ${{ secrets.LINKEDIN_LOGIN }}
       LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
       LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
 

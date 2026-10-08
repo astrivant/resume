@@ -39,16 +39,15 @@ push generated updates through your branch rules. Set the login secrets using
 the GitHub CLI's interactive prompts:
 
 ```bash
-gh secret set LINKEDIN_LOGIN
+gh secret set LINKEDIN_USERNAME
 gh secret set LINKEDIN_PASSWORD
 ```
 
-- `LINKEDIN_LOGIN`: login email or phone number. This takes precedence over a
-  legacy login email/phone stored in `LINKEDIN_USERNAME`.
-- `LINKEDIN_USERNAME`: optional public username or LinkedIn `/in/` URL when
-  `LINKEDIN_LOGIN` is set; it must match the configured owner. Existing email/phone
-  values still work without `LINKEDIN_LOGIN`. A public identifier alone cannot
-  authenticate, and the client reports that before opening a browser.
+- `LINKEDIN_USERNAME`: accepts a login email/phone, public username, or LinkedIn
+  `/in/` profile URL. URLs are normalized to usernames and public identifiers must
+  match the configured owner. Use an email/phone for headless CI; public usernames
+  and URLs use manual sign-in during interactive capture. No additional login
+  variable is needed. Headless use of a public identifier fails before opening a browser.
 - `LINKEDIN_PASSWORD`: account password, passed only to capture or explicitly enabled
   ownership/skill updates. A login identifier and password are required for tag, monthly, and
   requested manual captures.

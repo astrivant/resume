@@ -416,9 +416,9 @@ alone has no effect because these workflows do not read `vars.RETRY_*`.
 
 Browser and image-download retries use the YAML `capture.retry_*` settings instead
 of these shell overrides. Profile selection also uses YAML (`linkedin.username`);
-`LINKEDIN_LOGIN` (login email/phone) and `LINKEDIN_PASSWORD` supply credentials for
-automated login. Legacy email/phone values in `LINKEDIN_USERNAME` still work;
-public usernames or profile URLs require the separate `LINKEDIN_LOGIN` secret.
+`LINKEDIN_USERNAME` (login email/phone) and `LINKEDIN_PASSWORD` supply credentials for
+automated login. The same username variable detects public usernames and profile
+URLs, which require interactive sign-in and must match the configured owner.
 Tag pushes, scheduled runs, and requested manual
 refreshes use `capture --headless`; ordinary branch builds consume committed snapshots. See
 [monthly authentication setup](automation.md#configure-a-fork).

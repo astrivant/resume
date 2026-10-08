@@ -36,7 +36,7 @@ Existing repository secrets are sufficient:
 
 - `COSIGN_PRIVATE_KEY`: PEM private key used by the signing stage.
 - `COSIGN_PASSWORD`: password when that key is encrypted.
-- `LINKEDIN_LOGIN`: LinkedIn login email or phone; a legacy email/phone in `LINKEDIN_USERNAME` also works.
+- `LINKEDIN_USERNAME`: LinkedIn login email or phone for headless authentication.
 - `LINKEDIN_PASSWORD`: LinkedIn login password.
 
 The ownership job runs separately after release publication, verifies the signed

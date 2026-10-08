@@ -9,7 +9,7 @@ logging:
   level: ERROR
 
 linkedin:
-  # Public username or LinkedIn /in/ profile URL. Login email/phone belongs in LINKEDIN_LOGIN, not this file.
+  # Public username or LinkedIn /in/ profile URL. For headless login, set LINKEDIN_USERNAME to your login email/phone.
   username: your-linkedin-username
 
   ownership:

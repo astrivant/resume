@@ -70,11 +70,7 @@ def _redact(value: str) -> str:
 
     # Longer values go first so a shorter token cannot leave part of another credential visible.
     secrets = sorted(
-        {
-            secret
-            for name, secret in os.environ.items()
-            if secret and (_SENSITIVE.search(name) or name in {"LINKEDIN_USERNAME", "LINKEDIN_LOGIN"})
-        },
+        {secret for name, secret in os.environ.items() if secret and (_SENSITIVE.search(name) or name == "LINKEDIN_USERNAME")},
         key=len,
         reverse=True,
     )

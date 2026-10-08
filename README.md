@@ -397,11 +397,10 @@ See [Pages setup](docs/pages.md) for custom domains, DNS, and local previews.
 Configure these **GitHub Actions repository secrets in your own fork** for the
 features you use. GitHub supplies the publication token:
 
-- **`LINKEDIN_LOGIN` - required for tag and monthly refreshes.** Your LinkedIn login email
-  or phone number. Existing setups can keep their login email in `LINKEDIN_USERNAME` instead.
-- **`LINKEDIN_USERNAME` - optional with `LINKEDIN_LOGIN`.** Accepts a public username or
-  `/in/` profile URL matching `linkedin.username`. Public identifiers require `LINKEDIN_LOGIN`;
-  LinkedIn cannot sign in with a profile slug or derive a private login email from it.
+- **`LINKEDIN_USERNAME` - required for tag and monthly refreshes.** Your LinkedIn login email
+  or phone number for unattended login. The same variable also detects public usernames and
+  `/in/` profile URLs for interactive capture; URLs are normalized to usernames and must match
+  `linkedin.username`. LinkedIn requires email/phone authentication, so public identifiers need manual sign-in.
 - **`LINKEDIN_PASSWORD` - required for tag and monthly refreshes.** The login password. These
   login secrets reach capture on refresh runs and the optional
   [LinkedIn signing identity update](docs/ownership.md) after signed releases.

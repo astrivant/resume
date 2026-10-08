@@ -55,23 +55,27 @@ def _browser(monkeypatch: MonkeyPatch) -> tuple[MagicMock, MagicMock, MagicMock,
     return driver, username, password, submit
 
 
-def test_explicit_login_does_not_submit_public_profile_url(monkeypatch: MonkeyPatch) -> None:
+@pytest.mark.parametrize("identifier", ["example-person", "https://www.linkedin.com/in/example-person/"])
+def test_public_identifier_waits_for_interactive_login(monkeypatch: MonkeyPatch, identifier: str) -> None:
     """
-    Type only the login email when a public profile URL is supplied in the legacy username variable.
+    Accept either public identifier in the existing variable without submitting it to LinkedIn's email field.
 
     Args:
-        monkeypatch (MonkeyPatch): Installs distinct public and private identifiers in a simulated browser.
+        monkeypatch (MonkeyPatch): Supplies the public identifier and observes the interactive handoff.
+        identifier (str): Public username or profile URL to normalize.
 
     Returns:
-        None: Login receives the explicit email and submits once, preserving the public identifier for owner checks.
+        None: Manual login receives control without typing the slug, URL, or configured password.
     """
     driver, username, password, submit = _browser(monkeypatch)
-    monkeypatch.setenv("LINKEDIN_USERNAME", "https://www.linkedin.com/in/example-person/")
-    monkeypatch.setenv("LINKEDIN_LOGIN", "owner@example.org")
-    _login(driver, Capture(page_timeout_seconds=0), headless=True)
-    username.send_keys.assert_called_once_with("owner@example.org")
-    password.send_keys.assert_called_once_with("synthetic-password")
-    submit.click.assert_called_once()
+    monkeypatch.setenv("LINKEDIN_USERNAME", identifier)
+    interactive = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.browser._wait_for_login", interactive)
+    _login(driver, Capture(page_timeout_seconds=0), headless=False)
+    username.send_keys.assert_not_called()
+    password.send_keys.assert_not_called()
+    submit.click.assert_not_called()
+    interactive.assert_called_once_with(driver)
 
 
 @pytest.mark.parametrize("headless", [False, True])

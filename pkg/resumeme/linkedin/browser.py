@@ -524,7 +524,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
     except TimeoutException as error:
         raise BrowserError(
             f"Unattended LinkedIn login did not complete (page state: {_login_page(driver)}). "
-            "Check LINKEDIN_LOGIN (or legacy LINKEDIN_USERNAME) and LINKEDIN_PASSWORD, or run this command without --headless "
+            "Check LINKEDIN_USERNAME (login email/phone) and LINKEDIN_PASSWORD, or run this command without --headless "
             "to complete an account challenge interactively. No profile changes were submitted."
         ) from error
 

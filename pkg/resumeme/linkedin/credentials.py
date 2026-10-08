@@ -63,10 +63,10 @@ def _is_login(value: str) -> bool:
 
 def login_credentials(*, headless: bool, profile: str | None = None) -> tuple[str, str]:
     """
-    Resolve explicit login credentials while preserving legacy email-based secrets.
+    Detect login credentials or a public profile identity in the existing username variable.
 
     Args:
-        headless (bool): Require a complete unattended login; otherwise permit no credentials for manual sign-in.
+        headless (bool): Require an email/phone login; otherwise permit manual sign-in for public profile identifiers.
         profile (str | None): Configured profile identity to check against an optional public LINKEDIN_USERNAME.
 
     Returns:
@@ -76,9 +76,7 @@ def login_credentials(*, headless: bool, profile: str | None = None) -> tuple[st
         BrowserError: Login secrets are incomplete, identify a public profile only, or select a different configured owner.
     """
     public_or_login = os.environ.get("LINKEDIN_USERNAME", "").strip()
-    explicit_login = os.environ.get("LINKEDIN_LOGIN", "").strip()
     password = os.environ.get("LINKEDIN_PASSWORD", "")
-    login = explicit_login or public_or_login
 
     # Keep YAML authoritative for profile selection so a stale environment cannot silently switch the captured owner.
     if public_or_login and not _is_login(public_or_login):
@@ -90,22 +88,17 @@ def login_credentials(*, headless: bool, profile: str | None = None) -> tuple[st
         if profile is not None and public.casefold() != profile_username(profile).casefold():
             raise BrowserError("LINKEDIN_USERNAME identifies a different profile from linkedin.username in the configuration.")
 
-        if not explicit_login:
-            if headless or password:
-                raise BrowserError(
-                    "LINKEDIN_USERNAME is a public profile identifier, which LinkedIn cannot use to sign in. "
-                    "Set LINKEDIN_LOGIN to your login email or phone, or replace LINKEDIN_USERNAME with that login identifier. "
-                    "Keep the public profile username or URL in linkedin.username."
-                )
+        if headless:
+            raise BrowserError(
+                "LINKEDIN_USERNAME is a public profile identifier, which LinkedIn cannot use to sign in. "
+                "Set LINKEDIN_USERNAME to your login email or phone for --headless, or omit --headless to sign in manually. "
+                "Keep the public profile username or URL in linkedin.username."
+            )
 
-            return "", ""
+        # A profile slug is not a login credential; interactive users can complete the real form without replaying a password.
+        return "", ""
 
-    if login and not _is_login(login):
-        raise BrowserError("LINKEDIN_LOGIN must be your login email or phone, not a public profile username or URL.")
+    if bool(public_or_login) != bool(password) or (headless and not public_or_login):
+        raise BrowserError("Unattended login and partial credentials require LINKEDIN_USERNAME (login email/phone) and LINKEDIN_PASSWORD.")
 
-    if bool(login) != bool(password) or (headless and not login):
-        raise BrowserError(
-            "Unattended login and partial credentials require LINKEDIN_LOGIN (or legacy LINKEDIN_USERNAME) and LINKEDIN_PASSWORD."
-        )
-
-    return login, password
+    return public_or_login, password
