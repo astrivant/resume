@@ -14,6 +14,8 @@ style:
   accent: '245135'
   ink: '363636'
   entry_color: '363636'
+  company_font_size: 13
+  company_color: '191919'
   skill_colors: ['777777', '363636']
   themes:
     tiger:
@@ -22,6 +24,7 @@ style:
       name_color: '6B2737'
       heading_color: 'A44813'
       entry_color: '363636'
+      company_color: '6B2737'
       skill_colors: ['9A7663', '6B2737']
     compact:
       paper: a4
@@ -41,13 +44,27 @@ configuration validation. Rebuild with `poetry run resumeme build`.
 | --- | --- | --- |
 | `name_color` | `6B2737` | Profile name |
 | `heading_color` | `A44813` | Section headings |
+| `company_color` | `6B2737` | Employer names and project affiliations, including linked names |
 | `ink`, `entry_color` | `363636` | Body text and entry titles |
-| `accent` | `245135` | Clickable text in deep plant green |
+| `accent` | `245135` | Other clickable text in deep plant green |
 | `skill_colors` | `[9A7663, 6B2737]` | Skill endorsement gradient: muted brown to burgundy |
 
 The tiger palette references [Tiger Lily Plants](https://tiger-lily-plants.com/assets/main.css).
 Colors are configured locally; builds do not fetch the stylesheet. Logos and
 photographs retain their source colors.
+
+## Company names
+
+`company_font_size` defaults to **13 pt**, with bold weight, above the normal
+body subheadings. Set an integer from 10 through 20 to adjust it. `company_color`
+defaults to `191919`; the `tiger` theme uses burgundy (`6B2737`). Both fields can
+be overridden by any inline theme.
+
+These settings apply to employer names in Experience, company labels beside
+profile logos, and project affiliation rows. Recognized employers without logos
+receive the same styling. Role titles, employment types, dates, and body
+subheadings retain their own sizes and colors. Company links remain clickable
+and keep the company color; other links continue to use `accent`.
 
 ## Skill endorsement gradient
 

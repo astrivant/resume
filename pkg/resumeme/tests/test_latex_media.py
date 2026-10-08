@@ -12,7 +12,7 @@ from PIL import Image
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
 from resumeme.compiler.passes.media import employer_badge, image_role, school_badge
 from resumeme.compiler.pipeline import render_profile
-from resumeme.config import Config, LinkedIn
+from resumeme.config import Config, LinkedIn, Style
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -110,6 +110,48 @@ def test_structured_company_groups_and_missing_employer_metadata() -> None:
     assert employer_badge(Entry("Engineer", ["Example", "2020 - Present"])) is None
     assert employer_badge(Entry("Engineer", ["Responsibilities", "- Built systems"], images=[logo])) is None
     assert employer_badge(Entry("Engineer", ["Example", "2020 - Present"], images=[logo])) == (0, logo)
+
+
+@pytest.mark.parametrize("grouped", [False, True])
+@pytest.mark.parametrize("branded", [False, True])
+def test_company_hierarchy_styles_names_without_promoting_role_or_body_text(tmp_path: Path, grouped: bool, branded: bool) -> None:
+    """
+    Apply themed company typography independently of logos while keeping job metadata and subheadings subordinate.
+
+    Args:
+        tmp_path (Path): Isolated template and asset root.
+        grouped (bool): Whether the employer owns nested positions.
+        branded (bool): Whether a captured logo is available for the employer.
+
+    Returns:
+        None: Only the employer name receives company typography, with effective theme values and intact role content.
+    """
+    Image.new("RGB", (20, 20), "blue").save(tmp_path / "logo.png")
+    logo = Media("https://example.org/logo.png", alt="Example Co logo", path="logo.png", link="https://example.org/company")
+    paragraphs = ["Full-time" if grouped else "Example Co \u00b7 Full-time", "2020 - Present", "Responsibilities", "- Build services"]
+    job = Entry("Engineer", paragraphs)
+    entry = (
+        Entry("Example Co", [job.title, *paragraphs], positions=[job], images=[logo] if branded else [])
+        if grouped
+        else Entry("Engineer", paragraphs, images=[logo] if branded else [])
+    )
+    style = Style(theme="custom", themes={"custom": {"company_font_size": 14, "company_color": "6B2737"}})
+    profile = Profile("example", "Example Person", sections=[Section("experience", "Experience", [entry])])
+    source = render_profile(profile, Config(LinkedIn("example"), style=style), tmp_path).read_text()
+    body = source.split(r"\begin{document}", 1)[1]
+    assert r"\definecolor{companyname}{HTML}{6B2737}" in source
+    assert r"\fontsize{14}{16.8}" in source
+    assert r"\hypersetup{urlcolor=companyname,linkcolor=companyname}" in source
+    assert r"\companytext{Example Co}" in body
+    assert r"\companytext{Full-time}" not in body
+    assert r"\companytext{Engineer}" not in body
+    assert r"\profilesubheading{Responsibilities}" in body
+    assert r"\profilebullet{0}{Build services}" in body
+    assert r"\companyline{" in body if branded else r"\companyline{" not in body
+
+    # Captured snapshots and configured base values remain available for future renders and different themes.
+    assert job.paragraphs == paragraphs
+    assert style.company_font_size == 13 and style.company_color == "191919"
 
 
 @pytest.mark.parametrize("section_key", ["experience", "education"])

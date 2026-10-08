@@ -35,6 +35,18 @@ readme:
   # Optional plain-text introduction; null uses the shared boilerplate. The heading uses your captured name.
   introduction: null
 
+# Enable after selecting GitHub Actions as the publishing source in your fork's Settings > Pages.
+pages:
+  enabled: false
+
+  # Site-relative directory with leading/trailing slashes. / serves index.html at the site's root; /cv/ serves a subdirectory.
+  # GitHub's automatic /REPOSITORY prefix is handled separately; do not repeat it here.
+  path: /
+
+  # Optional check against the domain configured in Settings > Pages, e.g. resume.tiger-lily-plants.com.
+  # This does not change DNS or GitHub's domain settings. null also supports USER.github.io/REPOSITORY sites.
+  custom_domain: null
+
 # Optional Codex-generated About and portrait summary. Set OPENAI_API_KEY as an Actions secret before enabling.
 codex:
   enabled: false
@@ -183,6 +195,10 @@ style:
   ink: '363636'
   entry_color: '363636'
 
+  # Company names stand above body subheadings and role titles; linked names keep this color and remain clickable.
+  company_font_size: 13
+  company_color: '191919'
+
   # Set true to display the cover/background photo; the portrait stays visible.
   show_header_photo: false
 
@@ -207,7 +223,7 @@ style:
   themes:
     tiger:
 
-      # Name > section headings > entry titles/body: burgundy, burnt orange, then soft charcoal.
+      # Profile/company names: burgundy; section headings: burnt orange; role titles and body: soft charcoal.
       # Green marks links; skill colors progress from muted brown to burgundy as endorsement counts increase.
       # Source and palette roles: docs/themes.md
       accent: '245135'
@@ -215,6 +231,7 @@ style:
       name_color: '6B2737'
       heading_color: 'A44813'
       entry_color: '363636'
+      company_color: '6B2737'
       skill_colors: ['9A7663', '6B2737']
 
 # Optional exact template override; otherwise the package template is used.

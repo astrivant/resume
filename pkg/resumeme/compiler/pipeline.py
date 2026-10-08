@@ -35,7 +35,7 @@ from resumeme.compiler.passes.header import is_pronouns, prepare_header, prepare
 from resumeme.compiler.passes.headings import distinct_heading, is_body_heading
 from resumeme.compiler.passes.lists import text_blocks
 from resumeme.compiler.passes.locations import job_locations
-from resumeme.compiler.passes.media import employer_badge, image_role, is_header_photo, school_badge
+from resumeme.compiler.passes.media import employer_badge, employer_name_index, image_role, is_header_photo, school_badge
 from resumeme.compiler.passes.navigation import experience_navigation
 from resumeme.compiler.passes.ordering import order_sections
 from resumeme.compiler.passes.progression import experience_layout
@@ -263,6 +263,7 @@ def render_profile(
     environment.tests["pronouns"] = is_pronouns
     environment.filters["image_role"] = image_role
     environment.filters["employer_badge"] = employer_badge
+    environment.filters["employer_name_index"] = employer_name_index
     environment.filters["school_badge"] = school_badge
     environment.filters["text_blocks"] = text_blocks
     environment.filters["job_text_blocks"] = partial(

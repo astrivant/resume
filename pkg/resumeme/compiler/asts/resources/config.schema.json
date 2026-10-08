@@ -3,6 +3,27 @@
   "title": "Resumeme config",
   "type": "object",
   "properties": {
+    "pages": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {"type": "boolean", "default": false},
+        "path": {
+          "type": "string",
+          "pattern": "^/(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*$",
+          "not": {"pattern": "\\s"},
+          "default": "/",
+          "description": "Directory within the Pages site, including leading/trailing slashes; / serves index.html at the root."
+        },
+        "custom_domain": {
+          "type": ["string", "null"],
+          "format": "hostname",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?\\.[A-Za-z]{2,63}$",
+          "default": null,
+          "description": "Expected hostname already configured in GitHub Settings > Pages; null accepts the configured host."
+        }
+      }
+    },
     "readme": {
       "type": "object",
       "additionalProperties": false,
@@ -202,6 +223,19 @@
           "type": "string",
           "pattern": "^[A-Fa-f0-9]{6}$"
         },
+        "company_font_size": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 20,
+          "default": 13,
+          "description": "Bold company name size in points across employer rows, profile branding, and project affiliations."
+        },
+        "company_color": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{6}$",
+          "default": "191919",
+          "description": "Company name color, including clickable company names; other links use accent."
+        },
         "skill_colors": {
           "description": "Ordered hexadecimal color stops from zero to maximum displayed endorsements; one stop gives a uniform color.",
           "type": "array",
@@ -256,6 +290,12 @@
               },
               "entry_color": {
                 "$ref": "#/properties/style/properties/entry_color"
+              },
+              "company_font_size": {
+                "$ref": "#/properties/style/properties/company_font_size"
+              },
+              "company_color": {
+                "$ref": "#/properties/style/properties/company_color"
               },
               "skill_colors": {
                 "$ref": "#/properties/style/properties/skill_colors"

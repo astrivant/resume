@@ -27,7 +27,10 @@ def main() -> None:
         "--brew-date", type=date.fromisoformat, help="UTC build date (YYYY-MM-DD); also refresh the badge and README branding."
     )
     arguments = parser.parse_args()
-    render_logo(Path("docs/assets/branding"), arguments.output, arguments.seed)
+
+    # Preview outputs inherit the published history without advancing it; only replacing the canonical PNG saves a new revision.
+    assets = Path("docs/assets/branding")
+    render_logo(assets, arguments.output, arguments.seed, previous=assets / "resumeme-logo.png")
 
     if arguments.brew_date is not None:
         update_project_branding(Path.cwd(), load_config(Path("resumeme.config.yaml")), arguments.brew_date)

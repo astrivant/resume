@@ -114,6 +114,20 @@ jobs:
       sha: ${{ needs.source.outputs.sha }}
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
 
+  # Pages consumes the accepted main commit in this run; bot commits do not trigger another workflow with GITHUB_TOKEN.
+  pages-stage:
+    name: Publish resume website
+    needs: deploy-stage
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.deploy-stage.outputs.published-sha != ''
+    uses: ./.github/workflows/stage-pages.yml
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    with:
+      sha: ${{ needs.deploy-stage.outputs.published-sha }}
+
   # A user-created tag chooses the committed PDF to sign and share; monthly and main-branch runs create no release.
   release-stage:
     name: Release signed PDF

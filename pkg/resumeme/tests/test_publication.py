@@ -5,6 +5,7 @@ Exercise publication retries against isolated local Git repositories without Git
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import runpy
 import shlex
@@ -229,6 +230,10 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     if not fork:
         # Publication uses the artifact date even when Git's source date and the deploy clock differ from it.
         assert "2026-01-02" in (root / "docs/assets/branding/brew-date.svg").read_text()
+
+        with Image.open(logo) as generated:
+            assert json.loads(generated.info["resumeme.stains"]) == [source]
+
         markdown = (root / "README.md").read_text()
         assert 'href="./resume.pdf"' in markdown
         assert "Brew date: 2026-01-02 (UTC)" in markdown
@@ -279,6 +284,10 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
 
         if not fork:
             assert "2026-02-03" in (root / "docs/assets/branding/brew-date.svg").read_text()
+
+            # The next publication preserves the prior impression even though only the generated PNG crosses checkouts.
+            with Image.open(logo) as generated:
+                assert json.loads(generated.info["resumeme.stains"]) == [published, source]
 
 
 def test_draft_creation_recovers_a_lost_success_response(tmp_path: Path) -> None:

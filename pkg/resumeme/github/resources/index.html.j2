@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ name }} - Résumé</title>
+  <meta name="description" content="{{ introduction }}">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #{{ style.ink }};
+      --heading: #{{ style.name_color }};
+      --link: #{{ style.accent }};
+      --paper: #{{ style.background }};
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      background: var(--paper);
+      color: var(--ink);
+      font: 1rem/1.5 Georgia, "Times New Roman", serif;
+    }
+    header { padding: 1rem clamp(1rem, 4vw, 3rem); border-bottom: 1px solid #ddd; }
+    h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); color: var(--heading); }
+    p { margin: .35rem 0 .75rem; }
+    nav { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem 1.25rem; }
+    a { color: var(--link); text-underline-offset: .2em; }
+    a:hover { text-decoration-thickness: 2px; }
+    a:focus-visible { outline: 2px solid var(--link); outline-offset: 4px; }
+    .download { padding: .35rem .8rem; border: 1px solid currentColor; border-radius: .25rem; text-decoration: none; }
+    main { min-height: 75vh; }
+    object { display: block; width: 100%; height: 100%; min-height: 75vh; border: 0; }
+    .fallback { margin: 2rem auto; padding: 1rem; max-width: 40rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{ name }} - Résumé</h1>
+    <p>{{ introduction }}</p>
+    <nav aria-label="Résumé and profiles">
+      <a href="./resume.pdf">Open PDF</a>
+      <a class="download" href="./resume.pdf" download>Download PDF</a>
+      <a href="{{ linkedin_url }}">LinkedIn</a>
+      {% if github_url %}<a href="{{ github_url }}">GitHub</a>{% endif %}
+      <a href="{{ releases_url }}">Signed releases</a>
+    </nav>
+  </header>
+  <main aria-label="Résumé document">
+    <object data="./resume.pdf" type="application/pdf" aria-label="{{ name }}'s résumé">
+      <p class="fallback"><a href="./resume.pdf">Open or download the complete résumé (PDF).</a></p>
+    </object>
+  </main>
+</body>
+</html>

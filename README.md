@@ -56,6 +56,7 @@ version you want to share to get a signed release.
     - [Skills](#skills)
     - [Codex summaries](#codex-summaries)
   - [Publishing](#publishing)
+    - [GitHub Pages](#github-pages)
     - [Fork environment variables](#fork-environment-variables)
       - [Configure signing secrets](#configure-signing-secrets)
       - [LinkedIn authentication](#linkedin-authentication)
@@ -354,6 +355,16 @@ See [Codex setup and local previews](docs/codex.md).
 
 ## Publishing
 
+### GitHub Pages
+
+Host the résumé at your Pages root or a custom domain. Enable `pages.enabled` in
+[resumeme.config.yaml](resumeme.config.yaml) and select **GitHub Actions** as the
+publishing source in your fork's **Settings > Pages**. CI updates `index.html` and
+its linked PDF after successful publication to `main`.
+
+`pages.path: /` serves the root; use a path such as `/cv/` for a subdirectory.
+See [Pages setup](docs/pages.md) for custom domains, DNS, and local previews.
+
 ### Fork environment variables
 
 Configure these **GitHub Actions repository secrets in your own fork** for the
@@ -412,6 +423,7 @@ interaction. See [automation setup and recovery](docs/automation.md).
 
 - [Configuration and operation](docs/README.md): capture, job filters, rendering, and signed releases.
 - [Monthly refresh and release](docs/automation.md): LinkedIn secrets, scheduling, and shareable signed PDFs.
+- [GitHub Pages](docs/pages.md): automatic website updates, publication paths, and custom domains.
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
 - [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR.
 - [Development](docs/development.md): setup, parallel tests, tooling, and document checks.

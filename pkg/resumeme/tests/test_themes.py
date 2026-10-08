@@ -36,7 +36,9 @@ def test_selected_theme_overrides_base_without_mutation(tmp_path: Path) -> None:
     path = tmp_path / "resumeme.config.yaml"
     path.write_text(
         "linkedin:\n  username: example-person\nstyle:\n  accent: '112233'\n  font_size: 11\n"
+        "  company_font_size: 13\n  company_color: '191919'\n"
         "  themes:\n    my-print-theme:\n      paper: a4\n      accent: 'A44813'\n"
+        "      company_font_size: 14\n      company_color: '6B2737'\n"
         "      show_header_photo: false\n      skill_colors: ['6B2737', 'C44A11']\n",
         encoding="utf-8",
     )
@@ -48,6 +50,8 @@ def test_selected_theme_overrides_base_without_mutation(tmp_path: Path) -> None:
     assert effective.paper == "a4"
     assert effective.accent == "A44813"
     assert effective.font_size == 11
+    assert effective.company_font_size == 14 and effective.company_color == "6B2737"
+    assert base.company_font_size == 13 and base.company_color == "191919"
     assert effective.show_header_photo is False
     assert effective.skill_colors == ("6B2737", "C44A11")
     assert selected.accent == "112233" and selected.paper == "letter"
@@ -58,6 +62,10 @@ def test_selected_theme_overrides_base_without_mutation(tmp_path: Path) -> None:
     "override",
     [
         {"font_size": 9},
+        {"company_font_size": 9},
+        {"company_font_size": 21},
+        {"company_font_size": 12.5},
+        {"company_color": "#6B2737"},
         {"paper": "poster"},
         {"accent": "#A44813"},
         {"ink": None},

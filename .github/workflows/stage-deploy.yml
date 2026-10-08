@@ -10,6 +10,10 @@ on:
         description: Commit the verified capture and referenced assets with the PDF
         type: boolean
         default: false
+    outputs:
+      published-sha:
+        description: Accepted main commit, empty when publication was superseded
+        value: ${{ jobs.publish.outputs.sha }}
 permissions:
   contents: write
 defaults:
@@ -21,6 +25,8 @@ jobs:
     name: Commit verified PDF to main
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:
+      sha: ${{ steps.publish.outputs.published-sha }}
 
     # Serialize PDF writers; publish.sh still checks for branch movement before committing or releasing an artifact.
     concurrency:

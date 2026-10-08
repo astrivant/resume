@@ -36,6 +36,7 @@ __all__ = [
     "LinkedIn",
     "Output",
     "Ownership",
+    "Pages",
     "ProjectSelector",
     "Projects",
     "Readme",
@@ -120,6 +121,22 @@ class Readme:
 
     mode: Literal["auto", "project", "resume"] = "auto"
     introduction: str | None = None
+
+
+@frozen
+class Pages:
+    """
+    Publish the accepted resume as a static GitHub Pages site.
+
+    Attributes:
+        enabled (bool): Deploy after successful main-branch PDF publication.
+        path (str): Directory within the Pages site, with leading and trailing slashes; / serves the root.
+        custom_domain (str | None): Expected Pages hostname, or None to accept the repository's configured hostname.
+    """
+
+    enabled: bool = False
+    path: str = "/"
+    custom_domain: str | None = None
 
 
 @frozen
@@ -334,6 +351,8 @@ class StyleOverrides(TypedDict, total=False):
         name_color (str): Six-digit hexadecimal profile name color.
         heading_color (str): Six-digit hexadecimal section heading color.
         entry_color (str): Six-digit hexadecimal entry heading color.
+        company_font_size (int): Company name size in points, independent of body and role text.
+        company_color (str): Six-digit hexadecimal company name color, including linked affiliations.
         skill_colors (tuple[str, ...]): Ordered hexadecimal stops from zero to maximum displayed skill endorsements.
     """
 
@@ -354,6 +373,8 @@ class StyleOverrides(TypedDict, total=False):
     name_color: str
     heading_color: str
     entry_color: str
+    company_font_size: int
+    company_color: str
     skill_colors: tuple[str, ...]
 
 
@@ -380,6 +401,8 @@ class Style:
         name_color (str): Six-digit hexadecimal profile name color.
         heading_color (str): Six-digit hexadecimal section heading color.
         entry_color (str): Six-digit hexadecimal entry heading color.
+        company_font_size (int): Company name size in points, independent of body and role text.
+        company_color (str): Six-digit hexadecimal company name color, including linked affiliations.
         skill_colors (tuple[str, ...]): Ordered hexadecimal stops from zero to maximum displayed skill endorsements.
         theme (str | None): Selected key in themes; None uses the base style unchanged.
         themes (dict[str, StyleOverrides]): Inline themes containing partial style overrides.
@@ -402,6 +425,8 @@ class Style:
     name_color: str = "191919"
     heading_color: str = "191919"
     entry_color: str = "363636"
+    company_font_size: int = 13
+    company_color: str = "191919"
     skill_colors: tuple[str, ...] = ("777777", "363636")
     theme: str | None = None
     themes: dict[str, StyleOverrides] = field(factory=dict)
@@ -426,6 +451,7 @@ class Config:
         education (Education): School, degree, and major exclusions.
         readme (Readme): Automatic personal README publication on forks.
         projects (Projects): Optional project names and affiliations to include alongside the source URL filter.
+        pages (Pages): Optional static site publication and its location within GitHub Pages.
     """
 
     linkedin: LinkedIn
@@ -441,6 +467,7 @@ class Config:
     education: Education = field(factory=Education)
     readme: Readme = field(factory=Readme)
     projects: Projects = field(factory=Projects)
+    pages: Pages = field(factory=Pages)
 
 
 def project_path(root: Path, value: str) -> Path:

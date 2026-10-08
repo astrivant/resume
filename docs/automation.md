@@ -6,6 +6,10 @@ previews, runs the existing validation and PDF build, and commits the complete
 snapshot, referenced assets, and PDF to `main` together. Ordinary pushes rebuild
 the saved inputs. Neither path creates a release.
 
+Enable `pages.enabled` to also update a [GitHub Pages website](pages.md) after
+that commit is accepted. The optional stage serves `index.html` and the same PDF
+at the configured site path, including custom domains.
+
 Forks publish a [personal README and PDF preview](#personal-readme) in that same
 commit. Repositories retaining the project README also give the [project logo](assets/branding/resumeme-logo.png)
 a fresh coffee stain. CI varies its orientation, proportions, placement, and
@@ -41,7 +45,9 @@ gh secret set LINKEDIN_PASSWORD
   is required only for encrypted keys.
 - `GH_TOKEN` / `GITHUB_TOKEN`: supplied by Actions; no personal access token is
   needed. The workflow uses `contents: write` for generated commits and releases,
-  and `packages: write` for the container. Repository rules must permit those writes.
+  and `packages: write` for the container. The optional Pages deployment uses
+  `pages: write`, `id-token: write`, `actions: read`, and `contents: read`.
+  Repository rules must permit those writes.
 - `PYPI_API_TOKEN`: package maintainers only. Version-tag releases map the organization,
   repository, or `pypi` environment secret to `POETRY_PYPI_TOKEN_PYPI`. Resume-only
   forks do not need it; see [package publication](development.md#publish-to-pypi).

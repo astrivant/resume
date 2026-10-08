@@ -178,7 +178,7 @@ def test_connection_display_flags_are_independent(tmp_path: Path, show_count: bo
     elif not show_count:
         # With contact disabled, the default identity column really ends at the primary profile link.
         tail = source.split(r"\textbf{LinkedIn profile}}\par", 1)[1]
-        assert "".join(tail.split()) == r"\par\addvspace{12pt}\end{document}"
+        assert "".join(tail.split()) == r"\end{document}"
 
     assert profile.intro[-1] == "214 connections"
     assert len(profile.links) == 2

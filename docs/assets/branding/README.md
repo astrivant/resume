@@ -10,9 +10,17 @@ CI renders a new composition only when it has a changed résumé or profile to
 commit. The verified source SHA controls the stain's rotation, reflection,
 proportions, position, saturation, brightness, and opacity. The ring sits off
 center toward a corner, with room for its entire outline and droplets. The blue
-mark stays fixed at 80% opacity and 80% saturation beneath the coffee layer.
-A retry uses the same seed and locked Pillow dependency, and reproduces the same
-PNG bytes. No API key, network request, clock, or run counter is involved.
+mark stays fixed at 80% opacity and 80% saturation beneath the coffee layers.
+
+Each update shows a seeded random selection of the latest two to five stains,
+as history accumulates. The newest stays at full strength; earlier impressions
+retain 60% of their preceding opacity per update. Their original positions and
+orientations stay fixed. The PNG stores the five most recent source revisions
+in `resumeme.stains` metadata, newest first, including temporarily hidden stains.
+Older single-stain logos migrate using their existing `resumeme.source` metadata.
+A retry uses the same seed, saved history, and locked Pillow dependency to reproduce
+the same PNG bytes without adding another stain. No API key, network request,
+clock, or run counter is involved.
 
 The local `brew-date.svg` badge sits below the logo and links to `output.pdf`.
 It shows the last published build's UTC date as `YYYY-MM-DD`. The build stage
@@ -29,8 +37,9 @@ poetry run python scripts/ci/refresh-logo.py --seed "$(git rev-parse HEAD)"
 ```
 
 Use `--output .cache/branding-preview.png` to preview without replacing the README
-asset. Changing the bundled layers or renderer changes the composition; keep
-them with the source revision when reproducing an older logo.
+asset. Previews read the canonical logo's history without modifying it.
+Changing the bundled layers or renderer changes the composition; keep them and
+the prior logo with the source revision when reproducing an older logo.
 
 To also refresh the badge and managed README block, pass the PDF's UTC build date:
 

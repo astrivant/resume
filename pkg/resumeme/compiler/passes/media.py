@@ -14,7 +14,30 @@ if TYPE_CHECKING:
 
     from resumeme.compiler.asts.profile import Entry, Media
 
-__all__ = ["employer_badge", "image_role", "is_header_photo", "school_badge"]
+__all__ = ["employer_badge", "employer_name_index", "image_role", "is_header_photo", "school_badge"]
+
+
+def employer_name_index(entry: Entry) -> int | None:
+    """
+    Identify an employer's text independently of whether its logo was captured.
+
+    Args:
+        entry (Entry): Employment entry after grouped positions have been separated for display.
+
+    Returns:
+        int | None: Heading index (-1), first paragraph index (0), or None when the employer is ambiguous.
+    """
+    if entry.positions:
+        return -1
+
+    badge = employer_badge(entry)
+
+    if badge:
+        return badge[0]
+
+    # Unbranded standalone entries place the company immediately before their first date row.
+    dated = next((index for index, line in enumerate(entry.paragraphs) if employment_period(line)), None)
+    return 0 if dated == 1 else None
 
 
 def employer_badge(entry: Entry) -> tuple[int, Media] | None:

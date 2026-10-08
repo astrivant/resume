@@ -20,9 +20,11 @@ from resumeme.compiler.asts.contributions import load_calendar
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.compiler.pipeline import render_profile
-from resumeme.config import load_config, project_path
+from resumeme.config import Ownership, load_config, project_path
 from resumeme.github.contributions import fetch_calendar
+from resumeme.github.pages import build_site
 from resumeme.linkedin.browser import capture_profile
+from resumeme.linkedin.identity import release_destination
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.ownership import publish_ownership
 
@@ -83,6 +85,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "--companies", action="store_true", help="Also acquire configured employer/job context and prepare each prompt"
             )
 
+    site = commands.add_parser("site", help="Prepare a GitHub Pages site in .cache/pages from the existing PDF")
+    site.add_argument("--repository", help="Publishing OWNER/REPO; defaults to GITHUB_REPOSITORY or the local Git origin")
+
     ownership = commands.add_parser("publish-ownership", help="Update live LinkedIn About with a signed release's public key identity")
     ownership.add_argument("--public-key", type=Path, required=True, help="Release cosign.pub path relative to the current directory")
     ownership.add_argument("--dry-run", action="store_true", help="Read and preview About without submitting any changes")
@@ -124,6 +129,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         # Enforce ownership on every offline path so a fork cannot accidentally publish the previous owner's resume.
         profile = load_profile(snapshot, config.linkedin.username)
+
+        if args.command == "site":
+            # Resolve the actual publishing repository without inheriting a release URL override from an upstream fork.
+            releases = release_destination(Ownership(repository=args.repository), root)
+            repository = releases.removeprefix("https://github.com/").removesuffix("/releases")
+            print(build_site(profile, config, root, repository))
+            return 0
 
         if args.command == "summary-prompt":
             print(prepare_summary(profile, config, root))

@@ -5,6 +5,7 @@ Compose a reproducible coffee-stained project logo for each published source rev
 from __future__ import annotations
 
 import hashlib
+import json
 from typing import TYPE_CHECKING
 
 from PIL import Image, ImageEnhance, ImageOps
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
 __all__ = ["render_brew_badge", "render_logo"]
 
 _SIZE = 768
+_MAX_STAINS = 5
+_STAIN_FADE = 0.6
 
 
 def render_brew_badge(output: Path, brewed_on: date) -> None:
@@ -50,20 +53,21 @@ def render_brew_badge(output: Path, brewed_on: date) -> None:
     output.write_text(content, encoding="utf-8")
 
 
-def render_logo(assets: Path, output: Path, seed: str) -> None:
+def render_logo(assets: Path, output: Path, seed: str, *, previous: Path | None = None) -> None:
     """
-    Vary the coffee overlay while preserving the underlying mark and transparent background.
+    Layer a fresh coffee stain over fading recent impressions without changing the underlying mark.
 
     Args:
         assets (Path): Directory containing linkedin-base.png and coffee-ring.png source layers.
         output (Path): Destination PNG; parent directories are created and an existing output is replaced.
         seed (str): Source revision determining the stain's orientation, proportions, position, and density.
+        previous (Path | None): Prior logo containing stain history; absent files or None start a new history.
 
     Returns:
         None: A composed logo is written without modifying either source layer or contacting an image service.
 
     Raises:
-        ValueError: The seed is empty or the stain has no visible pixels.
+        ValueError: The seed is empty, saved history is invalid, or the stain has no visible pixels.
         OSError: Source layers cannot be read or the destination cannot be written.
     """
     if not seed:
@@ -71,6 +75,8 @@ def render_logo(assets: Path, output: Path, seed: str) -> None:
 
     # Derive variation from content rather than time or run number, so a publication retry has the same Git tree.
     digest = hashlib.sha256(seed.encode("utf-8")).digest()
+    history = list(dict.fromkeys([seed, *_stain_history(previous)]))[:_MAX_STAINS]
+    visible = history[: 2 + digest[11] % (_MAX_STAINS - 1)]
 
     with Image.open(assets / "linkedin-base.png") as source:
         base = source.convert("RGBA").resize((_SIZE, _SIZE), Image.Resampling.LANCZOS)
@@ -90,6 +96,79 @@ def render_logo(assets: Path, output: Path, seed: str) -> None:
 
     stain = stain.crop(bounds)
 
+    # Recompose immutable layers oldest first; old rings fade independently while the newest ring stays prominent.
+    for age in reversed(range(len(visible))):
+        base.alpha_composite(_coffee_layer(stain, visible[age], age))
+
+    # Retain five actual revisions even when fewer rings are visible, so a later draw can show a longer recent trail.
+    metadata = PngInfo()
+    metadata.add_text("resumeme.source", seed)
+    metadata.add_text("resumeme.stains", json.dumps(history))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    base.save(output, format="PNG", pnginfo=metadata, optimize=True)
+
+
+def _stain_history(previous: Path | None) -> list[str]:
+    """
+    Read recent revisions from the prior PNG, including the original single-stain metadata.
+
+    Args:
+        previous (Path | None): Existing published logo, or None to start without prior stains.
+
+    Returns:
+        list[str]: At most five unique revisions, newest first.
+
+    Raises:
+        ValueError: Stored history is malformed or inconsistent with its source revision.
+        OSError: An existing logo cannot be opened.
+    """
+    if previous is None or not previous.exists():
+        return []
+
+    with Image.open(previous) as image:
+        encoded: object = image.info.get("resumeme.stains")
+        source: object = image.info.get("resumeme.source")
+
+    # Previously generated logos retain their one recorded impression; unversioned artwork starts a fresh history.
+    if encoded is None:
+        return [source] if isinstance(source, str) and source else []
+
+    if not isinstance(encoded, str):
+        raise ValueError("Coffee stain history must be a JSON list of source revisions.")
+
+    values: object = json.loads(encoded)
+
+    if not isinstance(values, list) or not 1 <= len(values) <= _MAX_STAINS:
+        raise ValueError("Coffee stain history must contain one to five source revisions.")
+
+    history: list[str] = []
+
+    for value in values:
+        if not isinstance(value, str) or not value or value in history:
+            raise ValueError("Coffee stain history must contain unique, nonempty source revisions.")
+
+        history.append(value)
+
+    if history[0] != source:
+        raise ValueError("The newest coffee stain must match the logo's source revision.")
+
+    return history
+
+
+def _coffee_layer(stain: Image.Image, seed: str, age: int) -> Image.Image:
+    """
+    Recreate a revision's original coffee impression at an opacity determined by its age.
+
+    Args:
+        stain (Image.Image): Cropped RGBA source layer; the caller retains ownership and it is not modified.
+        seed (str): Revision fixing this impression's geometry and color.
+        age (int): Number of newer revisions, zero for the fresh stain.
+
+    Returns:
+        Image.Image: Transparent logo-sized RGBA layer with the transformed, faded impression.
+    """
+    digest = hashlib.sha256(seed.encode("utf-8")).digest()
+
     if digest[0] & 1:
         stain = ImageOps.mirror(stain)
 
@@ -103,7 +182,7 @@ def render_logo(assets: Path, output: Path, seed: str) -> None:
     stain = stain.resize((width, height), Image.Resampling.LANCZOS)
     stain = ImageEnhance.Color(stain).enhance(0.7 + 0.3 * digest[5] / 255)
     stain = ImageEnhance.Brightness(stain).enhance(0.8 + 0.2 * digest[6] / 255)
-    opacity = 0.65 + 0.25 * digest[7] / 255
+    opacity = (0.65 + 0.25 * digest[7] / 255) * _STAIN_FADE**age
     stain.putalpha(stain.getchannel("A").point([round(value * opacity) for value in range(256)]))
 
     # Choose a corner with a little positional variation; keep the ring off center so it reads as a stain rather than a border.
@@ -117,10 +196,6 @@ def render_logo(assets: Path, output: Path, seed: str) -> None:
     if digest[10] & 2:
         y = _SIZE - height - y
 
-    base.alpha_composite(stain, (x, y))
-
-    # Record the input revision without timestamps; locked Pillow versions produce byte-identical retry artifacts.
-    metadata = PngInfo()
-    metadata.add_text("resumeme.source", seed)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    base.save(output, format="PNG", pnginfo=metadata, optimize=True)
+    layer = Image.new("RGBA", (_SIZE, _SIZE))
+    layer.alpha_composite(stain, (x, y))
+    return layer

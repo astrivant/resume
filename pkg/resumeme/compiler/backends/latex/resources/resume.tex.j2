@@ -1,5 +1,5 @@
 ((# Shared entry rendering keeps project cards and ordinary sections on the same escaping and image rules. #))
-((* macro render_text(paragraphs, links, locations={}, affiliations={}, badges={}, link_jobs=false, job_text=false) *))
+((* macro render_text(paragraphs, links, locations={}, affiliations={}, badges={}, link_jobs=false, job_text=false, company_labels=false) *))
 ((* set blocks = paragraphs|job_text_blocks if job_text else paragraphs|text_blocks *))
 ((* for block in blocks *))
 ((* set association = block.text|job_association if link_jobs else none *))
@@ -8,13 +8,15 @@
 ((* else *))
 ((* if block.text in badges *))
 ((( company_name((0, badges[block.text]), block.text, links) )))
+((* elif company_labels and block.text|job_destination *))
+\profileparagraph{((( company_label(block.text, links) )))}
 ((* elif block.text in affiliations *))
 ((* set prefix, company, logo = affiliations[block.text] *))
 \profileparagraph{((( prefix|tex )))%
 ((* if logo.link *))\href{((( logo.link|url )))}{((* endif *))\inlinecompanylogo{((( logo.path )))}((* if logo.link *))}((* endif *))%
-\nobreak\hspace{0.3em}((( company|tex )))}
+\nobreak\hspace{0.3em}\companytext{((( company|tex )))}}
 ((* elif association *))
-\profileparagraph{((( association[0]|tex )))\hyperlink{((( association[2] )))}{((( association[1]|tex )))}}
+\profileparagraph{((( association[0]|tex )))\hyperlink{((( association[2] )))}{((* if association[1]|job_destination *))\companytext{((* endif *))((( association[1]|tex )))((* if association[1]|job_destination *))}((* endif *))}}
 ((* elif block.text in locations *))
 ((* set location = locations[block.text] *))
 \profileparagraph{\href{((( location.url|url )))}{((( location.label|tex )))}((( block.text[location.label|length:]|tex_links(links) )))}
@@ -26,12 +28,18 @@
 ((* endif *))
 ((* endfor *))
 ((* endmacro *))
-((* macro company_name(badge, text, links, heading=false, anchor='') *))
+((* macro company_label(text, links) -*))
+((# Employment type remains body-sized metadata even when it shares the employer's row. #))
+((* set name, separator, metadata = text.partition('\u00b7') -*))
+\companytext{((( name|trim|tex_links(links) )))}((* if separator *))\enspace\textbullet\enspace ((( metadata|trim|tex_links(links) )))((* endif *))
+((*- endmacro *))
+((* macro company_name(badge, text, links, heading=false, anchor='', employer=true) *))
 \companyline{%
 ((* if badge[1].link *))\href{((( badge[1].link|url )))}{((* endif *))%
 \includegraphics[width=8mm,height=8mm,keepaspectratio]{((( badge[1].path )))}%
 ((* if badge[1].link *))}((* endif *))%
-}{((* if heading *))\entrytitle{((* endif *))((* if anchor *))\hypertarget{((( anchor )))}{}((* endif *))((( text|tex_links(links) )))((* if heading *))}((* endif *))}
+}{((* if anchor *))\hypertarget{((( anchor )))}{}((* endif *))((* if employer *))((( company_label(text, links) )))((* elif heading *))\entrytitle{((( text|tex_links(links) )))}((* else *))((( text|tex_links(links) )))((* endif *))}
+((* if heading *))\nopagebreak((* endif *))
 ((* endmacro *))
 ((* macro render_entry(entry, section, role=false, parent_title=none, anchor='') *))
 ((* set entry = entry|experience_layout if section.key == 'experience' else entry *))
@@ -41,6 +49,7 @@
 ((* set project = entry|project_layout(show_title=heading != '') if section.key == 'projects' else none *))
 ((* set entry = project.entry if project else entry *))
 ((* set badge = entry|employer_badge if section.key == 'experience' else none *))
+((* set company_index = entry|employer_name_index if section.key == 'experience' and not role else none *))
 ((# Education uses the institution heading; degree and date rows must not be interpreted as employer metadata. #))
 ((* if section.key == 'education' *))((* set badge = entry|school_badge *))((* endif *))
 ((# A logo attached to a suppressed organization heading falls back to the gallery so it and its link remain visible. #))
@@ -57,7 +66,9 @@
 ((( render_text([heading], entry.links) )))
 ((* elif heading *))
 ((* if badge and badge[0] == -1 *))
-((( company_name(badge, heading, entry.links, heading=true, anchor=anchor) )))
+((( company_name(badge, heading, entry.links, heading=true, anchor=anchor, employer=section.key == 'experience') )))
+((* elif company_index == -1 *))
+\profileparagraph{((* if anchor *))\hypertarget{((( anchor )))}{}((* endif *))((( company_label(heading, entry.links) )))}\nopagebreak
 ((* elif project and project.title_url *))
 \entrytitle{\href{((( project.title_url|url )))}{((( heading|tex )))}}
 ((* elif role *))
@@ -88,6 +99,9 @@
 ((* elif badge and badge[0] == 0 *))
 ((( company_name(badge, entry.paragraphs[0], entry.links) )))
 ((( render_text(entry.paragraphs[1:], entry.links, locations, job_text=section.key == 'experience') )))
+((* elif company_index == 0 *))
+\profileparagraph{((( company_label(entry.paragraphs[0], entry.links) )))}
+((( render_text(entry.paragraphs[1:], entry.links, locations, job_text=true) )))
 ((* else *))
 ((( render_text(entry.paragraphs, text_links, locations, project.affiliations if project else {}, job_text=section.key == 'experience') )))
 ((* endif *))
@@ -224,6 +238,7 @@
 \definecolor{profilename}{HTML}{((( style.name_color )))}
 \definecolor{sectionheading}{HTML}{((( style.heading_color )))}
 \definecolor{entryheading}{HTML}{((( style.entry_color )))}
+\definecolor{companyname}{HTML}{((( style.company_color )))}
 ((* if contributions *))
 % Match GitHub's default light calendar independently of the resume's selected accent theme.
 ((* for color in contribution_colors *))
@@ -250,7 +265,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* endfor -*))
 }
 ((* endif *))
-% Every text link uses the same color, including links nested inside headings; color marks clickability.
+% Ordinary links use the accent; company labels locally preserve their own stronger identity color.
 \hypersetup{colorlinks=true,urlcolor=accent,linkcolor=accent,filecolor=accent,citecolor=accent,
   pdfauthor={((( profile.name|tex )))},pdftitle={((( profile.name|tex ))) - Resume}}
 \hypersetup{pdfsubject={Emoji graphics: Twemoji, copyright Twitter and contributors, CC BY 4.0, https://github.com/twitter/twemoji}}
@@ -267,6 +282,12 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \clubpenalty=10000
 % Limit theme colors to their semantic roles; groups prevent heading colors leaking into body text.
 \newcommand{\entrytitle}[1]{{\color{entryheading}\large\bfseries #1}\par\nopagebreak}
+% Keep employer identity above body subheadings, including linked names; the group restores ordinary link styling afterward.
+\newcommand{\companytext}[1]{{%
+  \color{companyname}\fontsize{((( style.company_font_size )))}{((( style.company_font_size * 1.2 )))}\selectfont\bfseries
+  \hypersetup{urlcolor=companyname,linkcolor=companyname}%
+  \strut #1%
+}}
 % Place vertices on the progression rule without changing the title's width or pagination.
 % Paint the canvas-colored clearance over the rule first so neither connector touches the dot.
 \newcommand{\rolevertex}{%
@@ -523,7 +544,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \hspace{1.5mm}%
     \begin{minipage}[t]{\dimexpr\linewidth-5.5mm\relax}%
       \vspace{0pt}\raggedright\setlength{\parskip}{1pt}%
-      {\color{entryheading}\bfseries #2}\par
+      \companytext{#2}\par
       {\small #3}%
     \end{minipage}%
   }%
@@ -655,7 +676,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* if summary_headline *))
 \profileparagraph{((( summary_headline|tex )))}
 ((* endif *))
-((( render_text(header.intro|reject('pronouns')|list, profile.links, badges=header_badges) )))
+((( render_text(header.intro|reject('pronouns')|list, profile.links, badges=header_badges, company_labels=true) )))
 \href{https://www.linkedin.com/in/((( profile.username|url )))/}{\makebox[1.3em][l]{\faLinkedin}\textbf{LinkedIn profile}}\par
 ((* if github_username *))
 \href{https://github.com/((( github_username|url )))}{\makebox[1.3em][l]{\faGithub}\textbf{GitHub: ((( github_username|tex )))}}\par
