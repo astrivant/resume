@@ -146,9 +146,9 @@ experience:
 
   # Match a job title, company, or both (case-insensitive).
   # Example: [{title: DevOps Engineer, company: HqO}]
-  disable:
-    - title: Founder
-      company: PremiScale
+  disable: []
+    # - title: Founder
+    #   company: PremiScale
 
   # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
   # Used only when since is null.

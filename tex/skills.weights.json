@@ -4,16 +4,6 @@
     "endorsements": 6,
     "weight": 13
   },
-  "DevOps": {
-    "references": 9,
-    "endorsements": 0,
-    "weight": 9
-  },
-  "CircleCI": {
-    "references": 6,
-    "endorsements": 0,
-    "weight": 6
-  },
   "Kubernetes": {
     "references": 6,
     "endorsements": 0,
@@ -27,6 +17,11 @@
   "Amazon Web Services (AWS)": {
     "references": 1,
     "endorsements": 2,
+    "weight": 5
+  },
+  "DevOps": {
+    "references": 5,
+    "endorsements": 0,
     "weight": 5
   },
   "Git": {
@@ -95,6 +90,11 @@
     "weight": 2
   },
   "AWS": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "CircleCI": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
