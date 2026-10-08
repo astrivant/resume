@@ -176,9 +176,21 @@
 % Place the compact vertical scale in the left margin without shifting the centered cloud.
 \settowidth{\skilllegendheight}{\footnotesize\skilllegendlabel}
 \makebox[0pt][r]{%
-\begin{tikzpicture}[baseline=(current bounding box.center),font=\footnotesize]
-\node[anchor=south west,inner sep=0pt] at (0,0) {\resizebox{2mm}{\skilllegendheight}{\pgfuseshading{skillendorsements}}};
+\begin{tikzpicture}[baseline=(skillscale.center),font=\footnotesize]
+\node[anchor=south west,inner sep=0pt] (skillscale) at (0,0) {\resizebox{2mm}{\skilllegendheight}{\pgfuseshading{skillendorsements}}};
 \node[rotate=90,anchor=south,inner sep=0pt] at (-4mm,0.5\skilllegendheight) {\skilllegendlabel};
+
+% These size examples illustrate endorsement tiers; mentions still contribute to the cloud's combined weights.
+% Anchor the samples below the bar without moving its center or consuming any of the cloud's width.
+\node[anchor=north east,inner sep=0pt,font=\scriptsize] at (2mm,-3mm) {%
+  \begin{tabular}{@{}c@{\hspace{2mm}}c@{\hspace{2mm}}c@{}}
+    {\fontsize{9}{11}\selectfont a} & {\fontsize{14}{16}\selectfont a} & {\fontsize{20}{22}\selectfont a}\\
+    0 & 1+ & 5+\\
+    \multicolumn{3}{@{}c@{}}{endorsements}\\[2pt]
+    \multicolumn{3}{@{}c@{}}{\tiny Size also uses}\\[-2pt]
+    \multicolumn{3}{@{}c@{}}{\tiny mentions}
+  \end{tabular}%
+};
 \end{tikzpicture}\hspace{3mm}}%
 ((* endif -*))
 % Scale both bounds to 75% of the original display size without changing the cloud's proportions or weights.

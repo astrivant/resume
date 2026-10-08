@@ -634,16 +634,23 @@ User-created tag releases require `COSIGN_PRIVATE_KEY` and, for an encrypted key
 `COSIGN_PASSWORD`. See the [fork environment variable list](automation.md#configure-a-fork)
 for their exact values and the automatically supplied publication token.
 
-With Cosign installed, generate and configure your key outside the source tree.
-Replace `OWNER/resumeme` with your fork's repository name:
+Use the [copyable OpenSSL and GitHub CLI setup](../README.md#configure-signing-secrets)
+to generate an encrypted Cosign key and install both secrets on macOS or Linux.
+It keeps a private backup outside the checkout and prints that directory's path.
+If an upload fails, reuse those files instead of generating another signing identity:
 
 ```bash
-cosign generate-key-pair
-gh secret set COSIGN_PRIVATE_KEY --repo OWNER/resumeme < cosign.key
-gh secret set COSIGN_PASSWORD --repo OWNER/resumeme
+signing_repo="YOUR-USERNAME/YOUR-FORK"
+signing_dir="/path/printed/by/setup"
+gh secret set COSIGN_PRIVATE_KEY --repo "$signing_repo" <"$signing_dir/cosign.key"
+gh secret set COSIGN_PASSWORD --repo "$signing_repo" <"$signing_dir/cosign.password"
+gh secret list --repo "$signing_repo"
 ```
 
-Keep the private key in your own secure storage. `*.key` is ignored as a precaution;
+For an existing key without a saved password file, `gh secret set COSIGN_PASSWORD
+--repo OWNER/REPOSITORY` prompts without echoing the password. The private-key secret
+must contain the imported `cosign.key`, not the original OpenSSL PEM. Keep the
+private key and password in your own secure storage. `*.key` is ignored as a precaution;
 the signing workflow reads the secret using `env://COSIGN_PRIVATE_KEY` without
 writing it to the workspace or passing its contents as a command argument.
 

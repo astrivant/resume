@@ -401,16 +401,58 @@ features you use. GitHub supplies the publication token:
 
 #### Configure signing secrets
 
-From your fork's checkout, with the GitHub CLI authenticated:
+Requires Bash, OpenSSL, Cosign 3.x, and the GitHub CLI on macOS or Linux.
+On macOS, `brew install openssl@3 cosign gh` installs the tools; on Linux, install
+[Cosign](https://docs.sigstore.dev/cosign/system_config/installation/),
+[gh](https://github.com/cli/cli#installation), and your distribution's OpenSSL package.
+Run `gh auth login` once with an account that can manage your fork's Actions secrets.
+
+Set `signing_repo` below to your fork's `OWNER/REPOSITORY`, then paste the whole
+block. It generates an OpenSSL P-256 key, imports it into Cosign's encrypted format,
+and installs both repository secrets through `gh`, without using the GitHub settings UI.
 
 ```bash
-gh secret set COSIGN_PRIVATE_KEY < /secure/path/cosign.key
-gh secret set COSIGN_PASSWORD
+bash <<'BASH'
+set -euo pipefail
+set +x
+umask 077
+signing_repo="YOUR-USERNAME/YOUR-FORK"
+
+# Select the destination explicitly so a fork cannot inherit gh's upstream default.
+gh repo view "$signing_repo" --json nameWithOwner --jq .nameWithOwner
+signing_root="${XDG_DATA_HOME:-$HOME/.local/share}/resumeme/signing"
+mkdir -p "$signing_root"
+signing_dir="$(mktemp -d "$signing_root/key.XXXXXX")"
+printf 'Local signing-key backup: %s\n' "$signing_dir"
+trap 'rm -f "$signing_dir/openssl.key"' EXIT
+
+# Keep the password out of command arguments and preserve its exact bytes for CI.
+COSIGN_PASSWORD="$(openssl rand -hex 32)"
+export COSIGN_PASSWORD
+printf '%s' "$COSIGN_PASSWORD" >"$signing_dir/cosign.password"
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 \
+    -out "$signing_dir/openssl.key"
+cosign import-key-pair --key "$signing_dir/openssl.key" \
+    --output-key-prefix "$signing_dir/cosign"
+
+# Upload the imported key and its password, then show the public fingerprint.
+gh secret set COSIGN_PRIVATE_KEY --repo "$signing_repo" <"$signing_dir/cosign.key"
+gh secret set COSIGN_PASSWORD --repo "$signing_repo" <"$signing_dir/cosign.password"
+openssl pkey -pubin -in "$signing_dir/cosign.pub" -outform DER | openssl dgst -sha256
+gh secret list --repo "$signing_repo"
+BASH
 ```
 
-Run the password command only for an encrypted key. See [signing setup](docs/README.md#signed-releases)
-to generate a key and [optional environment overrides](docs/README.md#environment-variables)
-to adjust retry or local browser settings.
+Keep the printed backup directory secure: it contains `cosign.key`, `cosign.pub`,
+and `cosign.password`. Running the whole block again creates a new signing identity
+and replaces the repository secrets. To retry an upload with the same key, use
+[the saved-key commands](docs/README.md#signed-releases).
+
+The workflow uses the imported key directly from `COSIGN_PRIVATE_KEY`. See
+[Cosign key import](https://docs.sigstore.dev/cosign/key_management/import-keypair/)
+and [`gh secret set`](https://cli.github.com/manual/gh_secret_set) for the upstream
+contracts, and [release verification](docs/README.md#signed-releases) for sharing
+the public key and checking signed PDFs.
 
 #### LinkedIn authentication
 

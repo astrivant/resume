@@ -525,6 +525,16 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "skills": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {"type": "boolean", "default": false},
+            "publish": {"type": "boolean", "default": false},
+            "max_skills": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20},
+            "context": {"type": "string", "maxLength": 20000, "default": ""}
+          }
+        },
         "enabled": {
           "type": "boolean",
           "default": false

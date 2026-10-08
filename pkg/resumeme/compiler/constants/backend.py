@@ -10,6 +10,7 @@ __all__ = [
     "CONFIG_SCHEMA",
     "PROFILE_SCHEMA",
     "SUMMARY_SCHEMA",
+    "SKILL_SUGGESTIONS_SCHEMA",
     "TEMPLATE",
     "TOOLCHAIN",
     "FONT_ARCHIVE",
@@ -29,6 +30,7 @@ LATEX_PACKAGE = "resumeme.compiler.backends.latex"
 CONFIG_SCHEMA = "resources/config.schema.json"
 PROFILE_SCHEMA = "resources/profile.schema.json"
 SUMMARY_SCHEMA = "resources/summary.schema.json"
+SKILL_SUGGESTIONS_SCHEMA = "resources/skill-suggestions.schema.json"
 TEMPLATE = "resources/resume.tex.j2"
 TOOLCHAIN = "resources/toolchain.json"
 FONT_ARCHIVE = "resources/fonts/ebgaramond-texmf.zip"

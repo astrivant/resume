@@ -25,6 +25,7 @@ from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 __all__ = [
     "Capture",
     "Codex",
+    "CodexSkills",
     "CompanyTarget",
     "Config",
     "Education",
@@ -176,6 +177,24 @@ class CompanyTarget:
 
 
 @frozen
+class CodexSkills:
+    """
+    Select evidence-backed skill suggestions and optional LinkedIn publication on tags.
+
+    Attributes:
+        enabled (bool): Generate a skill proposal when a tag is pushed.
+        publish (bool): Opt in to adding missing proposed skills to LinkedIn after release publication.
+        max_skills (int): Maximum number of proposed skills per tagged release.
+        context (str): Selection preferences; captured profile text remains the evidence source.
+    """
+
+    enabled: bool = False
+    publish: bool = False
+    max_skills: int = 20
+    context: str = ""
+
+
+@frozen
 class Codex:
     """
     Configure optional résumé summaries without storing API credentials.
@@ -187,6 +206,7 @@ class Codex:
         about_max_words (int): Maximum words in the generated About paragraph.
         headline_max_words (int): Maximum words in the summary beneath the portrait.
         companies (list[CompanyTarget]): Additional employer/job variants; the generic resume is always retained.
+        skills (CodexSkills): Independent tag-only skill generation and optional profile publication.
     """
 
     enabled: bool = False
@@ -195,6 +215,7 @@ class Codex:
     about_max_words: int = 100
     headline_max_words: int = 18
     companies: list[CompanyTarget] = field(factory=list)
+    skills: CodexSkills = field(factory=CodexSkills)
 
 
 @frozen
@@ -516,6 +537,10 @@ def load_config(path: Path) -> Config:
     schema = json.loads(files(AST_PACKAGE).joinpath(CONFIG_SCHEMA).read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     config = cattrs.Converter(forbid_extra_keys=True).structure(raw, Config)
+
+    # A publish opt-in must have a corresponding proposal producer.
+    if config.codex.skills.publish and not config.codex.skills.enabled:
+        raise ValueError("codex.skills.publish requires codex.skills.enabled.")
 
     # Validated ISO dates sort chronologically; reject reversed explicit bounds before any capture or rendering work.
     if config.experience.since and config.experience.as_of and config.experience.since > config.experience.as_of:

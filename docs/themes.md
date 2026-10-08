@@ -71,8 +71,10 @@ and keep the company color; other links continue to use `accent`.
 `skill_colors` is an ordered list of hexadecimal color stops. The first represents
 zero endorsements; the last represents the highest endorsement count among the
 20 displayed skills. Intermediate counts interpolate between the stops.
-The centered cloud includes a short caption and a compact vertical 0-100% color scale to its left;
-single-color palettes omit the scale.
+The centered cloud includes a compact, unnumbered vertical color scale to its left.
+Below the scale, three progressively larger `a` samples illustrate 0, 1+, and 5+
+endorsements. These are size references, not exact font-size thresholds: profile
+mentions also contribute to size. Single-color palettes omit the scale and its legend.
 
 ```text
 color percentage = 100 * skill endorsements / highest displayed endorsement count
