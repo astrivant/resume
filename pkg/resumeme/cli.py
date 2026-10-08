@@ -30,6 +30,7 @@ from resumeme.linkedin.browser import capture_profile
 from resumeme.linkedin.identity import release_destination
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.ownership import publish_ownership
+from resumeme.linkedin.resume import publish_resume
 from resumeme.linkedin.skills import publish_skills
 from resumeme.telemetry import LOG_LEVELS, logging_context, set_log_level
 
@@ -103,6 +104,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     ownership.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
     ownership.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
 
+    resume = commands.add_parser("publish-resume", help="Upload a release PDF to LinkedIn's saved application resumes")
+    resume.add_argument("--pdf", type=Path, required=True, help="Verified release PDF relative to the configuration directory")
+    resume.add_argument("--dry-run", action="store_true", help="Check the PDF, account, and upload form without uploading")
+    resume.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
+    resume.add_argument("--connect-port", type=int, help="Attach to an existing local Firefox Marionette port")
+
     skills_prompt = commands.add_parser("skills-prompt", help="Prepare an evidence-backed Codex skill proposal for the checked-out tag")
     skills_prompt.add_argument("--tag", required=True, help="Existing Git tag pointing to the checked-out commit")
     skills = commands.add_parser("publish-skills", help="Add missing proposed skills to LinkedIn without changing existing skills")
@@ -142,6 +149,24 @@ def _run(args: argparse.Namespace) -> int:
         _LOGGER.debug("Configuration loaded", extra={"file.path": str(args.config), "resumeme.command": args.command})
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
+
+        # Upload the caller-selected release bytes; a local captured snapshot is not needed for publication or recovery.
+        if args.command == "publish-resume":
+            filename = publish_resume(
+                config,
+                root,
+                project_path(root, str(args.pdf)),
+                dry_run=args.dry_run,
+                headless=args.headless,
+                connect_port=args.connect_port,
+            )
+            print(("Upload preview: " if args.dry_run else "Confirmed saved resume: ") + filename)
+
+            if config.linkedin.resume.share_with_recruiters is not None:
+                state = "enabled" if config.linkedin.resume.share_with_recruiters else "disabled"
+                print(("Recruiter sharing requested: " if args.dry_run else "Confirmed recruiter sharing: ") + state)
+
+            return 0
 
         # Skill publication validates the tagged proposal before opening the browser or changing live profile state.
         if args.command == "publish-skills":

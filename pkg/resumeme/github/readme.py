@@ -39,6 +39,8 @@ __all__ = ["PREVIEW_PATH", "personal_readme", "render_readme", "restore_readme",
 PREVIEW_PATH = "docs/assets/resume-preview.png"
 _BRANDING_START = "<!-- resumeme:branding:start -->"
 _BRANDING_END = "<!-- resumeme:branding:end -->"
+_BREW_START = "<!-- resumeme:brew-date:start -->"
+_BREW_END = "<!-- resumeme:brew-date:end -->"
 _BREW_BADGE_PATH = "docs/assets/branding/brew-date.svg"
 _PUBLICATION_PATH = ".cache/publication"
 _BOILERPLATE = (
@@ -48,7 +50,7 @@ _BOILERPLATE = (
 
 def update_project_branding(root: Path, config: Config, brewed_on: date, *, repository: str | None = None) -> None:
     """
-    Refresh the local date badge and only the marked branding block of a project README.
+    Refresh the date badge and independently marked logo and badge regions of a project README.
 
     Args:
         root (Path): Publishing checkout containing an optional custom README.
@@ -57,7 +59,7 @@ def update_project_branding(root: Path, config: Config, brewed_on: date, *, repo
         repository (str | None): Publishing OWNER/REPO; defaults to Actions identity or the local Git origin.
 
     Returns:
-        None: The SVG is refreshed; README text outside the opt-in branding markers is preserved exactly.
+        None: The SVG is refreshed; README text outside the opt-in logo and badge markers is preserved exactly.
 
     Raises:
         PublicationError: Existing branding markers are invalid or no GitHub repository can be resolved.
@@ -65,30 +67,51 @@ def update_project_branding(root: Path, config: Config, brewed_on: date, *, repo
     path = root / "README.md"
     original = path.read_bytes().decode("utf-8") if path.exists() else ""
     updated = original
+    regions: list[tuple[int, int, str]] = []
 
     # A custom README without our markers opts out of markup updates; never insert branding into an unrelated landing page.
-    if _BRANDING_START in original or _BRANDING_END in original:
-        if original.count(_BRANDING_START) != 1 or original.count(_BRANDING_END) != 1:
+    for name, opening, closing in (("logo", _BRANDING_START, _BRANDING_END), ("brew", _BREW_START, _BREW_END)):
+        if opening not in original and closing not in original:
+            continue
+
+        if original.count(opening) != 1 or original.count(closing) != 1:
             raise PublicationError("README branding requires exactly one start marker and one end marker.")
 
-        start, end = original.index(_BRANDING_START), original.index(_BRANDING_END)
+        start, end = original.index(opening), original.index(closing)
 
         if end < start:
             raise PublicationError("README branding end marker must follow its start marker.")
 
+        regions.append((start, end + len(closing), name))
+
+    regions.sort()
+
+    if len(regions) == 2 and regions[0][1] > regions[1][0]:
+        raise PublicationError("README branding logo and brew-date markers must not overlap.")
+
+    if regions:
         # Raw URLs work when package indexes render this Markdown without the checkout's relative asset paths.
         # Resolve the publishing repository independently of any inherited signing-release destination override.
         releases = release_destination(Ownership(repository=repository), root)
         repository = releases.removeprefix("https://github.com/").removesuffix("/releases")
         assets = f"https://raw.githubusercontent.com/{repository}/main/docs/assets/branding"
         pdf = "./" + quote(Path(config.output.pdf).as_posix(), safe="/")
-        block = (
-            f'{_BRANDING_START}\n<p align="left">\n'
-            f'  <img src="{assets}/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>\n'
-            f'  <a href="{pdf}"><img src="{assets}/brew-date.svg" alt="Brew date: {brewed_on.isoformat()} (UTC)" '
-            f'width="220" height="28"></a>\n</p>\n{_BRANDING_END}'
-        )
-        updated = original[:start] + block + original[end + len(_BRANDING_END) :]
+        badge = f'<a href="{pdf}"><img src="{assets}/brew-date.svg" alt="Brew date: {brewed_on.isoformat()} (UTC)" height="20"></a>'
+
+        # A separate inline marker keeps the date alongside user-maintained badges; older READMEs retain their original placement.
+        legacy_badge = f"<br>\n  {badge}" if _BREW_START not in original else ""
+        blocks = {
+            "logo": (
+                f'{_BRANDING_START}\n<p align="left">\n'
+                f'  <img src="{assets}/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220">'
+                f"{legacy_badge}\n</p>\n{_BRANDING_END}"
+            ),
+            "brew": f"{_BREW_START}{badge}{_BREW_END}",
+        }
+
+        # Replace later regions first to preserve earlier offsets and all neighboring badge links byte-for-byte.
+        for start, end, name in reversed(regions):
+            updated = updated[:start] + blocks[name] + updated[end:]
 
     # Validate the managed block before replacing either file so malformed custom edits cannot leave a partial update.
     render_brew_badge(project_path(root, _BREW_BADGE_PATH), brewed_on)

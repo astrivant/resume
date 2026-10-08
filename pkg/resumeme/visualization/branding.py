@@ -37,17 +37,17 @@ def render_brew_badge(output: Path, brewed_on: date) -> None:
     """
     label = f"Brew date: {brewed_on.isoformat()} (UTC)"
 
-    # Fixed date formatting keeps the badge width stable across builds; the README owns the clickable PDF destination.
-    content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="220" height="28" viewBox="0 0 220 28" role="img" aria-labelledby="title">
+    # Match standard README badges at 20 px high, with compact padding around the fixed-width ISO date.
+    content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="158" height="20" viewBox="0 0 158 20" role="img" aria-labelledby="title">
   <title id="title">{label}</title>
-  <defs><clipPath id="badge"><rect width="220" height="28" rx="4"/></clipPath></defs>
+  <defs><clipPath id="badge"><rect width="158" height="20" rx="3"/></clipPath></defs>
   <g clip-path="url(#badge)">
-    <rect width="220" height="28" fill="#6B2737"/>
-    <rect x="90" width="130" height="28" fill="#F7EADD"/>
+    <rect width="158" height="20" fill="#6B2737"/>
+    <rect x="70" width="88" height="20" fill="#F7EADD"/>
   </g>
   <g font-family="Verdana,DejaVu Sans,sans-serif" font-size="11" text-anchor="middle">
-    <text x="45" y="18" fill="#FFFFFF">Brew date:</text>
-    <text x="155" y="18" fill="#363636">{brewed_on.isoformat()}</text>
+    <text x="35" y="14" fill="#FFFFFF">Brew date:</text>
+    <text x="114" y="14" fill="#363636">{brewed_on.isoformat()}</text>
   </g>
 </svg>
 """

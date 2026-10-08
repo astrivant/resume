@@ -21,9 +21,9 @@ a fresh coffee stain. CI varies its orientation, proportions, placement, and
 density using the verified source commit as a seed. Retries reproduce the same
 logo; unchanged PDFs and profile inputs produce no extra commit. This uses the
 bundled image layers and Pillow, with no image-generation API calls or secrets.
-The linked **Brew date** badge below the logo shows the published PDF build's UTC
+The linked **Brew date** badge beside the project badges shows the published PDF build's UTC
 date and opens the configured résumé PDF. Build artifacts carry the date so
-deployment retries preserve it. Only the marked branding block is updated in
+deployment retries preserve it. Only the marked logo and date-badge regions are updated in
 project READMEs; surrounding documentation is retained.
 The logo is README branding; it does not add stains to the résumé PDF.
 
@@ -49,7 +49,7 @@ gh secret set LINKEDIN_PASSWORD
   and URLs use manual sign-in during interactive capture. No additional login
   variable is needed. Headless use of a public identifier fails before opening a browser.
 - `LINKEDIN_PASSWORD`: account password, passed only to capture or explicitly enabled
-  ownership/skill updates. A login identifier and password are required for tag, monthly, and
+  ownership/skill updates or saved resume uploads. A login identifier and password are required for tag, monthly, and
   requested manual captures.
 - `OPENAI_API_KEY`: needed if `codex.enabled` or `codex.skills.enabled` is true.
   Create it on the [OpenAI API keys page](https://platform.openai.com/api-keys) and save it as an Actions secret.
@@ -197,9 +197,10 @@ branch builds. Tag releases now require a successful headless capture; committin
 a local snapshot does not bypass that requirement. Unattended authentication is
 not guaranteed from a hosted runner.
 
-For a failed About or skills publication, run the corresponding `publish-ownership`
-or `publish-skills` command locally without `--headless`; committing a captured
-snapshot does not apply those live profile updates. See [CLI commands](CLI.md).
+For a failed About, skills, or saved resume publication, run the corresponding
+`publish-ownership`, `publish-skills`, or `publish-resume` command locally without
+`--headless`; committing a captured snapshot does not apply those account updates.
+For a resume upload, use the verified signed release PDF. See [CLI commands](CLI.md).
 
 ## Choose a version to share
 
@@ -239,6 +240,15 @@ Tag releases do not update `main` or the Pages website. If
 `linkedin.ownership.update_about` is enabled, a separate job signs in after
 publication to maintain the public signing fingerprint and releases link in
 About. See [configuration, previews, and recovery](ownership.md).
+
+Set `linkedin.resume.publish: true` to upload the same verified `signed-resume`
+artifact to LinkedIn's saved application resumes in another job. This opt-in
+defaults to false and uses the existing LinkedIn secrets. An optional
+`linkedin.resume.share_with_recruiters` override enables (`true`) or disables
+(`false`) recruiter sharing after upload; `null` preserves the account setting.
+The job checks that its tag is GitHub's latest release before
+uploading; an older tag's retry is skipped. See [application resume uploads](linkedin-resume.md).
+
 Public release PDFs are never replaced on retries. Rerunning failed downstream
 jobs can reuse the completed capture and build from that run; rerunning all jobs
 captures again and can produce a different PDF that cannot replace an already

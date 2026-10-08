@@ -19,6 +19,7 @@ in collapsible blocks, plus command behavior and examples.
   - [resumeme build](#resumeme-build)
   - [resumeme site](#resumeme-site)
   - [resumeme publish-ownership](#resumeme-publish-ownership)
+  - [resumeme publish-resume](#resumeme-publish-resume)
   - [resumeme skills-prompt](#resumeme-skills-prompt)
   - [resumeme publish-skills](#resumeme-publish-skills)
 - [Exit status](#exit-status)
@@ -34,8 +35,8 @@ resumeme build --help
 
 Place the global `--config` option **before** the command. It defaults to
 `resumeme.config.yaml` in the current working directory. Configuration output
-paths and the `--summary`, `--company-summaries`, `--github-calendar`, and
-`--suggestions` paths resolve relative to the configuration directory.
+paths and the `--summary`, `--company-summaries`, `--github-calendar`,
+`--suggestions`, and `--pdf` paths resolve relative to the configuration directory.
 These paths must stay within that directory; absolute paths are rejected.
 `--public-key` resolves relative to the current working directory.
 
@@ -47,14 +48,14 @@ and [environment variables](../README.md#fork-environment-variables).
 <summary>resumeme</summary>
 
 ~~~text
-usage: - [-h] [--config CONFIG]
-         [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-         {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,skills-prompt,publish-skills} ...
+usage: resumeme [-h] [--config CONFIG]
+                [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+                {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,publish-resume,skills-prompt,publish-skills} ...
 
 Capture your LinkedIn profile and build an illustrated PDF résumé.
 
 positional arguments:
-  {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,skills-prompt,publish-skills}
+  {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,publish-resume,skills-prompt,publish-skills}
     capture             Open the configured browser, wait for login, and save
                         your expanded profile and images
     enrich              Discover text links, resolve destinations, and cache
@@ -69,6 +70,8 @@ positional arguments:
                         existing PDF
     publish-ownership   Update live LinkedIn About with a signed release's
                         public key identity
+    publish-resume      Upload a release PDF to LinkedIn's saved application
+                        resumes
     skills-prompt       Prepare an evidence-backed Codex skill proposal for
                         the checked-out tag
     publish-skills      Add missing proposed skills to LinkedIn without
@@ -394,6 +397,48 @@ options:
   --headless            Use LinkedIn login environment variables without a desktop
   --connect-port CONNECT_PORT
                         Attach to an explicitly opened local Firefox Marionette port
+~~~
+
+</details>
+
+### resumeme publish-resume
+
+Upload an explicit release PDF to LinkedIn's saved application resumes. Set
+`linkedin.resume.publish: true` for live uploads; `--dry-run` works with it disabled.
+The command preserves PDF bytes, verifies account ownership, and confirms the
+saved filename after reloading settings. `linkedin.resume.share_with_recruiters`
+optionally enables or disables recruiter resume-data sharing after upload;
+the default `null` retains LinkedIn's current setting. Dry runs preview the
+requested sharing state without changing it.
+
+```bash
+resumeme publish-resume --pdf .cache/publication/resume.pdf --dry-run
+resumeme publish-resume --pdf .cache/publication/resume.pdf
+```
+
+`--pdf` is required and resolves relative to the config directory. CI supplies
+the verified signed PDF from that run after a tag release. Local commands do not
+require a tag or verify signatures themselves; verify downloaded release assets
+first. Browser login and MFA are interactive unless `--headless` is set.
+See [upload behavior, retention, and recovery](linkedin-resume.md).
+
+<details>
+<summary>resumeme publish-resume</summary>
+
+~~~text
+usage: resumeme publish-resume [-h] --pdf PDF [--dry-run] [--headless]
+                               [--connect-port CONNECT_PORT]
+
+options:
+  -h, --help            show this help message and exit
+  --pdf PDF             Verified release PDF relative to the configuration
+                        directory
+  --dry-run             Check the PDF, account, and upload form without
+                        uploading
+  --headless            Use LinkedIn login environment variables without a
+                        desktop
+  --connect-port CONNECT_PORT
+                        Attach to an existing local Firefox Marionette port
 ~~~
 
 </details>

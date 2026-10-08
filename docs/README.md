@@ -15,6 +15,7 @@
 - [Container usage and tag publication](containers.md)
 - [Signed releases](#signed-releases)
 - [LinkedIn signing identity](ownership.md)
+- [LinkedIn application resume uploads](linkedin-resume.md)
 - [Pipeline and ownership](#pipeline-and-ownership)
 - [Development](development.md)
 - [Capture limits and recovery](#capture-limits-and-recovery)
@@ -61,6 +62,8 @@ See [logging controls and record fields](CLI.md#logging).
 | Setting | Default | Purpose |
 | --- | --- | --- |
 | `linkedin.username` | Required | Public username or LinkedIn `/in/<username>/` URL, normalized to a slug; replace the reference placeholder |
+| `linkedin.resume.publish` | `false` | Upload the verified signed PDF to LinkedIn's saved application resumes after a tag release; [setup and recovery](linkedin-resume.md) |
+| `linkedin.resume.share_with_recruiters` | `null` | After upload, `true` enables recruiter resume-data sharing and `false` disables it; `null` preserves LinkedIn's current setting |
 | `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
 | `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
 | `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after signed tag releases; `false` skips generation and its API usage |
@@ -87,7 +90,7 @@ See [logging controls and record fields](CLI.md#logging).
 | `github.contributions.months` | `1` | Trailing calendar months, from 1 through 12, including both boundary dates |
 | `github.contributions.placement` | `profile` | Below the GitHub link in the profile column, or `appendix` for a separate final page |
 | `github.contributions.as_of` | `null` | Quoted ISO end date; null uses today's UTC date |
-| `capture.browser` | `firefox` | `firefox` or `chrome` for capture and live About updates |
+| `capture.browser` | `firefox` | `firefox` or `chrome` for capture, live profile updates, and saved resume uploads |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
 | `capture.max_scrolls` | `60` | Maximum expansion iterations per page |
 | `capture.max_pages_per_section` | `30` | Bound on section pagination |

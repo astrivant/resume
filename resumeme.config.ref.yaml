@@ -12,9 +12,12 @@ linkedin:
   # Public username or LinkedIn /in/ profile URL. For headless login, set LINKEDIN_USERNAME to your login email/phone.
   username: your-linkedin-username
 
-  # Upload the signed release PDF to LinkedIn's saved application resumes on tag; sharing settings stay unchanged.
+  # Upload the signed release PDF to LinkedIn's saved application resumes on tag.
   resume:
     publish: false
+
+    # null preserves LinkedIn's recruiter-sharing setting; true enables it and false disables it after upload.
+    share_with_recruiters: null
 
   ownership:
     # Opt in to adding the signing fingerprint and release link to your live About after a signed release.

@@ -57,6 +57,7 @@ when requested or already authorized.
 | Generate About/portrait copy or employer variants | `resumeme summary-prompt` with optional `--companies` | Prepare model inputs; use the [Codex workflow](docs/codex.md) for generation and response selection |
 | Prepare a website | `resumeme site --repository OWNER/REPO` | Build `.cache/pages/` from the existing PDF; [deployment is separate](docs/pages.md) |
 | Publish a signing identity to About | `resumeme publish-ownership` | Preview or update the live profile using a verified release public key |
+| Save a resume for LinkedIn applications | `resumeme publish-resume` | Preview or upload a verified release PDF; live uploads require `linkedin.resume.publish: true` |
 | Propose or add LinkedIn skills | `resumeme skills-prompt` / `resumeme publish-skills` | Requires a matching tagged checkout; generation and live additions have separate opt-ins |
 | Commit PDFs, refresh monthly, release, or publish packages | [GitHub workflows](docs/automation.md) | Select the correct event and destination; see publication below |
 
@@ -217,7 +218,7 @@ tag containing fixes instead of rerunning an old tag's workflow. See
 
 ## Update LinkedIn only within the requested scope
 
-Both publishers use the configured browser/login and retry by rereading live
+The publishers use the configured browser/login and retry by rereading live
 state. An interrupted Save may already have succeeded; inspect or rerun the
 command to reconcile rather than blindly submitting again. Stop on ambiguous
 ownership, missing required controls, or validation failure. Detailed recovery
@@ -233,6 +234,17 @@ and private backup locations are in the linked guides.
   `skills-prompt --tag TAG` prepares evidence-backed suggestions; the model call
   is separate. In Actions this runs only after a signed tag release. Proposals
   are self-declared skills, not connection endorsements. See [skill generation](docs/skills.md).
+- **Application resumes:** `publish-resume --pdf PATH --dry-run` checks the PDF,
+  account owner, and upload form without uploading. Live upload requires
+  `linkedin.resume.publish: true` and omission of `--dry-run`. Use the verified
+  signed release PDF. Tag CI verifies and uploads the same-run signed artifact
+  in a separate job only for the latest release. Inspect saved resumes after an
+  uncertain outcome and retry the same bytes; their hash-based filename avoids
+  duplicates. `linkedin.resume.share_with_recruiters` defaults to `null` to
+  preserve the account setting; explicit `true` or `false` overrides recruiter
+  resume-data sharing after upload. Dry runs inspect and preview that override
+  without clicking. Retain other preferences and existing files; do not submit
+  job applications. See [upload setup and recovery](docs/linkedin-resume.md).
 - **Skill additions:** `publish-skills --tag TAG --suggestions PATH --dry-run`
   compares the validated proposal with the live profile. Live additions require
   `codex.skills.publish: true` and omission of `--dry-run`. Both commands require

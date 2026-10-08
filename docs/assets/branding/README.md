@@ -23,12 +23,16 @@ A retry uses the same seed, saved history, and locked Pillow dependency to repro
 the same PNG bytes without adding another stain. No API key, network request,
 clock, or run counter is involved.
 
-The local `brew-date.svg` badge sits below the logo and links to `output.pdf`.
+The local `brew-date.svg` badge sits alongside the project badges and links to
+`output.pdf`. It is 158 px wide and 20 px high, matching their standard height.
 It shows the last published build's UTC date as `YYYY-MM-DD`. The build stage
 records that date in the PDF artifact; deployment refreshes the badge and logo
-in the same commit, retaining the date on retries. Only the content between
-`<!-- resumeme:branding:start -->` and `<!-- resumeme:branding:end -->` is managed
-in project READMEs. Removing both markers opts out of README markup updates.
+in the same commit, retaining the date on retries. The logo uses
+`<!-- resumeme:branding:start -->` / `<!-- resumeme:branding:end -->` markers;
+the independently placed badge uses `<!-- resumeme:brew-date:start -->` /
+`<!-- resumeme:brew-date:end -->`. Surrounding badges and documentation are
+preserved. Removing a marker pair opts out of updates to that region. Older
+READMEs with only logo markers retain their badge beneath the logo.
 Personal READMEs on forks continue to use the first-page PDF preview.
 README image sources use absolute `raw.githubusercontent.com` URLs so they render
 on PyPI and other Markdown hosts. Publication resolves the repository from

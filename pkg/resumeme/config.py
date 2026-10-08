@@ -87,9 +87,11 @@ class LinkedInResume:
 
     Attributes:
         publish (bool): Upload the verified PDF after a signed tag release.
+        share_with_recruiters (bool | None): Override recruiter resume-data sharing after upload; None preserves the account setting.
     """
 
     publish: bool = False
+    share_with_recruiters: bool | None = None
 
 
 @frozen

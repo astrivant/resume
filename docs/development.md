@@ -21,6 +21,14 @@ count with `poetry run pytest -n 4`, or use `-n 0` for single-process debugging.
 Hooks check Ruff, strict mypy, Google-style docstrings, schemas, ShellCheck, and
 shfmt. For container-based development, see [local image builds](containers.md#build-locally).
 
+The README coverage badge uses the combined `python-coverage` XML artifact from
+CI. Successful default-branch pushes publish `badges/coverage.svg` on `gh-pages`
+in a separate job; unchanged percentages produce no commit. The badge links to
+the CI runs and becomes available after its first successful publication. Its
+raw GitHub URL works independently of the resume's Pages site. No additional
+secret or coverage service is required. Forks retaining the project README can
+replace `astrivant/resumeme` in the badge's image and destination URLs.
+
 ## Repository settings and reviews
 
 [`.github/settings.yml`](../.github/settings.yml) is applied by the

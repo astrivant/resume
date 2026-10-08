@@ -23,20 +23,29 @@ if TYPE_CHECKING:
     from pytest import MonkeyPatch
 
 
-def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+@pytest.mark.parametrize("inline_badge", [False, True])
+def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(
+    tmp_path: Path, monkeypatch: MonkeyPatch, inline_badge: bool
+) -> None:
     """
     Replace only the marked branding with a local UTC date badge pointing at the configured resume.
 
     Args:
         tmp_path (Path): Temporary checkout with edited README content.
         monkeypatch (MonkeyPatch): Supplies the publishing fork's Actions identity.
+        inline_badge (bool): Keep the date alongside custom badges or retain the legacy position beneath the logo.
 
     Returns:
         None: Repeated publication is byte-identical and later dates update the badge without losing surrounding text.
     """
     before, after = "# My project\r\n\r\n", "\r\n\r\nKeep **my** installation steps.\r\n"
+
+    if inline_badge:
+        before += "[![Custom badge](https://example.org/badge.svg)](https://example.org) "
+
+    badge_region = "<!-- resumeme:brew-date:start -->old<!-- resumeme:brew-date:end -->\r\n\r\n" if inline_badge else ""
     path = tmp_path / "README.md"
-    path.write_bytes((before + "<!-- resumeme:branding:start -->old<!-- resumeme:branding:end -->" + after).encode())
+    path.write_bytes((before + badge_region + "<!-- resumeme:branding:start -->old<!-- resumeme:branding:end -->" + after).encode())
     monkeypatch.setenv("GITHUB_REPOSITORY", "example/my-cv")
     config = Config(LinkedIn("example", ownership=Ownership(repository="upstream/project")), output=Output(pdf="documents/cv.pdf"))
     update_project_branding(tmp_path, config, date(2026, 1, 2))
@@ -45,13 +54,23 @@ def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(tmp
     assert markdown.endswith(after.encode())
     assert b'href="./documents/cv.pdf"' in markdown
     assert b"Brew date: 2026-01-02 (UTC)" in markdown
-    assert markdown.index(b"resumeme-logo.png") < markdown.index(b"<br>") < markdown.index(b"brew-date.svg")
+
+    if inline_badge:
+        assert markdown.index(b"example.org/badge.svg") < markdown.index(b"brew-date.svg") < markdown.index(b"resumeme-logo.png")
+        assert b"<br>" not in markdown
+    else:
+        assert markdown.index(b"resumeme-logo.png") < markdown.index(b"<br>") < markdown.index(b"brew-date.svg")
+
+    assert b'height="20"' in markdown
+    assert markdown.count(b"brew-date.svg") == 1
     assert b'src="https://raw.githubusercontent.com/example/my-cv/main/docs/assets/branding/resumeme-logo.png"' in markdown
     assert b'src="https://raw.githubusercontent.com/example/my-cv/main/docs/assets/branding/brew-date.svg"' in markdown
     assert b"upstream/project" not in markdown
     badge = tmp_path / "docs/assets/branding/brew-date.svg"
     first = badge.read_bytes()
     svg = ElementTree.fromstring(first)
+    assert svg.attrib["width"] == "158"
+    assert svg.attrib["height"] == "20"
     assert svg.findtext("{http://www.w3.org/2000/svg}title") == "Brew date: 2026-01-02 (UTC)"
     assert "https://" not in first.decode()
     update_project_branding(tmp_path, config, date(2026, 1, 2))
@@ -90,6 +109,9 @@ def test_project_brew_badge_does_not_insert_branding_without_markers(tmp_path: P
         "<!-- resumeme:branding:start -->",
         "<!-- resumeme:branding:end --><!-- resumeme:branding:start -->",
         "<!-- resumeme:branding:start --><!-- resumeme:branding:end --><!-- resumeme:branding:end -->",
+        "<!-- resumeme:brew-date:start -->",
+        "<!-- resumeme:brew-date:end --><!-- resumeme:brew-date:start -->",
+        "<!-- resumeme:branding:start --><!-- resumeme:brew-date:start --><!-- resumeme:brew-date:end --><!-- resumeme:branding:end -->",
     ],
 )
 def test_invalid_branding_markers_fail_before_replacement(tmp_path: Path, markers: str) -> None:

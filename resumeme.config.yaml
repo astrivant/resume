@@ -7,9 +7,12 @@ logging:
 linkedin:
   username: emmeowzing
 
-  # Upload the signed release PDF to LinkedIn's saved application resumes on tag; sharing settings stay unchanged.
+  # Upload the signed release PDF to LinkedIn's saved application resumes on tag.
   resume:
-    publish: false
+    publish: true
+
+    # null preserves LinkedIn's recruiter-sharing setting; true enables it and false disables it after upload.
+    share_with_recruiters: true
 
   # Opt in to updating your live About after a signed release; existing About text is preserved.
   ownership:

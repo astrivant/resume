@@ -1,0 +1,71 @@
+name: LinkedIn application resume stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: Published tag revision
+        type: string
+        required: true
+    secrets:
+      LINKEDIN_USERNAME:
+        required: false
+      LINKEDIN_PASSWORD:
+        required: false
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  resume:
+    name: Upload the released application resume
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    concurrency:
+      group: resumeme-linkedin-resume-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+        with:
+          groups: main
+      - id: settings
+        run: poetry run python scripts/ci/resume-settings.py
+
+      # Check GitHub's current latest release inside the serialized job, so rerunning an old tag cannot upload an obsolete release.
+      - id: latest
+        if: steps.settings.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          latest=$(bash scripts/tooling/retry.sh gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          if [[ "$latest" == "$RELEASE_TAG" ]]; then
+              echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+              echo 'Skipping resume upload: this tag is not the latest published release.'
+          fi
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        if: steps.latest.outputs.current == 'true'
+        with:
+          name: signed-resume
+          path: .cache/publication
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        if: steps.latest.outputs.current == 'true'
+        with:
+          cosign-release: v3.1.3
+      - name: Verify the released PDF and signed manifest
+        if: steps.latest.outputs.current == 'true'
+        run: bash scripts/release/verify.sh
+
+      # Upload this run's signed bytes; never rebuild or use the PDF committed in the tagged checkout.
+      - name: Save the verified PDF for future LinkedIn applications
+        if: steps.latest.outputs.current == 'true'
+        env:
+          LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
+          LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+        run: poetry run resumeme publish-resume --headless --pdf .cache/publication/resume.pdf

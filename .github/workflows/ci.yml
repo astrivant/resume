@@ -102,6 +102,61 @@ jobs:
           RESULTS_JSON: ${{ toJSON(needs) }}
         run: jq -e 'all(.[]; .result == "success")' <<<"$RESULTS_JSON"
 
+  # Coverage reporting is a leaf job, independent of PDF publication and required verification.
+  coverage-badge:
+    name: Publish coverage badge
+    needs: [source, test-stage]
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: resumeme-coverage-badge
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version-file: .python-version
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: python-coverage
+          path: .cache/coverage
+      - name: Generate badge from the combined test report
+        run: python scripts/ci/coverage-badge.py
+
+      # Read main inside the publication lock so an older completed run cannot replace a newer coverage result.
+      - id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SOURCE_SHA: ${{ needs.source.outputs.sha }}
+        run: |
+          current=$(bash scripts/tooling/retry.sh gh api "repos/$GITHUB_REPOSITORY/commits/$DEFAULT_BRANCH" --jq .sha)
+          if [[ "$current" == "$SOURCE_SHA" ]]; then
+              echo 'publish=true' >> "$GITHUB_OUTPUT"
+          else
+              echo 'Skipping coverage badge: the default branch has advanced.'
+          fi
+
+      # The raw GitHub badge URL is independent of the Pages deployment serving the resume PDF.
+      - uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+        if: steps.current.outputs.publish == 'true'
+        with:
+          github_token: ${{ github.token }}
+          publish_branch: gh-pages
+          publish_dir: .cache/coverage-badge
+          destination_dir: badges
+          keep_files: true
+          disable_nojekyll: true
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: Update Python coverage badge
+
   # PDF publication owns repository writes and only runs for main, after the common verification gate.
   deploy-stage:
     name: Publish PDF
@@ -156,6 +211,18 @@ jobs:
     needs: [source, release-stage]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-ownership.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
+      LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+
+  # Saved application resumes use the verified signed artifact in a separate, explicitly enabled tag job.
+  linkedin-resume-stage:
+    name: Optionally upload the released resume to LinkedIn
+    needs: [source, release-stage]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    uses: ./.github/workflows/stage-linkedin-resume.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
     secrets:

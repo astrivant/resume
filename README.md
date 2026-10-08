@@ -1,11 +1,10 @@
 # resumeme
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/astrivant/resumeme/badge)](https://scorecard.dev/viewer/?uri=github.com/astrivant/resumeme)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/astrivant/resumeme/badge)](https://scorecard.dev/viewer/?uri=github.com/astrivant/resumeme) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15311/badge)](https://www.bestpractices.dev/projects/15311) [![Python coverage](https://raw.githubusercontent.com/astrivant/resumeme/gh-pages/badges/coverage.svg)](https://github.com/astrivant/resumeme/actions/workflows/ci.yml) <!-- resumeme:brew-date:start --><a href="./resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/brew-date.svg" alt="Brew date: 2026-10-08 (UTC)" height="20"></a><!-- resumeme:brew-date:end -->
 
 <!-- resumeme:branding:start -->
 <p align="left">
-  <img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>
-  <a href="./resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/brew-date.svg" alt="Brew date: 2026-10-08 (UTC)" width="220" height="28"></a>
+  <img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220">
 </p>
 <!-- resumeme:branding:end -->
 
@@ -148,6 +147,8 @@ to disable generation, or customize `readme.introduction`; see [README publicati
 Configure LinkedIn secrets for automatic monthly refreshes. When ready to share,
 tag the updated commit to create a release with signatures, hashes, and the key
 fingerprint; see [monthly refresh and release](docs/automation.md).
+Set `linkedin.resume.publish: true` to also save the signed release PDF to
+[LinkedIn's application resumes](docs/linkedin-resume.md) in a separate tag job.
 The PDF link stays relative to your fork and follows `output.pdf`. Preview images
 use absolute GitHub URLs so they also display on package indexes such as PyPI.
 
@@ -403,7 +404,8 @@ features you use. GitHub supplies the publication token:
   `linkedin.username`. LinkedIn requires email/phone authentication, so public identifiers need manual sign-in.
 - **`LINKEDIN_PASSWORD` - required for tag and monthly refreshes.** The login password. These
   login secrets reach capture on refresh runs and the optional
-  [LinkedIn signing identity update](docs/ownership.md) after signed releases.
+  [LinkedIn signing identity update](docs/ownership.md), skill additions, and
+  [saved application resume upload](docs/linkedin-resume.md) after signed releases.
 - **`OPENAI_API_KEY` - required when `codex.enabled` or `codex.skills.enabled` is `true`.** Create a project key on
   the [OpenAI API keys page](https://platform.openai.com/api-keys) and store it as an Actions repository secret. The Codex summary
   jobs receive it; pull-request checks do not. API usage is billed to that project.

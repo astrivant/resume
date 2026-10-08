@@ -73,7 +73,12 @@
             "publish": {
               "type": "boolean",
               "default": false,
-              "description": "Upload the verified signed tag release PDF to LinkedIn's saved application resumes; retain existing sharing settings."
+              "description": "Upload the verified signed tag release PDF to LinkedIn's saved application resumes."
+            },
+            "share_with_recruiters": {
+              "type": ["boolean", "null"],
+              "default": null,
+              "description": "Override Share resume data with recruiters after a confirmed upload; null preserves the account setting. Requires resume.publish for live changes."
             }
           }
         },
