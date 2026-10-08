@@ -153,8 +153,8 @@ experience:
   disable:
     - company: astrivant
     - company: Tiger Lily Plants LLC.
-    # - title: Founder
-    #   company: PremiScale
+    - title: Founder
+      company: PremiScale
 
   # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
   # Used only when since is null.
