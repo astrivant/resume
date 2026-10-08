@@ -344,13 +344,22 @@ def test_ci_shares_one_summary_without_key_exposure() -> None:
     assert generator["with"]["effort"] == "${{ matrix.effort }}"
     assert generator["with"]["model"] == "${{ matrix.model }}"
 
-    for name in ["test", "build"]:
+    # Only document review and PDF compilation consume summaries after the independent CI branches were separated.
+    for name in ["documents", "resume"]:
         job = pipeline["jobs"][f"{name}-stage"]
         assert "summary-stage" in job["needs"]
         assert "generated" in job["with"]["summary"]
         consumer = (workflows / f"stage-{name}.yml").read_text()
         assert "name: resumeme-summary" in consumer and "USE_CODEX_SUMMARY:" in consumer
         assert "OPENAI_API_KEY" not in consumer
+
+    # Source-only builds and Python checks must remain independent of model credentials and generated prose.
+    for name in ["test", "build"]:
+        job = pipeline["jobs"][f"{name}-stage"]
+        assert "summary-stage" not in job["needs"]
+        assert "summary" not in job["with"]
+        consumer = (workflows / f"stage-{name}.yml").read_text()
+        assert "resumeme-summary" not in consumer and "OPENAI_API_KEY" not in consumer
 
 
 @pytest.mark.parametrize(

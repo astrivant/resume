@@ -51,7 +51,11 @@ package and container builds run alongside any required LinkedIn capture.
 Python checks validate the selected profile alongside summary generation and
 tag-only skill proposals. PDF compilation and TeXtidote review run independently
 after summaries finish. Summary matrix jobs retain their four-worker limit;
-pytest continues to use parallel workers.
+pytest partitions the collected cases across three `ubuntu-24.04` runners with
+four workers each. Lint, type, and schema checks run once in parallel with those
+partitions. A failed partition does not cancel the others, and all partitions
+must succeed before their coverage is combined into the badge report. The
+required verification check still waits for the entire test stage.
 
 ```mermaid
 flowchart LR

@@ -16,8 +16,8 @@ defaults:
   run:
     shell: bash
 jobs:
-  python:
-    name: Lint, types, contracts, and tests
+  checks:
+    name: Lint, types, and contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -29,11 +29,68 @@ jobs:
       - uses: ./.github/actions/restore-profile
         with:
           refresh: ${{ inputs.refresh }}
-      - run: bash scripts/ci/test.sh
+      - run: bash scripts/ci/test.sh checks
 
-      # Preserve coverage diagnostics on test failure too; the pipeline gate still requires this job to succeed.
+  python:
+    name: Tests (${{ matrix.shard }}/3)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        shard: [1, 2, 3]
+    env:
+      TEST_SHARD_INDEX: ${{ matrix.shard }}
+      TEST_SHARD_COUNT: ${{ strategy.job-total }}
+      COVERAGE_FILE: .cache/coverage/.coverage.shard-${{ matrix.shard }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+      - uses: ./.github/actions/restore-profile
+        with:
+          refresh: ${{ inputs.refresh }}
+
+      # Each public Ubuntu runner provides four CPUs; workers collect the same deterministic partition.
+      - run: bash scripts/ci/test.sh tests --shard-index "$TEST_SHARD_INDEX" --shard-count "$TEST_SHARD_COUNT" -n 4
+
+      # Unique filenames retain every shard's raw coverage, including diagnostics from failed tests.
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
+        with:
+          name: python-coverage-${{ matrix.shard }}
+          path: .cache/coverage/.coverage.shard-${{ matrix.shard }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  coverage:
+    name: Combine test coverage
+    needs: python
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: python-coverage-*
+          path: .cache/coverage/shards
+          merge-multiple: true
+
+      # Wait for every shard before producing the complete report consumed by the existing coverage badge.
+      - name: Combine all shard data
+        run: |
+          poetry run coverage combine --keep .cache/coverage/shards
+          poetry run coverage report
+          poetry run coverage xml -o .cache/coverage/coverage.xml
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: python-coverage
           path: .cache/coverage/coverage.xml

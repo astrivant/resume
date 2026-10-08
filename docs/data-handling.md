@@ -208,7 +208,8 @@ repository's own retention setting, not the artifact-specific values.
 | `github-pages` | Enabled Pages preparation after accepted main publication | Static `index.html` and generic PDF at the configured path. | 7 |
 | `resumeme-python-distributions` | Successful package build; later used for version-tag PyPI publication | Wheel and source archive, including package metadata and README content. | 14 |
 | `resumeme-container` | Tag container build; later registry publication | Tested production container archive. | 7 |
-| `python-coverage`, `textidote-reports` | Tests/document checks | Source-path coverage and document reports; reports can include excerpts of checked prose. | 14 |
+| `python-coverage-*` | Each test partition, including failed tests | Raw coverage databases with relative source paths and executed line numbers; used to combine all partitions. | 14 |
+| `python-coverage`, `textidote-reports` | Combined successful test partitions/document checks | Source-path coverage and document reports; reports can include excerpts of checked prose. | 14 |
 
 On main publication, the bot stages the PDF, generated employer PDFs, enabled
 README/preview files, and branding changes. A refresh also stages the full

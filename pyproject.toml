@@ -119,7 +119,7 @@ mypy_path = ["scripts/typing"]
 exclude = ["scripts/typing/"]
 python_version = "3.13"
 strict = true
-files = ["pkg", "scripts"]
+files = ["pkg", "scripts", "conftest.py"]
 disallow_any_explicit = true
 disallow_any_unimported = true
 

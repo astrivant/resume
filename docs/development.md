@@ -21,8 +21,28 @@ count with `poetry run pytest -n 4`, or use `-n 0` for single-process debugging.
 Hooks check Ruff, strict mypy, Google-style docstrings, schemas, ShellCheck, and
 shfmt. For container-based development, see [local image builds](containers.md#build-locally).
 
+CI uses three test partitions with four pytest-xdist workers per runner. The
+standard public `ubuntu-24.04` runner has
+[four CPUs](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories);
+private repositories receive two CPUs with that label. Lint, types, and schema
+checks run once alongside the test matrix. Cases are sorted by pytest node ID
+and assigned round-robin, including individual parameter combinations, so every
+case runs in exactly one partition. No partition options means the entire suite.
+Reproduce a CI partition locally with:
+
+```bash
+poetry run pytest --shard-count 3 --shard-index 1 -n 4
+```
+
+Indices are one-based. `bash scripts/ci/test.sh` still runs both pre-commit and
+the complete suite; use `checks` or `tests` as its first argument to run only
+that portion. Additional arguments in `tests` or `all` mode go to pytest.
+
 The README coverage badge uses the combined `python-coverage` XML artifact from
-CI. Successful default-branch pushes publish `badges/coverage.svg` on `gh-pages`
+CI. Each partition uploads distinct raw coverage as `python-coverage-1`, `-2`,
+or `-3`, including on failure. The aggregation job merges all three after every
+partition succeeds; failed tests cannot publish a partial coverage badge.
+Successful default-branch pushes publish `badges/coverage.svg` on `gh-pages`
 in a separate job; unchanged percentages produce no commit. The badge links to
 the CI runs and becomes available after its first successful publication. Its
 raw GitHub URL works independently of the resume's Pages site. No additional

@@ -185,7 +185,7 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     # A fresh capture must reach every job that reads profile evidence, including optional tag-only skill publication.
     consumers = {
         "summary": ("prepare", "summary"),
-        "test": ("python",),
+        "test": ("checks", "python"),
         "documents": ("documents",),
         "resume": ("build",),
         "skills": ("generate",),
