@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Reconcile container instructions after GHCR publication; retry this script to recover uncertain GitHub responses.
+# Reconcile container instructions after registry publication; retry this script to recover uncertain GitHub responses.
 set -euo pipefail
 : "${RELEASE_TAG:?Set RELEASE_TAG to the published Git tag}"
-: "${IMAGE_TAGS:?Set IMAGE_TAGS to the successfully published GHCR references}"
+: "${IMAGE_TAGS:?Set IMAGE_TAGS to the successfully published registry references}"
 notes=$(mktemp)
 trap 'rm -f "$notes"' EXIT
 
@@ -28,7 +28,7 @@ begin='<!-- resume:container:start -->'
 end='<!-- resume:container:end -->'
 section=$(
     printf '%s\n\n## Container image\n\n' "$begin"
-    printf 'Pull the published GHCR image using either alias (linux/amd64):\n\n```bash\n'
+    printf 'Pull the tested image using any published reference (linux/amd64):\n\n```bash\n'
 
     while IFS= read -r reference; do
         [[ -n "$reference" ]] || continue

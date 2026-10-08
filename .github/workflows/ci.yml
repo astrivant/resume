@@ -189,3 +189,5 @@ jobs:
       packages: write
     with:
       sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      DOCKER_HUB_TOKEN_EMMEOWZING: ${{ secrets.DOCKER_HUB_TOKEN_EMMEOWZING }}

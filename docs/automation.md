@@ -57,6 +57,9 @@ gh secret set LINKEDIN_PASSWORD
 - `PYPI_API_TOKEN`: package maintainers only. Version-tag releases map the organization,
   repository, or `pypi` environment secret to `POETRY_PYPI_TOKEN_PYPI`. Resume-only
   forks do not need it; see [package publication](development.md#publish-to-pypi).
+- `DOCKER_HUB_TOKEN_EMMEOWZING`: upstream maintainers only. Grant `astrivant/resumeme`
+  access to this organization Actions secret for tag-only pushes to
+  `emmeowzing/resumeme`. Forks skip this job; see [container publication](containers.md#publish-on-a-tag).
 
 The runner uses headless Firefox or Chrome, selected by `capture.browser` with
 Firefox as the default. Browser state and diagnostics stay in its

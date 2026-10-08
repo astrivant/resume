@@ -1,5 +1,7 @@
 # resumeme
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/astrivant/resumeme/badge)](https://scorecard.dev/viewer/?uri=github.com/astrivant/resumeme)
+
 <!-- resumeme:branding:start -->
 <p align="left">
   <img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>
@@ -419,6 +421,10 @@ features you use. GitHub supplies the publication token:
   Version-tag releases expose it to Poetry as `POETRY_PYPI_TOKEN_PYPI` and upload
   `resumeme` to PyPI. Forks that only generate resumes do not need it. See
   [package releases](docs/development.md#publish-to-pypi).
+- **`DOCKER_HUB_TOKEN_EMMEOWZING` - upstream maintainers only.** This organization
+  secret publishes `emmeowzing/resumeme` on tags from `astrivant/resumeme`.
+  Forks skip Docker Hub publication and do not need this secret. See
+  [container publication](docs/containers.md#publish-on-a-tag).
 
 #### Configure signing secrets
 
@@ -447,5 +453,5 @@ interaction. See [automation setup and recovery](docs/automation.md).
 - [Suggested LinkedIn skills](docs/skills.md): tag-only Codex proposals and optional additions that preserve existing skills and endorsements.
 - [GitHub Pages](docs/pages.md): automatic website updates, publication paths, and custom domains.
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
-- [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR.
+- [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR and Docker Hub.
 - [Development](docs/development.md): setup, parallel tests, tooling, and document checks.

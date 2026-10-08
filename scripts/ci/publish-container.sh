@@ -2,7 +2,7 @@
 # Publish the verified archive from this pipeline using tags provided by Docker metadata-action.
 set -euo pipefail
 : "${SOURCE_SHA:?Set SOURCE_SHA to the verified source commit}"
-: "${IMAGE_TAGS:?Set IMAGE_TAGS to the newline-separated GHCR references}"
+: "${IMAGE_TAGS:?Set IMAGE_TAGS to the newline-separated registry references}"
 
 # Deploy the exact image tested by the build stage; rebuilding here could change dependencies or generated layers.
 docker load --input .cache/container/resumeme.tar.gz

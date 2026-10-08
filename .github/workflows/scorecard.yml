@@ -1,0 +1,32 @@
+name: OpenSSF Scorecard
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Refresh weekly so the badge reflects changes to repository settings too.
+    - cron: '43 6 * * 1'
+permissions:
+  contents: read
+
+# Scorecard's publishing API requires a separate workflow with approved action steps and no shell commands or defaults.
+jobs:
+  analysis:
+    name: Publish Scorecard results
+    if: github.event.repository.fork == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+      # Authenticate public results with GitHub OIDC; no additional repository secret is needed.
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Analyze and publish the score used by the README badge
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: scorecard-results.json
+          results_format: json
+          publish_results: true

@@ -21,6 +21,16 @@ count with `poetry run pytest -n 4`, or use `-n 0` for single-process debugging.
 Hooks check Ruff, strict mypy, Google-style docstrings, schemas, ShellCheck, and
 shfmt. For container-based development, see [local image builds](containers.md#build-locally).
 
+## OpenSSF Scorecard
+
+The README's [Scorecard badge](https://scorecard.dev/viewer/?uri=github.com/astrivant/resumeme)
+links to the latest published assessment. `scorecard.yml` runs on pushes to `main`
+and weekly, using the upstream action with `publish_results: true` and GitHub OIDC.
+No additional secret is required. The badge becomes available after the first
+successful publication. Forks skip analysis because the
+[upstream action](https://github.com/ossf/scorecard-action#installation) does not support them.
+This workflow runs independently of PDF builds and releases.
+
 ## Package responsibilities
 
 Implementation and tests live in `pkg/resumeme/`; repository tooling lives in

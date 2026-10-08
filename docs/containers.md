@@ -124,26 +124,38 @@ after both the test and build stages succeed:
 2. The build stage installs the wheel in the production image, smoke-tests it,
    and uploads the tested image archive for tag runs.
 3. The verification gate checks all required stage results.
-4. After the tag's signed PDF release succeeds, the container publication stage loads that archive, checks its source revision,
-   and pushes it to GHCR with exponential retries. It does not rebuild the image.
-5. After both aliases are uploaded, the stage creates or updates the Git tag's
+4. After the tag's signed PDF release succeeds, the container publication jobs load that archive, check its source revision,
+   and push it to GHCR and, for `astrivant/resumeme` only, Docker Hub with exponential retries. They do not rebuild the image.
+5. One job collects the successful registry uploads and creates or updates the Git tag's
    GitHub release notes with the exact image paths and copyable `docker pull`
    commands, including `--platform linux/amd64`.
 
-The image name is `ghcr.io/<lowercase-owner>/<lowercase-repository>`. Docker's
+GHCR uses `ghcr.io/<lowercase-owner>/<lowercase-repository>`; the upstream Docker Hub
+image is `emmeowzing/resumeme`. Docker's
 [metadata action](https://github.com/docker/metadata-action#typeref) derives the
 tag from the Git tag, replacing characters unsupported by container tags, and
-also adds `sha-<full-commit-sha>`. No moving `latest` tag is published. OCI labels
+also publishes `sha-<full-commit-sha>` using the pipeline's verified source commit.
+For example, tag `v0.1.0` publishes `emmeowzing/resumeme:v0.1.0` and
+`emmeowzing/resumeme:sha-<full-commit-sha>`, alongside the corresponding GHCR aliases.
+No moving `latest` tag is published. OCI labels
 record the source repository and commit. Publication references appear in the
 workflow summary and tag release notes. Reruns replace only the generated container
 section, preserving other notes, assets, and an existing release's draft status.
+Only successful registry jobs contribute pull commands; a failed upload still fails
+the pipeline. The notes job runs for forks even though their Docker Hub job is skipped.
 The pipeline appends container instructions after the signed PDF release is
 published on the same tag. Main-branch and monthly runs update the working PDF
 without creating a release; see [monthly refresh and release](automation.md).
 
-The publication job uses the automatic `GITHUB_TOKEN` with `packages: write` for
-GHCR and `contents: write` for release notes; no PAT or extra repository secret is
-required. GHCR initially creates packages as private. Set the package visibility
+GHCR publication uses the automatic `GITHUB_TOKEN` with `packages: write`;
+the notes job uses `contents: write`. GHCR requires no PAT or extra repository secret.
+GHCR initially creates packages as private. Set the package visibility
 to public to allow anonymous pulls. If the
 package already exists, grant this fork's workflow repository write access to it.
 See GitHub's [Container registry authentication and visibility documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
+
+Docker Hub publication requires the organization Actions secret
+`DOCKER_HUB_TOKEN_EMMEOWZING`, accessible to `astrivant/resumeme`. Its Docker Hub
+token must permit pushes to `emmeowzing/resumeme`; the login username is
+`emmeowzing`. The job runs only on upstream tag pushes and is skipped on forks,
+even if they define a secret with the same name. Forks need no Docker Hub setup.

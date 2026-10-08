@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+import yaml
 from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Media, Profile, Section, save_profile
@@ -46,13 +47,15 @@ def test_pdf_artifact_carries_utc_build_date_across_midnight(tmp_path: Path, mon
 
 
 @pytest.mark.parametrize("matching_revision", [False, True])
-def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, matching_revision: bool) -> None:
+@pytest.mark.parametrize("image", ["ghcr.io/example/resumeme", "emmeowzing/resumeme"])
+def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, matching_revision: bool, image: str) -> None:
     """
     Publish both tag aliases from the tested image and reject an unrelated archive before pushing.
 
     Args:
         tmp_path (Path): Isolated command recorder and workflow summary.
         matching_revision (bool): Whether the archive belongs to the verified source commit.
+        image (str): GHCR or Docker Hub destination receiving both aliases.
 
     Returns:
         None: Publishing never rebuilds an image or pushes a mismatched source revision.
@@ -68,7 +71,7 @@ def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, ma
     )
     docker.chmod(0o700)
     source = "a" * 40
-    tags = ["ghcr.io/example/resumeme:v1.0.0", f"ghcr.io/example/resumeme:sha-{source}"]
+    tags = [f"{image}:v1.0.0", f"{image}:sha-{source}"]
     environment = dict(
         os.environ,
         PATH=f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
@@ -98,6 +101,52 @@ def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, ma
         assert result.returncode != 0
         assert "does not match" in result.stderr
         assert not any(call.startswith(("push ", "tag ")) for call in calls)
+
+
+def test_dockerhub_publication_is_upstream_tag_only() -> None:
+    """
+    Guard the upstream namespace and organization secret while forks retain their GHCR path.
+
+    Returns:
+        None: Docker Hub cannot run for forks or branch events and uses the verified image and source aliases.
+    """
+    workflows = Path(__file__).resolve().parents[3] / ".github/workflows"
+    pipeline = yaml.safe_load((workflows / "ci.yml").read_text())
+    stage = yaml.safe_load((workflows / "stage-container.yml").read_text())
+    caller = pipeline["jobs"]["container-stage"]
+    hub = stage["jobs"]["dockerhub"]
+    assert caller["needs"] == ["source", "verified", "release-stage"]
+    assert caller["secrets"]["DOCKER_HUB_TOKEN_EMMEOWZING"] == "${{ secrets.DOCKER_HUB_TOKEN_EMMEOWZING }}"
+    assert stage[True]["workflow_call"]["secrets"]["DOCKER_HUB_TOKEN_EMMEOWZING"]["required"] is False
+
+    # A secret existing on a fork must not be enough to unlock the upstream Docker Hub destination.
+    assert " ".join(hub["if"].split()) == (
+        "github.repository == 'astrivant/resumeme' && github.event.repository.fork == false && "
+        "github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')"
+    )
+    metadata = next(step for step in hub["steps"] if step.get("id") == "metadata")
+    assert metadata["with"]["images"] == "emmeowzing/resumeme"
+    assert metadata["with"]["flavor"] == "latest=false"
+    assert metadata["with"]["tags"].splitlines() == ["type=ref,event=tag", "type=raw,value=sha-${{ inputs.sha }}"]
+    login = next(step for step in hub["steps"] if step.get("uses", "").startswith("docker/login-action@"))
+    assert login["with"] == {
+        "registry": "docker.io",
+        "username": "emmeowzing",
+        "password": "${{ secrets.DOCKER_HUB_TOKEN_EMMEOWZING }}",
+    }
+    assert any(step.get("with", {}).get("name") == "resumeme-container" for step in hub["steps"])
+    publisher = next(step for step in hub["steps"] if step.get("run") == "bash scripts/ci/publish-container.sh")
+    assert publisher["env"]["SOURCE_SHA"] == "${{ inputs.sha }}"
+    assert not any(step.get("uses", "").startswith("docker/build-push-action@") for step in hub["steps"])
+
+    # One notes job waits for both destinations; each registry contributes references only after a successful push.
+    notes = stage["jobs"]["notes"]
+    assert notes["needs"] == ["publish", "dockerhub"]
+    assert "!cancelled()" in notes["if"]
+    references = notes["steps"][-1]["env"]["IMAGE_TAGS"]
+
+    for registry in ("publish", "dockerhub"):
+        assert f"needs.{registry}.result == 'success' && needs.{registry}.outputs.tags || ''" in references
 
 
 def _git(root: Path, *arguments: str) -> str:
@@ -454,13 +503,15 @@ def test_signed_release_uses_only_the_existing_selected_tag(tmp_path: Path, matc
 
 
 @pytest.mark.parametrize("existing", ["missing", "manual", "managed"])
-def test_container_notes_preserve_content_and_recover_lost_responses(tmp_path: Path, existing: str) -> None:
+@pytest.mark.parametrize("dockerhub", [False, True])
+def test_container_notes_preserve_content_and_recover_lost_responses(tmp_path: Path, existing: str, dockerhub: bool) -> None:
     """
     Publish exact pull references once while preserving existing notes across uncertain writes.
 
     Args:
         tmp_path (Path): Fake GitHub CLI and persisted release body.
         existing (str): Initial release state, with missing, manual, or previously managed notes.
+        dockerhub (bool): Include upstream Docker Hub aliases alongside GHCR's fork-compatible references.
 
     Returns:
         None: New and existing releases retain one current container section after retries.
@@ -507,12 +558,16 @@ exit 2
 
     # Keep the original Git tag distinct from its normalized Docker alias, as metadata-action does for unsupported characters.
     tags = ["ghcr.io/example/resumeme:release-v1.0.0", f"ghcr.io/example/resumeme:sha-{'a' * 40}"]
+
+    if dockerhub:
+        tags.extend(["emmeowzing/resumeme:release-v1.0.0", f"emmeowzing/resumeme:sha-{'a' * 40}"])
+
     writes = tmp_path / "writes"
     environment = dict(
         os.environ,
         PATH=f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
         RELEASE_TAG="release/v1.0.0",
-        IMAGE_TAGS="\n".join(tags),
+        IMAGE_TAGS="\n" + "\n".join(tags) + "\n",
         RELEASE_BODY=str(state),
         RELEASE_WRITES=str(writes),
         RETRY_BACKOFF_SECONDS="0",
