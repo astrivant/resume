@@ -96,19 +96,19 @@ section_order:
   # - contact
   - about
   # - featured
-  - activity
+  # - activity
   - experience
   - education
-  - services
-  - career-breaks
-  - certifications
-  - volunteering-experiences
+  # - services
+  # - career-breaks
+  # - certifications
+  # - volunteering-experiences
   - projects
   - publications
-  - patents
-  - courses
-  - honors
-  - test-scores
+  # - patents
+  # - courses
+  # - honors
+  # - test-scores
   - skills
   # - recommendations
   # - languages
