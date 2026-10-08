@@ -63,7 +63,8 @@
       "properties": {
         "username": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,99}$"
+          "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9_-]{1,99}|(?:https?://|//)?(?:(?:www|[a-z]{2})\\.)?linkedin\\.com/in/[A-Za-z0-9][A-Za-z0-9_-]{1,99}/?(?:[?#][^\\s]*)?)$",
+          "description": "Public profile username or LinkedIn /in/ URL; normalized to the username when loaded. Login credentials belong in environment variables."
         },
         "ownership": {
           "type": "object",

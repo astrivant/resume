@@ -55,6 +55,25 @@ def _browser(monkeypatch: MonkeyPatch) -> tuple[MagicMock, MagicMock, MagicMock,
     return driver, username, password, submit
 
 
+def test_explicit_login_does_not_submit_public_profile_url(monkeypatch: MonkeyPatch) -> None:
+    """
+    Type only the login email when a public profile URL is supplied in the legacy username variable.
+
+    Args:
+        monkeypatch (MonkeyPatch): Installs distinct public and private identifiers in a simulated browser.
+
+    Returns:
+        None: Login receives the explicit email and submits once, preserving the public identifier for owner checks.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    monkeypatch.setenv("LINKEDIN_USERNAME", "https://www.linkedin.com/in/example-person/")
+    monkeypatch.setenv("LINKEDIN_LOGIN", "owner@example.org")
+    _login(driver, Capture(page_timeout_seconds=0), headless=True)
+    username.send_keys.assert_called_once_with("owner@example.org")
+    password.send_keys.assert_called_once_with("synthetic-password")
+    submit.click.assert_called_once()
+
+
 @pytest.mark.parametrize("headless", [False, True])
 def test_submit_timeout_observes_success_without_repeating_credentials(monkeypatch: MonkeyPatch, headless: bool) -> None:
     """

@@ -60,7 +60,7 @@ See [logging controls and record fields](CLI.md#logging).
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
-| `linkedin.username` | Required | Profile slug from `/in/<username>/`; replace the reference's `your-linkedin-username` placeholder |
+| `linkedin.username` | Required | Public username or LinkedIn `/in/<username>/` URL, normalized to a slug; replace the reference placeholder |
 | `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
 | `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
 | `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after signed tag releases; `false` skips generation and its API usage |
@@ -416,8 +416,10 @@ alone has no effect because these workflows do not read `vars.RETRY_*`.
 
 Browser and image-download retries use the YAML `capture.retry_*` settings instead
 of these shell overrides. Profile selection also uses YAML (`linkedin.username`);
-`LINKEDIN_USERNAME` (login email/account identifier) and `LINKEDIN_PASSWORD` supply
-credentials for automated login. Tag pushes, scheduled runs, and requested manual
+`LINKEDIN_LOGIN` (login email/phone) and `LINKEDIN_PASSWORD` supply credentials for
+automated login. Legacy email/phone values in `LINKEDIN_USERNAME` still work;
+public usernames or profile URLs require the separate `LINKEDIN_LOGIN` secret.
+Tag pushes, scheduled runs, and requested manual
 refreshes use `capture --headless`; ordinary branch builds consume committed snapshots. See
 [monthly authentication setup](automation.md#configure-a-fork).
 

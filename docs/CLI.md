@@ -131,8 +131,11 @@ when it exits, so repeated calls do not duplicate records.
 
 Open Firefox or Chrome, wait for authentication, and save the expanded profile
 and downloaded assets to `output.profile` and `output.assets`. Interactive login
-waits until you finish. `--headless` requires `LINKEDIN_USERNAME` and
-`LINKEDIN_PASSWORD`; `--connect-port` attaches to an existing Firefox Marionette
+waits until you finish. `--headless` requires `LINKEDIN_LOGIN` (email/phone) and
+`LINKEDIN_PASSWORD`; a legacy login email/phone in `LINKEDIN_USERNAME` also works.
+Public usernames and profile URLs are detected but require a separate login
+identifier. See [credential setup](automation.md#configure-a-fork).
+`--connect-port` attaches to an existing Firefox Marionette
 session and requires `capture.browser: firefox`.
 
 ```bash
@@ -157,8 +160,7 @@ options:
   --allow-incomplete    Explicitly accept recorded capture warnings or missing images
   --connect-port CONNECT_PORT
                         Attach to an explicitly opened local Firefox Marionette port
-  --headless            Capture unattended using LINKEDIN_USERNAME and
-                        LINKEDIN_PASSWORD
+  --headless            Capture unattended using LinkedIn login environment variables
 ~~~
 
 </details>
@@ -389,7 +391,7 @@ options:
   --public-key PUBLIC_KEY
                         Release cosign.pub path relative to the current directory
   --dry-run             Read and preview About without submitting any changes
-  --headless            Use LINKEDIN_USERNAME and LINKEDIN_PASSWORD without a desktop
+  --headless            Use LinkedIn login environment variables without a desktop
   --connect-port CONNECT_PORT
                         Attach to an explicitly opened local Firefox Marionette port
 ~~~

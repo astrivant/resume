@@ -5,7 +5,6 @@ Update the authenticated owner's About editor with a public signing identity.
 from __future__ import annotations
 
 import logging
-import os
 import tempfile
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
@@ -16,6 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError
 from resumeme.linkedin.browser import _browser, _login, _navigate
+from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.identity import ownership_block, reconcile_about, release_destination
 from resumeme.linkedin.retrying import retry
 from resumeme.signing import public_key_fingerprint
@@ -209,8 +209,7 @@ def publish_ownership(
     if headless and connect_port is not None:
         raise BrowserError("Headless ownership updates cannot attach to an interactive browser session.")
 
-    if headless and not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD")):
-        raise BrowserError("Headless ownership updates require LINKEDIN_USERNAME and LINKEDIN_PASSWORD.")
+    login_credentials(headless=headless, profile=config.linkedin.username)
 
     # Derive all public values before opening the browser; this command never receives the private signing key.
     block = ownership_block(public_key_fingerprint(public_key), release_destination(config.linkedin.ownership, root))

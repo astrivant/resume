@@ -397,10 +397,13 @@ See [Pages setup](docs/pages.md) for custom domains, DNS, and local previews.
 Configure these **GitHub Actions repository secrets in your own fork** for the
 features you use. GitHub supplies the publication token:
 
-- **`LINKEDIN_USERNAME` - required for tag and monthly refreshes.** Your LinkedIn login email
-  or account identifier; this is separate from `linkedin.username`, the profile slug.
+- **`LINKEDIN_LOGIN` - required for tag and monthly refreshes.** Your LinkedIn login email
+  or phone number. Existing setups can keep their login email in `LINKEDIN_USERNAME` instead.
+- **`LINKEDIN_USERNAME` - optional with `LINKEDIN_LOGIN`.** Accepts a public username or
+  `/in/` profile URL matching `linkedin.username`. Public identifiers require `LINKEDIN_LOGIN`;
+  LinkedIn cannot sign in with a profile slug or derive a private login email from it.
 - **`LINKEDIN_PASSWORD` - required for tag and monthly refreshes.** The login password. These
-  two secrets reach capture on refresh runs and the optional
+  login secrets reach capture on refresh runs and the optional
   [LinkedIn signing identity update](docs/ownership.md) after signed releases.
 - **`OPENAI_API_KEY` - required when `codex.enabled` or `codex.skills.enabled` is `true`.** Create a project key on
   the [OpenAI API keys page](https://platform.openai.com/api-keys) and store it as an Actions repository secret. The Codex summary
@@ -441,7 +444,7 @@ for prerequisites, key storage, and verification.
 
 #### LinkedIn authentication
 
-Set the public profile slug under `linkedin.username` in `resumeme.config.yaml`.
+Set the public profile username or LinkedIn `/in/` URL under `linkedin.username` in `resumeme.config.yaml`.
 Local `resumeme capture` opens the configured browser and waits for you to finish signing in.
 When both login environment variables are present, it submits them automatically;
 interactive capture still waits for you to complete MFA. Scheduled runs use

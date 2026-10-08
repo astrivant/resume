@@ -76,7 +76,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if name == "capture":
             command.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
-            command.add_argument("--headless", action="store_true", help="Capture unattended using LINKEDIN_USERNAME and LINKEDIN_PASSWORD")
+            command.add_argument("--headless", action="store_true", help="Capture unattended using LinkedIn login environment variables")
 
         if name in {"render", "build"}:
             command.add_argument("--summary", type=Path, help="Generated summary JSON relative to the configuration directory")
@@ -100,7 +100,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     ownership = commands.add_parser("publish-ownership", help="Update live LinkedIn About with a signed release's public key identity")
     ownership.add_argument("--public-key", type=Path, required=True, help="Release cosign.pub path relative to the current directory")
     ownership.add_argument("--dry-run", action="store_true", help="Read and preview About without submitting any changes")
-    ownership.add_argument("--headless", action="store_true", help="Use LINKEDIN_USERNAME and LINKEDIN_PASSWORD without a desktop")
+    ownership.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
     ownership.add_argument("--connect-port", type=int, help="Attach to an explicitly opened local Firefox Marionette port")
 
     skills_prompt = commands.add_parser("skills-prompt", help="Prepare an evidence-backed Codex skill proposal for the checked-out tag")

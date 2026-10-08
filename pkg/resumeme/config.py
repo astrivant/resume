@@ -22,6 +22,7 @@ from resumeme.compiler.constants.links import DEFAULT_PROJECT_FILTER
 from resumeme.compiler.constants.lists import BODY_HEADINGS
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.exceptions import ConfigurationError
+from resumeme.linkedin.credentials import profile_username
 
 __all__ = [
     "Capture",
@@ -84,11 +85,11 @@ class LinkedIn:
     Identify the profile owner without storing authentication material.
 
     Attributes:
-        username (str): Owner slug from the LinkedIn profile URL.
+        username (str): Owner slug, normalized from a username or public LinkedIn profile URL.
         ownership (Ownership): Optional live About update and public release destination.
     """
 
-    username: str
+    username: str = field(converter=profile_username)
     ownership: Ownership = field(factory=Ownership)
 
 

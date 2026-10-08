@@ -9,7 +9,7 @@ logging:
   level: ERROR
 
 linkedin:
-  # Required slug from https://www.linkedin.com/in/YOUR-USERNAME/; this is not your login email.
+  # Public username or LinkedIn /in/ profile URL. Login email/phone belongs in LINKEDIN_LOGIN, not this file.
   username: your-linkedin-username
 
   ownership:

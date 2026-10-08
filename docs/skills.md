@@ -33,7 +33,7 @@ codex:
 
 Generation uses `codex.model`, `codex.reasoning_effort`, and the existing `OPENAI_API_KEY`
 repository secret. See [model choices and API key setup](codex.md#model-selection).
-Publication also needs `LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD`, using the
+Publication also needs `LINKEDIN_LOGIN` (or a legacy email/phone in `LINKEDIN_USERNAME`) and `LINKEDIN_PASSWORD`, using the
 configured Firefox or Chrome browser. Neither feature runs on branch pushes,
 pull requests, monthly refreshes, or manual branch workflows. Ordinary résumé
 summary generation can run on main and tags when enabled.

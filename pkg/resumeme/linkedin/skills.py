@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import tempfile
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
@@ -20,6 +19,7 @@ from resumeme.compiler.asts.profile import load_profile
 from resumeme.config import project_path
 from resumeme.exceptions import BrowserElementError, BrowserError, BrowserWaitError
 from resumeme.linkedin.browser import _browser, _details, _login, _navigate
+from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.retrying import retry
 
 if TYPE_CHECKING:
@@ -331,8 +331,10 @@ def publish_skills(
     if not proposal.skills:
         return []
 
-    if headless and (connect_port is not None or not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD"))):
-        raise BrowserError("Headless skill publication requires LinkedIn login secrets and cannot attach to an interactive browser.")
+    if headless and connect_port is not None:
+        raise BrowserError("Headless skill publication cannot attach to an interactive browser.")
+
+    login_credentials(headless=headless, profile=config.linkedin.username)
 
     with _browser(root, config.capture, connect_port, headless=headless) as driver:
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)

@@ -39,14 +39,18 @@ push generated updates through your branch rules. Set the login secrets using
 the GitHub CLI's interactive prompts:
 
 ```bash
-gh secret set LINKEDIN_USERNAME
+gh secret set LINKEDIN_LOGIN
 gh secret set LINKEDIN_PASSWORD
 ```
 
-- `LINKEDIN_USERNAME`: login email/account identifier, separate from the public
-  profile slug in `resumeme.config.yaml`.
+- `LINKEDIN_LOGIN`: login email or phone number. This takes precedence over a
+  legacy login email/phone stored in `LINKEDIN_USERNAME`.
+- `LINKEDIN_USERNAME`: optional public username or LinkedIn `/in/` URL when
+  `LINKEDIN_LOGIN` is set; it must match the configured owner. Existing email/phone
+  values still work without `LINKEDIN_LOGIN`. A public identifier alone cannot
+  authenticate, and the client reports that before opening a browser.
 - `LINKEDIN_PASSWORD`: account password, passed only to capture or explicitly enabled
-  ownership/skill updates. Both login secrets are required for tag, monthly, and
+  ownership/skill updates. A login identifier and password are required for tag, monthly, and
   requested manual captures.
 - `OPENAI_API_KEY`: needed if `codex.enabled` or `codex.skills.enabled` is true.
   Create it on the [OpenAI API keys page](https://platform.openai.com/api-keys) and save it as an Actions secret.
@@ -66,6 +70,12 @@ gh secret set LINKEDIN_PASSWORD
 - `DOCKER_HUB_TOKEN_EMMEOWZING`: upstream maintainers only. Grant `astrivant/resumeme`
   access to this organization Actions secret for tag-only pushes to
   `emmeowzing/resumeme`. Forks skip this job; see [container publication](containers.md#publish-on-a-tag).
+
+`linkedin.username` accepts a public username or a profile URL such as
+`https://www.linkedin.com/in/your-name/`. URLs are normalized to the username,
+discarding tracking parameters and fragments. Configuration remains authoritative
+for profile selection; login secrets do not silently switch the captured owner.
+Public profile identifiers cannot reveal the account's private login email.
 
 The runner uses headless Firefox or Chrome, selected by `capture.browser` with
 Firefox as the default. Browser state and diagnostics stay in its

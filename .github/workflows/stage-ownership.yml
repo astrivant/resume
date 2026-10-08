@@ -7,6 +7,8 @@ on:
         type: string
         required: true
     secrets:
+      LINKEDIN_LOGIN:
+        required: false
       LINKEDIN_USERNAME:
         required: false
       LINKEDIN_PASSWORD:
@@ -66,6 +68,7 @@ jobs:
       - name: Maintain the public ownership lines
         if: steps.latest.outputs.current == 'true'
         env:
+          LINKEDIN_LOGIN: ${{ secrets.LINKEDIN_LOGIN }}
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
         run: poetry run resumeme publish-ownership --headless --public-key .cache/publication/cosign.pub

@@ -87,8 +87,12 @@ user sign in, complete MFA, and leave the window open. Login completion is detec
 automatically without a login deadline. Keep polling the same process while the
 user signs in; do not start duplicate captures or impose a short overall timeout.
 
-`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD` can supply credentials; neither belongs
-in chat, config, or commits. Interactive capture still permits manual challenges.
+`LINKEDIN_LOGIN` (email/phone) and `LINKEDIN_PASSWORD` can supply credentials;
+neither belongs in chat, config, or commits. Legacy email/phone values in
+`LINKEDIN_USERNAME` still work. A public username or `/in/` URL in that variable
+requires `LINKEDIN_LOGIN` and must match the configured owner. `linkedin.username`
+in YAML accepts either a public username or profile URL. Never infer a private
+login email from the public slug. Interactive capture still permits manual challenges.
 `--headless` is for unattended execution and fails if a challenge needs interaction.
 `--connect-port` attaches only to an explicitly opened local Firefox Marionette
 session. Read [capture and attachment instructions](docs/README.md#local-capture)

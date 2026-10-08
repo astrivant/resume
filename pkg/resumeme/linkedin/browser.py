@@ -30,6 +30,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile
 from resumeme.compiler.asts.profile import save_profile
 from resumeme.exceptions import BrowserElementError, BrowserError, BrowserLaunchError, BrowserTimeoutError, BrowserWindowError
+from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry
 from resumeme.telemetry import safe_log_url
@@ -431,11 +432,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
     Raises:
         BrowserError: Credentials are incomplete or unattended authentication requires intervention.
     """
-    username = os.environ.get("LINKEDIN_USERNAME", "")
-    password = os.environ.get("LINKEDIN_PASSWORD", "")
-
-    if bool(username) != bool(password) or (headless and not username):
-        raise BrowserError("Set both LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD for unattended capture.")
+    username, password = login_credentials(headless=headless)
 
     if username and not _authenticated(driver):
         _LOGGER.info("Waiting for the LinkedIn login form")
@@ -527,7 +524,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
     except TimeoutException as error:
         raise BrowserError(
             f"Unattended LinkedIn login did not complete (page state: {_login_page(driver)}). "
-            "Check LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD, or run this command without --headless "
+            "Check LINKEDIN_LOGIN (or legacy LINKEDIN_USERNAME) and LINKEDIN_PASSWORD, or run this command without --headless "
             "to complete an account challenge interactively. No profile changes were submitted."
         ) from error
 
@@ -849,9 +846,8 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
     if headless and connect_port is not None:
         raise BrowserError("Headless capture cannot attach to an interactive browser session.")
 
-    # Missing secrets fail before a browser is started; interactive users keep their unlimited login wait.
-    if headless and not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD")):
-        raise BrowserError("Headless capture requires LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD.")
+    # Reject missing credentials or a public identifier used as a login before opening a browser.
+    login_credentials(headless=headless, profile=config.linkedin.username)
 
     name = config.capture.browser.title()
     _LOGGER.info("Starting LinkedIn capture", extra={"browser.name": name, "browser.headless": headless})
