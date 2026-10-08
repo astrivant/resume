@@ -1,5 +1,5 @@
 """
-Prepare optional Codex inputs for trusted main-branch CI without reading the API key.
+Prepare optional Codex inputs for main-branch or tag CI without reading the API key.
 """
 
 from __future__ import annotations

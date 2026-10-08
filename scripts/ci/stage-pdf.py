@@ -18,7 +18,7 @@ artifact = Path(".cache/publication/resume.pdf")
 source = project_path(Path.cwd(), config.output.pdf)
 
 if not source.read_bytes().startswith(b"%PDF-"):
-    raise ValueError("The selected document is not a PDF. Build and commit the PDF before creating a release tag.")
+    raise ValueError("The build did not produce a valid PDF for publication.")
 
 artifact.parent.mkdir(parents=True, exist_ok=True)
 shutil.copyfile(source, artifact)

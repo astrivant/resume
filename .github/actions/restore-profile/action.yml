@@ -1,5 +1,5 @@
 name: Restore captured profile
-description: Use the same complete monthly capture in every consumer of this pipeline run
+description: Use the same complete capture in every consumer of this pipeline run
 inputs:
   refresh:
     description: Whether the source stage uploaded a fresh LinkedIn capture

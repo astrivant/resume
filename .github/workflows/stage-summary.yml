@@ -47,7 +47,9 @@ jobs:
       - name: Prepare filtered profile evidence and output schema
         id: prepare
         env:
-          GENERATE_SUMMARY: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+          GENERATE_SUMMARY: >-
+            ${{ (github.ref == 'refs/heads/main' && github.event_name != 'pull_request') ||
+                (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) }}
           OPENAI_KEY_CONFIGURED: ${{ secrets.OPENAI_API_KEY != '' }}
         run: poetry run python scripts/ci/prepare-summary.py
 

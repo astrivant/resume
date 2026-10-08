@@ -128,7 +128,7 @@ jobs:
     with:
       sha: ${{ needs.deploy-stage.outputs.published-sha }}
 
-  # A user-created tag chooses the committed PDF to sign and share; monthly and main-branch runs create no release.
+  # Tags capture LinkedIn first and release the PDF built from that capture; branch and monthly runs create no release.
   release-stage:
     name: Release signed PDF
     needs: [source, verified]
@@ -162,6 +162,7 @@ jobs:
     uses: ./.github/workflows/stage-skills.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
+      refresh: ${{ needs.source.outputs.refresh == 'true' }}
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}

@@ -3,9 +3,13 @@ on:
   workflow_call:
     inputs:
       sha:
-        description: Published tag revision supplying the captured skill evidence
+        description: Published tag revision supplying the configuration and code
         type: string
         required: true
+      refresh:
+        description: Consume the same fresh LinkedIn capture used to build the released PDF
+        type: boolean
+        default: false
     secrets:
       OPENAI_API_KEY:
         required: false
@@ -35,6 +39,9 @@ jobs:
       - uses: ./.github/actions/setup-project
         with:
           groups: main
+      - uses: ./.github/actions/restore-profile
+        with:
+          refresh: ${{ inputs.refresh }}
       - name: Prepare owner-bound prompt and schema
         id: settings
         env:
@@ -90,6 +97,9 @@ jobs:
       - uses: ./.github/actions/setup-project
         with:
           groups: main
+      - uses: ./.github/actions/restore-profile
+        with:
+          refresh: ${{ inputs.refresh }}
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: resumeme-skills

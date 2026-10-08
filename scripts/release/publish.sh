@@ -13,7 +13,7 @@ test "$(git rev-parse "refs/tags/$tag^{commit}")" = "$SOURCE_SHA"
 notes="$RUNNER_TEMP/resume-release-notes.md"
 
 {
-    printf 'Resume selected from tag %s at commit %s.\n\n' "$tag" "$SOURCE_SHA"
+    printf 'Resume built from a fresh LinkedIn capture using tag %s at commit %s.\n\n' "$tag" "$SOURCE_SHA"
     printf 'Signing key fingerprint (SHA-256 of DER public key): %s.\n\n' "$(cat "$artifact_dir/key-fingerprint.txt")"
     printf 'PDF SHA-256: %s.\n\n' "$(shasum -a 256 "$artifact_dir/resume.pdf" | cut -d ' ' -f 1)"
     printf 'Verify the fingerprint against a trusted copy of the signing key, then run:\n\n'

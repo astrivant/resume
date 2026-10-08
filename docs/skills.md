@@ -1,6 +1,7 @@
 # Suggested LinkedIn skills
 
-On a tag push, Codex can propose profile skills from the tagged LinkedIn snapshot.
+On a tag push, Codex can propose profile skills from the same fresh LinkedIn capture
+used to build the released PDF.
 An optional `resumeme publish-skills` command adds missing suggestions to the live
 profile after release publication. Existing skills and their endorsements are
 always retained. The publisher does not remove, rename, reorder, replace, or
@@ -15,7 +16,7 @@ describes that distinction and the 100-skill profile limit.
 
 ```yaml
 codex:
-  # Independent of codex.enabled, which controls the résumé summaries on main.
+  # Independent of codex.enabled, which controls résumé summaries on main and tags.
   skills:
     enabled: true
     publish: false
@@ -35,7 +36,7 @@ repository secret. See [model choices and API key setup](codex.md#model-selectio
 Publication also needs `LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD`, using the
 configured Firefox or Chrome browser. Neither feature runs on branch pushes,
 pull requests, monthly refreshes, or manual branch workflows. Ordinary résumé
-summary generation keeps its existing main-branch behavior.
+summary generation can run on main and tags when enabled.
 
 To stop all Codex API usage, set `codex.enabled`, `codex.skills.enabled`, and
 `codex.skills.publish` to `false`. PDF builds, signed releases, and Pages publication

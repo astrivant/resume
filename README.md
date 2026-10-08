@@ -116,7 +116,9 @@ poetry run resumeme validate
 
 Sign in to LinkedIn in the browser window and leave it open. Capture waits for you
 to finish signing in, then saves your profile and images locally. **A username
-change alone does not fetch a profile in CI:** Actions builds the snapshot you push.
+change alone does not fetch a profile on an ordinary branch push:** those builds
+use the snapshot you push. Tags, monthly runs, and requested manual refreshes
+capture again with the LinkedIn login secrets.
 
 To use Chrome, set `capture.browser: chrome` in the config; `firefox` is the default.
 Install the selected browser first. See [browser setup](docs/README.md#local-capture).
@@ -164,8 +166,8 @@ Open your checkout in an agent with terminal access and give it this prompt:
 The portable [agent skill](SKILL.md) also covers filters and themes, GitHub activity,
 Codex summaries and employer-specific PDFs, signing, monthly refreshes, personal
 READMEs, and Pages. Add the specific operation you want: for example, "publish to
-my fork's main branch" or "create a signed résumé release from the accepted PDF
-commit." Live LinkedIn About updates and skill additions are separate requests.
+my fork's main branch" or "capture my current profile and create a signed résumé
+release from this configuration." Live LinkedIn About updates and skill additions are separate requests.
 See the [CLI reference](docs/CLI.md) for commands and options.
 
 ## How it works
@@ -176,10 +178,11 @@ profile. The portable inputs are `data/profile.json` and `data/assets/`.
 
 Jinja translates those inputs and your YAML configuration into `tex/resume.tex`.
 The digest-pinned `drpsychick/texlive-pdflatex` image compiles the PDF. CI installs
-from the Poetry lockfile. Ordinary pushes rebuild committed inputs; monthly runs
-capture LinkedIn first. After validation, main-branch publication commits the PDF
-and any refreshed inputs together. User-created tags add a release link and key
-fingerprint to the committed PDF's footer, sign it, and publish a release.
+from the Poetry lockfile. Ordinary branch pushes rebuild committed inputs; monthly
+runs and tag pushes capture LinkedIn first. After validation, main-branch publication
+commits the PDF and any refreshed inputs together. User-created tags sign the fresh
+PDF built in that run, adding a release link and key fingerprint to its footer,
+and publish a release. Tags do not update `main` or the website.
 Pull requests validate without publishing or signing in.
 
 For applications, add LinkedIn company usernames and job links to
@@ -394,9 +397,9 @@ See [Pages setup](docs/pages.md) for custom domains, DNS, and local previews.
 Configure these **GitHub Actions repository secrets in your own fork** for the
 features you use. GitHub supplies the publication token:
 
-- **`LINKEDIN_USERNAME` - required for monthly refresh.** Your LinkedIn login email
+- **`LINKEDIN_USERNAME` - required for tag and monthly refreshes.** Your LinkedIn login email
   or account identifier; this is separate from `linkedin.username`, the profile slug.
-- **`LINKEDIN_PASSWORD` - required for monthly refresh.** The login password. These
+- **`LINKEDIN_PASSWORD` - required for tag and monthly refreshes.** The login password. These
   two secrets reach capture on refresh runs and the optional
   [LinkedIn signing identity update](docs/ownership.md) after signed releases.
 - **`OPENAI_API_KEY` - required when `codex.enabled` or `codex.skills.enabled` is `true`.** Create a project key on

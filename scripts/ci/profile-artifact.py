@@ -55,7 +55,7 @@ def transfer(mode: str, root: Path) -> None:
     profile = load_profile(artifact / "profile.json" if mode == "restore" else snapshot, config.linkedin.username)
 
     if profile.warnings:
-        raise ValueError("A monthly refresh cannot publish an incomplete profile: " + "; ".join(profile.warnings))
+        raise ValueError("A profile refresh cannot publish an incomplete profile: " + "; ".join(profile.warnings))
 
     # The profile owns the file list; incidental assets, Firefox state, and diagnostic pages are never transferred.
     pairs = {(snapshot, artifact / "profile.json")}

@@ -98,7 +98,7 @@ the bot commit. Queued deployments check that `main` still names that accepted
 commit before proceeding. Superseded runs skip the older site.
 
 Pull requests, other branches, and tags do not deploy the site. Tagged releases
-still select and sign the committed PDF separately; the site's **Signed releases**
+capture LinkedIn and sign their freshly built PDF separately; the site's **Signed releases**
 link leads to those verification artifacts. Pages does not publish raw profile
 JSON, browser state, or the employer-specific PDFs under `single-origin/`.
 

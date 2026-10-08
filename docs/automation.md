@@ -3,8 +3,13 @@
 The pipeline refreshes LinkedIn on the first day of every month at **06:17 UTC**
 (`17 6 1 * *`). It captures the configured profile, downloads images and project
 previews, runs the existing validation and PDF build, and commits the complete
-snapshot, referenced assets, and PDF to `main` together. Ordinary pushes rebuild
+snapshot, referenced assets, and PDF to `main` together. Ordinary branch pushes rebuild
 the saved inputs. Neither path creates a release.
+
+Every tag push also performs a headless LinkedIn capture before validation and
+compilation. The release signs the fresh PDF built in that same workflow run,
+not the PDF committed at the tag. Tags require the LinkedIn login secrets and
+do not commit their capture or PDF to `main` or deploy Pages.
 
 Enable `pages.enabled` to also update a [GitHub Pages website](pages.md) after
 that commit is accepted. The optional stage serves `index.html` and the same PDF
@@ -40,11 +45,12 @@ gh secret set LINKEDIN_PASSWORD
 
 - `LINKEDIN_USERNAME`: login email/account identifier, separate from the public
   profile slug in `resumeme.config.yaml`.
-- `LINKEDIN_PASSWORD`: account password, passed only to capture or an explicitly enabled
-  ownership update.
+- `LINKEDIN_PASSWORD`: account password, passed only to capture or explicitly enabled
+  ownership/skill updates. Both login secrets are required for tag, monthly, and
+  requested manual captures.
 - `OPENAI_API_KEY`: needed if `codex.enabled` or `codex.skills.enabled` is true.
   Create it on the [OpenAI API keys page](https://platform.openai.com/api-keys) and save it as an Actions secret.
-  The first enables main-branch summaries; the second enables tag-only skill proposals.
+  The first enables main-branch and tag summaries; the second enables tag-only skill proposals.
 - `COSIGN_PRIVATE_KEY` and optional `COSIGN_PASSWORD`: needed when publishing a
   signed tag release, not for monthly refreshes. The private-key secret contains
   the entire Cosign PEM, including its header, footer, and newlines; the password
@@ -135,8 +141,9 @@ same refresh now, select **Run workflow -> main -> refresh**, or run:
 gh workflow run ci.yml --ref main -f refresh=true
 ```
 
-Manual runs without `refresh=true` use committed inputs. Refreshing another branch
-is rejected. Capture, validation, or compilation failures leave `main` unchanged;
+Manual runs without `refresh=true` use committed inputs. Manual refreshes on another
+branch or tag are rejected; tag pushes refresh automatically. Capture, validation,
+or compilation failures leave `main` unchanged and block new release publication;
 there is no fallback to an older capture reported as a successful refresh. If
 `main` advances during verification, publication skips the stale update. Retry
 the refresh on the new head when needed.
@@ -164,8 +171,10 @@ poetry run resumeme validate
 
 Complete any challenge in the selected browser, then commit the accepted snapshot and assets
 and push them to `main`. Update incorrect secrets and rerun the refresh. Accounts
-that consistently require interaction can use this local capture path; scheduled
-authentication cannot guarantee unattended access.
+that consistently require interaction can use this local capture path for ordinary
+branch builds. Tag releases now require a successful headless capture; committing
+a local snapshot does not bypass that requirement. Unattended authentication is
+not guaranteed from a hosted runner.
 
 For a failed About or skills publication, run the corresponding `publish-ownership`
 or `publish-skills` command locally without `--headless`; committing a captured
@@ -173,7 +182,8 @@ snapshot does not apply those live profile updates. See [CLI commands](CLI.md).
 
 ## Choose a version to share
 
-Wait for the PDF update on `main`, then tag that exact commit. Use a résumé tag
+Commit and push the configuration you want to use, then tag that revision. Its
+pipeline captures your current LinkedIn profile and builds a new PDF. Use a résumé tag
 such as `resume-2026-10` to avoid triggering the separate `v<version>` PyPI release:
 
 ```bash
@@ -183,10 +193,12 @@ git tag resume-2026-10
 git push origin resume-2026-10
 ```
 
-After verification, the tag workflow takes the **PDF already committed at that
-revision** and adds a light-gray footer on its last page with the exact release
-link and signing key fingerprint. It preserves the selected content, layout, and
-generated summaries, then signs the PDF including that footer. It releases
+The source stage exports one complete `resumeme-profile` capture for this run.
+Validation, enabled summaries, compilation, and optional skill proposals use that
+same capture. After verification, the release job downloads **this run's
+`resume-pdf` artifact** and adds a light-gray footer on its last page with the exact
+release link and signing key fingerprint. It preserves the freshly compiled body
+and generated summaries, then signs the PDF including that footer. It releases
 the PDF, Cosign signature bundles, public key, SHA-256 manifest, key fingerprint,
 and source revision. The container stage then appends its pull instructions to
 the same release. See [signature verification](README.md#signed-releases).
@@ -196,9 +208,19 @@ When `codex.skills.enabled` is true, a separate stage generates an evidence-back
 to LinkedIn after publication. All existing skills and endorsements are retained;
 see [skill proposals and publication](skills.md).
 
-Tag releases do not update `main` or choose a newer document. If
+Missing credentials, an authentication challenge, an incomplete capture, or a
+missing build artifact fails the pipeline instead of publishing an older PDF.
+The capture artifact is retained for seven days and the PDF build artifact for
+fourteen days. `source.json` identifies the tagged code revision; the live capture
+is an input artifact from the run, not a change to that Git commit.
+
+Tag releases do not update `main` or the Pages website. If
 `linkedin.ownership.update_about` is enabled, a separate job signs in after
 publication to maintain the public signing fingerprint and releases link in
 About. See [configuration, previews, and recovery](ownership.md).
-Reruns reconcile the same tag; an existing public PDF is never replaced. Share
-the release's PDF and verification files with the intended recipient.
+Public release PDFs are never replaced on retries. Rerunning failed downstream
+jobs can reuse the completed capture and build from that run; rerunning all jobs
+captures again and can produce a different PDF that cannot replace an already
+public release. Use a new tag for updated content or pipeline fixes. Rerunning an
+old tag does not pick up workflow changes committed later on `main`. Share the
+release's PDF and verification files with the intended recipient.

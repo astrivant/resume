@@ -336,8 +336,8 @@ username and month window, then supply that file explicitly:
 resumeme build --github-calendar tex/github-contributions.json
 ```
 
-Tag releases preserve the selected committed PDF, including its captured graph;
-they do not fetch newer contributions before signing it.
+Tag builds refresh enabled contribution graphs under the configured date window.
+The release signs that run's compiled PDF without fetching or rerendering the graph again.
 
 ## Job text and subheadings
 
@@ -417,8 +417,8 @@ alone has no effect because these workflows do not read `vars.RETRY_*`.
 Browser and image-download retries use the YAML `capture.retry_*` settings instead
 of these shell overrides. Profile selection also uses YAML (`linkedin.username`);
 `LINKEDIN_USERNAME` (login email/account identifier) and `LINKEDIN_PASSWORD` supply
-credentials for automated login. Scheduled and requested manual refreshes use
-`capture --headless`; ordinary builds consume committed snapshots. See
+credentials for automated login. Tag pushes, scheduled runs, and requested manual
+refreshes use `capture --headless`; ordinary branch builds consume committed snapshots. See
 [monthly authentication setup](automation.md#configure-a-fork).
 
 ## Local capture
@@ -710,7 +710,8 @@ writing it to the workspace or passing its contents as a command argument.
 See [Cosign key import](https://docs.sigstore.dev/cosign/key_management/import-keypair/)
 and [`gh secret set`](https://cli.github.com/manual/gh_secret_set) for the upstream contracts.
 
-The tag release adds provenance to the PDF committed at the tagged revision,
+The tag pipeline captures LinkedIn headlessly and builds a new PDF. Its release
+stage downloads that run's `resume-pdf` artifact and adds provenance,
 then signs it with pinned Cosign 3.1.3, creates a SHA-256 manifest, signs that manifest, and verifies both signatures
 before uploading the signed artifacts. Monthly and ordinary builds upload unsigned
 working PDFs for verification and publication to `main`.
@@ -722,7 +723,7 @@ linking to the release and displaying the full public-key fingerprint (`SHA256:`
 followed by the DER digest, wrapped across two lines). The fingerprint
 matches `key-fingerprint.txt` and identifies the release's `cosign.pub`; the detached
 signature verifies the PDF, including its footer. The release step preserves the
-tagged document's body and layout without rerendering it.
+freshly compiled document's body and layout without rerendering it.
 
 Local and monthly builds show a releases link and **Unsigned working copy** instead
 of a signing identity. They use `linkedin.ownership.releases_url` or `.repository`,
@@ -760,7 +761,7 @@ trusted fingerprint establishes whose key they are trusting.
 
 ## Pipeline and ownership
 
-CI resolves one immutable source commit. Monthly and requested manual refreshes
+CI resolves one immutable source commit. Tag pushes, monthly runs, and requested manual refreshes
 capture LinkedIn first; each consumer restores the same complete capture artifact.
 Test and build stages run in parallel and are required by `CI verification`.
 PDF publication commits the PDF, any refreshed inputs, and the fork's personal
@@ -784,7 +785,7 @@ a concurrent push after that check rejects the ordinary fast-forward update. It
 never force-pushes or rebases an obsolete PDF. The bot uses `GITHUB_TOKEN`, so its
 generated commit does not start a recursive workflow run. A publication retry
 recognizes an identical generated commit instead of writing it again. User-created
-tags separately sign and release the committed PDF. Draft creation reconciles
+tags separately sign and release the fresh PDF artifact from the same run. Draft creation reconciles
 an existing draft after a lost network response.
 
 | Component | Responsibility | Interface |

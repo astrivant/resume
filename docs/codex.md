@@ -37,10 +37,11 @@ OpenAI. Keep credentials out of this field. `model: null` and
 `reasoning_effort: null` use the pinned Codex CLI's defaults.
 API usage is billed to that project.
 
-Push to `main` or manually dispatch the pipeline on `main`. Generation is off by
-default. Summary generation does not run on pull requests, other branches, or tags.
-Tags can run the separately enabled skill proposal flow. Enabling either generator
-without the API secret fails with a setup message.
+Push to `main`, manually dispatch the pipeline on `main`, or push a release tag.
+Generation is off by default and does not run on pull requests or other branches.
+Tags capture LinkedIn first and generate enabled summaries from that fresh profile.
+They can also run the separately enabled skill proposal flow. Enabling either
+generator without the API secret fails with a setup message.
 
 ## Model selection
 

@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 from resumeme.compiler.asts.profile import Entry, Media, Profile, Section, save_profile
 
@@ -102,40 +103,113 @@ def test_capture_restore_rejects_incomplete_or_unrelated_inputs(tmp_path: Path, 
 
 
 @pytest.mark.parametrize(
-    ("event", "ref", "allowed"),
+    ("event", "ref", "requested", "expected"),
     [
-        ("schedule", "refs/heads/main", True),
-        ("workflow_dispatch", "refs/heads/main", True),
-        ("pull_request", "refs/heads/main", False),
-        ("push", "refs/heads/main", False),
-        ("workflow_dispatch", "refs/heads/feature", False),
-        ("push", "refs/tags/resume-test", False),
+        ("schedule", "refs/heads/main", True, True),
+        ("workflow_dispatch", "refs/heads/main", True, True),
+        ("push", "refs/tags/v0.2.0", False, True),
+        ("push", "refs/tags/resume-test", False, True),
+        ("push", "refs/tags/resume-test", True, True),
+        ("pull_request", "refs/heads/main", True, None),
+        ("pull_request", "refs/tags/resume-test", True, None),
+        ("push", "refs/heads/main", True, None),
+        ("workflow_dispatch", "refs/heads/feature", True, None),
+        ("workflow_dispatch", "refs/tags/resume-test", True, None),
+        ("schedule", "refs/heads/feature", True, None),
+        ("push", "refs/heads/main", False, False),
+        ("push", "refs/heads/feature", False, False),
+        ("pull_request", "refs/pull/123/merge", False, False),
+        ("workflow_dispatch", "refs/heads/main", False, False),
     ],
 )
-def test_refresh_requires_trusted_main_event(tmp_path: Path, event: str, ref: str, allowed: bool) -> None:
+def test_refresh_event_selection(tmp_path: Path, event: str, ref: str, requested: bool, expected: bool | None) -> None:
     """
-    Reject inappropriate refresh contexts before setup can expose capture credentials.
+    Capture on every tag push while retaining explicit refresh boundaries for branch events.
 
     Args:
         tmp_path (Path): GitHub output-file directory.
         event (str): Triggering GitHub event.
         ref (str): Event's repository reference.
-        allowed (bool): Whether this event can request fresh LinkedIn input.
+        requested (bool): Whether the workflow explicitly requested a refresh.
+        expected (bool | None): Capture decision, or None when this context must fail before exposing credentials.
 
     Returns:
-        None: Only scheduled or explicitly requested main-branch refreshes produce a capture-enabled output.
+        None: Tags refresh without an opt-in; ordinary builds reuse saved inputs and invalid refresh requests fail.
     """
     output = tmp_path / "output"
     result = subprocess.run(
         ["bash", "scripts/ci/source.sh"],
         cwd=Path(__file__).resolve().parents[3],
-        env=dict(os.environ, REFRESH_PROFILE="true", GITHUB_EVENT_NAME=event, GITHUB_REF=ref, GITHUB_OUTPUT=str(output)),
+        env=dict(
+            os.environ,
+            REFRESH_PROFILE=str(requested).lower(),
+            GITHUB_EVENT_NAME=event,
+            GITHUB_REF=ref,
+            GITHUB_OUTPUT=str(output),
+        ),
         capture_output=True,
         text=True,
         check=False,
     )
-    assert (result.returncode == 0) is allowed
-    assert output.exists() is allowed
+    assert (result.returncode == 0) is (expected is not None)
+    assert output.exists() is (expected is not None)
 
-    if allowed:
-        assert "refresh=true" in output.read_text()
+    if expected is not None:
+        assert f"refresh={str(expected).lower()}\n" in output.read_text()
+
+
+def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
+    """
+    Keep refreshed evidence and the built PDF connected across independent CI checkouts.
+
+    Returns:
+        None: Consumers restore the same capture and release signs this run's verified artifact without restaging an older PDF.
+    """
+    workflows = Path(__file__).resolve().parents[3] / ".github/workflows"
+    pipeline = yaml.safe_load((workflows / "ci.yml").read_text())
+    stages = {
+        name: yaml.safe_load((workflows / f"stage-{name}.yml").read_text()) for name in ("summary", "test", "build", "skills", "release")
+    }
+    source = pipeline["jobs"]["source"]
+    assert source["outputs"]["refresh"] == "${{ steps.source.outputs.refresh }}"
+    capture = next(step for step in source["steps"] if step.get("run") == "poetry run resumeme capture --headless")
+    assert capture["if"] == "steps.source.outputs.refresh == 'true'"
+    assert "continue-on-error" not in source and "continue-on-error" not in capture
+
+    # A fresh capture must reach every job that reads profile evidence, including optional tag-only skill publication.
+    consumers = {"summary": ("prepare", "summary"), "test": ("python", "documents"), "build": ("build",), "skills": ("generate", "publish")}
+
+    for stage, jobs in consumers.items():
+        assert pipeline["jobs"][f"{stage}-stage"]["with"]["refresh"] == "${{ needs.source.outputs.refresh == 'true' }}"
+
+        for job in jobs:
+            steps = stages[stage]["jobs"][job]["steps"]
+            restore = next(step for step in steps if step.get("uses") == "./.github/actions/restore-profile")
+            assert restore["with"]["refresh"] == "${{ inputs.refresh }}"
+            assert "continue-on-error" not in restore
+            assert steps.index(restore) < next(index for index, step in enumerate(steps) if "run" in step)
+
+    # Enabled summaries must be regenerated from tag captures instead of disappearing from freshly built release PDFs.
+    preparation = next(step for step in stages["summary"]["jobs"]["prepare"]["steps"] if step.get("id") == "prepare")
+    assert " ".join(preparation["env"]["GENERATE_SUMMARY"].split()) == (
+        "${{ (github.ref == 'refs/heads/main' && github.event_name != 'pull_request') || "
+        "(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) }}"
+    )
+
+    # Omitting run-id and repository binds the artifact download to this workflow run; a missing build must fail the release.
+    assert pipeline["jobs"]["release-stage"]["needs"] == ["source", "verified"]
+    assert "build-stage" in pipeline["jobs"]["verified"]["needs"]
+    release = stages["release"]["jobs"]["release"]
+    steps = release["steps"]
+    download = next(step for step in steps if step.get("uses", "").startswith("actions/download-artifact@"))
+    assert download["with"] == {"name": "resume-pdf", "path": ".cache/publication/"}
+    assert "if" not in download and "continue-on-error" not in download and "continue-on-error" not in release
+    assert not any("stage-pdf.py" in step.get("run", "") for step in steps)
+    signing = next(index for index, step in enumerate(steps) if step.get("run") == "poetry run bash scripts/release/sign.sh")
+    assert steps.index(download) < signing
+    build_upload = next(
+        step
+        for step in stages["build"]["jobs"]["build"]["steps"]
+        if step.get("uses", "").startswith("actions/upload-artifact@") and step.get("with", {}).get("name") == "resume-pdf"
+    )
+    assert build_upload["with"]["path"] == ".cache/publication/"
