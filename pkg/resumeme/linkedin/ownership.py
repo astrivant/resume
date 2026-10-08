@@ -72,7 +72,7 @@ def _about_text(driver: WebDriver, field: WebElement) -> str:
     if not isinstance(value, str):
         raise BrowserError("Cannot read the About editor's text; no changes were submitted.")
 
-    return value
+    return _about_spacing(value)
 
 
 def _same_about_text(observed: str, expected: str) -> bool:
@@ -128,7 +128,8 @@ def _fill_about(driver: WebDriver, field: WebElement, text: str) -> None:
 
     for paragraph_index, paragraph in enumerate(paragraphs):
         if paragraph_index:
-            # Enter starts the next paragraph and preserves one blank row in LinkedIn's editor serialization.
+            # Enter twice creates a blank paragraph; text extraction collapses any extra empty editor blocks.
+            field.send_keys(Keys.ENTER)
             field.send_keys(Keys.ENTER)
 
         lines = paragraph.split("\n")

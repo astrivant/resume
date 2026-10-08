@@ -254,9 +254,9 @@ def test_rich_about_text_ignores_visual_wrapping() -> None:
     """
     driver, field = MagicMock(), MagicMock()
     field.get_attribute.return_value = "true"
-    driver.execute_script.return_value = "First paragraph.\n\nSecond paragraph with a hard\nbreak."
+    driver.execute_script.return_value = "First paragraph.\n\n\nSecond paragraph with a hard\nbreak."
 
-    assert _about_text(driver, field) == driver.execute_script.return_value
+    assert _about_text(driver, field) == "First paragraph.\n\nSecond paragraph with a hard\nbreak."
     script, argument = driver.execute_script.call_args.args
     assert "innerText" not in script
     assert "childNodes" in script
@@ -268,7 +268,7 @@ def test_rich_about_writer_separates_paragraphs_with_one_blank_row() -> None:
     Preserve paragraph spacing in LinkedIn's rich editor without adding extra rows.
 
     Returns:
-        None: The editor receives one paragraph event for the requested blank row.
+        None: The editor receives two Enter events for a blank row, then extraction collapses editor padding.
     """
     driver, field = MagicMock(), MagicMock()
     driver.capabilities = {"platformName": "macOS"}
@@ -280,6 +280,7 @@ def test_rich_about_writer_separates_paragraphs_with_one_blank_row() -> None:
         call(Keys.COMMAND, "a"),
         call(Keys.BACKSPACE),
         call("First paragraph."),
+        call(Keys.ENTER),
         call(Keys.ENTER),
         call("Second paragraph."),
     ]
