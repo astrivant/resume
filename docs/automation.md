@@ -152,7 +152,10 @@ for profile selection; login secrets do not silently switch the captured owner.
 Public profile identifiers cannot reveal the account's private login email.
 
 The runner uses headless Firefox or Chrome, selected by `capture.browser` with
-Firefox as the default. The session wrapper places browser state and raw browser
+Firefox as the default. The capture step sets `RESUMEME_LOG_LEVEL=DEBUG` and
+`PYTHONUNBUFFERED=1` so browser progress and sanitized request diagnostics stream
+to the Actions log. See [logging](CLI.md#logging) for the output format and redaction limits.
+The session wrapper places browser state and raw browser
 diagnostics in a temporary directory and optionally caches the browser profile
 as ciphertext. The capture artifact allowlist transfers the accepted snapshot
 and its referenced media, not browser-profile files or login variables. Other

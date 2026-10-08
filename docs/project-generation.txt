@@ -2,9 +2,9 @@ resumeme: building it together
 Emma and AI (Codex)
 
 Exported and updated 2026-10-08 from this conversation's saved user-visible record.
-Covers the initial project request on 2026-10-07 (UTC) through the latest request
-to update this log on 2026-10-08 (America/New_York), including the CI concurrency
-changes and the preference for operators at the start of continuation lines.
+Covers the initial project request on 2026-10-07 (UTC) through the coffee
+sign-off on 2026-10-08 (America/New_York), including test sharding, transferable
+Codex preferences, and the explanation of LinkedIn refreshes and main publication.
 
 This is the original back-and-forth, including corrections, questions, and
 progress updates. Consecutive messages by the same speaker are grouped together.
@@ -2943,3 +2943,77 @@ Done. Workflow conditions now put each predicate on its own line. Logic is uncha
 Done. `&&` and `||` now start continuation lines throughout the predicates. Conditions are unchanged; actionlint and schema checks passed.
 
 **Emma: docs/project-generation.txt <- update this;) pls.
+
+**AI: I'll update the conversation log with the recent pipeline work and formatting exchanges.
+
+The log currently stops at the original export request. I'm locating the saved messages after that point so the update preserves the actual back-and-forth.
+
+Updated [docs/project-generation.txt](/Users/emmadoyle/projects/personal/resume/docs/project-generation.txt) with 46 saved messages through your latest request, preserving the Emma/AI format and existing dialogue. Diff checks passed.
+
+**Emma: [https://github.com/astrivant/resumeme/actions/runs/37848684045/job/113555952431](https://github.com/astrivant/resumeme/actions/runs/37848684045/job/113555952431) \~ let's shard / partition the tests in this job over 3 4c gh action instances
+
+**AI: I'll inspect that job and split its test workload across three runners, with four workers per runner and combined coverage.
+
+**Emma: Oh there's also a failure there
+
+**AI: I'll fix that failure as part of this change. The job completed linting and reached pytest; I'm checking the failed assertions before changing how the suite runs.
+
+The failure is a stale workflow test: it still expects tests and package builds to wait for summaries. I'll update it to check the current consumers, document review and PDF generation.
+
+I'm splitting pytest into three partitions, each with four workers, while lint runs separately. Coverage will be combined after all partitions pass. GitHub's public `ubuntu-24.04` runners provide four CPUs. [Runner specifications](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+
+The three-way matrix is in place, and the reported assertion now passes locally. I'm checking that the partitions execute every case exactly once, work with multiple pytest workers, and preserve all coverage data when merged.
+
+The focused sharding tests pass, including coverage merging and rejection of invalid partition settings. I'm now running the full suite once across the three partitions; lint, typing, schema checks, and actionlint have passed.
+
+The first partition passed all 468 tests. The other two are still running locally. CI will run all three concurrently, and the publication gate will require all three to pass.
+
+Two partitions have passed, 936 tests total. The final partition is still running; coverage aggregation follows it.
+
+Configured three parallel test shards with four workers each, separate lint checks, and combined coverage.
+
+Also fixed the stale assertion that expected tests and package builds to wait for summaries.
+
+Verified locally: **1,404 tests passed**, coverage merged, pre-commit and actionlint passed. Hosted CI has not been rerun.
+
+**Emma: Ensure my core prompt / ~/.codex config is updated with the preferences / statement or aka practically my personal SKILL.md (lol) with the preferences I critiqued you on here, so the knowledge is transferrable for you.
+
+**AI: I'll review your existing Codex preferences, add the reusable feedback from this conversation, and create an epoch-stamped backup before changing them.
+
+Your config already contains many of these preferences and the backup procedure. I'm using the OpenAI Docs skill to verify the instruction setting, then adding the missing feedback: leading operators, independent CI jobs, test partitioning, concise docs, and keyboard-friendly punctuation.
+
+The additions are ready in the existing `developer_instructions` block, the [supported setting for session instructions](https://learn.chatgpt.com/docs/config-file/config-reference#developer_instructions). TOML validation confirms that only this block changes. I'll now apply it with a verified backup; writing outside the checkout requires sandbox approval.
+
+Updated your [global Codex instructions](/Users/emmadoyle/.codex/config.toml) with transferable preferences covering leading operators, parallel CI and test sharding, concise docs, punctuation, configuration handling, and privacy documentation.
+
+Created [config.1791496805.toml](/Users/emmadoyle/.codex/config.1791496805.toml) as the verified backup. TOML validation passed; permissions and unrelated settings were preserved.
+
+**Emma: [https://github.com/astrivant/resumeme/blob/main/resume.pdf](https://github.com/astrivant/resumeme/blob/main/resume.pdf)
+
+How come this isn't updating on main in pipelines? I've updated my profile extensively on LinkedIn, and I see none of the textual updates, here.
+
+**AI: I'll check the recent main-branch runs, the saved profile, and the PDF publication steps to see where the LinkedIn updates stopped.
+
+**Main rebuilds from the saved profile, which was last captured today at 9:31 AM EDT.** Your latest successful main run skipped LinkedIn capture and committed a rebuilt PDF at 6:02 PM EDT. [Saved profile](https://github.com/astrivant/resumeme/blob/main/data/profile.json), [pipeline](https://github.com/astrivant/resumeme/actions/runs/37850469856).
+
+The current triggers work like this:
+
+| Trigger | LinkedIn input | Destination |
+|---|---|---|
+| Push to main | Saved snapshot | `main/resume.pdf` |
+| Tag | Fresh capture | Signed release |
+| Monthly or manual refresh | Fresh capture | Updated snapshot and PDF on main |
+
+Your `v0.2.10` capture is currently running, but that tag workflow publishes to the release only.
+
+To refresh **main** now:
+
+```bash
+gh workflow run ci.yml --repo astrivant/resumeme --ref main -f refresh=true
+```
+
+After capture and verification succeed, that run commits the updated profile and PDF to main.
+
+**Emma: Lit. love ya
+
+**AI: Right back at you, Emma :) ☕

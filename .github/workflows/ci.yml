@@ -99,6 +99,9 @@ jobs:
           key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
           cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}
         env:
+          # Stream capture progress and sanitized request diagnostics through the session wrapper.
+          RESUMEME_LOG_LEVEL: DEBUG
+          PYTHONUNBUFFERED: '1'
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
       - name: Export complete capture for downstream stages
