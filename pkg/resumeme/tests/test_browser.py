@@ -297,7 +297,7 @@ def test_headless_login_submits_once_and_requires_observed_success(monkeypatch: 
     driver.get_cookie.return_value = None
     username, password, submit = MagicMock(), MagicMock(), MagicMock()
     wait = MagicMock()
-    wait.until.side_effect = [(username, password, submit), TimeoutException() if challenge else True]
+    wait.until.side_effect = [(username, password, submit), submit, TimeoutException() if challenge else True]
     monkeypatch.setattr("resumeme.linkedin.browser.WebDriverWait", MagicMock(return_value=wait))
     interactive = MagicMock(side_effect=AssertionError("Headless login cannot enter the interactive wait"))
     monkeypatch.setattr("resumeme.linkedin.browser._wait_for_login", interactive)

@@ -346,12 +346,11 @@ def _login_form(driver: WebDriver) -> tuple[WebElement, WebElement, WebElement] 
         driver (WebDriver): Browser whose location is rechecked on every poll.
 
     Returns:
-        tuple[WebElement, WebElement, WebElement] | Literal[True, False]: Username, password, and submit controls; True if signed in;
-            False while any control is hidden or disabled.
+        tuple[WebElement, WebElement, WebElement] | Literal[True, False]: Editable username/password fields and visible submit control;
+            True if signed in; False while the form is unavailable. Submit may remain disabled until credentials are entered.
 
     Raises:
         BrowserError: The form is no longer on LinkedIn's HTTPS origin.
-        BrowserElementError: A control has not appeared; the caller's explicit wait retries the lookup.
     """
 
     # Redirects can finish during the wait; check the origin before looking up or returning credential controls.
@@ -361,12 +360,59 @@ def _login_form(driver: WebDriver) -> tuple[WebElement, WebElement, WebElement] 
     if _authenticated(driver):
         return True
 
-    controls = (
-        driver.find_element(By.ID, "username"),
-        driver.find_element(By.ID, "password"),
-        driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]'),
+    # LinkedIn serves both fixed-ID forms and generated-ID components with semantic autocomplete attributes.
+    # Responsive layouts contain duplicate controls, so inspect all matches rather than waiting on a hidden first copy.
+    username = next(
+        (
+            control
+            for control in driver.find_elements(By.CSS_SELECTOR, 'input#username, input[autocomplete="username"]')
+            if control.is_displayed() and control.is_enabled()
+        ),
+        None,
     )
-    return controls if all(control.is_displayed() and control.is_enabled() for control in controls) else False
+    password = next(
+        (
+            control
+            for control in driver.find_elements(By.CSS_SELECTOR, 'input#password, input[autocomplete="current-password"]')
+            if control.is_displayed() and control.is_enabled()
+        ),
+        None,
+    )
+
+    if username is None or password is None:
+        return False
+
+    # Modern layouts use type=button. Scope to the password's nearest sign-in container to exclude other forms and SSO buttons.
+    buttons = password.find_elements(
+        By.XPATH,
+        './ancestor::*[.//button[@type="submit" or normalize-space(.)="Sign in"]][1]'
+        '//button[@type="submit" or normalize-space(.)="Sign in"]',
+    )
+    submit = next((button for button in buttons if button.is_displayed()), None)
+    return (username, password, submit) if submit is not None else False
+
+
+def _login_submit(driver: WebDriver) -> WebElement | Literal[True, False]:
+    """
+    Observe an enabled sign-in button after credential entry without resubmitting or retaining stale controls.
+
+    Args:
+        driver (WebDriver): Browser whose form may rerender as credentials are entered.
+
+    Returns:
+        WebElement | Literal[True, False]: Enabled submit control, True if already authenticated, or False while unavailable.
+
+    Raises:
+        BrowserError: The form has left LinkedIn's HTTPS origin.
+    """
+    controls = _login_form(driver)
+
+    if isinstance(controls, bool):
+        return controls
+
+    # A disabled submit before typing is normal client-side validation, not an unavailable login form.
+    submit = controls[2]
+    return submit if submit.is_enabled() else False
 
 
 def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
@@ -446,6 +492,22 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         username_field.send_keys(username)
         password_field.clear()
         password_field.send_keys(password)
+
+        # Wait for client-side validation after typing; reacquire the button if the page replaced its controls.
+        try:
+            ready: WebElement | Literal[True] = WebDriverWait(
+                driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)
+            ).until(_login_submit)
+        except TimeoutException as error:
+            raise BrowserError(
+                f"LinkedIn sign-in button did not become ready after filling credentials (page state: {_login_page(driver)}). "
+                "No credentials were submitted. Check the login form interactively."
+            ) from error
+
+        if ready is True:
+            return
+
+        submit = ready
         _LOGGER.info("Submitting LinkedIn credentials once; waiting for authentication")
 
         try:

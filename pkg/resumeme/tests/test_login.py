@@ -33,8 +33,12 @@ def _browser(monkeypatch: MonkeyPatch) -> tuple[MagicMock, MagicMock, MagicMock,
     driver, username, password, submit = (MagicMock() for _ in range(4))
     driver.current_url = "https://www.linkedin.com/login?token=private-token#private-fragment"
     driver.get_cookie.return_value = None
-    controls = {(By.ID, "username"): username, (By.ID, "password"): password, (By.CSS_SELECTOR, 'button[type="submit"]'): submit}
-    driver.find_element.side_effect = lambda kind, selector: controls[kind, selector]
+    controls = {
+        (By.CSS_SELECTOR, 'input#username, input[autocomplete="username"]'): [username],
+        (By.CSS_SELECTOR, 'input#password, input[autocomplete="current-password"]'): [password],
+    }
+    driver.find_elements.side_effect = lambda kind, selector: controls[kind, selector]
+    password.find_elements.return_value = [submit]
 
     def authenticate() -> None:
         """
@@ -117,7 +121,32 @@ def test_login_form_retries_with_configured_exponential_backoff(monkeypatch: Mon
         None: Form observations use capped exponential delays and credentials are submitted once.
     """
     driver, username, password, submit = _browser(monkeypatch)
-    driver.find_element.side_effect = [failure(), failure(), username, password, submit]
+    lookup: dict[tuple[str, str], list[MagicMock]] = {
+        (By.CSS_SELECTOR, 'input#username, input[autocomplete="username"]'): [username],
+        (By.CSS_SELECTOR, 'input#password, input[autocomplete="current-password"]'): [password],
+    }
+    attempts = 0
+
+    def delayed_controls(kind: str, selector: str) -> list[MagicMock]:
+        """
+        Fail the first two observations, then retain the form through credential entry and submission.
+
+        Args:
+            kind (str): Selenium selector mechanism.
+            selector (str): Requested form control selector.
+
+        Returns:
+            list[MagicMock]: Form controls after transient lookup failures.
+        """
+        nonlocal attempts
+        attempts += 1
+
+        if attempts <= 2:
+            raise failure()
+
+        return lookup[kind, selector]
+
+    driver.find_elements.side_effect = delayed_controls
     delays: list[float] = []
     monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", delays.append)
     settings = Capture(page_timeout_seconds=0, retry_attempts=3, retry_backoff_seconds=2, retry_max_backoff_seconds=3)
@@ -140,13 +169,13 @@ def test_missing_login_form_reports_stage_without_leaking_page_data(monkeypatch:
         None: Retries exhaust without typing, submitting, or printing secrets and URL tokens.
     """
     driver, username, password, submit = _browser(monkeypatch)
-    driver.find_element.side_effect = NoSuchElementException("private-page-data")
+    driver.find_elements.side_effect = NoSuchElementException("private-page-data")
     settings = Capture(page_timeout_seconds=0, retry_attempts=2, retry_backoff_seconds=0)
 
     with pytest.raises(ValueError, match=r"login form did not become ready after 2 attempts.*page state: login") as error:
         _login(driver, settings, headless=True)
 
-    assert driver.find_element.call_count == 2
+    assert driver.find_elements.call_count == 2
     username.send_keys.assert_not_called()
     password.send_keys.assert_not_called()
     submit.click.assert_not_called()
@@ -168,7 +197,7 @@ def test_redirect_during_form_retry_rejects_untrusted_origin(monkeypatch: Monkey
         None: A form on the new origin is never read or submitted.
     """
     driver, username, password, submit = _browser(monkeypatch)
-    driver.find_element.side_effect = NoSuchElementException()
+    driver.find_elements.side_effect = NoSuchElementException()
     monkeypatch.setattr(
         "resumeme.linkedin.retrying.time.sleep", lambda delay: setattr(driver, "current_url", "https://unrelated.example/login")
     )
@@ -176,7 +205,7 @@ def test_redirect_during_form_retry_rejects_untrusted_origin(monkeypatch: Monkey
     with pytest.raises(ValueError, match="unexpected origin"):
         _login(driver, Capture(page_timeout_seconds=0, retry_attempts=2), headless=True)
 
-    driver.find_element.assert_called_once_with(By.ID, "username")
+    driver.find_elements.assert_called_once_with(By.CSS_SELECTOR, 'input#username, input[autocomplete="username"]')
     username.send_keys.assert_not_called()
     password.send_keys.assert_not_called()
     submit.click.assert_not_called()
@@ -193,7 +222,7 @@ def test_existing_session_detected_while_waiting_for_form(monkeypatch: MonkeyPat
         None: A retained session avoids all credential submission.
     """
     driver, username, password, submit = _browser(monkeypatch)
-    driver.find_element.side_effect = NoSuchElementException()
+    driver.find_elements.side_effect = NoSuchElementException()
     driver.get_cookie.return_value = {"name": "li_at", "value": "synthetic-cookie"}
     monkeypatch.setattr(
         "resumeme.linkedin.retrying.time.sleep", lambda delay: setattr(driver, "current_url", "https://www.linkedin.com/feed/")
@@ -204,8 +233,9 @@ def test_existing_session_detected_while_waiting_for_form(monkeypatch: MonkeyPat
     submit.click.assert_not_called()
 
 
-@pytest.mark.parametrize("control", [0, 1, 2])
-@pytest.mark.parametrize("state", ["is_displayed", "is_enabled"])
+@pytest.mark.parametrize(
+    "control,state", [(0, "is_displayed"), (0, "is_enabled"), (1, "is_displayed"), (1, "is_enabled"), (2, "is_displayed")]
+)
 def test_form_wait_requires_all_controls_ready(monkeypatch: MonkeyPatch, control: int, state: str) -> None:
     """
     Reject partially rendered forms before any input or submission.
@@ -216,7 +246,7 @@ def test_form_wait_requires_all_controls_ready(monkeypatch: MonkeyPatch, control
         state (str): Visibility or enabled property returning false.
 
     Returns:
-        None: The form becomes ready only after every required control can be used.
+        None: Credential fields must be editable and the submit control must be visible before typing.
     """
     driver, *controls = _browser(monkeypatch)
     unavailable = getattr(controls[control], state)
@@ -224,6 +254,82 @@ def test_form_wait_requires_all_controls_ready(monkeypatch: MonkeyPatch, control
     assert _login_form(driver) is False
     unavailable.return_value = True
     assert _login_form(driver) == tuple(controls)
+
+
+@pytest.mark.parametrize("control", [0, 1, 2])
+def test_form_ignores_hidden_duplicate_controls(monkeypatch: MonkeyPatch, control: int) -> None:
+    """
+    Select the visible login component when responsive markup includes a hidden copy first.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies synthetic environment credentials.
+        control (int): Username, password, or submit list containing a hidden first match.
+
+    Returns:
+        None: Hidden fields and buttons never receive credentials or clicks.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    hidden = MagicMock()
+    hidden.is_displayed.return_value = False
+    driver.find_elements.side_effect = [
+        [hidden, username] if control == 0 else [username],
+        [hidden, password] if control == 1 else [password],
+    ]
+    password.find_elements.return_value = [hidden, submit] if control == 2 else [submit]
+    assert _login_form(driver) == (username, password, submit)
+    hidden.send_keys.assert_not_called()
+    hidden.click.assert_not_called()
+
+
+@pytest.mark.parametrize("enables", [False, True])
+def test_submit_enablement_is_checked_after_typing(monkeypatch: MonkeyPatch, enables: bool) -> None:
+    """
+    Let controlled forms enable submission after credentials are entered, while refusing a button that stays disabled.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies credentials and a controlled sign-in form.
+        enables (bool): Whether filling the password makes the submit button usable.
+
+    Returns:
+        None: Credentials are typed once; only a subsequently enabled button is clicked.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    submit.is_enabled.return_value = False
+    password.send_keys.side_effect = lambda value: setattr(submit.is_enabled, "return_value", enables)
+    settings = Capture(page_timeout_seconds=0)
+
+    if enables:
+        _login(driver, settings, headless=True)
+        submit.click.assert_called_once()
+    else:
+        with pytest.raises(ValueError, match="sign-in button did not become ready after filling credentials"):
+            _login(driver, settings, headless=True)
+
+        submit.click.assert_not_called()
+
+    username.send_keys.assert_called_once_with("test@example.org")
+    password.send_keys.assert_called_once_with("synthetic-password")
+
+
+def test_submit_reacquires_a_button_replaced_after_typing(monkeypatch: MonkeyPatch) -> None:
+    """
+    Follow a client-rendered button replacement without clicking the stale pre-entry element.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies a form whose submit control changes after password entry.
+
+    Returns:
+        None: Only the current button is clicked, with no repeated credential entry.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    replacement = MagicMock()
+    replacement.click.side_effect = submit.click.side_effect
+    password.find_elements.side_effect = [[submit], [replacement]]
+    _login(driver, Capture(page_timeout_seconds=0), headless=True)
+    submit.click.assert_not_called()
+    replacement.click.assert_called_once()
+    username.send_keys.assert_called_once()
+    password.send_keys.assert_called_once()
 
 
 @pytest.mark.parametrize("headless", [False, True])
@@ -240,7 +346,7 @@ def test_challenge_before_login_form_stops_retries(monkeypatch: MonkeyPatch, hea
     """
     driver, username, password, submit = _browser(monkeypatch)
     driver.current_url = "https://www.linkedin.com/checkpoint/challenge/private-token"
-    driver.find_element.side_effect = NoSuchElementException()
+    driver.find_elements.side_effect = NoSuchElementException()
     interactive, sleep = MagicMock(), MagicMock()
     monkeypatch.setattr("resumeme.linkedin.browser._wait_for_login", interactive)
     monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
