@@ -272,6 +272,7 @@ class Capture:
         retry_backoff_seconds (int): Initial retry delay, doubled after every failed attempt.
         retry_max_backoff_seconds (int): Maximum exponential retry delay.
         browser (Literal["firefox", "chrome"]): Selenium browser used for capture and live About updates.
+        app_approval_timeout_seconds (int): Maximum wait for mobile-app sign-in approval; code-entry MFA still fails immediately.
     """
 
     page_timeout_seconds: int = 30
@@ -282,6 +283,7 @@ class Capture:
     retry_backoff_seconds: int = 10
     retry_max_backoff_seconds: int = 300
     browser: Literal["firefox", "chrome"] = "firefox"
+    app_approval_timeout_seconds: int = 900
 
 
 @frozen

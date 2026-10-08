@@ -13,6 +13,7 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 from selenium.webdriver.common.by import By
 
 from resumeme.config import Capture
+from resumeme.exceptions import BrowserError
 from resumeme.linkedin.browser import _login, _login_form
 
 if TYPE_CHECKING:
@@ -459,28 +460,32 @@ def test_submit_rechecks_origin_and_session_after_typing(monkeypatch: MonkeyPatc
 
 
 @pytest.mark.parametrize("headless", [False, True])
-def test_challenge_before_login_form_stops_retries(monkeypatch: MonkeyPatch, headless: bool) -> None:
+@pytest.mark.parametrize("state", ["checkpoint", "challenge", "authwall"])
+def test_challenge_before_login_form_stops_retries(monkeypatch: MonkeyPatch, headless: bool, state: str) -> None:
     """
     Route missing-form challenges to interactive completion without reloading or submitting.
 
     Args:
         monkeypatch (MonkeyPatch): Replaces interactive waiting and records retry delays.
         headless (bool): Whether an interactive browser is available for challenge completion.
+        state (str): LinkedIn verification route encountered before the login form.
 
     Returns:
         None: Headless execution fails clearly; interactive execution retains its indefinite wait.
     """
     driver, username, password, submit = _browser(monkeypatch)
-    driver.current_url = "https://www.linkedin.com/checkpoint/challenge/private-token"
+    driver.current_url = f"https://www.linkedin.com/{state}/private-token"
     driver.find_elements.side_effect = NoSuchElementException()
     interactive, sleep = MagicMock(), MagicMock()
     monkeypatch.setattr("resumeme.linkedin.browser._wait_for_login", interactive)
     monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
 
     if headless:
-        with pytest.raises(ValueError, match="login form is unavailable.*page state: checkpoint"):
+        with pytest.raises(BrowserError, match=f"LinkedIn blocked unattended sign-in.*page state: {state}") as error:
             _login(driver, Capture(page_timeout_seconds=0), headless=headless)
 
+        assert "No credentials were submitted" in str(error.value)
+        assert "private-token" not in str(error.value)
         interactive.assert_not_called()
     else:
         _login(driver, Capture(page_timeout_seconds=0), headless=headless)
@@ -490,4 +495,61 @@ def test_challenge_before_login_form_stops_retries(monkeypatch: MonkeyPatch, hea
     username.send_keys.assert_not_called()
     password.send_keys.assert_not_called()
     submit.click.assert_not_called()
+    driver.get.assert_not_called()
+
+
+@pytest.mark.parametrize("state", ["checkpoint", "challenge", "authwall"])
+@pytest.mark.parametrize("submitted", [False, True])
+def test_headless_verification_reports_external_block(monkeypatch: MonkeyPatch, state: str, submitted: bool) -> None:
+    """
+    Distinguish LinkedIn verification blocks from credential failures during and after form entry.
+
+    Args:
+        monkeypatch (MonkeyPatch): Isolates credentials, browser state, and retry delays.
+        state (str): LinkedIn verification route returned by the login flow.
+        submitted (bool): Whether the block follows a click or appears while entering credentials.
+
+    Returns:
+        None: The error explains the headless limitation without credential advice, leaking tokens, or retrying submission.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    interactive, sleep = MagicMock(), MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.browser._wait_for_login", interactive)
+    monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
+
+    def block(*args: str) -> None:
+        """
+        Replace the active form with a verification page without establishing a session.
+
+        Args:
+            *args (str): Ignored password entry arguments when the block precedes submission.
+
+        Returns:
+            None: The synthetic browser remains unauthenticated on the selected verification route.
+        """
+        driver.current_url = f"https://www.linkedin.com/{state}/private-token?token=private-query"
+        driver.find_elements.side_effect = NoSuchElementException()
+
+    # Exercise the real timeout boundaries without sleeping or a live account.
+    if submitted:
+        submit.click.side_effect = block
+    else:
+        password.send_keys.side_effect = block
+
+    with pytest.raises(BrowserError, match=f"LinkedIn blocked unattended sign-in.*page state: {state}") as error:
+        _login(driver, Capture(page_timeout_seconds=0), headless=True)
+
+    message = str(error.value)
+    assert "interactive verification that this headless run cannot complete" in message
+    assert "Signing in locally does not authenticate the CI runner" in message
+    assert "No profile changes were submitted" in message
+    assert ("No credentials were submitted" in message) is not submitted
+    assert all(
+        value not in message for value in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD", "test@example.org", "synthetic-password", "private-")
+    )
+    username.send_keys.assert_called_once()
+    password.send_keys.assert_called_once()
+    assert submit.click.call_count == int(submitted)
+    interactive.assert_not_called()
+    sleep.assert_not_called()
     driver.get.assert_not_called()

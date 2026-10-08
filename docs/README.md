@@ -92,6 +92,7 @@ See [logging controls and record fields](CLI.md#logging).
 | `github.contributions.as_of` | `null` | Quoted ISO end date; null uses today's UTC date |
 | `capture.browser` | `firefox` | `firefox` or `chrome` for capture, live profile updates, and saved resume uploads |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
+| `capture.app_approval_timeout_seconds` | `900` | Headless wait for LinkedIn app approval, capped at 15 minutes; `0` disables waiting. Code-entry MFA and CAPTCHA fail immediately |
 | `capture.max_scrolls` | `60` | Maximum expansion iterations per page |
 | `capture.max_pages_per_section` | `30` | Bound on section pagination |
 | `capture.retry_attempts` | `5` | Total attempts for transient browser and HTTP failures |

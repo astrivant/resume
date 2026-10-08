@@ -185,8 +185,23 @@ when LinkedIn enables passkey support while the form is being filled.
 Credentials are submitted once. If that click times out during navigation, the
 client checks the existing session for login completion without submitting again.
 Unattended authentication then waits for the page timeout and reports the failed
-stage and a sanitized page category, such as `login` or `checkpoint`. Challenges
-require interactive completion. Local capture keeps its unlimited interactive wait:
+stage and a sanitized page category, such as `login` or `checkpoint`.
+
+When LinkedIn displays its [app sign-in approval prompt](https://www.linkedin.com/help/linkedin/answer/a1426391),
+the command prints a notice to open the LinkedIn app and tap **Yes, it's me**.
+`capture.app_approval_timeout_seconds` defaults to `900` (15 minutes), accepts
+`0` to disable waiting, and is capped at `900`. The same browser session remains
+open, and capture resumes once LinkedIn redirects it to an authenticated page.
+The wait has one deadline and does not resubmit credentials or resend notifications.
+
+Code-entry MFA, CAPTCHA, and denied or expired approvals fail as soon as they are
+detected, including during the approval wait. Only recognized app-approval prompts
+receive the longer wait; unknown checkpoint pages retain the ordinary page timeout
+and report `LinkedIn blocked unattended sign-in`. Detection uses visible controls
+and English prompt text, matching the browser's configured language. These errors
+do not indicate missing login secrets. Signing in in a separate local browser does
+not authenticate the CI runner; approving that runner's request in the app does.
+Local capture keeps its unlimited interactive wait:
 
 ```bash
 poetry run resumeme capture
@@ -194,8 +209,8 @@ poetry run resumeme validate
 ```
 
 Complete any challenge in the selected browser, then commit the accepted snapshot and assets
-and push them to `main`. Update incorrect secrets and rerun the refresh. Accounts
-that consistently require interaction can use this local capture path for ordinary
+and push them to `main`. Correct login secrets only when a credential error identifies
+them as the problem. Accounts that consistently require interaction can use this local capture path for ordinary
 branch builds. Tag releases now require a successful headless capture; committing
 a local snapshot does not bypass that requirement. Unattended authentication is
 not guaranteed from a hosted runner.

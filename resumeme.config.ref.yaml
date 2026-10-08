@@ -195,6 +195,9 @@ capture:
   # firefox or chrome. Install the selected browser locally; login sessions persist separately under .cache/.
   browser: firefox
   page_timeout_seconds: 30
+
+  # Wait up to 15 minutes for "Yes, it's me" in the LinkedIn app. Code-entry MFA and CAPTCHA fail immediately.
+  app_approval_timeout_seconds: 900
   max_scrolls: 60
   max_pages_per_section: 30
   fetch_link_previews: true

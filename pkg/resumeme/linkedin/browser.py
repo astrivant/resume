@@ -30,6 +30,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile
 from resumeme.compiler.asts.profile import save_profile
 from resumeme.exceptions import BrowserElementError, BrowserError, BrowserLaunchError, BrowserTimeoutError, BrowserWindowError
+from resumeme.linkedin.challenges import login_challenge
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry
@@ -45,9 +46,17 @@ if TYPE_CHECKING:
 
     from resumeme.compiler.asts.profile import Entry, Profile, Section
     from resumeme.config import Capture, Config
+    from resumeme.linkedin.challenges import LoginChallenge
 
 __all__ = ["capture_profile"]
 _LOGGER = logging.getLogger(__name__)
+_LOGIN_BLOCKED_STATES = frozenset({"checkpoint", "challenge", "authwall"})
+_LOGIN_BLOCKED_MESSAGE = (
+    "LinkedIn blocked unattended sign-in (page state: {state}). "
+    "LinkedIn requires interactive verification that this headless run cannot complete. "
+    "The profile refresh is blocked by LinkedIn, not by missing login environment variables. "
+    "Signing in locally does not authenticate the CI runner. No profile changes were submitted."
+)
 
 _SCROLL_SCRIPT = """
 const main = document.querySelector('main');
@@ -339,26 +348,146 @@ def _login_page(driver: WebDriver) -> str:
     return route if route in {"login", "signup", "checkpoint", "challenge", "authwall", "uas", "feed", "in"} else "other LinkedIn page"
 
 
-def _login_form(driver: WebDriver) -> tuple[WebElement, WebElement, WebElement] | Literal[True, False]:
+def _check_login_challenge(driver: WebDriver) -> LoginChallenge:
+    """
+    Reject challenges that cannot be completed by approving the current sign-in from the mobile app.
+
+    Args:
+        driver (WebDriver): Browser on a verified LinkedIn challenge route.
+
+    Returns:
+        LoginChallenge: The observed challenge category when waiting remains possible.
+
+    Raises:
+        BrowserError: Code-entry MFA, CAPTCHA, or a denied or expired approval requires ending this unattended attempt.
+    """
+    challenge = login_challenge(driver)
+
+    # Never enter a code, solve a CAPTCHA, or resend an approval request on the user's behalf.
+    if challenge in {"mfa", "captcha", "denied", "expired"}:
+        reason = {
+            "mfa": "LinkedIn requires MFA code entry; unattended sign-in stops immediately.",
+            "captcha": "LinkedIn requires a CAPTCHA; unattended sign-in stops immediately.",
+            "denied": "LinkedIn sign-in approval was denied; unattended sign-in has stopped.",
+            "expired": "LinkedIn sign-in approval expired; unattended sign-in has stopped.",
+        }[challenge]
+        raise BrowserError(reason + " No profile changes were submitted.")
+
+    return challenge
+
+
+def _wait_for_app_approval(driver: WebDriver, settings: Capture) -> bool:
+    """
+    Observe the existing session for a bounded mobile-app approval without submitting anything further.
+
+    Args:
+        driver (WebDriver): Browser displaying a recognized LinkedIn app-approval prompt.
+        settings (Capture): Maximum app-approval wait, independent of page loading timeouts.
+
+    Returns:
+        bool: True only after the existing browser has an authenticated LinkedIn session.
+
+    Raises:
+        BrowserError: Approval times out, is denied or expires, requires MFA or CAPTCHA, or leaves LinkedIn.
+    """
+    timeout = settings.app_approval_timeout_seconds
+
+    # This action prompt must remain visible with the default ERROR log level and in buffered CI output.
+    print(
+        f'LinkedIn is waiting for app approval. Open your LinkedIn app and tap "Yes, it\'s me". Waiting up to {timeout} seconds.',
+        flush=True,
+    )
+
+    def approved(page: WebDriver) -> bool:
+        """
+        Observe authentication and stop immediately if the approval changes to an unsupported challenge.
+
+        Args:
+            page (WebDriver): Existing browser session owned by the capture command.
+
+        Returns:
+            bool: Whether LinkedIn completed authentication in this session.
+
+        Raises:
+            BrowserError: LinkedIn rejects the approval, requests code entry, or redirects outside its origin.
+        """
+        state = _login_page(page)
+
+        if state == "unexpected origin":
+            raise BrowserError("LinkedIn login redirected to an unexpected origin.")
+
+        if _authenticated(page):
+            return True
+
+        if state in _LOGIN_BLOCKED_STATES:
+            _check_login_challenge(page)
+        elif state in {"login", "signup", "uas"}:
+            raise BrowserError("LinkedIn app approval ended without authentication. No profile changes were submitted.")
+
+        return False
+
+    # Keep one deadline even if LinkedIn redraws the prompt; poll the same session without replaying credentials.
+    try:
+        return WebDriverWait(driver, timeout, poll_frequency=1, ignored_exceptions=(StaleElementReferenceException,)).until(approved)
+    except TimeoutException as error:
+        raise BrowserError(
+            f"LinkedIn app approval was not completed within {timeout} seconds. No profile changes were submitted."
+        ) from error
+
+
+def _headless_login_ready(driver: WebDriver, settings: Capture) -> bool:
+    """
+    Observe login success or dispatch a recognized app-approval prompt during any unattended login phase.
+
+    Args:
+        driver (WebDriver): Browser whose current authentication state is being polled.
+        settings (Capture): Bounded approval wait settings.
+
+    Returns:
+        bool: True after authentication, otherwise False while ordinary page loading may continue.
+
+    Raises:
+        BrowserError: The browser requires code entry, rejects approval, or leaves LinkedIn.
+    """
+    state = _login_page(driver)
+
+    if state == "unexpected origin":
+        raise BrowserError("LinkedIn login redirected to an unexpected origin.")
+
+    if _authenticated(driver):
+        return True
+
+    if state in _LOGIN_BLOCKED_STATES and _check_login_challenge(driver) == "approval":
+        return _wait_for_app_approval(driver, settings)
+
+    return False
+
+
+def _login_form(
+    driver: WebDriver, *, unattended: Capture | None = None
+) -> tuple[WebElement, WebElement, WebElement] | Literal[True, False]:
     """
     Wait for a complete usable form or an already authenticated session.
 
     Args:
         driver (WebDriver): Browser whose location is rechecked on every poll.
+        unattended (Capture | None): Approval settings for headless login, or None for ordinary interactive login.
 
     Returns:
         tuple[WebElement, WebElement, WebElement] | Literal[True, False]: Editable username/password fields and visible submit control;
             True if signed in; False while the form is unavailable. Submit may remain disabled until credentials are entered.
 
     Raises:
-        BrowserError: The form is no longer on LinkedIn's HTTPS origin.
+        BrowserError: The form leaves LinkedIn, requires unsupported verification, or exhausts its app-approval wait.
     """
 
     # Redirects can finish during the wait; check the origin before looking up or returning credential controls.
     if _login_page(driver) == "unexpected origin":
         raise BrowserError("LinkedIn login redirected to an unexpected origin.")
 
-    if _authenticated(driver):
+    authenticated = _headless_login_ready(driver, unattended) if unattended is not None else _authenticated(driver)
+
+    if authenticated:
         return True
 
     # LinkedIn serves both fixed-ID forms and generated-ID components with semantic autocomplete attributes.
@@ -394,20 +523,21 @@ def _login_form(driver: WebDriver) -> tuple[WebElement, WebElement, WebElement] 
     return (username, password, submit) if submit is not None else False
 
 
-def _login_submit(driver: WebDriver) -> WebElement | Literal[True, False]:
+def _login_submit(driver: WebDriver, *, unattended: Capture | None = None) -> WebElement | Literal[True, False]:
     """
     Observe an enabled sign-in button after credential entry without resubmitting or retaining stale controls.
 
     Args:
         driver (WebDriver): Browser whose form may rerender as credentials are entered.
+        unattended (Capture | None): Approval settings for headless login, or None for ordinary interactive login.
 
     Returns:
         WebElement | Literal[True, False]: Enabled submit control, True if already authenticated, or False while unavailable.
 
     Raises:
-        BrowserError: The form has left LinkedIn's HTTPS origin.
+        BrowserError: The form leaves LinkedIn, requires unsupported verification, or exhausts its app-approval wait.
     """
-    controls = _login_form(driver)
+    controls = _login_form(driver, unattended=unattended)
 
     if isinstance(controls, bool):
         return controls
@@ -423,8 +553,8 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
 
     Args:
         driver (WebDriver): Browser on LinkedIn's login page or an authenticated tab.
-        settings (Capture): Existing page timeout for unattended authentication.
-        headless (bool): Fail when interactive intervention is needed rather than waiting for an absent user.
+        settings (Capture): Page loading timeout and bounded app-approval wait.
+        headless (bool): Allow app approval but fail immediately for code-entry MFA or CAPTCHA.
 
     Returns:
         None: Authentication succeeded, including any manually completed challenge in interactive mode.
@@ -446,16 +576,15 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
             """
             try:
                 return WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
-                    _login_form
+                    partial(_login_form, unattended=settings if headless else None)
                 )
             except TimeoutException as error:
                 # A challenge is not a transient missing form. Never reload it or replay credentials to get past it.
-                if _login_page(driver) in {"checkpoint", "challenge", "authwall"}:
+                state = _login_page(driver)
+
+                if state in _LOGIN_BLOCKED_STATES:
                     if headless:
-                        raise BrowserError(
-                            f"LinkedIn login form is unavailable (page state: {_login_page(driver)}). "
-                            "Complete sign-in interactively using this command without --headless. No credentials were submitted."
-                        ) from error
+                        raise BrowserError(_LOGIN_BLOCKED_MESSAGE.format(state=state) + " No credentials were submitted.") from error
 
                     _wait_for_login(driver)
                     return True
@@ -495,10 +624,16 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         try:
             ready: WebElement | Literal[True] = WebDriverWait(
                 driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)
-            ).until(_login_submit)
+            ).until(partial(_login_submit, unattended=settings if headless else None))
         except TimeoutException as error:
+            state = _login_page(driver)
+
+            # A redirect during form entry can reach the same verification block as a submitted login.
+            if headless and state in _LOGIN_BLOCKED_STATES:
+                raise BrowserError(_LOGIN_BLOCKED_MESSAGE.format(state=state) + " No credentials were submitted.") from error
+
             raise BrowserError(
-                f"LinkedIn sign-in button did not become ready after filling credentials (page state: {_login_page(driver)}). "
+                f"LinkedIn sign-in button did not become ready after filling credentials (page state: {state}). "
                 "No credentials were submitted. Check the login form interactively."
             ) from error
 
@@ -518,12 +653,20 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         _wait_for_login(driver)
         return
 
-    # Interactive capture still waits indefinitely; an unattended runner cannot complete MFA, CAPTCHA, or account challenges.
+    # Only recognized app approval extends the wait; code-entry MFA and CAPTCHA terminate at the first observation.
     try:
-        WebDriverWait(driver, settings.page_timeout_seconds).until(_authenticated)
+        WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
+            partial(_headless_login_ready, settings=settings)
+        )
     except TimeoutException as error:
+        state = _login_page(driver)
+
+        # A checkpoint does not establish that credentials are wrong; report the external verification requirement explicitly.
+        if state in _LOGIN_BLOCKED_STATES:
+            raise BrowserError(_LOGIN_BLOCKED_MESSAGE.format(state=state)) from error
+
         raise BrowserError(
-            f"Unattended LinkedIn login did not complete (page state: {_login_page(driver)}). "
+            f"Unattended LinkedIn login did not complete (page state: {state}). "
             "Check LINKEDIN_USERNAME (login email/phone) and LINKEDIN_PASSWORD, or run this command without --headless "
             "to complete an account challenge interactively. No profile changes were submitted."
         ) from error
