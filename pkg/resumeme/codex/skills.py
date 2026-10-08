@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
 import subprocess
@@ -183,6 +184,7 @@ def prepare_skills(profile: Profile, config: Config, root: Path, tag: str) -> Pa
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "prompt.txt").write_text(_INSTRUCTIONS + "\n" + json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     (directory / "schema.json").write_text(json.dumps(skill_suggestions_schema(), indent=2) + "\n", encoding="utf-8")
+    logging.getLogger(__name__).info("Skills prompt prepared", extra={"file.path": str(directory), "release.tag": tag})
     return directory
 
 

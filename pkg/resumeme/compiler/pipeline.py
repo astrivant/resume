@@ -5,6 +5,7 @@ Translate validated profile values into safe, deterministic LaTeX source.
 from __future__ import annotations
 
 import hashlib
+import logging
 import shutil
 from functools import partial
 from importlib.resources import files
@@ -57,6 +58,7 @@ if TYPE_CHECKING:
     from resumeme.config import Config
 
 __all__ = ["render_profile"]
+_LOGGER = logging.getLogger(__name__)
 
 
 def render_profile(
@@ -92,6 +94,7 @@ def render_profile(
     if profile.warnings and not allow_incomplete:
         raise ValueError("Capture is incomplete: " + "; ".join(profile.warnings))
 
+    _LOGGER.info("Rendering LaTeX", extra={"profile.sections": len(profile.sections), "summary.enabled": summary_path is not None})
     # Validate against the original inputs before display passes remove or relocate source text.
     summary = (
         load_summary(summary_path, username=profile.username, source_digest=summary_digest(profile, config, company), settings=config.codex)
@@ -292,6 +295,13 @@ def render_profile(
     # Share display order between section rendering and navigation, after exclusions and generated sections have settled.
     # Numeric destinations avoid collisions or TeX injection from duplicate, unfamiliar, or punctuation-heavy section keys.
     section_navigation = [(f"resumeme-section-{index}", section) for index, section in enumerate(prepared.sections)]
+    _LOGGER.debug(
+        "Presentation passes completed",
+        extra={
+            "profile.sections": [section.key for section in prepared.sections],
+            "profile.entries": sum(len(section.entries) for section in prepared.sections),
+        },
+    )
     jobs = experience_navigation(section_navigation)
     environment.filters["job_destination"] = jobs.destination
     environment.filters["job_association"] = jobs.association
@@ -309,4 +319,5 @@ def render_profile(
         section_navigation=section_navigation,
     )
     target.write_text(content, encoding="utf-8")
+    _LOGGER.info("LaTeX rendered", extra={"file.path": str(target), "file.size": target.stat().st_size})
     return target

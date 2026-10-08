@@ -14,19 +14,22 @@ from PIL import Image
 from pypdf import PdfWriter
 
 from resumeme.compiler.asts.profile import Profile, save_profile
-from resumeme.config import Config, GitHub, LinkedIn, Output, Readme, load_config
+from resumeme.config import Config, GitHub, LinkedIn, Output, Ownership, Readme, load_config
 from resumeme.github.readme import PREVIEW_PATH, personal_readme, render_readme, restore_readme, stage_readme, update_project_branding
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from pytest import MonkeyPatch
 
-def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(tmp_path: Path) -> None:
+
+def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     """
     Replace only the marked branding with a local UTC date badge pointing at the configured resume.
 
     Args:
         tmp_path (Path): Temporary checkout with edited README content.
+        monkeypatch (MonkeyPatch): Supplies the publishing fork's Actions identity.
 
     Returns:
         None: Repeated publication is byte-identical and later dates update the badge without losing surrounding text.
@@ -34,7 +37,8 @@ def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(tmp
     before, after = "# My project\r\n\r\n", "\r\n\r\nKeep **my** installation steps.\r\n"
     path = tmp_path / "README.md"
     path.write_bytes((before + "<!-- resumeme:branding:start -->old<!-- resumeme:branding:end -->" + after).encode())
-    config = Config(LinkedIn("example"), output=Output(pdf="documents/cv.pdf"))
+    monkeypatch.setenv("GITHUB_REPOSITORY", "example/my-cv")
+    config = Config(LinkedIn("example", ownership=Ownership(repository="upstream/project")), output=Output(pdf="documents/cv.pdf"))
     update_project_branding(tmp_path, config, date(2026, 1, 2))
     markdown = path.read_bytes()
     assert markdown.startswith(before.encode())
@@ -42,6 +46,9 @@ def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(tmp
     assert b'href="./documents/cv.pdf"' in markdown
     assert b"Brew date: 2026-01-02 (UTC)" in markdown
     assert markdown.index(b"resumeme-logo.png") < markdown.index(b"<br>") < markdown.index(b"brew-date.svg")
+    assert b'src="https://raw.githubusercontent.com/example/my-cv/main/docs/assets/branding/resumeme-logo.png"' in markdown
+    assert b'src="https://raw.githubusercontent.com/example/my-cv/main/docs/assets/branding/brew-date.svg"' in markdown
+    assert b"upstream/project" not in markdown
     badge = tmp_path / "docs/assets/branding/brew-date.svg"
     first = badge.read_bytes()
     svg = ElementTree.fromstring(first)
@@ -178,7 +185,7 @@ def test_personal_readme_uses_only_selected_public_identity() -> None:
     assert r"Platform &amp; reliability \- résumé\.\.\. &lt;script&gt;alert\(1\)&lt;/script&gt;" in markdown
     assert "./documents/cv.pdf" in markdown
     assert "PDF - 3 pages" in markdown
-    assert f"]({PREVIEW_PATH})" in markdown
+    assert f"](https://raw.githubusercontent.com/example/my-cv/main/{PREVIEW_PATH})" in markdown
     assert "https://github.com/example/my-cv/releases" in markdown
     assert "https://github.com/example-dev" in markdown
     assert "https://www.linkedin.com/in/example/" in markdown
@@ -199,7 +206,7 @@ def test_nested_readme_links_resolve_from_its_destination() -> None:
     config = Config(LinkedIn("example"), output=Output(pdf="documents/cv.pdf"), readme=Readme(output="docs/examples/resume.md"))
     markdown = render_readme(Profile("example", "Jane"), config, "example/cv", 2)
     assert markdown.count("](./../../documents/cv.pdf)") == 2
-    assert "](../assets/resume-preview.png)" in markdown
+    assert "](https://raw.githubusercontent.com/example/cv/main/docs/assets/resume-preview.png)" in markdown
     assert "[Configuration](../../resumeme.config.yaml)" in markdown
     assert "[Automation](../automation.md)" in markdown
 

@@ -30,6 +30,9 @@ in the same commit, retaining the date on retries. Only the content between
 `<!-- resumeme:branding:start -->` and `<!-- resumeme:branding:end -->` is managed
 in project READMEs. Removing both markers opts out of README markup updates.
 Personal READMEs on forks continue to use the first-page PDF preview.
+README image sources use absolute `raw.githubusercontent.com` URLs so they render
+on PyPI and other Markdown hosts. Publication resolves the repository from
+`GITHUB_REPOSITORY`, or the local Git origin outside Actions, and targets `main`.
 
 Preview a revision locally from the repository root:
 

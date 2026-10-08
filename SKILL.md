@@ -30,6 +30,10 @@ be established from the conversation and configuration.
 Review inherited `github.username`, job and school exclusions, date windows,
 README destination, Pages domain, and optional Codex/live-update settings when
 setting up a new owner. Apply the user's choices while preserving YAML comments.
+For a first setup still using the author's configuration, copy
+[resumeme.config.ref.yaml](resumeme.config.ref.yaml) to `resumeme.config.yaml` and
+set the confirmed username. The reference uses package defaults and disables
+optional integrations; preserve an existing owner's customized config.
 The checked-in configuration contains personal overrides; do not assume it is the
 package's default configuration. Minimal profiles and missing sections are valid;
 do not invent content to fill them. See [profile coverage](docs/profile-schema.md).

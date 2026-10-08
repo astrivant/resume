@@ -35,6 +35,7 @@ __all__ = [
     "GitHubContributions",
     "JobSelector",
     "LinkedIn",
+    "Logging",
     "Output",
     "Ownership",
     "Pages",
@@ -46,6 +47,18 @@ __all__ = [
     "load_config",
     "project_path",
 ]
+
+
+@frozen
+class Logging:
+    """
+    Select the minimum severity for application logs exported to stdout.
+
+    Attributes:
+        level (Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]): Minimum severity; environment and CLI can override it.
+    """
+
+    level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "ERROR"
 
 
 @frozen
@@ -488,6 +501,7 @@ class Config:
         readme (Readme): Automatic personal README publication on forks.
         projects (Projects): Project names and affiliations to include or exclude alongside the source URL filter.
         pages (Pages): Optional static site publication and its location within GitHub Pages.
+        logging (Logging): Application log severity for OpenTelemetry JSON output on stdout.
     """
 
     linkedin: LinkedIn
@@ -504,6 +518,7 @@ class Config:
     readme: Readme = field(factory=Readme)
     projects: Projects = field(factory=Projects)
     pages: Pages = field(factory=Pages)
+    logging: Logging = field(factory=Logging)
 
 
 def project_path(root: Path, value: str) -> Path:

@@ -248,7 +248,9 @@ def test_prompt_and_cli_use_explicit_local_artifacts(profile: Profile, tmp_path:
     assert main(["--config", str(config_path), "render", "--summary", "summary.json"]) == 0
     (tmp_path / "summary.json").write_text('{"about":"Missing required fields"}')
     assert main(["--config", str(config_path), "render", "--summary", "summary.json"]) == 2
-    assert "required property" in capsys.readouterr().err
+    captured = capsys.readouterr()
+    assert "required property" in captured.out
+    assert captured.err == ""
 
 
 @pytest.mark.parametrize(

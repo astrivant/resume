@@ -21,6 +21,8 @@ dependencies = [
     "Pillow>=12,<13",
     "wordcloud>=1.9.6,<2",
     "pypdf>=6.19,<7",
+    "opentelemetry-sdk (>=1.40,<2)",
+    "opentelemetry-instrumentation-logging (>=0.61b0,<1)",
 ]
 
 [project.scripts]

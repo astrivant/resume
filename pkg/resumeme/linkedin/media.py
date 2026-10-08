@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import logging
 import re
 import socket
-import sys
 import time
 from io import BytesIO
 from typing import TYPE_CHECKING
@@ -24,6 +24,7 @@ from urllib3.util.retry import Retry
 from resumeme.compiler.asts.links import discover_profile_links, safe_url
 from resumeme.compiler.asts.profile import Entry, Media
 from resumeme.config import project_path
+from resumeme.telemetry import safe_log_url
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -36,6 +37,7 @@ if TYPE_CHECKING:
 __all__ = ["cache_media", "fetch_public"]
 
 _MAX_BYTES = 10 * 1024 * 1024
+_LOGGER = logging.getLogger(__name__)
 
 
 class _ExponentialRetry(Retry):
@@ -68,7 +70,14 @@ class _ExponentialRetry(Retry):
 
         # A server can ask us to wait longer, but cannot extend the request beyond the operator's configured delay cap.
         delay = min(max(self.get_backoff_time(), retry_after or 0), self.backoff_max)
-        print(f"HTTP failure: retrying attempt {len(self.history) + 1} in {delay:g}s.", file=sys.stderr, flush=True)
+        _LOGGER.warning(
+            "Retrying HTTP request",
+            extra={
+                "retry.attempt": len(self.history) + 1,
+                "retry.delay_seconds": delay,
+                "http.response.status_code": response.status if response else 0,
+            },
+        )
         time.sleep(delay)
 
 
@@ -120,9 +129,32 @@ def fetch_public(session: requests.Session, url: str, timeout: int) -> tuple[byt
         _validate_remote(url)
         session.cookies.clear()
 
-        with session.get(url, timeout=(timeout, timeout), stream=True, allow_redirects=False) as response:
+        started = time.monotonic()
+        attributes = {"http.request.method": "GET", "url.full": safe_log_url(url), "request.timeout_seconds": timeout}
+        _LOGGER.debug("HTTP request started", extra=attributes)
+
+        try:
+            response = session.get(url, timeout=(timeout, timeout), stream=True, allow_redirects=False)
+        except requests.RequestException as error:
+            _LOGGER.debug(
+                "HTTP request failed",
+                extra={**attributes, "error.type": type(error).__name__, "request.duration_seconds": time.monotonic() - started},
+            )
+            raise
+
+        with response:
+            _LOGGER.debug(
+                "HTTP response received",
+                extra={
+                    **attributes,
+                    "http.response.status_code": response.status_code,
+                    "request.duration_seconds": time.monotonic() - started,
+                },
+            )
+
             if response.is_redirect:
                 url = urljoin(url, response.headers["Location"])
+                _LOGGER.debug("Following HTTP redirect", extra={"url.full": safe_log_url(url)})
                 continue
 
             response.raise_for_status()
@@ -136,6 +168,10 @@ def fetch_public(session: requests.Session, url: str, timeout: int) -> tuple[byt
                 if len(body) > _MAX_BYTES:
                     raise ValueError("Remote resource exceeds the 10 MiB download limit.")
 
+            _LOGGER.debug(
+                "HTTP download completed",
+                extra={**attributes, "http.response.body.size": len(body), "request.duration_seconds": time.monotonic() - started},
+            )
             return bytes(body), url
 
     raise ValueError("Remote resource exceeded five redirects.")
@@ -157,6 +193,7 @@ def _download(image: Media, session: requests.Session, root: Path, config: Confi
 
     # Resume interrupted downloads from already recorded assets before contacting expiring remote image URLs.
     if image.path and project_path(root, image.path).is_file():
+        _LOGGER.debug("Reusing cached image", extra={"file.path": image.path})
         return image
 
     body, _ = fetch_public(session, image.url, config.capture.page_timeout_seconds)
@@ -259,6 +296,7 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
 
     # Apply the same discovery to new captures and existing snapshots, including role-level ownership for later job exclusions.
     profile = discover_profile_links(profile)
+    _LOGGER.info("Resolving profile links and images", extra={"profile.sections": len(profile.sections)})
     warnings = list(profile.warnings)
 
     # Cache outcomes across the whole capture because logos and project links recur in several sections and grouped roles.
@@ -302,6 +340,7 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
                     except (requests.RequestException, OSError, ValueError, UnidentifiedImageError, Image.DecompressionBombError) as error:
                         # Preserve the unresolved reference and warn once; repeated appearances must not trigger repeated downloads.
                         warnings.append(f"Image unavailable ({item.alt or urlsplit(item.url).hostname}): {type(error).__name__}")
+                        _LOGGER.warning("Image unavailable", extra={"url.full": safe_log_url(item.url), "error.type": type(error).__name__})
                         downloaded[item.url] = item
 
                 # Reuse the bytes while keeping this occurrence's own accessible label and link destination.
@@ -336,6 +375,9 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
                             previews[link.url] = _preview(link.url, session, config.capture.page_timeout_seconds)
                         except (requests.RequestException, OSError, ValueError) as error:
                             warnings.append(f"Link preview unavailable ({link.label}): {type(error).__name__}")
+                            _LOGGER.warning(
+                                "Link preview unavailable", extra={"url.full": safe_log_url(link.url), "error.type": type(error).__name__}
+                            )
                             previews[link.url] = None
 
                     metadata = previews[link.url]
@@ -372,4 +414,8 @@ def cache_media(profile: Profile, config: Config, root: Path) -> Profile:
             for section in profile.sections
         ]
 
+    _LOGGER.info(
+        "Profile media resolved",
+        extra={"media.images": len(downloaded), "media.previews": len(previews), "profile.warnings": len(warnings)},
+    )
     return evolve(profile, links=intro.links, images=intro.images, sections=sections, warnings=warnings)

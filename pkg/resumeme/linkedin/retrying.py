@@ -4,7 +4,7 @@ Retry transient operations with explicit bounds and injectable waiting.
 
 from __future__ import annotations
 
-import sys
+import logging
 import time
 from typing import TYPE_CHECKING, TypeVar
 
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 __all__ = ["retry"]
 _T = TypeVar("_T")
+_LOGGER = logging.getLogger(__name__)
 
 
 def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers.
@@ -45,7 +46,15 @@ def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers
             return operation()
         except exceptions as error:
             delay = min(backoff * 2**attempt, max_backoff)
-            print(f"{type(error).__name__}: retrying attempt {attempt + 2}/{attempts} in {delay:g}s.", file=sys.stderr, flush=True)
+            _LOGGER.warning(
+                "Retrying transient operation",
+                extra={
+                    "error.type": type(error).__name__,
+                    "retry.attempt": attempt + 2,
+                    "retry.limit": attempts,
+                    "retry.delay_seconds": delay,
+                },
+            )
             time.sleep(delay)
 
     # Let the final failure retain its original exception and traceback instead of wrapping it in a generic retry error.

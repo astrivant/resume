@@ -9,6 +9,7 @@
 !.python-version
 !.pre-commit-config.yaml
 !resumeme.config.yaml
+!resumeme.config.ref.yaml
 !pkg/
 !pkg/**
 !scripts/

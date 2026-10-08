@@ -5,6 +5,7 @@ Compile generated LaTeX using the pinned TeX image or the toolchain bundled in t
 from __future__ import annotations
 
 import json
+import logging
 import os
 import subprocess
 import tempfile
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from resumeme.config import Config
 
 __all__ = ["compile_pdf", "tex_image"]
+_LOGGER = logging.getLogger(__name__)
 
 
 def tex_image() -> str:
@@ -67,6 +69,7 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
         raise ValueError("RESUMEME_TEX_BACKEND must be docker or local.")
 
     source = source.resolve()
+    _LOGGER.info("Compiling PDF", extra={"compiler.backend": backend, "file.path": str(source)})
     destination = project_path(root, config.output.pdf)
     cache = root / ".cache/build"
     cache.mkdir(parents=True, exist_ok=True)
@@ -129,11 +132,15 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
         environment = dict(os.environ, SOURCE_DATE_EPOCH=SOURCE_DATE_EPOCH, FORCE_SOURCE_DATE="1", TEXMFHOME=str(output / "texmf"))
 
         for number in (1, 2):
+            _LOGGER.debug("Starting LaTeX pass", extra={"compiler.pass": number, "compiler.backend": backend})
             result = subprocess.run(
                 command, cwd=source.parent, env=environment, capture_output=True, text=True, timeout=COMPILER_TIMEOUT_SECONDS, check=False
             )
             log = cache / f"pdflatex-{number}.log"
             log.write_text(result.stdout + result.stderr, encoding="utf-8")
+            _LOGGER.debug(
+                "LaTeX pass completed", extra={"compiler.pass": number, "process.exit.code": result.returncode, "file.path": str(log)}
+            )
 
             if result.returncode:
                 raise RuntimeError(f"PDF compilation failed; inspect {log}.")
@@ -152,4 +159,5 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
         pending.write_bytes(release_footer(compiled.read_bytes(), releases))
         pending.replace(destination)
 
+    _LOGGER.info("PDF compiled", extra={"file.path": str(destination)})
     return destination

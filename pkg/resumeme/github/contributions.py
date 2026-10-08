@@ -4,6 +4,7 @@ Fetch the public calendar displayed on GitHub profiles without tokens or browser
 
 from __future__ import annotations
 
+import logging
 from datetime import date
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode, urlsplit
@@ -80,6 +81,9 @@ def fetch_calendar(config: Config) -> ContributionCalendar:
         raise ValueError("Set github.username before fetching contributions.")
 
     start, end = calendar_window(config.github.contributions)
+    logging.getLogger(__name__).info(
+        "Fetching GitHub contributions", extra={"calendar.start": start.isoformat(), "calendar.end": end.isoformat()}
+    )
     days: list[ContributionDay] = []
 
     with requests.Session() as session:
@@ -112,4 +116,5 @@ def fetch_calendar(config: Config) -> ContributionCalendar:
 
     calendar = ContributionCalendar(username, start.isoformat(), end.isoformat(), days)
     validate_calendar(calendar, username, start, end)
+    logging.getLogger(__name__).info("GitHub contributions fetched", extra={"calendar.days": len(days)})
     return calendar

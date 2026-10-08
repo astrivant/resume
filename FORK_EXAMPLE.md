@@ -6,7 +6,7 @@ My résumé, kept current from LinkedIn and published here as a PDF\. Open the f
 
 **[View résumé (PDF - 4 pages)](./resume.pdf)** - [LinkedIn](https://www.linkedin.com/in/emmeowzing/) - [GitHub](https://github.com/emmeowzing) - [Releases & signatures](https://github.com/astrivant/resumeme/releases)
 
-[![First page of Emma Doyle's résumé](docs/assets/resume-preview.png)](./resume.pdf)
+[![First page of Emma Doyle's résumé](https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/resume-preview.png)](./resume.pdf)
 
 *Preview of page 1. Click to open the complete PDF.*
 

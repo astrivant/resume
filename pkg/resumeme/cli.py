@@ -5,8 +5,9 @@ Provide explicit capture, validation, rendering, and PDF build commands.
 from __future__ import annotations
 
 import argparse
+import logging
+import os
 import subprocess
-import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -29,11 +30,13 @@ from resumeme.linkedin.identity import release_destination
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.ownership import publish_ownership
 from resumeme.linkedin.skills import publish_skills
+from resumeme.telemetry import LOG_LEVELS, logging_context, set_log_level
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 __all__ = ["main"]
+_LOGGER = logging.getLogger(__name__)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -51,6 +54,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Capture your LinkedIn profile and build an illustrated PDF résumé.")
     parser.add_argument(
         "--config", type=Path, default=Path("resumeme.config.yaml"), help="Configuration file (default: resumeme.config.yaml)"
+    )
+    parser.add_argument(
+        "--log-level", type=str.upper, choices=LOG_LEVELS, help="Override RESUMEME_LOG_LEVEL and logging.level (default: ERROR)"
     )
     commands = parser.add_subparsers(dest="command", required=True)
 
@@ -107,9 +113,26 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
 
+    # Install error reporting before reading user configuration, and release its handler after every invocation.
+    with logging_context():
+        return _run(args)
+
+
+def _run(args: argparse.Namespace) -> int:
+    """
+    Execute a parsed command inside its caller-owned logging context.
+
+    Args:
+        args (argparse.Namespace): Parsed CLI arguments and selected command.
+
+    Returns:
+        int: Zero on success, two on failure, or 130 on user cancellation.
+    """
     try:
         # Anchor every stage to the config directory, regardless of where the command was invoked.
         config = load_config(args.config)
+        set_log_level(args.log_level or os.environ.get("RESUMEME_LOG_LEVEL") or config.logging.level)
+        _LOGGER.info("Starting command", extra={"resumeme.command": args.command})
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
 
@@ -149,7 +172,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 raise ValueError(f"Capture needs review at {diagnostic}: " + "; ".join(profile.warnings))
 
             save_profile(profile, snapshot)
-            print(f"Saved {snapshot}")
+            _LOGGER.info("Saved profile snapshot", extra={"file.path": str(snapshot), "profile.sections": len(profile.sections)})
+            print(snapshot)
             return 0
 
         # Enforce ownership on every offline path so a fork cannot accidentally publish the previous owner's resume.
@@ -218,22 +242,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(result)
     except KeyboardInterrupt:
         # Browser cleanup happens in its context manager; retain the profile so the next capture can reuse login.
-        print(
-            "\nresumeme: Browser operation cancelled; the local login is retained. Check live About if a Save was in progress.",
-            file=sys.stderr,
-        )
+        _LOGGER.error("Browser operation cancelled; the local login is retained. Check live About if a Save was in progress.")
         return 130
     except NoSuchWindowException:
-        print(
-            "resumeme: The browser window was closed. Rerun the command and leave the capture browser open until it finishes.",
-            file=sys.stderr,
-        )
+        _LOGGER.error("The browser window was closed. Rerun the command and leave the capture browser open until it finishes.")
         return 2
     except TimeoutException:
-        print("resumeme: LinkedIn timed out. Rerun the command; increase capture.page_timeout_seconds if needed.", file=sys.stderr)
+        _LOGGER.error("LinkedIn timed out. Rerun the command; increase capture.page_timeout_seconds if needed.")
         return 2
     except (OSError, ValueError, RuntimeError, ValidationError, yaml.YAMLError, WebDriverException, subprocess.TimeoutExpired) as error:
-        print(f"resumeme: {error}", file=sys.stderr)
+        _LOGGER.error("%s", error, extra={"error.type": type(error).__name__})
+        _LOGGER.debug("Command failure details", exc_info=True)
         return 2
 
     return 0

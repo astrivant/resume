@@ -219,6 +219,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
         GITHUB_EVENT_NAME="push",
         REFRESH_PROFILE=str(refresh).lower(),
         RESUMEME_REPOSITORY_FORK=str(fork).lower(),
+        GITHUB_REPOSITORY="example/my-cv",
         RETRY_BACKOFF_SECONDS="0",
     )
     subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
@@ -252,6 +253,8 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
 
         markdown = (root / "README.md").read_text()
         assert 'href="./resume.pdf"' in markdown
+        assert 'src="https://raw.githubusercontent.com/example/my-cv/main/docs/assets/branding/resumeme-logo.png"' in markdown
+        assert 'src="https://raw.githubusercontent.com/example/my-cv/main/docs/assets/branding/brew-date.svg"' in markdown
         assert "Brew date: 2026-01-02 (UTC)" in markdown
         assert markdown.endswith("Custom introduction\n")
 

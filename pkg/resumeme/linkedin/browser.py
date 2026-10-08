@@ -4,6 +4,7 @@ Collect a profile through Firefox or Chrome with interactive or unattended authe
 
 from __future__ import annotations
 
+import logging
 import os
 import signal
 import socket
@@ -30,10 +31,12 @@ from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, par
 from resumeme.compiler.asts.profile import save_profile
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry
+from resumeme.telemetry import safe_log_url
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
     from pathlib import Path
+    from typing import Literal
 
     from selenium.webdriver.remote.webdriver import WebDriver
     from selenium.webdriver.remote.webelement import WebElement
@@ -42,6 +45,7 @@ if TYPE_CHECKING:
     from resumeme.config import Capture, Config
 
 __all__ = ["capture_profile"]
+_LOGGER = logging.getLogger(__name__)
 
 _SCROLL_SCRIPT = """
 const main = document.querySelector('main');
@@ -241,6 +245,7 @@ def _browser(root: Path, settings: Capture, connect_port: int | None = None, *, 
 
     # Both capture and ownership updates share selection so changing the config cannot route them to different sessions.
     session = _chrome(root, headless=headless) if settings.browser == "chrome" else _firefox(root, connect_port, headless=headless)
+    _LOGGER.info("Opening browser", extra={"browser.name": settings.browser, "browser.headless": headless})
 
     with session as driver:
         yield driver
@@ -272,9 +277,23 @@ def _navigate(driver: WebDriver, url: str, settings: Capture) -> None:
         None: Navigation completed or its final timeout propagated.
     """
 
+    def navigate() -> None:
+        """
+        Measure one navigation without exposing Selenium's wire payloads or credentials.
+
+        Returns:
+            None: The browser reached the requested destination.
+        """
+        started = time.monotonic()
+        _LOGGER.debug("Browser navigation started", extra={"url.full": safe_log_url(url)})
+        driver.get(url)
+        _LOGGER.debug(
+            "Browser navigation completed", extra={"url.full": safe_log_url(url), "request.duration_seconds": time.monotonic() - started}
+        )
+
     # Retry read-only navigation in the existing session so transient page failures do not reset authentication.
     retry(
-        lambda: driver.get(url),
+        navigate,
         attempts=settings.retry_attempts,
         backoff=settings.retry_backoff_seconds,
         exceptions=(TimeoutException,),
@@ -299,6 +318,56 @@ def _authenticated(driver: WebDriver) -> bool:
     return (host == "linkedin.com" or host.endswith(".linkedin.com")) and not authenticating and driver.get_cookie("li_at") is not None
 
 
+def _login_page(driver: WebDriver) -> str:
+    """
+    Classify the login location without exposing URL tokens or account identifiers.
+
+    Args:
+        driver (WebDriver): Browser being authenticated.
+
+    Returns:
+        str: Allowlisted route category, never a raw URL, cookie, or page body.
+    """
+    location = urlsplit(driver.current_url)
+
+    if location.scheme != "https" or location.hostname not in {"linkedin.com", "www.linkedin.com"}:
+        return "unexpected origin"
+
+    route = location.path.casefold().strip("/").split("/", 1)[0]
+    return route if route in {"login", "signup", "checkpoint", "challenge", "authwall", "uas", "feed", "in"} else "other LinkedIn page"
+
+
+def _login_form(driver: WebDriver) -> tuple[WebElement, WebElement, WebElement] | Literal[True, False]:
+    """
+    Wait for a complete usable form or an already authenticated session.
+
+    Args:
+        driver (WebDriver): Browser whose location is rechecked on every poll.
+
+    Returns:
+        tuple[WebElement, WebElement, WebElement] | Literal[True, False]: Username, password, and submit controls; True if signed in;
+            False while any control is hidden or disabled.
+
+    Raises:
+        ValueError: The form is no longer on LinkedIn's HTTPS origin.
+        NoSuchElementException: A control has not appeared; the caller's explicit wait retries the lookup.
+    """
+
+    # Redirects can finish during the wait; check the origin before looking up or returning credential controls.
+    if _login_page(driver) == "unexpected origin":
+        raise ValueError("LinkedIn login redirected to an unexpected origin.")
+
+    if _authenticated(driver):
+        return True
+
+    controls = (
+        driver.find_element(By.ID, "username"),
+        driver.find_element(By.ID, "password"),
+        driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]'),
+    )
+    return controls if all(control.is_displayed() and control.is_enabled() for control in controls) else False
+
+
 def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
     """
     Submit configured credentials once, then observe authentication without retrying a password submission.
@@ -321,19 +390,68 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         raise ValueError("Set both LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD for unattended capture.")
 
     if username and not _authenticated(driver):
-        # Submit only on LinkedIn's HTTPS login origin; redirects to unrelated sites never receive credentials.
-        location = urlsplit(driver.current_url)
+        _LOGGER.info("Waiting for the LinkedIn login form")
 
-        if location.scheme != "https" or location.hostname not in {"linkedin.com", "www.linkedin.com"}:
-            raise ValueError("LinkedIn login redirected to an unexpected origin.")
+        def prepare() -> tuple[WebElement, WebElement, WebElement] | Literal[True]:
+            """
+            Retry form observation while leaving challenges for interactive completion.
 
-        field = WebDriverWait(driver, settings.page_timeout_seconds).until(lambda page: page.find_element(By.ID, "username"))
-        field.clear()
-        field.send_keys(username)
-        field = driver.find_element(By.ID, "password")
-        field.clear()
-        field.send_keys(password)
-        driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
+            Returns:
+                tuple[WebElement, WebElement, WebElement] | Literal[True]: Ready controls or an observed authenticated session.
+            """
+            try:
+                return WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
+                    _login_form
+                )
+            except TimeoutException as error:
+                # A challenge is not a transient missing form. Never reload it or replay credentials to get past it.
+                if _login_page(driver) in {"checkpoint", "challenge", "authwall"}:
+                    if headless:
+                        raise ValueError(
+                            f"LinkedIn login form is unavailable (page state: {_login_page(driver)}). "
+                            "Complete sign-in interactively using this command without --headless. No credentials were submitted."
+                        ) from error
+
+                    _wait_for_login(driver)
+                    return True
+
+                raise
+
+        try:
+            controls = retry(
+                prepare,
+                attempts=settings.retry_attempts,
+                backoff=settings.retry_backoff_seconds,
+                max_backoff=settings.retry_max_backoff_seconds,
+                exceptions=(TimeoutException,),
+            )
+        except TimeoutException as error:
+            if not headless:
+                _LOGGER.warning("LinkedIn's login form is unavailable. Finish signing in in the browser; waiting for login.")
+                _wait_for_login(driver)
+                return
+
+            raise ValueError(
+                f"LinkedIn login form did not become ready after {settings.retry_attempts} attempts "
+                f"(page state: {_login_page(driver)}). No credentials were submitted. "
+                "Check LinkedIn in an interactive browser or increase capture.page_timeout_seconds for a slow page."
+            ) from error
+
+        if controls is True:
+            return
+
+        username_field, password_field, submit = controls
+        username_field.clear()
+        username_field.send_keys(username)
+        password_field.clear()
+        password_field.send_keys(password)
+        _LOGGER.info("Submitting LinkedIn credentials once; waiting for authentication")
+
+        try:
+            submit.click()
+        except TimeoutException:
+            # A click can submit successfully and time out waiting for the destination's assets. Observe its result without resubmitting.
+            _LOGGER.warning("Sign-in navigation timed out; checking the existing session without resubmitting credentials.")
 
     if not headless:
         _wait_for_login(driver)
@@ -344,8 +462,9 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         WebDriverWait(driver, settings.page_timeout_seconds).until(_authenticated)
     except TimeoutException as error:
         raise ValueError(
-            "Unattended LinkedIn login did not complete. Check the LinkedIn secrets or complete the account challenge in your browser; "
-            "run local capture and commit its inputs if LinkedIn requires interactive authentication. Main was not updated."
+            f"Unattended LinkedIn login did not complete (page state: {_login_page(driver)}). "
+            "Check LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD, or run this command without --headless "
+            "to complete an account challenge interactively. No profile changes were submitted."
         ) from error
 
 
@@ -367,6 +486,7 @@ def _wait_for_login(driver: WebDriver) -> None:
     # Password lookup and MFA are user-paced; cancellation or closed windows end this wait instead of a timer.
     while True:
         handles = driver.window_handles
+        _LOGGER.debug("Checking browser login state", extra={"browser.tabs": len(handles)})
 
         if not handles:
             raise NoSuchWindowException("The capture window was closed during login.")
@@ -428,6 +548,10 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
 
         at_bottom: object = driver.execute_script(_SCROLL_SCRIPT, "next")
         current = driver.find_element(By.CSS_SELECTOR, "main").text
+        _LOGGER.debug(
+            "Expanding profile content",
+            extra={"capture.snapshots": len(snapshots), "capture.at_bottom": at_bottom is True, "capture.expanded": clicked},
+        )
 
         # Require several quiet bottom-of-page observations so a temporary loading gap is not mistaken for completion.
         if at_bottom is True and current == previous and not clicked:
@@ -666,7 +790,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
         raise ValueError("Headless capture requires LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD.")
 
     name = config.capture.browser.title()
-    print(f"Opening headless {name} for LinkedIn capture." if headless else f"Opening {name}. Sign in to LinkedIn there.", flush=True)
+    _LOGGER.info("Starting LinkedIn capture", extra={"browser.name": name, "browser.headless": headless})
     warnings: list[str] = []
 
     # Own one browser lifecycle across login, profile expansion, detail pages, and contact capture.
@@ -678,7 +802,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             _navigate(driver, "https://www.linkedin.com/login", config.capture)
 
         _login(driver, config.capture, headless=headless)
-        print("Login detected. Loading your profile...", flush=True)
+        _LOGGER.info("Login detected; loading profile")
         username = config.linkedin.username
         _navigate(driver, f"https://www.linkedin.com/in/{username}/", config.capture)
 
@@ -716,7 +840,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
 
         for key, url in routes.items():
             title = next((section.title for section in profile.sections if section.key == key), key.replace("-", " ").title())
-            print(f"Capturing {title}...", flush=True)
+            _LOGGER.info("Capturing profile section", extra={"profile.section": key})
 
             try:
                 replacements[key] = retry(
@@ -738,7 +862,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             warnings.append("Profile contains tabbed content; verify all tab variants are represented before accepting the snapshot.")
 
         if f"/in/{username}/overlay/contact-info" in html:
-            print("Capturing Contact info...", flush=True)
+            _LOGGER.info("Capturing contact information")
             contact = retry(
                 partial(_contact, driver, username, config.capture),
                 attempts=config.capture.retry_attempts,
@@ -750,7 +874,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
 
         profile = evolve(profile, sections=sections, warnings=warnings, captured_at=datetime.now(UTC).isoformat())
 
-    print("Downloading profile images and linked project previews...", flush=True)
+    _LOGGER.info("Downloading profile images and linked project previews")
 
     # Browser access is finished; checkpoint the text before independent media downloads can fail or be interrupted.
     save_profile(

@@ -11,7 +11,7 @@ that commit is accepted. The optional stage serves `index.html` and the same PDF
 at the configured site path, including custom domains.
 
 Forks publish a [personal README and PDF preview](#personal-readme) in that same
-commit. Repositories retaining the project README also give the [project logo](assets/branding/resumeme-logo.png)
+commit. Repositories retaining the project README also give the [project logo](https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/resumeme-logo.png)
 a fresh coffee stain. CI varies its orientation, proportions, placement, and
 density using the verified source commit as a seed. Retries reproduce the same
 logo; unchanged PDFs and profile inputs produce no extra commit. This uses the
@@ -23,6 +23,11 @@ project READMEs; surrounding documentation is retained.
 The logo is README branding; it does not add stains to the résumé PDF.
 
 ## Configure a fork
+
+Copy [resumeme.config.ref.yaml](../resumeme.config.ref.yaml) to `resumeme.config.yaml`,
+set `linkedin.username`, and capture your own profile before publishing. The
+reference keeps optional integrations disabled and uses `readme.mode: auto` with
+`readme.output: README.md`; it contains no personal exclusions or date window.
 
 Enable Actions, keep `main` as the default branch, and permit the workflow bot to
 push generated updates through your branch rules. Set the login secrets using
@@ -89,12 +94,15 @@ readme:
 | `introduction: "Platform engineer building reliable developer infrastructure."` | Replace the introduction with plain text; Markdown and HTML are escaped |
 
 This repository sets `mode: resume` and `output: FORK_EXAMPLE.md` to exercise the
-publication flow and keep a current example for adopters. Forks inherit that
-configuration; set `output: README.md` to use the generated page as your landing
-page. `mode: auto` restricts generation to forks; `mode: resume` also generates in
+publication flow and keep a current example for adopters. Copying the reference
+configuration selects `output: README.md` for your landing page. Forks retaining
+the author's config can set that field directly. `mode: auto` restricts generation
+to forks; `mode: resume` also generates in
 standalone repositories. Nested paths such as `docs/examples/resume.md` are
-supported, with PDF, preview, configuration, and documentation links relative to
-the destination. Paths must stay inside the repository and must not overwrite
+supported, with PDF, configuration, and documentation links relative to
+the destination. Images use absolute `raw.githubusercontent.com` URLs targeting
+the publishing repository's `main` branch, so they also render outside GitHub.
+Paths must stay inside the repository and must not overwrite
 configured inputs or other outputs.
 
 Names, profile links, and PDF paths are parameterized automatically. After changing
@@ -138,9 +146,13 @@ Check the Actions tab if an expected refresh is missing. See
 ## Authentication recovery
 
 LinkedIn can require MFA, a CAPTCHA, or another account challenge, particularly
-from a hosted runner. Unattended login waits for the existing page timeout and
-then fails with an actionable error. It does not repeatedly submit passwords or
-attempt to bypass challenges. Local capture keeps its unlimited interactive wait:
+from a hosted runner. Waiting for a usable login form uses
+`capture.page_timeout_seconds` and the configured exponential retry policy.
+Credentials are submitted once. If that click times out during navigation, the
+client checks the existing session for login completion without submitting again.
+Unattended authentication then waits for the page timeout and reports the failed
+stage and a sanitized page category, such as `login` or `checkpoint`. Challenges
+require interactive completion. Local capture keeps its unlimited interactive wait:
 
 ```bash
 poetry run resumeme capture
@@ -151,6 +163,10 @@ Complete any challenge in the selected browser, then commit the accepted snapsho
 and push them to `main`. Update incorrect secrets and rerun the refresh. Accounts
 that consistently require interaction can use this local capture path; scheduled
 authentication cannot guarantee unattended access.
+
+For a failed About or skills publication, run the corresponding `publish-ownership`
+or `publish-skills` command locally without `--headless`; committing a captured
+snapshot does not apply those live profile updates. See [CLI commands](CLI.md).
 
 ## Choose a version to share
 

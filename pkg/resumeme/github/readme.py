@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import html
+import logging
 import os
 import posixpath
 import re
@@ -22,7 +23,8 @@ from pypdf import PdfReader
 from resumeme.compiler.asts.profile import load_profile
 from resumeme.compiler.backends.latex.compilation import tex_image
 from resumeme.compiler.constants.escaping import PUNCTUATION
-from resumeme.config import project_path
+from resumeme.config import Ownership, project_path
+from resumeme.linkedin.identity import release_destination
 from resumeme.visualization.branding import render_brew_badge
 
 if TYPE_CHECKING:
@@ -43,7 +45,7 @@ _BOILERPLATE = (
 )
 
 
-def update_project_branding(root: Path, config: Config, brewed_on: date) -> None:
+def update_project_branding(root: Path, config: Config, brewed_on: date, *, repository: str | None = None) -> None:
     """
     Refresh the local date badge and only the marked branding block of a project README.
 
@@ -51,12 +53,13 @@ def update_project_branding(root: Path, config: Config, brewed_on: date) -> None
         root (Path): Publishing checkout containing an optional custom README.
         config (Config): Configured PDF destination for the badge link.
         brewed_on (date): UTC build date transported with the verified PDF artifact.
+        repository (str | None): Publishing OWNER/REPO; defaults to Actions identity or the local Git origin.
 
     Returns:
         None: The SVG is refreshed; README text outside the opt-in branding markers is preserved exactly.
 
     Raises:
-        ValueError: Existing branding markers are duplicated, incomplete, or reversed.
+        ValueError: Existing branding markers are invalid or no GitHub repository can be resolved.
     """
     path = root / "README.md"
     original = path.read_bytes().decode("utf-8") if path.exists() else ""
@@ -72,11 +75,16 @@ def update_project_branding(root: Path, config: Config, brewed_on: date) -> None
         if end < start:
             raise ValueError("README branding end marker must follow its start marker.")
 
+        # Raw URLs work when package indexes render this Markdown without the checkout's relative asset paths.
+        # Resolve the publishing repository independently of any inherited signing-release destination override.
+        releases = release_destination(Ownership(repository=repository), root)
+        repository = releases.removeprefix("https://github.com/").removesuffix("/releases")
+        assets = f"https://raw.githubusercontent.com/{repository}/main/docs/assets/branding"
         pdf = "./" + quote(Path(config.output.pdf).as_posix(), safe="/")
         block = (
             f'{_BRANDING_START}\n<p align="left">\n'
-            '  <img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>\n'
-            f'  <a href="{pdf}"><img src="{_BREW_BADGE_PATH}" alt="Brew date: {brewed_on.isoformat()} (UTC)" '
+            f'  <img src="{assets}/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>\n'
+            f'  <a href="{pdf}"><img src="{assets}/brew-date.svg" alt="Brew date: {brewed_on.isoformat()} (UTC)" '
             f'width="220" height="28"></a>\n</p>\n{_BRANDING_END}'
         )
         updated = original[:start] + block + original[end + len(_BRANDING_END) :]
@@ -86,6 +94,7 @@ def update_project_branding(root: Path, config: Config, brewed_on: date) -> None
 
     if updated != original:
         path.write_bytes(updated.encode("utf-8"))
+        logging.getLogger(__name__).info("README branding updated", extra={"file.path": str(path)})
 
 
 def personal_readme(config: Config, is_fork: bool) -> bool:
@@ -127,7 +136,7 @@ def render_readme(profile: Profile, config: Config, repository: str, pages: int)
         pages (int): Actual number of pages in the published working PDF.
 
     Returns:
-        str: Complete UTF-8 Markdown with links relative to the configured destination.
+        str: Complete UTF-8 Markdown with an absolute preview image URL and destination-relative document links.
 
     Raises:
         ValueError: The snapshot owner, repository identifier, or page count is invalid.
@@ -149,11 +158,13 @@ def render_readme(profile: Profile, config: Config, repository: str, pages: int)
         name: quote(posixpath.relpath(value, directory), safe="/")
         for name, value in {
             "pdf": config.output.pdf,
-            "preview": PREVIEW_PATH,
             "config": "resumeme.config.yaml",
             "automation": "docs/automation.md",
         }.items()
     }
+
+    # Keep media independent of the Markdown host and destination depth, following each fork's latest published PDF.
+    preview = f"https://raw.githubusercontent.com/{repository}/main/{PREVIEW_PATH}"
     pdf = "./" + targets["pdf"]
     page_label = "page" if pages == 1 else "pages"
     links = [
@@ -172,7 +183,7 @@ def render_readme(profile: Profile, config: Config, repository: str, pages: int)
         f"# {name} - Résumé\n\n"
         f"{introduction}\n\n"
         f"{' - '.join(links)}\n\n"
-        f"[![First page of {name}'s résumé]({targets['preview']})]({pdf})\n\n"
+        f"[![First page of {name}'s résumé]({preview})]({pdf})\n\n"
         "*Preview of page 1. Click to open the complete PDF.*\n\n"
         "Built with [resumeme](https://github.com/astrivant/resume). "
         f"[Configuration]({targets['config']}) - [Automation]({targets['automation']}).\n"
@@ -264,6 +275,7 @@ def stage_readme(root: Path, config: Config, repository: str) -> None:
         raise ValueError("Resolve incomplete capture warnings before publishing a personal README.")
 
     markdown = render_readme(profile, config, repository, len(PdfReader(pdf).pages))
+    logging.getLogger(__name__).info("Preparing README preview", extra={"file.path": config.readme.output})
 
     # Build all files before replacing the bundle; deployment never reconstructs an image from different inputs.
     with tempfile.TemporaryDirectory(dir=publication) as directory:
@@ -323,4 +335,5 @@ def restore_readme(root: Path, config: Config) -> tuple[str, str]:
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(data)
 
+    logging.getLogger(__name__).info("README publication restored", extra={"publication.files": list(paths)})
     return paths

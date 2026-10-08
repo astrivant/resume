@@ -11,7 +11,6 @@ from unittest.mock import MagicMock
 import pytest
 from jsonschema import ValidationError
 from selenium.common.exceptions import NoSuchWindowException, TimeoutException
-from selenium.webdriver.common.by import By
 
 from resumeme.cli import main
 from resumeme.compiler.asts.profile import Profile
@@ -296,9 +295,9 @@ def test_headless_login_submits_once_and_requires_observed_success(monkeypatch: 
     driver = MagicMock()
     driver.current_url = "https://www.linkedin.com/login"
     driver.get_cookie.return_value = None
-    username = MagicMock()
+    username, password, submit = MagicMock(), MagicMock(), MagicMock()
     wait = MagicMock()
-    wait.until.side_effect = [username, TimeoutException() if challenge else True]
+    wait.until.side_effect = [(username, password, submit), TimeoutException() if challenge else True]
     monkeypatch.setattr("resumeme.linkedin.browser.WebDriverWait", MagicMock(return_value=wait))
     interactive = MagicMock(side_effect=AssertionError("Headless login cannot enter the interactive wait"))
     monkeypatch.setattr("resumeme.linkedin.browser._wait_for_login", interactive)
@@ -312,9 +311,8 @@ def test_headless_login_submits_once_and_requires_observed_success(monkeypatch: 
         _login(driver, Capture(), headless=True)
 
     username.send_keys.assert_called_once_with("example@example.org")
-    driver.find_element.return_value.send_keys.assert_called_once_with("synthetic-secret")
-    driver.find_element.return_value.click.assert_called_once()
-    driver.find_element.assert_any_call(By.CSS_SELECTOR, 'button[type="submit"]')
+    password.send_keys.assert_called_once_with("synthetic-secret")
+    submit.click.assert_called_once()
     interactive.assert_not_called()
 
 

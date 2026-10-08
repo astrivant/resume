@@ -1,4 +1,9 @@
 # yaml-language-server: $schema=./pkg/resumeme/compiler/asts/resources/config.schema.json
+logging:
+  # OpenTelemetry JSON logs on stdout. DEBUG includes sanitized HTTP requests and browser progress.
+  # Override with RESUMEME_LOG_LEVEL or the global --log-level option.
+  level: ERROR
+
 linkedin:
   username: emmeowzing
 

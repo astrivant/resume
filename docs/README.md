@@ -38,20 +38,24 @@ export PATH="${PIPX_BIN_DIR:-$HOME/.local/bin}:$PATH"
 poetry env use "$(brew --prefix python@3.13)/bin/python3.13"
 ```
 
-Set `linkedin.username` in [resumeme.config.yaml](../resumeme.config.yaml),
+Copy [resumeme.config.ref.yaml](../resumeme.config.ref.yaml) to `resumeme.config.yaml`
+for a new owner, then set `linkedin.username`,
 [capture your profile](#local-capture), then follow [fork publication setup](automation.md#configure-a-fork).
 
 ## Configuration
 
-`resumeme.config.yaml` is the single user-maintained configuration file. A new
-owner only needs to change `linkedin.username`; they must also capture their own
+`resumeme.config.yaml` is the active user configuration. The checked-in copy contains
+the author's personal settings. Start a new fork by copying
+[resumeme.config.ref.yaml](../resumeme.config.ref.yaml) over it, then change
+`linkedin.username`. The reference lists package defaults and commented examples;
+it is not loaded automatically or merged with the active config. Users must capture their own
 profile while signed in. Configuration and snapshot ownership are validated before
 rendering. All paths are relative to the configuration file, even when the command
 runs from another directory. Unknown fields and paths escaping that directory fail.
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
-| `linkedin.username` | `emmeowzing` | Profile slug from `/in/<username>/` |
+| `linkedin.username` | Required | Profile slug from `/in/<username>/`; replace the reference's `your-linkedin-username` placeholder |
 | `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
 | `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
 | `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after signed tag releases; enabled in this repository |
@@ -101,7 +105,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
-| `style.show_header_photo` | `true` | Display the cover/background photo; set to `false` in the reference config |
+| `style.show_header_photo` | `true` | Display the cover/background photo; disabled in the author's personal config |
 | `style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page profile column |
 | `style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
 | `style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |

@@ -5,6 +5,7 @@ Add validated skill proposals to the authenticated owner's profile without chang
 from __future__ import annotations
 
 import json
+import logging
 import os
 import tempfile
 from typing import TYPE_CHECKING
@@ -220,6 +221,10 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
         max_backoff=config.capture.retry_max_backoff_seconds,
     )
     missing = [name for name in names if normalize_skill(name) not in current]
+    logging.getLogger(__name__).info(
+        "Compared proposed and existing LinkedIn skills",
+        extra={"skills.existing": len(current), "skills.missing": len(missing), "publication.dry_run": dry_run},
+    )
 
     if len(current) + len(missing) > _MAX_PROFILE_SKILLS:
         raise ValueError("Proposed additions exceed LinkedIn's 100-skill limit. Reduce the proposal; existing skills will not be removed.")
@@ -282,6 +287,7 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
             max_backoff=config.capture.retry_max_backoff_seconds,
         )
 
+    logging.getLogger(__name__).info("LinkedIn skill additions confirmed", extra={"skills.added": len(missing)})
     return missing
 
 

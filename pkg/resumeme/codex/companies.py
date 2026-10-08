@@ -5,6 +5,7 @@ Acquire employer context and compile additional resumes from explicitly selected
 from __future__ import annotations
 
 import json
+import logging
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
@@ -178,6 +179,7 @@ def prepare_companies(profile: Profile, config: Config, root: Path) -> list[Path
         raise ValueError("Company summaries require codex.enabled and a complete profile capture.")
 
     directories: list[Path] = []
+    logging.getLogger(__name__).info("Preparing tailored summaries", extra={"summary.companies": len(config.codex.companies)})
     companies: dict[str, str] = {}
 
     for target in config.codex.companies:

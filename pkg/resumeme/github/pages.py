@@ -4,6 +4,7 @@ Package the accepted PDF and a small static landing page for GitHub Pages.
 
 from __future__ import annotations
 
+import logging
 import re
 import shutil
 import tempfile
@@ -91,4 +92,5 @@ def build_site(profile: Profile, config: Config, root: Path, repository: str) ->
 
         shutil.copytree(staging, destination)
 
+    logging.getLogger(__name__).info("GitHub Pages site prepared", extra={"file.path": str(destination / index_path)})
     return destination / index_path

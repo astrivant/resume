@@ -2,8 +2,8 @@
 
 <!-- resumeme:branding:start -->
 <p align="left">
-  <img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>
-  <a href="./resume.pdf"><img src="docs/assets/branding/brew-date.svg" alt="Brew date: 2026-10-08 (UTC)" width="220" height="28"></a>
+  <img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>
+  <a href="./resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/brew-date.svg" alt="Brew date: 2026-10-08 (UTC)" width="220" height="28"></a>
 </p>
 <!-- resumeme:branding:end -->
 
@@ -93,7 +93,10 @@ version pins, and Python dependencies and linters install from `poetry.lock`.
 
 ### 2. Capture your profile
 
-Change **one profile setting** in [resumeme.config.yaml](resumeme.config.yaml):
+For a new fork, copy [resumeme.config.ref.yaml](resumeme.config.ref.yaml) over
+[resumeme.config.yaml](resumeme.config.yaml), which contains the author's personal
+settings. The reference uses package defaults, with optional integrations disabled
+and no job, school, project, or date exclusions. Set your LinkedIn username:
 
 ```yaml
 linkedin:
@@ -139,15 +142,18 @@ to disable generation, or customize `readme.introduction`; see [README publicati
 Configure LinkedIn secrets for automatic monthly refreshes. When ready to share,
 tag the updated commit to create a release with signatures, hashes, and the key
 fingerprint; see [monthly refresh and release](docs/automation.md).
-The PDF and preview links stay relative to your fork and follow `output.pdf`.
+The PDF link stays relative to your fork and follows `output.pdf`. Preview images
+use absolute GitHub URLs so they also display on package indexes such as PyPI.
 
 ### Use with an AI agent
 
 Open your checkout in an agent with terminal access and give it this prompt:
 
 > Read `SKILL.md` in this checkout and generate my résumé for LinkedIn username
-> `YOUR-USERNAME`. Preserve my configuration choices. Handle setup, capture or
-> reuse of my matching saved profile, validation, PDF generation, and visual checks.
+> `YOUR-USERNAME`. For first setup, start from `resumeme.config.ref.yaml` if the
+> fork still has the author's config. Preserve my existing configuration choices.
+> Handle setup, capture or reuse of my matching saved profile, validation, PDF
+> generation, and visual checks.
 > Let me complete browser login and MFA when needed, then return the finished PDF
 > and what you verified.
 

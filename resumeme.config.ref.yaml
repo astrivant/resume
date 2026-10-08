@@ -1,0 +1,247 @@
+# yaml-language-server: $schema=./pkg/resumeme/compiler/asts/resources/config.schema.json
+# Base configuration matching package defaults. Copy to resumeme.config.yaml and set linkedin.username.
+# Capture your own profile before building; the checked-in snapshot belongs to the project's author.
+# Settings and examples: docs/README.md. Credentials belong in environment variables or Actions secrets.
+
+logging:
+  # OpenTelemetry JSON logs on stdout. DEBUG includes sanitized HTTP requests and browser progress.
+  # Override with RESUMEME_LOG_LEVEL or the global --log-level option.
+  level: ERROR
+
+linkedin:
+  # Required slug from https://www.linkedin.com/in/YOUR-USERNAME/; this is not your login email.
+  username: your-linkedin-username
+
+  ownership:
+    # Opt in to adding the signing fingerprint and release link to your live About after a signed release.
+    update_about: false
+
+    # null discovers this fork through GITHUB_REPOSITORY in Actions or the local Git origin.
+    repository: null
+
+    # Optional HTTPS short link to your releases page; null uses the repository's releases URL.
+    releases_url: null
+
+github:
+  # Set your GitHub username to display its profile link; null omits it.
+  username: null
+  contributions:
+    # Optional clickable activity calendar; requires github.username.
+    enabled: false
+    months: 1
+
+    # profile places it below the GitHub link; appendix adds a final page.
+    placement: profile
+
+    # null uses today's UTC date; a quoted ISO date supports rebuilding a saved calendar offline.
+    as_of: null
+
+readme:
+  # auto publishes a personal landing page on forks; project preserves your README; resume generates everywhere.
+  mode: auto
+  output: README.md
+
+  # Optional plain-text introduction. null uses boilerplate and your captured name.
+  introduction: null
+
+pages:
+  # Enable after selecting GitHub Actions as the publishing source in Settings > Pages.
+  enabled: false
+
+  # Site-relative path with leading/trailing slashes. GitHub's repository prefix is handled separately.
+  path: /
+
+  # Optional expected hostname, such as resume.example.com. This does not configure DNS or GitHub's domain settings.
+  custom_domain: null
+
+codex:
+  # Optional About and portrait summaries. Requires the OPENAI_API_KEY Actions secret when enabled.
+  enabled: false
+
+  # null uses the pinned CLI defaults. For Astra with light reasoning, use gpt-6-astra and low.
+  # Model choices and API key setup: docs/codex.md#model-selection
+  model: null
+  reasoning_effort: null
+  about_max_words: 100
+  headline_max_words: 18
+
+  # Writing preferences and additional factual background. Never store credentials here.
+  context: ''
+
+  # Additional employer/job resumes under single-origin/; the generic resume.pdf is retained.
+  companies: []
+  # companies:
+  #   - username: example-company
+  #     job_url: https://www.linkedin.com/jobs/view/1234567890/
+  #     context: Emphasize platform reliability and developer tooling.
+  #     company_context: ''  # Optional supplied company description instead of fetching it.
+  #     job_context: ''      # Optional supplied job description for login-only or expired postings.
+
+  skills:
+    # Generate evidence-backed skill proposals only on tags, independently of summary generation.
+    enabled: false
+
+    # Optional live additions after release; requires enabled: true. Existing skills and endorsements are retained.
+    publish: false
+    max_skills: 20
+    context: ''
+
+# All known sections in package-default order. Remove or comment out a key to hide it; reorder to move sections.
+# Missing/empty sections are skipped. [] shows only the profile header. Review contact fields before publishing.
+section_order:
+  - contact
+  - about
+  - featured
+  - activity
+  - experience
+  - education
+  - services
+  - career-breaks
+  - certifications
+  - volunteering-experiences
+  - projects
+  - publications
+  - patents
+  - courses
+  - honors
+  - test-scores
+  - skills
+  - recommendations
+  - languages
+  - organizations
+  - interests
+  - causes
+
+# Python regex applied to resolved project URLs. null includes all sources, including unlinked projects.
+# Single quotes preserve backslashes. This default matches github.com, ignoring case.
+project_filter: '(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
+
+projects:
+  # Filter by name, affiliation, or both. Supplied fields use AND; list entries use OR.
+  # null includes everything allowed by project_filter; [] selects no tiles.
+  include: null
+  # include:
+  #   - name: Example project
+  #   - affiliation: Example Company
+  #   - name: Deployment platform
+  #     affiliation: Another Company
+
+  # Matching exclusions override includes after consolidation. [] excludes nothing.
+  exclude:
+    - affiliation: HqO
+  # exclude:
+  #   - affiliation: Former Company
+  #   - name: Archived project
+
+experience:
+  # Exclude by title, company, or both. Literal matches ignore case and repeated whitespace.
+  disable: []
+  # disable:
+  #   - company: Example Company
+  #   - title: Intern
+  #     company: Another Company
+
+  # Optional trailing window, such as 5 years. Include jobs overlapping any part of the window.
+  last_years: null
+
+  # Optional inclusive start, such as '2020-06-01'. Takes precedence over last_years.
+  since: null
+
+  # Optional inclusive endpoint. null uses today's UTC date; quote explicit ISO dates.
+  as_of: null
+
+  # Join soft line breaks in prose and bullets while preserving paragraphs, metadata, and subsection boundaries.
+  reflow_soft_breaks: true
+
+  # Literal standalone labels, ignoring case, spacing, and a trailing colon. [] disables recognition.
+  # style.highlight_job_subheadings controls their visual emphasis.
+  subheadings:
+    - Responsibilities
+    - Key responsibilities
+    - Technologies
+    - Projects
+    - Skills
+    - Achievements
+    - Key achievements
+    - Accomplishments
+    - Highlights
+    - Summary
+    - Duties
+
+education:
+  # Exclude by school, degree, major, or a combination. Remove education from section_order to hide the whole section.
+  disable: []
+  # disable:
+  #   - school: Example University
+  #   - degree: "Associate's Degree"
+  #     major: Mathematics
+
+capture:
+  # firefox or chrome. Install the selected browser locally; login sessions persist separately under .cache/.
+  browser: firefox
+  page_timeout_seconds: 30
+  max_scrolls: 60
+  max_pages_per_section: 30
+  fetch_link_previews: true
+
+  # Transient browser/HTTP retries use exponential backoff capped at retry_max_backoff_seconds.
+  # Interactive login waits for completion without a password-entry deadline.
+  retry_attempts: 5
+  retry_backoff_seconds: 10
+  retry_max_backoff_seconds: 300
+
+# Paths resolve from this configuration's directory and must remain inside it.
+output:
+  profile: data/profile.json
+  assets: data/assets
+  tex: tex/resume.tex
+  pdf: resume.pdf
+
+style:
+  # left keeps a full-height profile column; right floats it at the upper right with body text flowing beneath it.
+  profile_column_side: left
+  paper: letter  # US Letter; use a4 for ISO A4.
+  font_size: 10
+
+  # Neutral hierarchy with green links. Company labels use their own size and color.
+  background: 'FFFFFF'
+  ink: '363636'
+  accent: '245135'
+  name_color: '191919'
+  heading_color: '191919'
+  entry_color: '363636'
+  company_font_size: 13
+  company_color: '191919'
+
+  # Cover/background photo only; false leaves the portrait visible.
+  show_header_photo: true
+  show_headline: false
+  show_table_of_contents: true
+  highlight_job_subheadings: true
+  show_connection_count: false
+  show_connection_link: false
+  display_birthday: false
+
+  # Top 20 skills by references + 2 * endorsements; false restores the text list.
+  skills_word_cloud: true
+  skills_allow_vertical: false
+  skills_size_legend: false
+
+  # Ordered color stops from zero to the highest displayed endorsement count; one color omits the scale.
+  skill_colors: ['777777', '363636']
+
+  # Named themes override supplied style fields. null keeps the base values; see docs/themes.md.
+  theme: null
+  themes: {}
+  # themes:
+  #   tiger:
+  #     accent: '245135'
+  #     ink: '363636'
+  #     name_color: '6B2737'
+  #     heading_color: 'A44813'
+  #     entry_color: '363636'
+  #     company_color: '6B2737'
+  #     skill_colors: ['9A7663', '6B2737']
+
+# Optional path to a custom Jinja LaTeX template; null uses the packaged template.
+template: null

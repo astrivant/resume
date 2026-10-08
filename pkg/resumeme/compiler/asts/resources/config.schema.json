@@ -3,6 +3,17 @@
   "title": "Resumeme config",
   "type": "object",
   "properties": {
+    "logging": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+          "default": "ERROR",
+          "description": "Minimum severity for OpenTelemetry JSON logs on stdout; RESUMEME_LOG_LEVEL and --log-level override it."
+        }
+      }
+    },
     "pages": {
       "type": "object",
       "additionalProperties": false,

@@ -5,6 +5,7 @@ Prepare structured summary prompts without accessing credentials or invoking a m
 from __future__ import annotations
 
 import json
+import logging
 from typing import TYPE_CHECKING
 
 from resumeme.compiler.asts.summary import summary_schema
@@ -73,4 +74,7 @@ def prepare_summary(profile: Profile, config: Config, root: Path, company: Compa
     # Keep API material out of both the prompt and schema; the action authenticates independently through its proxy.
     (directory / "prompt.txt").write_text(_INSTRUCTIONS + "\n" + json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     (directory / "schema.json").write_text(json.dumps(summary_schema(), indent=2) + "\n", encoding="utf-8")
+    logging.getLogger(__name__).info(
+        "Summary prompt prepared", extra={"file.path": str(directory), "summary.tailored": company is not None}
+    )
     return directory

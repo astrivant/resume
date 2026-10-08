@@ -4,6 +4,7 @@ Update the authenticated owner's About editor with a public signing identity.
 
 from __future__ import annotations
 
+import logging
 import os
 import tempfile
 from typing import TYPE_CHECKING
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
     from resumeme.config import Config
 
 __all__ = ["publish_ownership"]
+_LOGGER = logging.getLogger(__name__)
 
 
 def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
@@ -137,6 +139,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
             desired = reconcile_about(current, block)
 
         if dry_run or current == desired:
+            _LOGGER.info("About reconciliation completed without a write", extra={"publication.dry_run": dry_run})
             return desired
 
         maximum = field.get_attribute("maxlength")
@@ -160,6 +163,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
             raise ValueError("LinkedIn did not accept the complete About text; Save was not clicked.")
 
         save.click()
+        _LOGGER.info("About submitted; verifying persisted text")
         WebDriverWait(driver, config.capture.page_timeout_seconds).until(
             lambda page: not any(dialog.is_displayed() for dialog in page.find_elements(By.CSS_SELECTOR, '[role="dialog"]'))
         )
@@ -209,8 +213,7 @@ def publish_ownership(
 
     # Derive all public values before opening the browser; this command never receives the private signing key.
     block = ownership_block(public_key_fingerprint(public_key), release_destination(config.linkedin.ownership, root))
-    name = config.capture.browser.title()
-    print(f"Opening {name} to preview About." if dry_run else f"Opening {name} to update About.", flush=True)
+    _LOGGER.info("Starting About publication", extra={"publication.dry_run": dry_run})
 
     with _browser(root, config.capture, connect_port, headless=headless) as driver:
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)
@@ -220,4 +223,5 @@ def publish_ownership(
             _navigate(driver, "https://www.linkedin.com/login", config.capture)
 
         _login(driver, config.capture, headless=headless)
+        _LOGGER.info("Login detected; loading the owner's About editor")
         return _update_about(driver, config, root, block, dry_run=dry_run)
