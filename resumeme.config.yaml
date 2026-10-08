@@ -9,7 +9,7 @@ linkedin:
 
   # Opt in to updating your live About after a signed release; existing About text is preserved.
   ownership:
-    update_about: false
+    update_about: true
 
     # null uses GITHUB_REPOSITORY in Actions, or the local Git origin (OWNER/REPO).
     repository: null
