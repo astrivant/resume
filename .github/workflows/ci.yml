@@ -106,13 +106,21 @@ jobs:
   deploy-stage:
     name: Publish PDF
     needs: [source, verified]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # Token-authenticated publication commits run normal CI, but their parent run already published these outputs.
+    # Gate only republishing on a main push; tagging that generated commit must still capture and release normally.
+    if: >-
+      github.ref == 'refs/heads/main' && github.event_name != 'pull_request' &&
+      !(github.event_name == 'push' &&
+        github.event.head_commit.author.name == 'github-actions[bot]' &&
+        contains(github.event.head_commit.message, 'Resumeme-Publication: true'))
     uses: ./.github/workflows/stage-deploy.yml
     permissions:
       contents: write
     with:
       sha: ${{ needs.source.outputs.sha }}
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
+    secrets:
+      RESUME_PUBLISH_TOKEN: ${{ secrets.RESUME_PUBLISH_TOKEN }}
 
   # Pages consumes the accepted main commit in this run; bot commits do not trigger another workflow with GITHUB_TOKEN.
   pages-stage:

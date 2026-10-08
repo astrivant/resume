@@ -10,6 +10,10 @@ on:
         description: Commit the verified capture and referenced assets with the PDF
         type: boolean
         default: false
+    secrets:
+      RESUME_PUBLISH_TOKEN:
+        description: Optional contents-write token whose owner can bypass protected main reviews and checks
+        required: false
     outputs:
       published-sha:
         description: Accepted main commit, empty when publication was superseded
@@ -36,6 +40,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.sha }}
+          # GITHUB_TOKEN remains sufficient for forks without branch protection.
+          token: ${{ secrets.RESUME_PUBLISH_TOKEN || github.token }}
       - uses: ./.github/actions/setup-project
         with:
           groups: main
@@ -52,4 +58,5 @@ jobs:
           SOURCE_SHA: ${{ inputs.sha }}
           REFRESH_PROFILE: ${{ inputs.refresh }}
           RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
+          RESUMEME_PUBLISH_USES_TOKEN: ${{ secrets.RESUME_PUBLISH_TOKEN != '' }}
         run: bash scripts/ci/publish.sh

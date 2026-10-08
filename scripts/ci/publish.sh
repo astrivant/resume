@@ -55,7 +55,15 @@ if git diff --cached --quiet; then
     exit 0
 fi
 
-git commit -m 'docs: update resume and repository presentation'
+# A personal token triggers push workflows; mark generated commits so their follow-up CI run does not publish again.
+# Avoid GitHub's skip-CI markers: users may tag this commit later and must still get a fresh capture and release.
+publication_message='docs: update resume and repository presentation'
+
+if [[ "${RESUMEME_PUBLISH_USES_TOKEN:-false}" == true ]]; then
+    publication_message+=$'\n\nResumeme-Publication: true'
+fi
+
+git commit -m "$publication_message"
 
 # An intervening push rejects this normal fast-forward update; never force or rebase stale output.
 bash scripts/tooling/retry.sh git push origin HEAD:refs/heads/main

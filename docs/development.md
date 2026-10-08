@@ -21,6 +21,39 @@ count with `poetry run pytest -n 4`, or use `-n 0` for single-process debugging.
 Hooks check Ruff, strict mypy, Google-style docstrings, schemas, ShellCheck, and
 shfmt. For container-based development, see [local image builds](containers.md#build-locally).
 
+## Repository settings and reviews
+
+[`.github/settings.yml`](../.github/settings.yml) is applied by the
+[Settings app](https://github.com/repository-settings/app) after it reaches the
+default branch. The app must be installed with repository administration access;
+editing the file locally does not change GitHub's live protection.
+
+`main` requires one approving review, approval of the latest push by someone other
+than its pusher, dismissal of stale approvals, resolved review conversations, and
+the `CI verification` check on an up-to-date branch. Squash and rebase merges keep
+history linear; merge commits, force pushes, and branch deletion are disabled.
+Administrators retain bypass. There is no code-owner review requirement because
+this repository has no `CODEOWNERS` file.
+
+Direct PDF publication to protected `main` requires **`RESUME_PUBLISH_TOKEN`**:
+a dedicated token limited to this repository with contents write permission,
+owned by an administrator or another actor allowed to bypass both required
+reviews and checks. Ordinary `GITHUB_TOKEN` write permission does not grant that
+bypass. Set the secret before applying branch protection; it reaches only the
+main-branch publication job, after verification. Forks without branch protection
+can omit it and retain `GITHUB_TOKEN` publication.
+
+```bash
+gh secret set RESUME_PUBLISH_TOKEN --repo OWNER/REPO
+```
+
+Publication-token commits include a `Resumeme-Publication: true` trailer. Their
+pushes run normal CI and Scorecard; only repeated PDF publication is skipped.
+The originating run deploys Pages using the accepted commit. Monthly and manual
+refreshes can still publish new PDFs; tagging a generated commit still captures
+LinkedIn and creates a release. Publication never forces a push or relaxes branch
+protection.
+
 ## OpenSSF Scorecard
 
 The README's [Scorecard badge](https://scorecard.dev/viewer/?uri=github.com/astrivant/resumeme)

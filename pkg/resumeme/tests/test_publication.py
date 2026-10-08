@@ -166,8 +166,9 @@ def _git(root: Path, *arguments: str) -> str:
 @pytest.mark.parametrize("advanced", [False, True])
 @pytest.mark.parametrize("refresh", [False, True])
 @pytest.mark.parametrize("fork, readme_output", [(False, None), (True, "README.md"), (False, "FORK_EXAMPLE.md")])
+@pytest.mark.parametrize("publication_token", [False, True])
 def test_publication_resumes_only_for_the_identical_generated_commit(
-    tmp_path: Path, advanced: bool, refresh: bool, fork: bool, readme_output: str | None
+    tmp_path: Path, advanced: bool, refresh: bool, fork: bool, readme_output: str | None, publication_token: bool
 ) -> None:
     """
     Reproduce a PDF and logo publication on retries while rejecting unrelated source changes.
@@ -178,6 +179,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
         refresh (bool): Whether publication also includes a newly captured profile and media.
         fork (bool): Whether the generated README replaces project branding on this repository.
         readme_output (str | None): Generated Markdown destination, or None to retain only project branding.
+        publication_token (bool): Whether a bypass-capable token requires a trailer preventing recursive PDF publication.
 
     Returns:
         None: Reruns preserve the published tree; only changed resume inputs create a fresh logo and commit.
@@ -268,12 +270,16 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
         GITHUB_EVENT_NAME="push",
         REFRESH_PROFILE=str(refresh).lower(),
         RESUMEME_REPOSITORY_FORK=str(fork).lower(),
+        RESUMEME_PUBLISH_USES_TOKEN=str(publication_token).lower(),
         GITHUB_REPOSITORY="example/my-cv",
         RETRY_BACKOFF_SECONDS="0",
     )
     subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
     published = _git(remote, "rev-parse", "main")
     assert published != source
+    message = _git(remote, "log", "-1", "--format=%B", "main")
+    assert ("Resumeme-Publication: true" in message) is publication_token
+    assert "[skip ci]" not in message
     assert output.read_text() == f"published-sha={published}\n"
     files = _git(remote, "diff-tree", "--no-commit-id", "--name-only", "-r", published).splitlines()
     expected_files = (

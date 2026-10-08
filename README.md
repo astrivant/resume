@@ -418,9 +418,13 @@ features you use. GitHub supplies the publication token:
 - **`GH_TOKEN` / `GITHUB_TOKEN` - supplied automatically; no secret to create.**
   Actions generates the repository token, and the deploy workflow passes it to the
   GitHub CLI as `GH_TOKEN`. It uses `contents: write` to commit `resume.pdf` and
-  publish releases. No personal access token is needed; repository and branch rules
-  must permit those writes. Tag publication also uses the built-in token with
+  publish releases. No personal access token is needed on unprotected branches;
+  repository and branch rules must permit those writes. Tag publication also uses the built-in token with
   `packages: write` to push the tool's container image to GHCR.
+- **`RESUME_PUBLISH_TOKEN` - required when protecting `main`.** A repository-scoped
+  contents-write token owned by an actor allowed to bypass required reviews and checks
+  for generated PDF commits. Unprotected forks can omit it. See
+  [repository settings and reviews](docs/development.md#repository-settings-and-reviews).
 - **`PYPI_API_TOKEN` - package maintainers only.** Grant the repository access to
   this organization secret, or define it as a repository/`pypi` environment secret.
   Version-tag releases expose it to Poetry as `POETRY_PYPI_TOKEN_PYPI` and upload
@@ -460,4 +464,5 @@ interaction. See [automation setup and recovery](docs/automation.md).
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
 - [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR and Docker Hub.
 - [Development](docs/development.md): setup, parallel tests, tooling, and document checks.
+- [Security policy](SECURITY.md): supported versions, vulnerability reporting, and coordinated disclosure.
 - [Studies](studies/README.md): design assessments, including the proposed automated job application workflow.

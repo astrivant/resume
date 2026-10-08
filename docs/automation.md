@@ -59,10 +59,17 @@ gh secret set LINKEDIN_PASSWORD
   the entire Cosign PEM, including its header, footer, and newlines; the password
   is required only for encrypted keys.
 - `GH_TOKEN` / `GITHUB_TOKEN`: supplied by Actions; no personal access token is
-  needed. The workflow uses `contents: write` for generated commits and releases,
+  needed for unprotected branches. The workflow uses `contents: write` for generated
+  commits and releases,
   and `packages: write` for the container. The optional Pages deployment uses
   `pages: write`, `id-token: write`, `actions: read`, and `contents: read`.
   Repository rules must permit those writes.
+- `RESUME_PUBLISH_TOKEN`: required for direct PDF commits when branch protection
+  requires reviews or status checks. Use a repository-scoped contents-write token
+  owned by an administrator or another actor permitted to bypass both rules.
+  It is used only by the verified main publication job; unprotected forks can omit
+  it. See [repository settings](development.md#repository-settings-and-reviews)
+  before enabling the protection declared in `.github/settings.yml`.
 - `PYPI_API_TOKEN`: package maintainers only. Version-tag releases map the organization,
   repository, or `pypi` environment secret to `POETRY_PYPI_TOKEN_PYPI`. Resume-only
   forks do not need it; see [package publication](development.md#publish-to-pypi).

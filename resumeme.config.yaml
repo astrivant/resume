@@ -93,7 +93,7 @@ codex:
 # Uncomment it to restore the section. Missing/empty sections are skipped; [] renders only the profile header.
 # Add unfamiliar keys from data/profile.json to include them. Featured uses the same tiles as Projects.
 section_order:
-  # - contact
+  - contact
   - about
   # - featured
   # - activity
