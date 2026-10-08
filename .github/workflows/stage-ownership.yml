@@ -74,6 +74,8 @@ jobs:
       - name: Maintain the public ownership lines
         if: steps.latest.outputs.current == 'true'
         env:
+          RESUMEME_LOG_LEVEL: DEBUG
+          PYTHONUNBUFFERED: '1'
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
         uses: ./.github/actions/linkedin-session

@@ -5,12 +5,14 @@ Update the authenticated owner's About editor with a public signing identity.
 from __future__ import annotations
 
 import logging
+import re
 import tempfile
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError
@@ -30,6 +32,114 @@ if TYPE_CHECKING:
 
 __all__ = ["publish_ownership"]
 _LOGGER = logging.getLogger(__name__)
+_DIALOGS = 'dialog[open], [role="dialog"]'
+_FIELDS = 'textarea, [contenteditable="true"][role="textbox"][aria-label="About"]'
+
+
+def _about_text(driver: WebDriver, field: WebElement) -> str:
+    """
+    Read actual paragraph and hard-break boundaries without visual line wrapping.
+
+    Args:
+        driver (WebDriver): Browser evaluating the editor's DOM structure.
+        field (WebElement): Owner-scoped textarea or rich text About field.
+
+    Returns:
+        str: Current editor text, including its displayed line breaks.
+
+    Raises:
+        BrowserError: The rich text field does not expose readable text.
+    """
+    if field.get_attribute("contenteditable") != "true":
+        return field.get_attribute("value") or ""
+
+    # innerText contains visual line wraps, which become unintended hard breaks when text is saved again.
+    value = driver.execute_script(
+        """
+        const root = arguments[0];
+        const read = (node) => {
+          if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || '';
+          if (node.nodeType !== Node.ELEMENT_NODE) return '';
+          if (node.tagName === 'BR') return '\\n';
+          const text = Array.from(node.childNodes, read).join('');
+          return node !== root && ['P', 'DIV', 'LI'].includes(node.tagName) ? `${text}\\n` : text;
+        };
+        return read(root).replace(/\\n+$/, '');
+        """,
+        field,
+    )
+
+    if not isinstance(value, str):
+        raise BrowserError("Cannot read the About editor's text; no changes were submitted.")
+
+    return value
+
+
+def _same_about_text(observed: str, expected: str) -> bool:
+    """
+    Compare persisted About content while ignoring editor-added line-break spacing.
+
+    Args:
+        observed (str): Text LinkedIn returns after saving a rich text field.
+        expected (str): Text submitted through the editor.
+
+    Returns:
+        bool: Whether both values contain the same words, URLs, and punctuation in order.
+    """
+    return " ".join(observed.split()) == " ".join(expected.split())
+
+
+def _about_spacing(text: str) -> str:
+    """
+    Reduce repeated empty About paragraphs to one blank line.
+
+    Args:
+        text (str): Text from LinkedIn's rich editor or the user's original profile.
+
+    Returns:
+        str: Same words and line breaks, with runs of three or more newlines reduced to two.
+    """
+    return re.sub(r"\n{3,}", "\n\n", text)
+
+
+def _fill_about(driver: WebDriver, field: WebElement, text: str) -> None:
+    """
+    Enter plain text through editor events while preserving the intended line breaks.
+
+    Args:
+        driver (WebDriver): Browser providing the platform's Select All modifier.
+        field (WebElement): Verified About editor, owned by the caller.
+        text (str): Complete reconciled About text.
+
+    Returns:
+        None: Text was entered; the caller must compare it before clicking Save.
+    """
+    if field.get_attribute("contenteditable") != "true":
+        field.clear()
+        field.send_keys(text)
+        return
+
+    # Rich text editors track keyboard input. Assigning innerHTML can leave their application state unchanged.
+    modifier = Keys.COMMAND if "mac" in str(driver.capabilities.get("platformName", "")).lower() else Keys.CONTROL
+    field.click()
+    field.send_keys(modifier, "a")
+    field.send_keys(Keys.BACKSPACE)
+    paragraphs = text.split("\n\n")
+
+    for paragraph_index, paragraph in enumerate(paragraphs):
+        if paragraph_index:
+            # Enter starts the next paragraph and preserves one blank row in LinkedIn's editor serialization.
+            field.send_keys(Keys.ENTER)
+
+        lines = paragraph.split("\n")
+
+        if lines[0]:
+            field.send_keys(lines[0])
+
+        # Only line breaks within one paragraph use Shift+Enter; keep its modifier release separate from text input.
+        for line in lines[1:]:
+            field.send_keys(Keys.SHIFT, Keys.ENTER)
+            field.send_keys(line)
 
 
 def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
@@ -41,7 +151,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
         config (Config): Expected profile owner and page timeout.
 
     Returns:
-        tuple[WebElement, WebElement]: The unique About textarea and Save button.
+        tuple[WebElement, WebElement]: The unique About text field and Save button.
 
     Raises:
         BrowserError: Navigation or available controls do not identify the configured owner's editor.
@@ -51,6 +161,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     profile_url = f"https://www.linkedin.com{profile_path}"
     summary_path = f"{profile_path}edit/forms/summary/new/"
     wait = WebDriverWait(driver, config.capture.page_timeout_seconds)
+    _LOGGER.info("Checking profile owner before opening About")
     _navigate(driver, profile_url, config.capture)
     wait.until(lambda page: page.find_elements(By.CSS_SELECTOR, 'main h1, section[aria-label="Primary content"] h2'))
     location = urlsplit(driver.current_url)
@@ -71,20 +182,48 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     if not editable:
         raise BrowserError("No owner edit control found. Sign in as linkedin.username before updating About.")
 
-    _navigate(driver, f"https://www.linkedin.com{summary_path}", config.capture)
-    wait.until(lambda page: page.find_elements(By.CSS_SELECTOR, '[role="dialog"] textarea'))
+    _LOGGER.info("Opening the About editor")
+    summary = next(
+        (
+            element
+            for element in controls
+            if element.is_displayed() and element.get_attribute("href") == f"{profile_url}edit/forms/summary/new/"
+        ),
+        None,
+    )
+
+    # The current client opens its native dialog through the owner link; a minimal profile may only expose intro editing.
+    if summary is not None:
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'})", summary)
+        summary.click()
+    else:
+        _navigate(driver, f"https://www.linkedin.com{summary_path}", config.capture)
+
+    wait.until(
+        lambda page: any(
+            field.is_displayed()
+            for dialog in page.find_elements(By.CSS_SELECTOR, _DIALOGS)
+            if dialog.is_displayed()
+            for field in dialog.find_elements(By.CSS_SELECTOR, _FIELDS)
+        ),
+        message="The owner About editor did not expose a visible textarea or rich text About field.",
+    )
     location = urlsplit(driver.current_url)
 
-    if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path != summary_path:
+    if (
+        location.scheme != "https"
+        or location.hostname != "www.linkedin.com"
+        or location.path.rstrip("/") not in {summary_path.rstrip("/"), profile_path.rstrip("/")}
+    ):
         raise BrowserError("LinkedIn did not open the configured owner's About editor.")
 
-    dialogs = [dialog for dialog in driver.find_elements(By.CSS_SELECTOR, '[role="dialog"]') if dialog.is_displayed()]
+    dialogs = [dialog for dialog in driver.find_elements(By.CSS_SELECTOR, _DIALOGS) if dialog.is_displayed()]
 
     if len(dialogs) != 1:
         raise BrowserError("Expected one About dialog; no changes were submitted.")
 
     dialog = dialogs[0]
-    fields = [element for element in dialog.find_elements(By.CSS_SELECTOR, "textarea") if element.is_displayed()]
+    fields = [element for element in dialog.find_elements(By.CSS_SELECTOR, _FIELDS) if element.is_displayed()]
     buttons = [
         element
         for element in dialog.find_elements(By.CSS_SELECTOR, "button")
@@ -92,7 +231,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     ]
 
     if len(fields) != 1 or len(buttons) != 1:
-        raise BrowserError("Cannot identify the About textarea and Save button. Use LinkedIn's English interface and retry.")
+        raise BrowserError("Cannot identify the About text field and Save button. Use LinkedIn's English interface and retry.")
 
     return fields[0], buttons[0]
 
@@ -126,20 +265,20 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
         """
         nonlocal baseline, desired
         field, save = _editor(driver, config)
-        current = field.get_attribute("value") or ""
+        current = _about_text(driver, field)
 
         # An uncertain response may follow a successful Save; a fresh read recognizes it without submitting twice.
         if desired is not None:
-            if current == desired:
+            if _same_about_text(current, desired):
                 return desired
 
             if current != baseline:
                 raise BrowserError("About changed during this update. No further writes were attempted; review it and retry.")
         else:
             baseline = current
-            desired = reconcile_about(current, block)
+            desired = _about_spacing(reconcile_about(current, block))
 
-        if dry_run or current == desired:
+        if dry_run or (current == desired and not re.search(r"\n{3,}", current)):
             _LOGGER.info("About reconciliation completed without a write", extra={"publication.dry_run": dry_run})
             return desired
 
@@ -157,22 +296,22 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
         ) as backup:
             backup.write(current)
 
-        field.clear()
-        field.send_keys(desired)
+        _fill_about(driver, field, desired)
 
-        if field.get_attribute("value") != desired:
+        if _about_text(driver, field) != desired:
             raise BrowserError("LinkedIn did not accept the complete About text; Save was not clicked.")
 
         save.click()
         _LOGGER.info("About submitted; verifying persisted text")
         WebDriverWait(driver, config.capture.page_timeout_seconds).until(
-            lambda page: not any(dialog.is_displayed() for dialog in page.find_elements(By.CSS_SELECTOR, '[role="dialog"]'))
+            lambda page: not any(dialog.is_displayed() for dialog in page.find_elements(By.CSS_SELECTOR, _DIALOGS)),
+            message="About Save was submitted, but the editor did not close. Inspect the live About before retrying.",
         )
 
         # Reopening fetches persisted text instead of trusting a toast or the textarea we just changed.
         confirmed, _ = _editor(driver, config)
 
-        if confirmed.get_attribute("value") != desired:
+        if not _same_about_text(_about_text(driver, confirmed), desired):
             raise BrowserError("LinkedIn did not retain the expected About text. Inspect the live profile before retrying.")
 
         return desired

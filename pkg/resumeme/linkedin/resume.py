@@ -37,8 +37,9 @@ __all__ = ["publish_resume"]
 _LOGGER = logging.getLogger(__name__)
 _SETTINGS_PATH = "/jobs/application-settings/"
 _SETTINGS_PATHS = {_SETTINGS_PATH.rstrip("/"), "/jobs/preferences/application-preferences"}
-_LOADING_QUERY = 'main [role="progressbar"], main [aria-busy="true"], main[aria-busy="true"]'
-_RECRUITER_LABEL = "share resume data with recruiters"
+_MAIN = ':is(main, [role="main"])'
+_LOADING_QUERY = f'{_MAIN} [role="progressbar"], {_MAIN} [aria-busy="true"], {_MAIN}[aria-busy="true"]'
+_RECRUITER_LABELS = ("share resume data with recruiters", "share resume data with hirers", "allow recruiters to view your resumes")
 _TRANSIENT = (TimeoutException, StaleElementReferenceException, NoSuchElementException)
 
 
@@ -101,7 +102,7 @@ def _upload_input(driver: WebDriver) -> WebElement | Literal[False]:
     # File inputs are commonly hidden behind a styled Upload button; Selenium can send a path directly without a desktop picker.
     fields = []
 
-    for field in driver.find_elements(By.CSS_SELECTOR, 'main input[type="file"]'):
+    for field in driver.find_elements(By.CSS_SELECTOR, f'{_MAIN} input[type="file"]'):
         accepted = {item.strip().lower() for item in (field.get_attribute("accept") or "").split(",")}
 
         if field.is_enabled() and (accepted == {""} or accepted.intersection({".pdf", "application/pdf", "application/*", "*/*"})):
@@ -124,8 +125,12 @@ def _settings(driver: WebDriver, config: Config) -> WebElement:
     Returns:
         WebElement: Unique ready PDF upload control on the allowed route.
     """
+    _LOGGER.info("Opening LinkedIn application settings; waiting for the PDF upload control")
     _navigate(driver, f"https://www.linkedin.com{_SETTINGS_PATH}", config.capture)
-    return WebDriverWait(driver, config.capture.page_timeout_seconds).until(_upload_input)
+    return WebDriverWait(driver, config.capture.page_timeout_seconds).until(
+        _upload_input,
+        message="LinkedIn application settings did not expose a ready PDF upload control. No file was submitted on this visit.",
+    )
 
 
 def _saved(driver: WebDriver, filename: str) -> bool:
@@ -146,7 +151,8 @@ def _saved(driver: WebDriver, filename: str) -> bool:
     names = (filename, filename.removesuffix(".pdf"))
     predicate = " or ".join(f"normalize-space(.)='{name}'" for name in names)
     selector = (
-        f"//main//*[({predicate}) and not(self::input) and not(ancestor-or-self::*[@role='alert' or @role='status' or @role='dialog'])]"
+        f"//*[self::main or @role='main']//*[({predicate}) and not(self::input) "
+        "and not(ancestor-or-self::*[@role='alert' or @role='status' or @role='dialog' or self::dialog])]"
     )
     return any(item.is_displayed() for item in driver.find_elements(By.XPATH, selector))
 
@@ -166,17 +172,19 @@ def _recruiter_control(driver: WebDriver) -> tuple[WebElement, WebElement] | Lit
     """
     matches = []
 
-    for control in driver.find_elements(By.CSS_SELECTOR, 'main [role="switch"], main [role="checkbox"], main input[type="checkbox"]'):
+    for control in driver.find_elements(
+        By.CSS_SELECTOR, f'{_MAIN} [role="switch"], {_MAIN} [role="checkbox"], {_MAIN} input[type="checkbox"]'
+    ):
         identifier = control.get_attribute("id")
         labels = [
             label
-            for label in driver.find_elements(By.CSS_SELECTOR, "main label[for]")
+            for label in driver.find_elements(By.CSS_SELECTOR, f"{_MAIN} label[for]")
             if identifier and label.get_attribute("for") == identifier and label.is_displayed()
         ]
         names = [control.accessible_name, *(label.text for label in labels)]
 
         # Match the recruiter-specific label so the adjacent Save resumes control is never toggled accidentally.
-        if not any(_RECRUITER_LABEL in " ".join(name.split()).casefold() for name in names):
+        if not any(label in " ".join(name.split()).casefold() for name in names for label in _RECRUITER_LABELS):
             continue
 
         if control.is_displayed():

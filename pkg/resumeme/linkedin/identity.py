@@ -21,7 +21,7 @@ __all__ = ["ownership_block", "reconcile_about", "release_destination"]
 
 _REPOSITORY = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9_.-]+")
 _FINGERPRINT = re.compile(r"SHA256:[a-f0-9]{64}")
-_MANAGED = re.compile(r"^resume signature: SHA256:[a-f0-9]{64}\r?\nreleases: https://[^\s]+$", re.MULTILINE)
+_MANAGED = re.compile(r"^resume signature: SHA256:[a-f0-9]{64}\r?\n(?:[ \t]*\r?\n)*releases: https://[^\s]+$", re.MULTILINE)
 _LABEL = re.compile(r"^(?:resume signature|releases):", re.MULTILINE | re.IGNORECASE)
 
 

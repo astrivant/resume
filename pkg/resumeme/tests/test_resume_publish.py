@@ -448,7 +448,8 @@ def test_upload_workflow_requires_verified_current_tag_and_explicit_settings() -
     upload = steps[-1]
     assert upload["uses"] == "./.github/actions/linkedin-session"
     assert upload["with"]["command"] == "publish-resume"
-    assert set(upload["env"]) == {"LINKEDIN_USERNAME", "LINKEDIN_PASSWORD"}
+    assert set(upload["env"]) == {"LINKEDIN_USERNAME", "LINKEDIN_PASSWORD", "RESUMEME_LOG_LEVEL", "PYTHONUNBUFFERED"}
+    assert upload["env"]["RESUMEME_LOG_LEVEL"] == "DEBUG"
     assert steps.index(download) < steps.index(verify) < steps.index(upload)
 
     for step in (download, verify, upload):

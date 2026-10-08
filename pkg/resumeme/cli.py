@@ -315,8 +315,9 @@ def _run(args: argparse.Namespace) -> int:
     except NoSuchWindowException:
         _LOGGER.error("The browser window was closed. Rerun the command and leave the capture browser open until it finishes.")
         return 2
-    except TimeoutException:
-        _LOGGER.error("LinkedIn timed out. Rerun the command; increase capture.page_timeout_seconds if needed.")
+    except TimeoutException as error:
+        _LOGGER.error("LinkedIn timed out. %s", error.msg or "Rerun the command; increase capture.page_timeout_seconds if needed.")
+        _LOGGER.debug("Browser timeout details", exc_info=True)
         return 2
     except (
         ResumemeError,

@@ -8,17 +8,18 @@ import hashlib
 import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import pytest
 from attrs import evolve
 from jsonschema import ValidationError
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.keys import Keys
 
 from resumeme.cli import main
 from resumeme.config import Capture, Config, LinkedIn, Ownership, load_config
 from resumeme.linkedin.identity import ownership_block, reconcile_about, release_destination
-from resumeme.linkedin.ownership import _editor, _update_about, publish_ownership
+from resumeme.linkedin.ownership import _about_text, _editor, _fill_about, _update_about, publish_ownership
 from resumeme.signing import public_key_fingerprint
 
 if TYPE_CHECKING:
@@ -57,6 +58,22 @@ def test_rotation_preserves_surrounding_paragraphs() -> None:
     """
     replacement = ownership_block("SHA256:" + "b" * 64, "https://example.org/resume")
     assert reconcile_about("Before\n\n" + _BLOCK + "\n\nAfter", replacement) == "Before\n\n" + replacement + "\n\nAfter"
+
+
+def test_editor_added_blank_paragraph_does_not_duplicate_the_managed_block() -> None:
+    """
+    Recognize LinkedIn's rich text spacing when About is read on a later run.
+
+    Returns:
+        None: The one managed identity pair remains idempotent across paragraph breaks.
+    """
+    signature, releases = _BLOCK.splitlines()
+    current = f"Personal About.\n\n{signature}\n\n{releases}"
+
+    normalized = reconcile_about(current, _BLOCK)
+
+    assert normalized == f"Personal About.\n\n{_BLOCK}"
+    assert reconcile_about(normalized, _BLOCK) == normalized
 
 
 @pytest.mark.parametrize("current", ["resume signature: invalid", "releases: https://example.org", _BLOCK + "\n" + _BLOCK])
@@ -226,6 +243,46 @@ def _field(value: str, maximum: str | None = None) -> MagicMock:
     element.clear.side_effect = lambda: state.update(value="")
     element.send_keys.side_effect = lambda text: state.update(value=text)
     return element
+
+
+def test_rich_about_text_ignores_visual_wrapping() -> None:
+    """
+    Read paragraph structure without turning editor layout into authored line breaks.
+
+    Returns:
+        None: Rich editor text comes from its DOM structure, not layout-dependent innerText.
+    """
+    driver, field = MagicMock(), MagicMock()
+    field.get_attribute.return_value = "true"
+    driver.execute_script.return_value = "First paragraph.\n\nSecond paragraph with a hard\nbreak."
+
+    assert _about_text(driver, field) == driver.execute_script.return_value
+    script, argument = driver.execute_script.call_args.args
+    assert "innerText" not in script
+    assert "childNodes" in script
+    assert argument is field
+
+
+def test_rich_about_writer_separates_paragraphs_with_one_blank_row() -> None:
+    """
+    Preserve paragraph spacing in LinkedIn's rich editor without adding extra rows.
+
+    Returns:
+        None: The editor receives one paragraph event for the requested blank row.
+    """
+    driver, field = MagicMock(), MagicMock()
+    driver.capabilities = {"platformName": "macOS"}
+    field.get_attribute.return_value = "true"
+
+    _fill_about(driver, field, "First paragraph.\n\nSecond paragraph.")
+
+    assert field.send_keys.call_args_list == [
+        call(Keys.COMMAND, "a"),
+        call(Keys.BACKSPACE),
+        call("First paragraph."),
+        call(Keys.ENTER),
+        call("Second paragraph."),
+    ]
 
 
 @pytest.mark.parametrize("dry_run,current", [(True, "Personal text"), (False, "Personal text\n\n" + _BLOCK)])
@@ -460,23 +517,26 @@ def test_editor_supports_empty_and_existing_about(edit_route: str, monkeypatch: 
         monkeypatch (MonkeyPatch): Navigation replacement retaining browser URL transitions.
 
     Returns:
-        None: The unique visible textarea and Save control are returned from the correct dialog.
+        None: The unique visible About field and Save control are returned from the owner's dialog.
     """
     driver = MagicMock()
     link, dialog, field, save, cancel = (MagicMock() for _ in range(5))
     link.get_attribute.return_value = "https://www.linkedin.com/in/test-owner/" + edit_route
     save.text, cancel.text = "Save", "Cancel"
-    dialog.find_elements.side_effect = lambda selector_type, selector: [field] if selector == "textarea" else [cancel, save]
+    dialog.find_elements.side_effect = lambda selector_type, selector: (
+        [field] if "textarea" in selector or "contenteditable" in selector else [cancel, save]
+    )
     elements = {
         'main h1, section[aria-label="Primary content"] h2': [MagicMock()],
         "a[href]": [link],
-        '[role="dialog"] textarea': [field],
-        '[role="dialog"]': [dialog],
+        'dialog[open], [role="dialog"]': [dialog],
+        'textarea, [contenteditable="true"][role="textbox"][aria-label="About"]': [field],
     }
     driver.find_elements.side_effect = lambda selector_type, selector: elements[selector]
     monkeypatch.setattr("resumeme.linkedin.ownership._navigate", lambda page, url, settings: setattr(page, "current_url", url))
     assert _editor(driver, _config()) == (field, save)
-    assert driver.current_url == "https://www.linkedin.com/in/test-owner/edit/forms/summary/new/"
+    expected_path = "" if edit_route.endswith("summary/new/") else "edit/forms/summary/new/"
+    assert driver.current_url == f"https://www.linkedin.com/in/test-owner/{expected_path}"
     save.click.assert_not_called()
 
 
