@@ -6,6 +6,13 @@ on:
         description: Verified source commit whose container may be published
         type: string
         required: true
+    outputs:
+      ghcr-tags:
+        description: References successfully published to GHCR
+        value: ${{ jobs.publish.outputs.tags }}
+      dockerhub-tags:
+        description: References successfully published to Docker Hub
+        value: ${{ jobs.dockerhub.outputs.tags }}
     secrets:
       DOCKER_HUB_TOKEN_EMMEOWZING:
         description: Organization Docker Hub token for the upstream emmeowzing/resumeme image
@@ -25,7 +32,7 @@ jobs:
       contents: read
       packages: write
     outputs:
-      tags: ${{ steps.metadata.outputs.tags }}
+      tags: ${{ steps.publish.outcome == 'success' && steps.metadata.outputs.tags || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -53,11 +60,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
       - name: Publish the tested image without rebuilding
+        id: publish
         env:
           SOURCE_SHA: ${{ inputs.sha }}
           IMAGE_TAGS: ${{ steps.metadata.outputs.tags }}
         run: bash scripts/ci/publish-container.sh
-
   # Forks retain GHCR publication but never start a runner or require a token for this upstream-only destination.
   dockerhub:
     name: Push verified container to Docker Hub
@@ -67,7 +74,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     outputs:
-      tags: ${{ steps.metadata.outputs.tags }}
+      tags: ${{ steps.publish.outcome == 'success' && steps.metadata.outputs.tags || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -94,33 +101,8 @@ jobs:
           username: emmeowzing
           password: ${{ secrets.DOCKER_HUB_TOKEN_EMMEOWZING }}
       - name: Publish the tested image without rebuilding
+        id: publish
         env:
           SOURCE_SHA: ${{ inputs.sha }}
           IMAGE_TAGS: ${{ steps.metadata.outputs.tags }}
         run: bash scripts/ci/publish-container.sh
-
-  # One writer reconciles release notes after both registries finish, including when the fork-only skip applies.
-  notes:
-    name: Publish container pull commands
-    needs: [publish, dockerhub]
-    if: ${{ !cancelled() && (needs.publish.result == 'success' || needs.dockerhub.result == 'success') }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.sha }}
-          persist-credentials: false
-
-      # A failed registry remains a pipeline failure; advertise only the aliases whose publication job succeeded.
-      - name: Add container pull commands to release notes
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ github.ref_name }}
-          IMAGE_TAGS: |
-            ${{ needs.publish.result == 'success' && needs.publish.outputs.tags || '' }}
-            ${{ needs.dockerhub.result == 'success' && needs.dockerhub.outputs.tags || '' }}
-        run: bash scripts/tooling/retry.sh bash scripts/release/publish-container-notes.sh

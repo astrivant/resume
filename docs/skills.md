@@ -24,7 +24,7 @@ codex:
     context: Prioritize platform engineering, infrastructure, and developer tooling.
 ```
 
-- `enabled`: generate a proposal after a signed tag release. The package default
+- `enabled`: generate a proposal after the tag's profile capture. The package default
   is `false`. Set it to `false` to skip generation and its API usage.
 - `publish`: opt in to live LinkedIn additions after generation and validation.
   Defaults to `false`; this stops LinkedIn writes but does not stop generation.
@@ -39,6 +39,11 @@ Publication also needs `LINKEDIN_USERNAME` (login email/phone) and `LINKEDIN_PAS
 configured Firefox or Chrome browser. Neither feature runs on branch pushes,
 pull requests, monthly refreshes, or manual branch workflows. Ordinary résumé
 summary generation can run on main and tags when enabled.
+
+Tag proposals run alongside summary generation and tests. Live skill additions
+wait for both the validated proposal and a successful signed release. Generation
+can consume API usage and retain its proposal artifact even if another pipeline
+branch later fails; `publish: false` does not disable generation.
 
 To stop all Codex API usage, set `codex.enabled`, `codex.skills.enabled`, and
 `codex.skills.publish` to `false`. PDF builds, signed releases, and Pages publication

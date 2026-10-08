@@ -10,10 +10,6 @@ on:
         description: Validate the fresh LinkedIn capture from this run
         type: boolean
         default: false
-      summary:
-        description: Review the same generated copy used to build the PDF
-        type: boolean
-        default: false
 permissions:
   contents: read
 defaults:
@@ -41,79 +37,5 @@ jobs:
         with:
           name: python-coverage
           path: .cache/coverage/coverage.xml
-          if-no-files-found: error
-          retention-days: 14
-  documents:
-    name: TeXtidote spelling, grammar, and LaTeX review
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.sha }}
-          persist-credentials: false
-      - uses: ./.github/actions/setup-project
-        with:
-          groups: main
-      - uses: ./.github/actions/restore-profile
-        with:
-          refresh: ${{ inputs.refresh }}
-
-      # Check the rendered document from this source commit, including a user's configured output.tex path.
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        if: inputs.summary
-        with:
-          name: resumeme-summary
-          path: .cache/codex/
-      - name: Render the resume and prepare report paths
-        id: documents
-        env:
-          USE_CODEX_SUMMARY: ${{ inputs.summary }}
-        run: bash scripts/ci/render.sh
-
-      # Run the Marketplace action's published image directly: its action.yml otherwise selects a floating latest tag.
-      # https://github.com/marketplace/actions/textidote-action
-      - name: Review README prose
-        id: readme
-        uses: docker://gokhlayeh/textidote@sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441
-        with:
-          args: README.md . html .cache/textidote/readme.html -1 "--check en"
-      - name: Review generated LaTeX and profile prose
-        id: resume
-        if: ${{ !cancelled() && steps.documents.outcome == 'success' }}
-        uses: docker://gokhlayeh/textidote@sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441
-        with:
-          args: >-
-            ./${{ steps.documents.outputs.tex_file }}
-            ${{ steps.documents.outputs.tex_directory }}
-            html ${{ steps.documents.outputs.tex_report }}
-            -1 "--check en"
-
-      # Keep editorial findings visible without rewriting captured profile prose; execution failures still fail the test stage.
-      - name: Summarize document review
-        if: always()
-        env:
-          README_WARNINGS: ${{ steps.readme.outputs.num_warnings }}
-          RESUME_WARNINGS: ${{ steps.resume.outputs.num_warnings }}
-        run: |
-          {
-              printf '## TeXtidote review\n\n'
-              printf '| Document | Findings |\n| --- | --- |\n'
-              printf '| README | %s |\n' "${README_WARNINGS:-unavailable}"
-              printf '| Resume | %s |\n\n' "${RESUME_WARNINGS:-unavailable}"
-              printf 'Download the textidote-reports artifact for annotated HTML. Prose findings are advisory; tool failures block CI.\n'
-          } >>"$GITHUB_STEP_SUMMARY"
-
-          if [[ "${README_WARNINGS:-0}" != 0 || "${RESUME_WARNINGS:-0}" != 0 ]]; then
-              echo '::warning::TeXtidote found prose issues. Review the textidote-reports artifact.'
-          fi
-
-      # Preserve any completed report if the other document check fails, while treating a missing report directory as an error.
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: always() && steps.documents.outcome == 'success'
-        with:
-          name: textidote-reports
-          path: .cache/textidote/*.html
-          include-hidden-files: true
           if-no-files-found: error
           retention-days: 14

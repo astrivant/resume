@@ -169,7 +169,8 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     workflows = Path(__file__).resolve().parents[3] / ".github/workflows"
     pipeline = yaml.safe_load((workflows / "ci.yml").read_text())
     stages = {
-        name: yaml.safe_load((workflows / f"stage-{name}.yml").read_text()) for name in ("summary", "test", "build", "skills", "release")
+        name: yaml.safe_load((workflows / f"stage-{name}.yml").read_text())
+        for name in ("summary", "test", "documents", "resume", "skills", "skills-publish", "release")
     }
     source = pipeline["jobs"]["source"]
     assert source["outputs"]["refresh"] == "${{ steps.source.outputs.refresh }}"
@@ -182,7 +183,14 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     assert "continue-on-error" not in source and "continue-on-error" not in capture
 
     # A fresh capture must reach every job that reads profile evidence, including optional tag-only skill publication.
-    consumers = {"summary": ("prepare", "summary"), "test": ("python", "documents"), "build": ("build",), "skills": ("generate", "publish")}
+    consumers = {
+        "summary": ("prepare", "summary"),
+        "test": ("python",),
+        "documents": ("documents",),
+        "resume": ("build",),
+        "skills": ("generate",),
+        "skills-publish": ("publish",),
+    }
 
     for stage, jobs in consumers.items():
         assert pipeline["jobs"][f"{stage}-stage"]["with"]["refresh"] == "${{ needs.source.outputs.refresh == 'true' }}"
@@ -204,6 +212,8 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     # Omitting run-id and repository binds the artifact download to this workflow run; a missing build must fail the release.
     assert pipeline["jobs"]["release-stage"]["needs"] == ["source", "verified"]
     assert "build-stage" in pipeline["jobs"]["verified"]["needs"]
+    assert "resume-stage" in pipeline["jobs"]["verified"]["needs"]
+    assert "documents-stage" in pipeline["jobs"]["verified"]["needs"]
     release = stages["release"]["jobs"]["release"]
     steps = release["steps"]
     download = next(step for step in steps if step.get("uses", "").startswith("actions/download-artifact@"))
@@ -214,7 +224,7 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     assert steps.index(download) < signing
     build_upload = next(
         step
-        for step in stages["build"]["jobs"]["build"]["steps"]
+        for step in stages["resume"]["jobs"]["build"]["steps"]
         if step.get("uses", "").startswith("actions/upload-artifact@") and step.get("with", {}).get("name") == "resume-pdf"
     )
     assert build_upload["with"]["path"] == ".cache/publication/"
@@ -232,28 +242,35 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
         (True, "success", "skipped", False),
     ],
 )
-def test_verification_gate_requires_requested_capture_and_successful_build(refresh: bool, capture: str, build: str, accepted: bool) -> None:
+@pytest.mark.parametrize("stage", ["source", "summary-stage", "test-stage", "build-stage", "documents-stage", "resume-stage"])
+def test_verification_gate_requires_requested_capture_and_successful_work(
+    refresh: bool, capture: str, build: str, accepted: bool, stage: str
+) -> None:
     """
     Execute the real verification gate for fresh captures and ordinary saved-profile builds.
 
     Args:
         refresh (bool): Whether this event requires a fresh LinkedIn capture.
         capture (str): Capture job result supplied by Actions.
-        build (str): PDF build job result supplied by Actions.
+        build (str): Selected required job result supplied by Actions.
         accepted (bool): Whether publication is allowed for this combination.
+        stage (str): Required source, test, review, or build branch exercised independently.
 
     Returns:
         None: Failed or skipped required work blocks publication, while an intentionally omitted capture does not.
     """
     workflow = Path(__file__).resolve().parents[3] / ".github/workflows/ci.yml"
     jobs = yaml.safe_load(workflow.read_text())["jobs"]
-    results = {
+    results: dict[str, dict[str, str | dict[str, str]]] = {
         "source": {"result": "success", "outputs": {"refresh": str(refresh).lower()}},
         "capture": {"result": capture},
         "summary-stage": {"result": "success"},
         "test-stage": {"result": "success"},
-        "build-stage": {"result": build},
+        "build-stage": {"result": "success"},
+        "documents-stage": {"result": "success"},
+        "resume-stage": {"result": "success"},
     }
+    results[stage]["result"] = build
     result = subprocess.run(
         ["bash", "-c", jobs["verified"]["steps"][0]["run"]],
         env=dict(os.environ, RESULTS_JSON=json.dumps(results)),
@@ -264,5 +281,52 @@ def test_verification_gate_requires_requested_capture_and_successful_build(refre
     assert (result.returncode == 0) is accepted, result.stdout + result.stderr
 
     # Explicit status checks let branch publication proceed past the intentionally skipped capture ancestor.
-    for stage in ("summary-stage", "test-stage", "build-stage", "coverage-badge", "deploy-stage", "pages-stage"):
-        assert "!cancelled()" in jobs[stage]["if"]
+    for consumer in (
+        "summary-stage",
+        "test-stage",
+        "build-stage",
+        "documents-stage",
+        "resume-stage",
+        "coverage-badge",
+        "deploy-stage",
+        "pages-stage",
+    ):
+        assert "!cancelled()" in jobs[consumer]["if"]
+
+
+def test_independent_pipeline_work_has_no_profile_or_summary_barrier() -> None:
+    """
+    Keep source builds, evidence consumers, and publication branches parallel until their actual join points.
+
+    Returns:
+        None: Source-only builds start immediately, profile consumers fan out, and release mutation waits for its writers.
+    """
+    workflows = Path(__file__).resolve().parents[3] / ".github/workflows"
+    jobs = yaml.safe_load((workflows / "ci.yml").read_text())["jobs"]
+    assert jobs["build-stage"]["needs"] == "source"
+    assert jobs["test-stage"]["needs"] == jobs["summary-stage"]["needs"] == jobs["skills-stage"]["needs"] == ["source", "capture"]
+    assert jobs["documents-stage"]["needs"] == jobs["resume-stage"]["needs"] == ["source", "summary-stage"]
+    assert jobs["container-stage"]["needs"] == jobs["release-stage"]["needs"] == jobs["pypi-stage"]["needs"] == ["source", "verified"]
+    assert jobs["container-notes-stage"]["needs"] == ["source", "container-stage", "release-stage"]
+    assert jobs["skills-publish-stage"]["needs"] == ["source", "skills-stage", "release-stage"]
+
+    # Independent build jobs retain the same source and never read captured profile or generated summary artifacts.
+    builds = yaml.safe_load((workflows / "stage-build.yml").read_text())["jobs"]
+
+    for job in builds.values():
+        assert "needs" not in job
+        checkout = job["steps"][0]
+        assert checkout["with"]["ref"] == "${{ inputs.sha }}"
+        assert not any(step.get("uses") == "./.github/actions/restore-profile" for step in job["steps"])
+        assert not any(step.get("uses", "").startswith("actions/download-artifact@") for step in job["steps"])
+
+    # The public required check must account for every branch before any release or main publication can start.
+    assert set(jobs["verified"]["needs"]) == {
+        "source",
+        "capture",
+        "summary-stage",
+        "test-stage",
+        "build-stage",
+        "documents-stage",
+        "resume-stage",
+    }

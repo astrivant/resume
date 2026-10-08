@@ -1,0 +1,38 @@
+name: Container release notes stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: Verified tagged source shared by the signed release and registries
+        type: string
+        required: true
+      image-tags:
+        description: Newline-separated references whose registry publication succeeded
+        type: string
+        required: true
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  notes:
+    name: Publish container pull commands
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+
+      # A failed registry remains a pipeline failure; advertise only the aliases whose publication job succeeded.
+      - name: Add container pull commands to release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          IMAGE_TAGS: ${{ inputs.image-tags }}
+        run: bash scripts/tooling/retry.sh bash scripts/release/publish-container-notes.sh

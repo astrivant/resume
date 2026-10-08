@@ -1,0 +1,63 @@
+name: Resume build stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: Immutable source commit resolved by the entry workflow
+        type: string
+        required: true
+      refresh:
+        description: Compile the fresh LinkedIn capture from this run
+        type: boolean
+        default: false
+      summary:
+        description: Consume the generic and company summary artifacts from this pipeline run
+        type: boolean
+        default: false
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  build:
+    name: Compile PDF and preview
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+        with:
+          groups: main
+      - uses: ./.github/actions/restore-profile
+        with:
+          refresh: ${{ inputs.refresh }}
+
+      # resumeme build uses the digest-pinned drpsychick/texlive-pdflatex image.
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        if: inputs.summary
+        with:
+          name: resumeme-summary
+          path: .cache/codex/
+      - run: bash scripts/ci/build.sh
+        env:
+          USE_CODEX_SUMMARY: ${{ inputs.summary }}
+          RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+
+      # Routine refreshes publish an unsigned working PDF; only a user-created tag receives signing credentials.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: resume-pdf
+          path: .cache/publication/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: resumeme-source
+          path: tex/
+          retention-days: 14

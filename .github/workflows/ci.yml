@@ -7,6 +7,8 @@ on:
   schedule:
     # Refresh on the first of each month at 06:17 UTC, away from the busiest start-of-hour queue.
     - cron: '17 6 1 * *'
+    # Update Scorecard weekly without running capture, summaries, or resume publication.
+    - cron: '43 6 * * 1'
   workflow_dispatch:
     inputs:
       refresh:
@@ -23,9 +25,22 @@ defaults:
     shell: bash
 jobs:
 
+  # Reuse the isolated publishing workflow within this run so a main push creates only one pipeline.
+  scorecard-stage:
+    name: OpenSSF Scorecard
+    if: >-
+      github.event.repository.fork == false &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+      (github.event_name == 'push' || github.event_name == 'schedule')
+    uses: ./.github/workflows/stage-scorecard.yml
+    permissions:
+      contents: read
+      id-token: write
+
   # Resolve once so every reusable stage consumes the same commit even if the branch advances during the run.
   source:
     name: Resolve pipeline source
+    if: github.event_name != 'schedule' || github.event.schedule != '43 6 * * 1'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -39,6 +54,16 @@ jobs:
         env:
           REFRESH_PROFILE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) }}
         run: bash scripts/ci/source.sh
+
+  # Packages and the synthetic container smoke test need only source, so start them alongside browser capture.
+  build-stage:
+    name: Build package and container
+    needs: source
+    if: ${{ !cancelled() && needs.source.result == 'success' }}
+    uses: ./.github/workflows/stage-build.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+
   capture:
     name: Refresh LinkedIn source
     needs: source
@@ -94,18 +119,32 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   test-stage:
     name: Test
-    needs: [source, summary-stage]
-    if: ${{ !cancelled() && needs.source.result == 'success' && needs.summary-stage.result == 'success' }}
+    needs: [source, capture]
+    # Schema checks validate the selected capture; Python tests have no dependency on generated summaries.
+    if: >-
+      !cancelled() && needs.source.result == 'success' &&
+      ((needs.source.outputs.refresh == 'true' && needs.capture.result == 'success') ||
+      (needs.source.outputs.refresh != 'true' && needs.capture.result == 'skipped'))
     uses: ./.github/workflows/stage-test.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
-      summary: ${{ needs.summary-stage.outputs.generated == 'true' }}
-  build-stage:
-    name: Build
+
+  # Both document consumers use identical capture and summary artifacts but run in parallel on separate runners.
+  documents-stage:
+    name: Review documents
     needs: [source, summary-stage]
     if: ${{ !cancelled() && needs.source.result == 'success' && needs.summary-stage.result == 'success' }}
-    uses: ./.github/workflows/stage-build.yml
+    uses: ./.github/workflows/stage-documents.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+      refresh: ${{ needs.source.outputs.refresh == 'true' }}
+      summary: ${{ needs.summary-stage.outputs.generated == 'true' }}
+  resume-stage:
+    name: Build resume
+    needs: [source, summary-stage]
+    if: ${{ !cancelled() && needs.source.result == 'success' && needs.summary-stage.result == 'success' }}
+    uses: ./.github/workflows/stage-resume.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
@@ -114,8 +153,8 @@ jobs:
   # Run the gate after failures too; a skipped or cancelled upstream stage must never look like successful verification.
   verified:
     name: CI verification
-    if: always()
-    needs: [source, capture, summary-stage, test-stage, build-stage]
+    if: always() && !(github.event_name == 'schedule' && github.event.schedule == '43 6 * * 1')
+    needs: [source, capture, summary-stage, test-stage, build-stage, documents-stage, resume-stage]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -124,7 +163,8 @@ jobs:
           RESULTS_JSON: ${{ toJSON(needs) }}
         run: |
           jq -e '
-            ([.source, .["summary-stage"], .["test-stage"], .["build-stage"]] | all(.result == "success")) and
+            ([.source, .["summary-stage"], .["test-stage"], .["build-stage"], .["documents-stage"], .["resume-stage"]] |
+              all(.result == "success")) and
             (if .source.outputs.refresh == "true" then .capture.result == "success" else .capture.result == "skipped" end)
           ' <<<"$RESULTS_JSON"
 
@@ -267,17 +307,32 @@ jobs:
       RESUMEME_CACHE_PUBLIC_KEY: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
       RESUMEME_CACHE_KEY_PASSWORD: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
 
-  # Skill proposals and optional additions run only after a signed tag release, independently of main's summary jobs.
+  # Tagged skill evidence is independent of summaries, builds, and signing; only live additions wait for release.
   skills-stage:
-    name: Propose and optionally publish LinkedIn skills
-    needs: [source, release-stage]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    name: Propose LinkedIn skills
+    needs: [source, capture]
+    if: >-
+      !cancelled() && needs.source.result == 'success' && needs.capture.result == 'success' &&
+      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-skills.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+  skills-publish-stage:
+    name: Publish LinkedIn skills
+    needs: [source, skills-stage, release-stage]
+    if: >-
+      !cancelled() && needs.source.result == 'success' && needs.skills-stage.result == 'success' &&
+      needs.release-stage.result == 'success' && needs.skills-stage.outputs.publish == 'true' &&
+      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    uses: ./.github/workflows/stage-skills-publish.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+      refresh: ${{ needs.source.outputs.refresh == 'true' }}
+    secrets:
       LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
       LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
       RESUMEME_CACHE_PRIVATE_KEY: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
@@ -295,16 +350,32 @@ jobs:
     secrets:
       PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
-  # Tag publication owns registry writes and container release notes; branch and PR builds only exercise the image.
+  # Registry uploads and the signed PDF release share verification but do not wait for each other.
   container-stage:
     name: Publish container
-    needs: [source, verified, release-stage]
+    needs: [source, verified]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-container.yml
     permissions:
-      contents: write
+      contents: read
       packages: write
     with:
       sha: ${{ needs.source.outputs.sha }}
     secrets:
       DOCKER_HUB_TOKEN_EMMEOWZING: ${{ secrets.DOCKER_HUB_TOKEN_EMMEOWZING }}
+
+  # Advertise successful registry pushes only after the signed release exists; avoid racing the release-note writer.
+  container-notes-stage:
+    name: Publish container pull commands
+    needs: [source, container-stage, release-stage]
+    if: >-
+      !cancelled() && needs.source.result == 'success' && needs.release-stage.result == 'success' &&
+      (needs.container-stage.outputs.ghcr-tags != '' || needs.container-stage.outputs.dockerhub-tags != '')
+    uses: ./.github/workflows/stage-container-notes.yml
+    permissions:
+      contents: write
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+      image-tags: |
+        ${{ needs.container-stage.outputs.ghcr-tags }}
+        ${{ needs.container-stage.outputs.dockerhub-tags }}

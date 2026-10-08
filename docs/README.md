@@ -67,7 +67,7 @@ See [logging controls and record fields](CLI.md#logging).
 | `linkedin.resume.share_with_recruiters` | `null` | After upload, `true` enables recruiter resume-data sharing and `false` disables it; `null` preserves LinkedIn's current setting |
 | `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
 | `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
-| `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after signed tag releases; `false` skips generation and its API usage |
+| `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after tag capture; live publication waits for the signed release; `false` skips generation and its API usage |
 | `codex.skills.publish` | `false` | Opt in to adding missing skills to LinkedIn; existing skills and endorsements are always retained |
 | `codex.skills.max_skills` | `20` | Maximum suggested skill names per tagged release |
 | `codex.skills.context` | Empty | Skill selection preferences; [generation and publishing instructions](skills.md) |
@@ -862,7 +862,7 @@ See [compiler boundaries and pass order](compiler.md) for the internal interface
 
 CI runs [TeXtidote Action](https://github.com/marketplace/actions/textidote-action)
 against `README.md` and generated LaTeX with `--check en`. The action container is
-pinned by digest in `stage-test.yml`.
+pinned by digest in `stage-documents.yml`.
 
 Findings are advisory; execution and report-generation failures block publication.
 Annotated HTML reports are retained for 14 days in `textidote-reports`, and counts

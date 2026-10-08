@@ -83,7 +83,7 @@ reasoning tokens. See [reasoning controls](https://developers.openai.com/api/doc
   model, explicit reasoning effort, or word limits require regeneration. Model output is escaped as plain text.
 
 The `resumeme-summary` Actions artifact contains the generated JSON and any
-company/job evidence snapshots. The test and build stages download that same
+company/job evidence snapshots. The document review and PDF build stages download that same
 artifact and independently validate each selected response. TeXtidote checks the
 generic document's generated copy. Summary jobs have repository
 read permissions, a read-only Codex permission profile, and the action's

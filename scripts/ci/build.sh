@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-# Build distributable packages and stage the configured PDF for publication.
+# Compile and stage the configured PDF and preview for publication.
 set -euo pipefail
 
-# Apply the tag's package version before building the wheel and source archive, retaining locked dependencies.
+# Match the independently built package version when rendering a tagged resume, retaining locked dependencies.
 bash scripts/release/package-version.sh
-
-# Clean stale distributions before building the exact wheel and source archive that PyPI publication will consume.
-poetry build --clean
 
 # A requested artifact must exist and validate; a missing file must never silently fall back to captured prose.
 summary_args=()

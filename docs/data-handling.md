@@ -200,8 +200,8 @@ repository's own retention setting, not the artifact-specific values.
 | `resumeme-profile` | Tag, monthly, or requested main refresh; share one capture with downstream jobs | Full accepted snapshot and every referenced downloaded image, including fields hidden in the PDF. No browser-profile directory. | 7 |
 | `resumeme-summary-inputs` | Enabled summary generation on main or tags; feed the matrix | `.cache/codex/` prompts, schemas, and company/job evidence, including configured writing context. | 7 |
 | `resumeme-summary-result-*` | Each successful matrix item | Validated generated JSON and employer evidence for that item. | 7 |
-| `resumeme-summary` | Collect matrix results for test/build consumers | Combined validated summary JSON and employer snapshots, not the input prompts. | 14 |
-| `resumeme-skills` | Enabled skill generation after a signed tag release | Proposed skill names, supporting profile quotes, owner/tag identifiers, and source digest. | 30 |
+| `resumeme-summary` | Collect matrix results for document review and PDF builds | Combined validated summary JSON and employer snapshots, not the input prompts. | 14 |
+| `resumeme-skills` | Enabled skill generation after tag capture, alongside summaries and tests | Proposed skill names, supporting profile quotes, owner/tag identifiers, and source digest. | 30 |
 | `resume-pdf` | Successful build, including ordinary branch/PR builds using saved inputs | Generic PDF, generated employer PDFs/manifest, brew date, and enabled README/preview publication files. | 14 |
 | `resumeme-source` | Successful PDF build | Entire `tex/` directory, including generated text, images, and contribution data when used. | 14 |
 | `signed-resume` | Successful tag signing | Publication directory plus generic PDF signatures, public key, fingerprint, checksums, and provenance. | 14 |
@@ -249,6 +249,11 @@ scripts. Review package archives and build inputs before registry publication.
 independently prepares skill proposals on tag runs. `codex.skills.publish: false`
 only stops LinkedIn writes, not generation or API use. The reference config
 disables both generators; the author's active config may differ.
+
+Generation runs before the final verification and release gates. API usage and
+uploaded proposal artifacts can therefore remain even if a parallel check,
+build, or release fails. Live skill publication still requires a signed release
+and the explicit publication setting.
 
 The summary prompt includes the public username, name, configured context and
 limits, and filtered section titles, paragraphs, skill names, and nested roles.
@@ -378,7 +383,7 @@ fork owner. Send synthetic examples or sanitized excerpts, never working secrets
 
 - [Browser capture](../pkg/resumeme/linkedin/browser.py), [CLI persistence](../pkg/resumeme/cli.py), and [public downloads](../pkg/resumeme/linkedin/media.py).
 - [Session wrapper](../scripts/ci/linkedin-session.py), [archive cryptography](../pkg/resumeme/linkedin/session_cache.py), and [session action](../.github/actions/linkedin-session/action.yml).
-- [Capture artifact allowlist](../scripts/ci/profile-artifact.py), [build uploads](../.github/workflows/stage-build.yml), and [main publication](../scripts/ci/publish.sh).
+- [Capture artifact allowlist](../scripts/ci/profile-artifact.py), [resume uploads](../.github/workflows/stage-resume.yml), [package/container builds](../.github/workflows/stage-build.yml), and [main publication](../scripts/ci/publish.sh).
 - [Summary evidence](../pkg/resumeme/compiler/passes/summary.py), [summary workflow](../.github/workflows/stage-summary.yml), and [skill workflow](../.github/workflows/stage-skills.yml).
 - [Logging redaction](../pkg/resumeme/telemetry.py), [release attachments](../scripts/release/publish.sh), and [Pages workflow](../.github/workflows/stage-pages.yml).
 

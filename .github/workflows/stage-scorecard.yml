@@ -1,14 +1,10 @@
-name: OpenSSF Scorecard
+name: Scorecard stage
 on:
-  push:
-    branches: [main]
-  schedule:
-    # Refresh weekly so the badge reflects changes to repository settings too.
-    - cron: '43 6 * * 1'
+  workflow_call:
 permissions:
   contents: read
 
-# Scorecard's publishing API requires a separate workflow with approved action steps and no shell commands or defaults.
+# The publishing API verifies this reusable workflow's OIDC identity; keep its approved steps free of env and defaults.
 jobs:
   analysis:
     name: Publish Scorecard results

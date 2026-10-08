@@ -124,9 +124,9 @@ after both the test and build stages succeed:
 2. The build stage installs the wheel in the production image, smoke-tests it,
    and uploads the tested image archive for tag runs.
 3. The verification gate checks all required stage results.
-4. After the tag's signed PDF release succeeds, the container publication jobs load that archive, check its source revision,
+4. Alongside the tag's signed PDF release, the container publication jobs load that archive, check its source revision,
    and push it to GHCR and, for `astrivant/resumeme` only, Docker Hub with exponential retries. They do not rebuild the image.
-5. One job collects the successful registry uploads and creates or updates the Git tag's
+5. After the signed release and registry jobs finish, one job collects successful uploads and updates the Git tag's
    GitHub release notes with the exact image paths and copyable `docker pull`
    commands, including `--platform linux/amd64`.
 

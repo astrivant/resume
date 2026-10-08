@@ -115,7 +115,7 @@ def test_dockerhub_publication_is_upstream_tag_only() -> None:
     stage = yaml.safe_load((workflows / "stage-container.yml").read_text())
     caller = pipeline["jobs"]["container-stage"]
     hub = stage["jobs"]["dockerhub"]
-    assert caller["needs"] == ["source", "verified", "release-stage"]
+    assert caller["needs"] == ["source", "verified"]
     assert caller["secrets"]["DOCKER_HUB_TOKEN_EMMEOWZING"] == "${{ secrets.DOCKER_HUB_TOKEN_EMMEOWZING }}"
     assert stage[True]["workflow_call"]["secrets"]["DOCKER_HUB_TOKEN_EMMEOWZING"]["required"] is False
 
@@ -140,13 +140,23 @@ def test_dockerhub_publication_is_upstream_tag_only() -> None:
     assert not any(step.get("uses", "").startswith("docker/build-push-action@") for step in hub["steps"])
 
     # One notes job waits for both destinations; each registry contributes references only after a successful push.
-    notes = stage["jobs"]["notes"]
-    assert notes["needs"] == ["publish", "dockerhub"]
-    assert "!cancelled()" in notes["if"]
-    references = notes["steps"][-1]["env"]["IMAGE_TAGS"]
+    notes_caller = pipeline["jobs"]["container-notes-stage"]
+    notes = yaml.safe_load((workflows / "stage-container-notes.yml").read_text())["jobs"]["notes"]
+    assert notes_caller["needs"] == ["source", "container-stage", "release-stage"]
+    assert "!cancelled()" in notes_caller["if"]
+    assert "needs.release-stage.result == 'success'" in notes_caller["if"]
+    assert notes["steps"][-1]["env"]["IMAGE_TAGS"] == "${{ inputs.image-tags }}"
 
-    for registry in ("publish", "dockerhub"):
-        assert f"needs.{registry}.result == 'success' && needs.{registry}.outputs.tags || ''" in references
+    for registry, output in (("publish", "ghcr-tags"), ("dockerhub", "dockerhub-tags")):
+        value = stage[True]["workflow_call"]["outputs"][output]["value"]
+        assert value == "${{ jobs." + registry + ".outputs.tags }}"
+        assert (
+            stage["jobs"][registry]["outputs"]["tags"] == "${{ steps.publish.outcome == 'success' && steps.metadata.outputs.tags || '' }}"
+        )
+        push = next(step for step in stage["jobs"][registry]["steps"] if step.get("id") == "publish")
+        assert push["run"] == "bash scripts/ci/publish-container.sh"
+        assert f"needs.container-stage.outputs.{output}" in notes_caller["with"]["image-tags"]
+        assert f"needs.container-stage.outputs.{output} != ''" in notes_caller["if"]
 
 
 def _git(root: Path, *arguments: str) -> str:

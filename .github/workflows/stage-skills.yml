@@ -3,25 +3,19 @@ on:
   workflow_call:
     inputs:
       sha:
-        description: Published tag revision supplying the configuration and code
+        description: Tagged source revision supplying the configuration and profile evidence
         type: string
         required: true
       refresh:
         description: Consume the same fresh LinkedIn capture used to build the released PDF
         type: boolean
         default: false
+    outputs:
+      publish:
+        description: Whether the validated proposal is configured for LinkedIn publication
+        value: ${{ jobs.generate.outputs.publish }}
     secrets:
       OPENAI_API_KEY:
-        required: false
-      LINKEDIN_USERNAME:
-        required: false
-      LINKEDIN_PASSWORD:
-        required: false
-      RESUMEME_CACHE_PRIVATE_KEY:
-        required: false
-      RESUMEME_CACHE_PUBLIC_KEY:
-        required: false
-      RESUMEME_CACHE_KEY_PASSWORD:
         required: false
 permissions:
   contents: read
@@ -83,55 +77,3 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
-  publish:
-    name: Add missing skills to LinkedIn
-    needs: generate
-    if: needs.generate.outputs.publish == 'true' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    runs-on: ${{ fromJSON(vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]') }}
-    timeout-minutes: 30
-
-    # Share the existing profile-write lock with the About updater, including across different tagged releases.
-    concurrency:
-      group: resumeme-linkedin-ownership-${{ github.repository }}
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.sha }}
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: ./.github/actions/setup-project
-        with:
-          groups: main
-      - uses: ./.github/actions/restore-profile
-        with:
-          refresh: ${{ inputs.refresh }}
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: resumeme-skills
-          path: .cache/codex/skills/
-      - name: Skip superseded tag proposals
-        id: latest
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
-        run: |
-          latest=$(bash scripts/tooling/retry.sh gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
-          if [[ "$latest" == "$RELEASE_TAG" ]]; then
-              echo 'current=true' >> "$GITHUB_OUTPUT"
-          else
-              echo 'Skipping skill additions: this tag is not the latest published release.'
-          fi
-      - name: Publish only missing skills and verify persistence
-        if: steps.latest.outputs.current == 'true'
-        env:
-          LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
-          LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
-          RELEASE_TAG: ${{ github.ref_name }}
-        uses: ./.github/actions/linkedin-session
-        with:
-          command: publish-skills
-          private-key: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
-          public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
-          key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
-          cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}

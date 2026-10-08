@@ -232,7 +232,8 @@ and private backup locations are in the linked guides.
   See [ownership publication](docs/ownership.md).
 - **Skill proposals:** `codex.skills.enabled` is independent of résumé summaries.
   `skills-prompt --tag TAG` prepares evidence-backed suggestions; the model call
-  is separate. In Actions this runs only after a signed tag release. Proposals
+  is separate. In Actions generation follows tag capture; live publication waits
+  for a successful signed release and explicit opt-in. Proposals
   are self-declared skills, not connection endorsements. See [skill generation](docs/skills.md).
 - **Application resumes:** `publish-resume --pdf PATH --dry-run` checks the PDF,
   account owner, and upload form without uploading. Live upload requires

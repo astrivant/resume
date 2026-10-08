@@ -32,6 +32,58 @@ The full capture can contain contact fields and sections excluded from the PDF.
 It crosses jobs as an ordinary artifact and is committed on a main refresh.
 Encrypted session reuse protects the browser archive, not those publications.
 
+OpenSSF Scorecard runs as a reusable stage within the same pipeline on default-branch
+pushes and scheduled runs. Its public results continue to update the README badge;
+forks skip this stage. The weekly Monday **06:43 UTC** schedule (`43 6 * * 1`)
+runs only Scorecard, without capture, AI summaries, or resume builds. The monthly
+schedule runs both the resume pipeline and Scorecard. Scorecard publication is
+independent of the required resume verification check.
+
+The stage keeps its own workflow definition because the
+[Scorecard publishing API validates the producing workflow](https://github.com/ossf/scorecard-infra/blob/main/api/app/server/post_results.go)
+and [restricts its permissions and steps](https://github.com/ossf/scorecard-action#workflow-restrictions).
+It has only a `workflow_call` trigger, so it creates no separate push-triggered run.
+
+## Pipeline concurrency
+
+Jobs depend on the artifacts they consume. Once the source SHA is resolved,
+package and container builds run alongside any required LinkedIn capture.
+Python checks validate the selected profile alongside summary generation and
+tag-only skill proposals. PDF compilation and TeXtidote review run independently
+after summaries finish. Summary matrix jobs retain their four-worker limit;
+pytest continues to use parallel workers.
+
+```mermaid
+flowchart LR
+    source[Source SHA] --> builds[Package and container builds]
+    source --> profile[Stored or refreshed profile]
+    profile --> tests[Python and schema checks]
+    profile --> summaries[Summary matrix]
+    profile --> skills[Tag skill proposals]
+    summaries --> pdf[PDF and preview]
+    summaries --> review[Document review]
+    builds --> gate[CI verification]
+    tests --> gate
+    pdf --> gate
+    review --> gate
+    gate --> release[Signed tag release]
+    gate --> registries[Tag registry uploads]
+    gate --> pypi[Tag PyPI publication]
+    gate --> main[Main PDF commit and Pages]
+    release --> notes[Container release notes]
+    registries --> notes
+    release --> publishskills[Optional LinkedIn skill additions]
+    skills --> publishskills
+```
+
+`CI verification` requires successful source resolution, summaries, Python checks,
+document review, source builds, and PDF compilation. Requested captures must also
+succeed. Skips or failures in required work block publication. Registry uploads
+can complete even if PDF signing later fails; release notes wait for both the
+signed release and successful registry references. Coverage and Scorecard remain
+independent reporting jobs. Live LinkedIn updates retain the shared account-write
+lock, and Pages consumes the accepted main publication commit.
+
 ## Configure a fork
 
 Copy [resumeme.config.ref.yaml](../resumeme.config.ref.yaml) to `resumeme.config.yaml`,
@@ -165,8 +217,10 @@ including [installation](README.md#install) and the [agent workflow](../SKILL.md
 
 ## Run or adjust the schedule
 
-Edit `on.schedule` in `.github/workflows/ci.yml` to change the cadence. To run the
-same refresh now, select **Run workflow -> main -> refresh**, or run:
+Edit the monthly entry under `on.schedule` in `.github/workflows/ci.yml` to change
+the resume refresh cadence. If changing the weekly Scorecard cron, also update
+the matching `source` and `verified` job guards in that file. To run a resume
+refresh now, select **Run workflow -> main -> refresh**, or run:
 
 ```bash
 gh workflow run ci.yml --ref main -f refresh=true

@@ -500,21 +500,29 @@ def test_ci_contract_is_tag_only_and_keeps_model_and_linkedin_credentials_separa
     Preserve release ordering, credential boundaries, and the shared LinkedIn write lock.
 
     Returns:
-        None: The caller and reusable workflow only publish on tags after a signed release.
+        None: Proposals run alongside summaries; live publication still requires a signed tag release and opt-in.
     """
     root = Path(__file__).resolve().parents[3]
-    caller = yaml.safe_load((root / ".github/workflows/ci.yml").read_text())["jobs"]["skills-stage"]
+    jobs = yaml.safe_load((root / ".github/workflows/ci.yml").read_text())["jobs"]
+    caller = jobs["skills-stage"]
+    publish_caller = jobs["skills-publish-stage"]
     workflow = yaml.safe_load((root / ".github/workflows/stage-skills.yml").read_text())["jobs"]
-    assert caller["needs"] == ["source", "release-stage"]
+    publisher = yaml.safe_load((root / ".github/workflows/stage-skills-publish.yml").read_text())["jobs"]["publish"]
+    assert caller["needs"] == ["source", "capture"]
+    assert publish_caller["needs"] == ["source", "skills-stage", "release-stage"]
+    assert "needs.skills-stage.result == 'success'" in publish_caller["if"]
+    assert "needs.release-stage.result == 'success'" in publish_caller["if"]
 
-    for job in (caller, workflow["generate"], workflow["publish"]):
+    for job in (caller, publish_caller, workflow["generate"], publisher):
         assert "github.event_name == 'push'" in job["if"]
         assert "startsWith(github.ref, 'refs/tags/')" in job["if"]
 
-    assert "publish == 'true'" in workflow["publish"]["if"]
-    assert workflow["publish"]["concurrency"]["group"] == "resumeme-linkedin-ownership-${{ github.repository }}"
+    assert "publish == 'true'" in publish_caller["if"]
+    assert publisher["concurrency"]["group"] == "resumeme-linkedin-ownership-${{ github.repository }}"
+    assert "LINKEDIN_PASSWORD" not in json.dumps(caller)
+    assert "OPENAI_API_KEY" not in json.dumps(publish_caller)
     assert "LINKEDIN_PASSWORD" not in json.dumps(workflow["generate"])
-    assert "OPENAI_API_KEY" not in json.dumps(workflow["publish"])
+    assert "OPENAI_API_KEY" not in json.dumps(publisher)
     generator = next(step for step in workflow["generate"]["steps"] if step.get("uses", "").startswith("openai/codex-action@"))
     assert generator["with"]["effort"] == "${{ steps.settings.outputs.effort }}"
 
