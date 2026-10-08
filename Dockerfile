@@ -1,7 +1,7 @@
 # Share the compiler pin with host builds; schema validation checks this line against the packaged toolchain manifest.
 FROM drpsychick/texlive-pdflatex@sha256:55b4bef7344394c0aafcd69b1796280f64b871ee2d2f2c3115e8f93ec9fea6ea AS texlive
 
-FROM python:3.13.16-slim-bookworm@sha256:a1165e272e578941b84abc79e4ab38a0305cd12803a5c4247979ac7655f4d641 AS runtime
+FROM python:3.14.7-slim-bookworm@sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56 AS runtime
 
 # The upstream TeX binaries use musl; Python wheels use Debian's glibc.
 RUN apt-get update \
