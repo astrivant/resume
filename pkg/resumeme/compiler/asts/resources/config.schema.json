@@ -132,7 +132,7 @@
           "minimum": 0,
           "maximum": 900,
           "default": 900,
-          "description": "Headless wait for LinkedIn app sign-in approval. Code-entry MFA and CAPTCHA fail immediately; zero disables waiting."
+          "description": "Headless wait for app approval and unknown checkpoints. Code-entry MFA and CAPTCHA fail immediately; zero disables waiting."
         },
         "max_scrolls": {
           "type": "integer",

@@ -39,24 +39,40 @@ jobs:
         env:
           REFRESH_PROFILE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) }}
         run: bash scripts/ci/source.sh
+  capture:
+    name: Refresh LinkedIn source
+    needs: source
+    if: >-
+      needs.source.outputs.refresh == 'true' &&
+      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+      (github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')))
+    runs-on: ${{ fromJSON(vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]') }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
       - uses: ./.github/actions/setup-project
-        if: steps.source.outputs.refresh == 'true'
         with:
           groups: main
 
       # Hosted Ubuntu includes Firefox and Chrome with their drivers; capture.browser selects one.
       # Only this step receives LinkedIn authentication secrets.
       - name: Refresh LinkedIn profile and downloaded media
-        if: steps.source.outputs.refresh == 'true'
+        uses: ./.github/actions/linkedin-session
+        with:
+          command: capture
+          private-key: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+          public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+          key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
+          cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}
         env:
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
-        run: poetry run resumeme capture --headless
       - name: Export complete capture for downstream stages
-        if: steps.source.outputs.refresh == 'true'
         run: poetry run python scripts/ci/profile-artifact.py export
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: steps.source.outputs.refresh == 'true'
         with:
           name: resumeme-profile
           path: .cache/refresh/
@@ -65,7 +81,11 @@ jobs:
           retention-days: 7
   summary-stage:
     name: Summarize
-    needs: source
+    needs: [source, capture]
+    if: >-
+      !cancelled() && needs.source.result == 'success' &&
+      ((needs.source.outputs.refresh == 'true' && needs.capture.result == 'success') ||
+      (needs.source.outputs.refresh != 'true' && needs.capture.result == 'skipped'))
     uses: ./.github/workflows/stage-summary.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -75,6 +95,7 @@ jobs:
   test-stage:
     name: Test
     needs: [source, summary-stage]
+    if: ${{ !cancelled() && needs.source.result == 'success' && needs.summary-stage.result == 'success' }}
     uses: ./.github/workflows/stage-test.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -83,6 +104,7 @@ jobs:
   build-stage:
     name: Build
     needs: [source, summary-stage]
+    if: ${{ !cancelled() && needs.source.result == 'success' && needs.summary-stage.result == 'success' }}
     uses: ./.github/workflows/stage-build.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -93,20 +115,26 @@ jobs:
   verified:
     name: CI verification
     if: always()
-    needs: [source, summary-stage, test-stage, build-stage]
+    needs: [source, capture, summary-stage, test-stage, build-stage]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Require all stages to succeed
         env:
           RESULTS_JSON: ${{ toJSON(needs) }}
-        run: jq -e 'all(.[]; .result == "success")' <<<"$RESULTS_JSON"
+        run: |
+          jq -e '
+            ([.source, .["summary-stage"], .["test-stage"], .["build-stage"]] | all(.result == "success")) and
+            (if .source.outputs.refresh == "true" then .capture.result == "success" else .capture.result == "skipped" end)
+          ' <<<"$RESULTS_JSON"
 
   # Coverage reporting is a leaf job, independent of PDF publication and required verification.
   coverage-badge:
     name: Publish coverage badge
     needs: [source, test-stage]
-    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    if: >-
+      !cancelled() && needs.source.result == 'success' && needs.test-stage.result == 'success' &&
+      github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -164,6 +192,7 @@ jobs:
     # Token-authenticated publication commits run normal CI, but their parent run already published these outputs.
     # Gate only republishing on a main push; tagging that generated commit must still capture and release normally.
     if: >-
+      !cancelled() && needs.source.result == 'success' && needs.verified.result == 'success' &&
       github.ref == 'refs/heads/main' && github.event_name != 'pull_request' &&
       !(github.event_name == 'push' &&
         github.event.head_commit.author.name == 'github-actions[bot]' &&
@@ -182,7 +211,9 @@ jobs:
   pages-stage:
     name: Publish resume website
     needs: deploy-stage
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.deploy-stage.outputs.published-sha != ''
+    if: >-
+      !cancelled() && needs.deploy-stage.result == 'success' &&
+      github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.deploy-stage.outputs.published-sha != ''
     uses: ./.github/workflows/stage-pages.yml
     permissions:
       contents: read
@@ -217,6 +248,9 @@ jobs:
     secrets:
       LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
       LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+      RESUMEME_CACHE_PRIVATE_KEY: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+      RESUMEME_CACHE_PUBLIC_KEY: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+      RESUMEME_CACHE_KEY_PASSWORD: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
 
   # Saved application resumes use the verified signed artifact in a separate, explicitly enabled tag job.
   linkedin-resume-stage:
@@ -229,6 +263,9 @@ jobs:
     secrets:
       LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
       LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+      RESUMEME_CACHE_PRIVATE_KEY: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+      RESUMEME_CACHE_PUBLIC_KEY: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+      RESUMEME_CACHE_KEY_PASSWORD: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
 
   # Skill proposals and optional additions run only after a signed tag release, independently of main's summary jobs.
   skills-stage:
@@ -243,6 +280,9 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
       LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+      RESUMEME_CACHE_PRIVATE_KEY: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+      RESUMEME_CACHE_PUBLIC_KEY: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+      RESUMEME_CACHE_KEY_PASSWORD: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
 
   # Version tags publish the verified Python distributions; the PyPI credential reaches only this stage.
   pypi-stage:

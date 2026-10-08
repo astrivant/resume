@@ -9,6 +9,7 @@
 - [GitHub contribution graph](#github-contribution-graph)
 - [Job text and subheadings](#job-text-and-subheadings)
 - [Environment variables](#environment-variables)
+- [Sensitive data handling](data-handling.md)
 - [Profile schema and skill clouds](profile-schema.md)
 - [Local capture](#local-capture)
 - [Rendering and PDF builds](#rendering-and-pdf-builds)
@@ -440,6 +441,13 @@ The following overrides are optional:
   before running `poetry run resumeme capture` to use another directory.
 - **`SE_AVOID_STATS`** - Selenium Manager statistics opt-out; defaults to `true`.
   Export `false` before capture to allow statistics collection.
+- **`RESUMEME_BROWSER_STATE_DIR`** - absolute browser-profile and diagnostic directory.
+  CI sets this to a private temporary directory through the encrypted-session wrapper.
+  This plaintext working directory must never be cached.
+- **`RESUMEME_SESSION_CACHE_DIR`** - optional absolute directory for encrypted session
+  envelopes outside the checkout on a dedicated runner. See [session caching](linkedin-session-cache.md).
+- **`RESUMEME_LINKEDIN_RUNNER`** - repository Actions variable containing JSON runner
+  labels; defaults to `["ubuntu-24.04"]`. It selects only LinkedIn browser jobs.
 - **`RESUMEME_TEX_BACKEND`** - PDF compiler backend: `docker` by default on the host,
   or `local` to invoke `pdflatex` directly. The published container sets `local`
   automatically for its bundled toolchain. Ordinary users need no override.
@@ -520,14 +528,20 @@ disables remote inspection, while prose URL discovery remains available. Inspect
 failures produce the same incomplete-capture diagnostics as media failures and
 leave the accepted snapshot unchanged unless explicitly accepted.
 
-The requests session never receives browser cookies or credentials. Browser cookies remain in that local profile for retries and are never exported to the
-snapshot, build artifacts, or CI. Diagnostics stay ignored under `.cache/capture/`.
-The collected text is saved there before media downloads start, so an interrupted
-download retains a diagnostic snapshot marked incomplete.
+The requests session does not receive the browser's LinkedIn cookies or login
+credentials. Ordinary local capture retains its unencrypted browser profile for
+retries and plaintext diagnostics under ignored `.cache/capture/`. The collected
+text is saved before media downloads start so an interrupted download retains an
+incomplete diagnostic snapshot. CI uses the [session wrapper](linkedin-session-cache.md)
+to place browser state in temporary storage and optionally reuse an encrypted
+profile archive; browser files are not part of the capture artifact.
 
-Review the captured snapshot and assets before committing them. These files contain
-the profile information and media that will appear in the public résumé. They do
-not include the browser login, private messages, contacts, or profile-view analytics.
+Review the entire snapshot and referenced assets before committing them. They
+include captured fields hidden from the PDF by section, job, school, photo, and
+contact display settings. They exclude browser credentials, private messages,
+the connections address book, and profile-view analytics, but can include the
+owner's email, birthday, and other Contact info fields. Refresh publication
+commits the full accepted snapshot. See [storage, disclosure, and cleanup](data-handling.md).
 
 If attaching to a Firefox instance you deliberately opened with Marionette, use
 `resumeme capture --connect-port PORT`. The command owns that automation session and

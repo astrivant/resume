@@ -14,7 +14,7 @@ from jsonschema import ValidationError
 from resumeme.config import Capture, load_config
 from resumeme.exceptions import BrowserError
 from resumeme.linkedin.browser import _headless_login_ready, _login
-from resumeme.linkedin.challenges import login_challenge
+from resumeme.linkedin.challenges import login_challenge, observe_challenge
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -121,7 +121,8 @@ def test_challenge_classification_uses_visible_evidence(html: str, expected: str
 
 
 @pytest.mark.parametrize("phase", ["form", "entry", "submitted"])
-def test_login_resumes_after_app_approval(monkeypatch: MonkeyPatch, capsys: CaptureFixture[str], phase: str) -> None:
+@pytest.mark.parametrize("prompt", ["Check your LinkedIn app", "Security verification"])
+def test_login_resumes_after_app_approval(monkeypatch: MonkeyPatch, capsys: CaptureFixture[str], phase: str, prompt: str) -> None:
     """
     Extend only app approval beyond page timeouts and continue the original session without resubmission.
 
@@ -129,6 +130,7 @@ def test_login_resumes_after_app_approval(monkeypatch: MonkeyPatch, capsys: Capt
         monkeypatch (MonkeyPatch): Supplies credentials and a deterministic approval clock.
         capsys (CaptureFixture[str]): Captures the user action prompt, which must appear at default verbosity.
         phase (str): Login boundary at which the app approval prompt appears.
+        prompt (str): Recognized approval wording or an unknown checkpoint heading.
 
     Returns:
         None: Authentication resumes after approval with at most one credential submission.
@@ -136,7 +138,7 @@ def test_login_resumes_after_app_approval(monkeypatch: MonkeyPatch, capsys: Capt
     now, delays = _clock(monkeypatch)
     monkeypatch.setenv("LINKEDIN_USERNAME", "example@example.org")
     monkeypatch.setenv("LINKEDIN_PASSWORD", "synthetic-password")
-    driver = _driver("<h1>Check your LinkedIn app</h1>")
+    driver = _driver(f"<h1>{prompt}</h1>")
     driver.current_url = "https://www.linkedin.com/login"
     username, password, submit = MagicMock(), MagicMock(), MagicMock()
     monkeypatch.setattr("resumeme.linkedin.browser._wait_for_login", MagicMock(side_effect=AssertionError("Interactive wait")))
@@ -210,7 +212,7 @@ def test_approval_wait_has_one_bounded_deadline(monkeypatch: MonkeyPatch, second
     now, delays = _clock(monkeypatch)
     driver = _driver("<h1>Check your LinkedIn app</h1>")
 
-    with pytest.raises(BrowserError, match=f"app approval was not completed within {seconds} seconds"):
+    with pytest.raises(BrowserError, match=f"sign-in approval was not completed within {seconds} seconds"):
         _headless_login_ready(driver, Capture(app_approval_timeout_seconds=seconds))
 
     assert seconds <= now[0] <= seconds + 1
@@ -245,8 +247,8 @@ def test_unsupported_challenge_fails_on_first_observation(monkeypatch: MonkeyPat
     driver = _driver(html)
 
     if during_wait:
-        classification = MagicMock(side_effect=["approval", login_challenge(driver)])
-        monkeypatch.setattr("resumeme.linkedin.browser.login_challenge", classification)
+        classification = MagicMock(side_effect=[observe_challenge(_driver("Check your LinkedIn app")), observe_challenge(driver)])
+        monkeypatch.setattr("resumeme.linkedin.browser.observe_challenge", classification)
 
     with pytest.raises(BrowserError, match=message):
         _headless_login_ready(driver, Capture())
@@ -255,20 +257,27 @@ def test_unsupported_challenge_fails_on_first_observation(monkeypatch: MonkeyPat
     driver.get.assert_not_called()
 
 
-def test_unknown_checkpoint_does_not_start_approval_wait(monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]) -> None:
+def test_unknown_checkpoint_uses_bounded_approval_wait(monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]) -> None:
     """
-    Keep an unrecognized checkpoint within the existing page timeout rather than granting an approval window.
+    Allow unknown checkpoint wording the full bounded approval window and report only safe diagnostics.
 
     Args:
         monkeypatch (MonkeyPatch): Records any attempted polling sleeps.
         capsys (CaptureFixture[str]): Captures action notices.
 
     Returns:
-        None: Unknown evidence requests another ordinary page observation without a 15-minute wait.
+        None: The fallback waits for one bounded window and never emits raw prompt contents or tokens.
     """
-    _, delays = _clock(monkeypatch)
-    assert _headless_login_ready(_driver("<h1>Security verification</h1>"), Capture()) is False
-    assert delays == [] and capsys.readouterr().out == ""
+    now, delays = _clock(monkeypatch)
+    driver = _driver("<h1>Security verification for private@example.org</h1><iframe src=private-token></iframe>")
+
+    with pytest.raises(BrowserError, match="within 900 seconds.*kind=unknown") as error:
+        _headless_login_ready(driver, Capture())
+
+    output = capsys.readouterr().out + str(error.value)
+    assert 900 <= now[0] <= 901 and delays
+    assert "unrecognized checkpoint" in output and "visible_frames=1" in output
+    assert "private@example.org" not in output and "private-token" not in output
 
 
 @pytest.mark.parametrize("value", [None, 0, 900, -1, 901, True])

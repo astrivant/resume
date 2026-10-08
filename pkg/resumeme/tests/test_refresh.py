@@ -4,6 +4,7 @@ Verify complete capture handoff and refresh event boundaries without LinkedIn or
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -172,8 +173,12 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     }
     source = pipeline["jobs"]["source"]
     assert source["outputs"]["refresh"] == "${{ steps.source.outputs.refresh }}"
-    capture = next(step for step in source["steps"] if step.get("run") == "poetry run resumeme capture --headless")
-    assert capture["if"] == "steps.source.outputs.refresh == 'true'"
+    capture_job = pipeline["jobs"]["capture"]
+    assert "needs.source.outputs.refresh == 'true'" in capture_job["if"]
+    assert "github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')" in capture_job["if"]
+    capture = next(step for step in capture_job["steps"] if step.get("uses") == "./.github/actions/linkedin-session")
+    assert capture["with"]["command"] == "capture"
+    assert "capture" in pipeline["jobs"]["summary-stage"]["needs"]
     assert "continue-on-error" not in source and "continue-on-error" not in capture
 
     # A fresh capture must reach every job that reads profile evidence, including optional tag-only skill publication.
@@ -213,3 +218,51 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
         if step.get("uses", "").startswith("actions/upload-artifact@") and step.get("with", {}).get("name") == "resume-pdf"
     )
     assert build_upload["with"]["path"] == ".cache/publication/"
+
+
+@pytest.mark.parametrize(
+    ("refresh", "capture", "build", "accepted"),
+    [
+        (False, "skipped", "success", True),
+        (True, "success", "success", True),
+        (True, "skipped", "success", False),
+        (True, "failure", "success", False),
+        (True, "cancelled", "success", False),
+        (False, "skipped", "failure", False),
+        (True, "success", "skipped", False),
+    ],
+)
+def test_verification_gate_requires_requested_capture_and_successful_build(refresh: bool, capture: str, build: str, accepted: bool) -> None:
+    """
+    Execute the real verification gate for fresh captures and ordinary saved-profile builds.
+
+    Args:
+        refresh (bool): Whether this event requires a fresh LinkedIn capture.
+        capture (str): Capture job result supplied by Actions.
+        build (str): PDF build job result supplied by Actions.
+        accepted (bool): Whether publication is allowed for this combination.
+
+    Returns:
+        None: Failed or skipped required work blocks publication, while an intentionally omitted capture does not.
+    """
+    workflow = Path(__file__).resolve().parents[3] / ".github/workflows/ci.yml"
+    jobs = yaml.safe_load(workflow.read_text())["jobs"]
+    results = {
+        "source": {"result": "success", "outputs": {"refresh": str(refresh).lower()}},
+        "capture": {"result": capture},
+        "summary-stage": {"result": "success"},
+        "test-stage": {"result": "success"},
+        "build-stage": {"result": build},
+    }
+    result = subprocess.run(
+        ["bash", "-c", jobs["verified"]["steps"][0]["run"]],
+        env=dict(os.environ, RESULTS_JSON=json.dumps(results)),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert (result.returncode == 0) is accepted, result.stdout + result.stderr
+
+    # Explicit status checks let branch publication proceed past the intentionally skipped capture ancestor.
+    for stage in ("summary-stage", "test-stage", "build-stage", "coverage-badge", "deploy-stage", "pages-stage"):
+        assert "!cancelled()" in jobs[stage]["if"]

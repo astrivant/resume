@@ -33,6 +33,8 @@ codex:
 
 Generation uses `codex.model`, `codex.reasoning_effort`, and the existing `OPENAI_API_KEY`
 repository secret. See [model choices and API key setup](codex.md#model-selection).
+Prepared evidence, model output, and supporting quotes can contain personal data;
+see [AI processing and artifact retention](data-handling.md#optional-ai-processing).
 Publication also needs `LINKEDIN_USERNAME` (login email/phone) and `LINKEDIN_PASSWORD`, using the
 configured Firefox or Chrome browser. Neither feature runs on branch pushes,
 pull requests, monthly refreshes, or manual branch workflows. Ordinary résumé

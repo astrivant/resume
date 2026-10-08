@@ -116,13 +116,15 @@ def test_detail_tabs_exclude_unrelated_forms() -> None:
     browser.find_element.assert_not_called()
 
 
-def test_headless_launch_uses_native_firefox_without_opening_a_window(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+@pytest.mark.parametrize("managed", [False, True])
+def test_headless_launch_uses_native_firefox_without_opening_a_window(tmp_path: Path, monkeypatch: MonkeyPatch, managed: bool) -> None:
     """
     Keep unattended launch independent from the interactive macOS application launcher.
 
     Args:
         tmp_path (Path): Temporary browser profile directory.
         monkeypatch (MonkeyPatch): Browser and platform substitutions.
+        managed (bool): Whether CI owns an isolated temporary browser directory.
 
     Returns:
         None: Selenium receives headless options and owns cleanup without opening a desktop window.
@@ -133,17 +135,31 @@ def test_headless_launch_uses_native_firefox_without_opening_a_window(tmp_path: 
     factory = MagicMock()
     monkeypatch.setattr("resumeme.linkedin.browser.webdriver.Firefox", factory)
     monkeypatch.setattr("resumeme.linkedin.browser.Service", MagicMock())
+    state = tmp_path / "temporary-session" if managed else tmp_path / ".cache"
+
+    if managed:
+        monkeypatch.setenv("RESUMEME_BROWSER_STATE_DIR", str(state))
 
     with _firefox(tmp_path, None, headless=True):
         options = factory.call_args.kwargs["options"]
         assert "-headless" in options.arguments
         assert "-profile" in options.arguments
+        assert options.arguments[options.arguments.index("-profile") + 1] == str(state / "firefox")
+
+    assert (state / "capture").is_dir()
+
+    if managed:
+        assert not (tmp_path / ".cache/firefox").exists()
+        assert not (tmp_path / ".cache/capture").exists()
 
     launcher.assert_not_called()
 
 
 @pytest.mark.parametrize("headless", [False, True])
-def test_chrome_uses_its_own_persistent_profile_and_closes_on_failure(tmp_path: Path, monkeypatch: MonkeyPatch, headless: bool) -> None:
+@pytest.mark.parametrize("managed", [False, True])
+def test_chrome_uses_its_own_persistent_profile_and_closes_on_failure(
+    tmp_path: Path, monkeypatch: MonkeyPatch, headless: bool, managed: bool
+) -> None:
     """
     Launch the configured Chrome with the same private profile across interactive and unattended retries.
 
@@ -151,6 +167,7 @@ def test_chrome_uses_its_own_persistent_profile_and_closes_on_failure(tmp_path: 
         tmp_path (Path): Temporary browser profile directory.
         monkeypatch (MonkeyPatch): Browser driver substitutions.
         headless (bool): Whether the configured Chrome should open without a desktop window.
+        managed (bool): Whether CI owns an isolated temporary browser directory.
 
     Returns:
         None: Chrome receives the expected options, retains login state, and releases the driver after an error.
@@ -163,13 +180,17 @@ def test_chrome_uses_its_own_persistent_profile_and_closes_on_failure(tmp_path: 
     monkeypatch.setattr("resumeme.linkedin.browser._firefox", firefox)
     service = MagicMock()
     monkeypatch.setattr("resumeme.linkedin.browser.ChromeService", service)
+    state = tmp_path / "temporary-session" if managed else tmp_path / ".cache"
+
+    if managed:
+        monkeypatch.setenv("RESUMEME_BROWSER_STATE_DIR", str(state))
 
     with pytest.raises(TimeoutException):
         with _browser(tmp_path, Capture(browser="chrome"), headless=headless) as captured:
             assert captured is driver
             raise TimeoutException("Synthetic page timeout")
 
-    profile = tmp_path / ".cache/chrome"
+    profile = state / "chrome"
     options = factory.call_args.kwargs["options"]
     assert f"--user-data-dir={profile.resolve()}" in options.arguments
     assert ("--headless=new" in options.arguments) is headless
@@ -177,9 +198,13 @@ def test_chrome_uses_its_own_persistent_profile_and_closes_on_failure(tmp_path: 
     assert profile.is_dir()
     assert profile.stat().st_mode & 0o777 == 0o700
     assert not (tmp_path / ".cache/firefox").exists()
-    service.assert_called_once_with(log_output=str(tmp_path / ".cache/capture/chrome.log"))
+    service.assert_called_once_with(log_output=str(state / "capture/chrome.log"))
     driver.__exit__.assert_called_once()
     firefox.assert_not_called()
+
+    if managed:
+        assert not (tmp_path / ".cache/chrome").exists()
+        assert not (tmp_path / ".cache/capture").exists()
 
 
 def test_default_browser_preserves_firefox_attachment(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
@@ -224,8 +249,9 @@ def test_chrome_rejects_firefox_attachment_before_launch(tmp_path: Path, monkeyp
 
 
 @pytest.mark.parametrize("browser", ["firefox", "chrome"])
+@pytest.mark.parametrize("managed", [False, True])
 def test_capture_uses_configured_browser_and_shared_login(
-    tmp_path: Path, monkeypatch: MonkeyPatch, browser: Literal["firefox", "chrome"]
+    tmp_path: Path, monkeypatch: MonkeyPatch, browser: Literal["firefox", "chrome"], managed: bool
 ) -> None:
     """
     Apply browser selection at the capture boundary while retaining the shared expansion and login pipeline.
@@ -234,11 +260,17 @@ def test_capture_uses_configured_browser_and_shared_login(
         tmp_path (Path): Isolated diagnostics and snapshot directory.
         monkeypatch (MonkeyPatch): Browser, expansion, and media boundaries.
         browser (Literal["firefox", "chrome"]): Configured Selenium implementation.
+        managed (bool): Whether CI redirects all raw diagnostics into temporary browser storage.
 
     Returns:
         None: Both browser choices reach the same login and profile capture with configured timeouts.
     """
-    (tmp_path / ".cache/capture").mkdir(parents=True)
+    state = tmp_path / "temporary-session" if managed else tmp_path / ".cache"
+    (state / "capture").mkdir(parents=True)
+
+    if managed:
+        monkeypatch.setenv("RESUMEME_BROWSER_STATE_DIR", str(state))
+
     session = MagicMock()
     driver = session.return_value.__enter__.return_value
     driver.current_url = "https://www.linkedin.com/in/example-person/"
@@ -254,6 +286,11 @@ def test_capture_uses_configured_browser_and_shared_login(
     driver.set_page_load_timeout.assert_called_once_with(config.capture.page_timeout_seconds)
     login.assert_called_once_with(driver, config.capture, headless=False)
     assert media.call_args.args[0].name == "Alex"
+    assert "Alex" in (state / "capture/profile.html").read_text()
+    assert "Alex" in (state / "capture/profile.json").read_text()
+
+    if managed:
+        assert not (tmp_path / ".cache/capture").exists()
 
 
 @pytest.mark.parametrize("setting", ["", "firefox", "chrome", "safari", "Chrome", "null"])

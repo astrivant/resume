@@ -481,14 +481,14 @@ def test_challenge_before_login_form_stops_retries(monkeypatch: MonkeyPatch, hea
     monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
 
     if headless:
-        with pytest.raises(BrowserError, match=f"LinkedIn blocked unattended sign-in.*page state: {state}") as error:
-            _login(driver, Capture(page_timeout_seconds=0), headless=headless)
+        with pytest.raises(BrowserError, match="LinkedIn sign-in approval was not completed within 0 seconds") as error:
+            _login(driver, Capture(page_timeout_seconds=0, app_approval_timeout_seconds=0), headless=headless)
 
-        assert "No credentials were submitted" in str(error.value)
+        assert "kind=unknown" in str(error.value)
         assert "private-token" not in str(error.value)
         interactive.assert_not_called()
     else:
-        _login(driver, Capture(page_timeout_seconds=0), headless=headless)
+        _login(driver, Capture(page_timeout_seconds=0, app_approval_timeout_seconds=0), headless=headless)
         interactive.assert_called_once_with(driver)
 
     sleep.assert_not_called()
@@ -536,14 +536,13 @@ def test_headless_verification_reports_external_block(monkeypatch: MonkeyPatch, 
     else:
         password.send_keys.side_effect = block
 
-    with pytest.raises(BrowserError, match=f"LinkedIn blocked unattended sign-in.*page state: {state}") as error:
-        _login(driver, Capture(page_timeout_seconds=0), headless=True)
+    with pytest.raises(BrowserError, match="LinkedIn sign-in approval was not completed within 0 seconds") as error:
+        _login(driver, Capture(page_timeout_seconds=0, app_approval_timeout_seconds=0), headless=True)
 
     message = str(error.value)
-    assert "interactive verification that this headless run cannot complete" in message
-    assert "Signing in locally does not authenticate the CI runner" in message
+    assert "kind=unknown" in message
+    assert "readable=false" in message
     assert "No profile changes were submitted" in message
-    assert ("No credentials were submitted" in message) is not submitted
     assert all(
         value not in message for value in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD", "test@example.org", "synthetic-password", "private-")
     )

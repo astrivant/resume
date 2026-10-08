@@ -125,6 +125,10 @@ Command results remain on stdout alongside enabled logs: output paths, validatio
 status, and explicit dry-run text are not log records. Argument parser usage errors
 remain on stderr. Application failures are structured `ERROR` records on stdout.
 Local browser-driver and compiler diagnostic files remain separate from this log stream.
+Those files, plain command output, and third-party action logs are not covered by
+the application's redaction filter. URL paths and ordinary profile text can still
+identify people. See [logging disclosure limits](data-handling.md#logs-and-debugging)
+before sharing debug output.
 
 Library callers can opt into the same exporter with
 `resumeme.telemetry.logging_context(level="DEBUG")`; importing the package does

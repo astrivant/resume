@@ -27,6 +27,11 @@ deployment retries preserve it. Only the marked logo and date-badge regions are 
 project READMEs; surrounding documentation is retained.
 The logo is README branding; it does not add stains to the résumé PDF.
 
+Before enabling refreshes, review [sensitive data handling](data-handling.md).
+The full capture can contain contact fields and sections excluded from the PDF.
+It crosses jobs as an ordinary artifact and is committed on a main refresh.
+Encrypted session reuse protects the browser archive, not those publications.
+
 ## Configure a fork
 
 Copy [resumeme.config.ref.yaml](../resumeme.config.ref.yaml) to `resumeme.config.yaml`,
@@ -58,6 +63,10 @@ gh secret set LINKEDIN_PASSWORD
   signed tag release, not for monthly refreshes. The private-key secret contains
   the entire Cosign PEM, including its header, footer, and newlines; the password
   is required only for encrypted keys.
+- `RESUMEME_CACHE_PRIVATE_KEY`, `RESUMEME_CACHE_PUBLIC_KEY`, and `RESUMEME_CACHE_KEY_PASSWORD`:
+  optional encrypted session reuse. The [setup script](linkedin-session-cache.md#setup)
+  generates the dedicated PEM pair and uploads all three secrets. Without them,
+  jobs retain no browser-session cache.
 - `GH_TOKEN` / `GITHUB_TOKEN`: supplied by Actions; no personal access token is
   needed for unprotected branches. The workflow uses `contents: write` for generated
   commits and releases,
@@ -87,10 +96,13 @@ for profile selection; login secrets do not silently switch the captured owner.
 Public profile identifiers cannot reveal the account's private login email.
 
 The runner uses headless Firefox or Chrome, selected by `capture.browser` with
-Firefox as the default. Browser state and diagnostics stay in its
-temporary workspace; only the profile and referenced downloaded media are
-transferred to downstream jobs. No browser cookies or passwords enter commits
-or uploaded capture artifacts.
+Firefox as the default. The session wrapper places browser state and raw browser
+diagnostics in a temporary directory and optionally caches the browser profile
+as ciphertext. The capture artifact allowlist transfers the accepted snapshot
+and its referenced media, not browser-profile files or login variables. Other
+steps have their own artifacts and plaintext workspace files. See the
+[artifact inventory and retention periods](data-handling.md#ci-artifacts-commits-and-public-output)
+and [cleanup limits](data-handling.md#encrypted-browser-sessions-in-ci).
 
 ## Personal README
 
@@ -193,12 +205,14 @@ the command prints a notice to open the LinkedIn app and tap **Yes, it's me**.
 `0` to disable waiting, and is capped at `900`. The same browser session remains
 open, and capture resumes once LinkedIn redirects it to an authenticated page.
 The wait has one deadline and does not resubmit credentials or resend notifications.
+Unrecognized or temporarily unreadable checkpoints receive the same bounded window.
 
 Code-entry MFA, CAPTCHA, and denied or expired approvals fail as soon as they are
-detected, including during the approval wait. Only recognized app-approval prompts
-receive the longer wait; unknown checkpoint pages retain the ordinary page timeout
-and report `LinkedIn blocked unattended sign-in`. Detection uses visible controls
-and English prompt text, matching the browser's configured language. These errors
+detected, including during the approval wait. Timeout errors identify the last
+classification, a fixed detector name, whether the page was readable, and counts
+of visible inputs and frames. Diagnostics contain no page text, field values,
+account identifiers, cookies, or URL tokens. Detection uses visible controls and
+English prompt text, matching the browser's configured language. These errors
 do not indicate missing login secrets. Signing in in a separate local browser does
 not authenticate the CI runner; approving that runner's request in the app does.
 Local capture keeps its unlimited interactive wait:
@@ -214,6 +228,11 @@ them as the problem. Accounts that consistently require interaction can use this
 branch builds. Tag releases now require a successful headless capture; committing
 a local snapshot does not bypass that requirement. Unattended authentication is
 not guaranteed from a hosted runner.
+
+For session reuse, configure the [encrypted browser cache](linkedin-session-cache.md).
+Only ciphertext is saved to Actions cache or optional persistent runner storage.
+The capture job can use a dedicated runner without moving tests, model calls,
+PDF builds, or pull-request checks off GitHub-hosted machines.
 
 For a failed About, skills, or saved resume publication, run the corresponding
 `publish-ownership`, `publish-skills`, or `publish-resume` command locally without

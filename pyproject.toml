@@ -1,13 +1,29 @@
 [project]
 name = "resumeme"
-version = "0.1.0"
+version = "0.2.0"
 description = "Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
 authors = [{name = "Emma Doyle"}]
 readme = "README.md"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
 requires-python = ">=3.13,<4.0"
-classifiers = ["Programming Language :: Python :: 3 :: Only", "Typing :: Typed"]
+keywords = ["resume", "cv", "linkedin", "latex", "pdf", "github-actions", "automation", "cosign"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Text Processing :: General",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+    "Typing :: Typed",
+]
+
 # Allow patch releases within the verified major/minor lines; poetry.lock pins the installed versions.
 dependencies = [
     "requests>=2.34.2,<2.35",
@@ -24,15 +40,17 @@ dependencies = [
     "pypdf>=6.19.0,<6.20",
     "opentelemetry-sdk>=1.45.1,<1.46",
     "opentelemetry-instrumentation-logging>=0.66b1,<0.67",
+    "cryptography>=50.0.2,<50.1",
 ]
 
 [project.scripts]
 resumeme = "resumeme.cli:main"
 
 [project.urls]
-Repository = "https://github.com/astrivant/resume"
-Documentation = "https://github.com/astrivant/resume/blob/main/docs/README.md"
-Issues = "https://github.com/astrivant/resume/issues"
+Repository = "https://github.com/astrivant/resumeme"
+Documentation = "https://github.com/astrivant/resumeme/blob/main/docs/README.md"
+Issues = "https://github.com/astrivant/resumeme/issues"
+Changelog = "https://github.com/astrivant/resumeme/releases"
 
 [tool.poetry]
 packages = [{include = "resumeme", from = "pkg"}]

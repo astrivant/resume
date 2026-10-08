@@ -17,6 +17,12 @@ on:
         required: false
       LINKEDIN_PASSWORD:
         required: false
+      RESUMEME_CACHE_PRIVATE_KEY:
+        required: false
+      RESUMEME_CACHE_PUBLIC_KEY:
+        required: false
+      RESUMEME_CACHE_KEY_PASSWORD:
+        required: false
 permissions:
   contents: read
 defaults:
@@ -81,7 +87,7 @@ jobs:
     name: Add missing skills to LinkedIn
     needs: generate
     if: needs.generate.outputs.publish == 'true' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-24.04
+    runs-on: ${{ fromJSON(vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]') }}
     timeout-minutes: 30
 
     # Share the existing profile-write lock with the About updater, including across different tagged releases.
@@ -122,4 +128,10 @@ jobs:
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: poetry run resumeme publish-skills --headless --tag "$RELEASE_TAG" --suggestions .cache/codex/skills/skills.json
+        uses: ./.github/actions/linkedin-session
+        with:
+          command: publish-skills
+          private-key: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+          public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+          key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
+          cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}

@@ -128,8 +128,10 @@ Before your first push, enable Actions in your fork, allow it to write repositor
 contents, and configure the [fork environment variables](#fork-environment-variables).
 Branch rules must allow the bot's PDF commit. This setup is required once per fork.
 
-Review `data/profile.json` and `data/assets/`, including the contact fields that will
-appear in the PDF, then publish:
+Review all of `data/profile.json` and `data/assets/`, including contact fields and
+sections hidden in the PDF. Display filters do not redact these published inputs.
+Read [sensitive data handling](docs/data-handling.md) before enabling automation,
+then publish:
 
 ```bash
 git add resumeme.config.yaml data/profile.json data/assets/
@@ -174,8 +176,9 @@ See the [CLI reference](docs/CLI.md) for commands and options.
 ## How it works
 
 The Python package captures your profile through local Firefox or Chrome and uses `requests`
-to cache images and project previews. Your browser login stays in the ignored local
-profile. The portable inputs are `data/profile.json` and `data/assets/`.
+to cache images and project previews. Ordinary local capture retains an ignored,
+unencrypted browser profile; CI can reuse an [encrypted session cache](docs/linkedin-session-cache.md).
+The portable inputs are `data/profile.json` and `data/assets/`.
 
 Jinja translates those inputs and your YAML configuration into `tex/resume.tex`.
 The digest-pinned `drpsychick/texlive-pdflatex` image compiles the PDF. CI installs
@@ -417,6 +420,11 @@ features you use. GitHub supplies the publication token:
 - **`COSIGN_PASSWORD` - required for an encrypted signing key.** Set this to that
   key's password. Leave it unset for an unencrypted key; the signing script defaults
   to an empty password.
+- **`RESUMEME_CACHE_PRIVATE_KEY`, `RESUMEME_CACHE_PUBLIC_KEY`, and `RESUMEME_CACHE_KEY_PASSWORD` - optional encrypted browser-session reuse.**
+  Generate these dedicated PEM keys with the [cache setup script](#configure-encrypted-session-cache).
+  CI caches the browser profile as ciphertext and decrypts it into temporary storage.
+  This does not encrypt profile snapshots, prompts, PDFs, or ordinary artifacts;
+  see [encryption and cleanup limits](docs/data-handling.md#encrypted-browser-sessions-in-ci).
 - **`GH_TOKEN` / `GITHUB_TOKEN` - supplied automatically; no secret to create.**
   Actions generates the repository token, and the deploy workflow passes it to the
   GitHub CLI as `GH_TOKEN`. It uses `contents: write` to commit `resume.pdf` and
@@ -447,6 +455,16 @@ The script creates an encrypted signing key, retains a local backup, and sets
 add `--key-dir /path/to/backup`. See [signing setup and recovery](docs/README.md#signed-releases)
 for prerequisites, key storage, and verification.
 
+#### Configure encrypted session cache
+
+With OpenSSH (`ssh-keygen`), OpenSSL, and an authenticated GitHub CLI installed, run
+`bash scripts/ci/setup-session-cache.sh --repo YOUR-USERNAME/YOUR-FORK`.
+
+The script generates a dedicated RSA PEM pair, saves an encrypted local backup,
+and uploads the three cache secrets to your fork. Use `--key-dir /path/to/backup`
+to reuse an existing identity. Then run a manual refresh on `main` to seed the
+encrypted cache future tags can restore. See [encrypted sessions and dedicated runners](docs/linkedin-session-cache.md).
+
 #### LinkedIn authentication
 
 Set the public profile username or LinkedIn `/in/` URL under `linkedin.username` in `resumeme.config.yaml`.
@@ -466,5 +484,5 @@ interaction. See [automation setup and recovery](docs/automation.md).
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
 - [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR and Docker Hub.
 - [Development](docs/development.md): setup, parallel tests, tooling, and document checks.
-- [Security policy](SECURITY.md): supported versions, vulnerability reporting, and coordinated disclosure.
+- [Security policy](SECURITY.md) and [sensitive data handling](docs/data-handling.md): reporting, storage, recipients, retention, encryption limits, and fork responsibilities.
 - [Studies](studies/README.md): design assessments, including the proposed automated job application workflow.

@@ -25,6 +25,7 @@ from resumeme.exceptions.domain import (
     ProfileError,
     PublicationError,
     RenderingError,
+    SessionCacheError,
     SigningError,
     SummaryError,
 )
@@ -44,6 +45,7 @@ __all__ = [
     "PublicationError",
     "RenderingError",
     "ResumemeError",
+    "SessionCacheError",
     "SigningError",
     "SummaryError",
 ]

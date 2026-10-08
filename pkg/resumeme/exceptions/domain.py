@@ -14,6 +14,7 @@ __all__ = [
     "ProfileError",
     "PublicationError",
     "RenderingError",
+    "SessionCacheError",
     "SigningError",
     "SummaryError",
 ]
@@ -58,6 +59,12 @@ class PublicationError(ResumemeError, ValueError):
 class RenderingError(ResumemeError, ValueError):
     """
     Reject inputs that cannot produce the requested graphic or PDF presentation.
+    """
+
+
+class SessionCacheError(ResumemeError, ValueError):
+    """
+    Reject invalid cache keys, unauthenticated ciphertext, or unsafe browser-state archives.
     """
 
 

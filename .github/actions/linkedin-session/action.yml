@@ -1,0 +1,56 @@
+name: LinkedIn session
+description: Restore encrypted browser state, execute one LinkedIn command, and cache only authenticated ciphertext
+inputs:
+  command:
+    description: capture, publish-ownership, publish-resume, or publish-skills
+    required: true
+  private-key:
+    description: Dedicated RSA private PEM supplied from an Actions secret
+    default: ''
+  public-key:
+    description: Matching public PEM supplied from an Actions secret
+    default: ''
+  key-password:
+    description: Password for the private PEM
+    default: ''
+  cache-directory:
+    description: Optional persistent ciphertext directory outside the checkout on a dedicated runner
+    default: ''
+runs:
+  using: composite
+  steps:
+    - id: prepare
+      shell: bash
+      env:
+        RESUMEME_CACHE_PRIVATE_KEY: ${{ inputs.private-key }}
+        RESUMEME_CACHE_PUBLIC_KEY: ${{ inputs.public-key }}
+        RESUMEME_CACHE_KEY_PASSWORD: ${{ inputs.key-password }}
+        RESUMEME_SESSION_CACHE_DIR: ${{ inputs.cache-directory }}
+      run: poetry run python scripts/ci/linkedin-session.py prepare
+    - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      if: steps.prepare.outputs.enabled == 'true'
+      with:
+        path: ${{ steps.prepare.outputs.cache-path }}
+        key: ${{ steps.prepare.outputs.cache-key }}
+        restore-keys: ${{ steps.prepare.outputs.cache-prefix }}
+
+    # The wrapper owns decryption, browser lifetime, authenticated encryption, and finally cleanup.
+    - id: session
+      shell: bash
+      env:
+        SESSION_COMMAND: ${{ inputs.command }}
+        RESUMEME_CACHE_PRIVATE_KEY: ${{ inputs.private-key }}
+        RESUMEME_CACHE_PUBLIC_KEY: ${{ inputs.public-key }}
+        RESUMEME_CACHE_KEY_PASSWORD: ${{ inputs.key-password }}
+        RESUMEME_SESSION_CACHE_DIR: ${{ inputs.cache-directory }}
+      run: poetry run python scripts/ci/linkedin-session.py run --command "$SESSION_COMMAND"
+    - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      if: always() && steps.session.outputs.cache-ready == 'true'
+      with:
+        path: ${{ steps.prepare.outputs.cache-path }}
+        key: ${{ steps.prepare.outputs.cache-key }}
+
+    # Also clean after cancellation, cache upload failure, or an interrupted subprocess.
+    - if: always()
+      shell: bash
+      run: poetry run python scripts/ci/linkedin-session.py clean

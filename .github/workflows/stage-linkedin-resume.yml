@@ -11,6 +11,12 @@ on:
         required: false
       LINKEDIN_PASSWORD:
         required: false
+      RESUMEME_CACHE_PRIVATE_KEY:
+        required: false
+      RESUMEME_CACHE_PUBLIC_KEY:
+        required: false
+      RESUMEME_CACHE_KEY_PASSWORD:
+        required: false
 permissions:
   contents: read
 defaults:
@@ -20,7 +26,7 @@ jobs:
   resume:
     name: Upload the released application resume
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-24.04
+    runs-on: ${{ fromJSON(vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]') }}
     timeout-minutes: 30
     concurrency:
       group: resumeme-linkedin-resume-${{ github.repository }}
@@ -68,4 +74,10 @@ jobs:
         env:
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
-        run: poetry run resumeme publish-resume --headless --pdf .cache/publication/resume.pdf
+        uses: ./.github/actions/linkedin-session
+        with:
+          command: publish-resume
+          private-key: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+          public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+          key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
+          cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}

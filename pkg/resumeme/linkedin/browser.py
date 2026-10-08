@@ -14,6 +14,7 @@ import webbrowser
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from functools import partial
+from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
@@ -30,7 +31,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile
 from resumeme.compiler.asts.profile import save_profile
 from resumeme.exceptions import BrowserElementError, BrowserError, BrowserLaunchError, BrowserTimeoutError, BrowserWindowError
-from resumeme.linkedin.challenges import login_challenge
+from resumeme.linkedin.challenges import observe_challenge
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry
@@ -38,7 +39,6 @@ from resumeme.telemetry import safe_log_url
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
-    from pathlib import Path
     from typing import Literal
 
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
     from resumeme.compiler.asts.profile import Entry, Profile, Section
     from resumeme.config import Capture, Config
-    from resumeme.linkedin.challenges import LoginChallenge
+    from resumeme.linkedin.challenges import ChallengeObservation
 
 __all__ = ["capture_profile"]
 _LOGGER = logging.getLogger(__name__)
@@ -73,6 +73,32 @@ if (arguments[0] === 'top') target.scrollTop = 0;
 else target.scrollTop += Math.max(target.clientHeight * 0.8, 600);
 return target.scrollTop + target.clientHeight >= target.scrollHeight - 5;
 """
+
+
+def _state_root(root: Path) -> Path:
+    """
+    Locate private browser files in the current command's temporary session when CI manages encrypted caching.
+
+    Args:
+        root (Path): Configuration directory used by ordinary local capture.
+
+    Returns:
+        Path: Absolute session directory, or the existing local cache location.
+
+    Raises:
+        BrowserError: An explicit session directory is not absolute.
+    """
+    value = os.environ.get("RESUMEME_BROWSER_STATE_DIR")
+
+    if not value:
+        return root / ".cache"
+
+    path = Path(value)
+
+    if not path.is_absolute():
+        raise BrowserError("RESUMEME_BROWSER_STATE_DIR must be an absolute path.")
+
+    return path.resolve()
 
 
 def _listen_port() -> int:
@@ -133,7 +159,7 @@ def _firefox(root: Path, connect_port: int | None, *, headless: bool = False) ->
     # Keep browser tooling and diagnostics in ignored project caches while honoring explicit Selenium overrides.
     os.environ.setdefault("SE_CACHE_PATH", str(root / ".cache/selenium"))
     os.environ.setdefault("SE_AVOID_STATS", "true")
-    diagnostics = root / ".cache/capture"
+    diagnostics = _state_root(root) / "capture"
     diagnostics.mkdir(parents=True, exist_ok=True)
     options = Options()
     options.set_preference("intl.accept_languages", "en-US,en")
@@ -146,7 +172,7 @@ def _firefox(root: Path, connect_port: int | None, *, headless: bool = False) ->
         options.binary_location = "/Applications/Firefox.app/Contents/MacOS/firefox"
 
     # Firefox needs an existing absolute profile path; retain it across attempts to preserve the local login.
-    profile = (root / ".cache/firefox").resolve()
+    profile = (_state_root(root) / "firefox").resolve()
     profile.mkdir(parents=True, exist_ok=True, mode=0o700)
     profile.chmod(0o700)
 
@@ -210,11 +236,11 @@ def _chrome(root: Path, *, headless: bool = False) -> Iterator[WebDriver]:
     """
     os.environ.setdefault("SE_CACHE_PATH", str(root / ".cache/selenium"))
     os.environ.setdefault("SE_AVOID_STATS", "true")
-    diagnostics = root / ".cache/capture"
+    diagnostics = _state_root(root) / "capture"
     diagnostics.mkdir(parents=True, exist_ok=True)
 
     # Keep automation separate from the user's daily browser and Firefox's incompatible profile format.
-    profile = (root / ".cache/chrome").resolve()
+    profile = (_state_root(root) / "chrome").resolve()
     profile.mkdir(parents=True, exist_ok=True, mode=0o700)
     profile.chmod(0o700)
     options = ChromeOptions()
@@ -348,7 +374,7 @@ def _login_page(driver: WebDriver) -> str:
     return route if route in {"login", "signup", "checkpoint", "challenge", "authwall", "uas", "feed", "in"} else "other LinkedIn page"
 
 
-def _check_login_challenge(driver: WebDriver) -> LoginChallenge:
+def _check_login_challenge(driver: WebDriver) -> ChallengeObservation:
     """
     Reject challenges that cannot be completed by approving the current sign-in from the mobile app.
 
@@ -356,12 +382,13 @@ def _check_login_challenge(driver: WebDriver) -> LoginChallenge:
         driver (WebDriver): Browser on a verified LinkedIn challenge route.
 
     Returns:
-        LoginChallenge: The observed challenge category when waiting remains possible.
+        ChallengeObservation: Safe diagnostic evidence when waiting remains possible.
 
     Raises:
         BrowserError: Code-entry MFA, CAPTCHA, or a denied or expired approval requires ending this unattended attempt.
     """
-    challenge = login_challenge(driver)
+    observation = observe_challenge(driver)
+    challenge = observation.kind
 
     # Never enter a code, solve a CAPTCHA, or resend an approval request on the user's behalf.
     if challenge in {"mfa", "captcha", "denied", "expired"}:
@@ -371,18 +398,19 @@ def _check_login_challenge(driver: WebDriver) -> LoginChallenge:
             "denied": "LinkedIn sign-in approval was denied; unattended sign-in has stopped.",
             "expired": "LinkedIn sign-in approval expired; unattended sign-in has stopped.",
         }[challenge]
-        raise BrowserError(reason + " No profile changes were submitted.")
+        raise BrowserError(reason + f" Checkpoint diagnostics: {observation.summary()}. No profile changes were submitted.")
 
-    return challenge
+    return observation
 
 
-def _wait_for_app_approval(driver: WebDriver, settings: Capture) -> bool:
+def _wait_for_app_approval(driver: WebDriver, settings: Capture, observation: ChallengeObservation) -> bool:
     """
     Observe the existing session for a bounded mobile-app approval without submitting anything further.
 
     Args:
-        driver (WebDriver): Browser displaying a recognized LinkedIn app-approval prompt.
+        driver (WebDriver): Browser displaying an approval prompt or an unrecognized verification checkpoint.
         settings (Capture): Maximum app-approval wait, independent of page loading timeouts.
+        observation (ChallengeObservation): Initial classification and allowlisted diagnostic evidence.
 
     Returns:
         bool: True only after the existing browser has an authenticated LinkedIn session.
@@ -391,10 +419,13 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture) -> bool:
         BrowserError: Approval times out, is denied or expires, requires MFA or CAPTCHA, or leaves LinkedIn.
     """
     timeout = settings.app_approval_timeout_seconds
+    last = observation
 
     # This action prompt must remain visible with the default ERROR log level and in buffered CI output.
+    prompt = "LinkedIn is waiting for app approval." if observation.kind == "approval" else "LinkedIn displayed an unrecognized checkpoint."
     print(
-        f'LinkedIn is waiting for app approval. Open your LinkedIn app and tap "Yes, it\'s me". Waiting up to {timeout} seconds.',
+        f'{prompt} Check your LinkedIn app for "Yes, it\'s me". Waiting up to {timeout} seconds. '
+        f"Checkpoint diagnostics: {observation.summary()}.",
         flush=True,
     )
 
@@ -411,6 +442,7 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture) -> bool:
         Raises:
             BrowserError: LinkedIn rejects the approval, requests code entry, or redirects outside its origin.
         """
+        nonlocal last
         state = _login_page(page)
 
         if state == "unexpected origin":
@@ -420,7 +452,11 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture) -> bool:
             return True
 
         if state in _LOGIN_BLOCKED_STATES:
-            _check_login_challenge(page)
+            current = _check_login_challenge(page)
+
+            if current != last:
+                _LOGGER.info("LinkedIn checkpoint changed: %s", current.summary())
+                last = current
         elif state in {"login", "signup", "uas"}:
             raise BrowserError("LinkedIn app approval ended without authentication. No profile changes were submitted.")
 
@@ -431,13 +467,14 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture) -> bool:
         return WebDriverWait(driver, timeout, poll_frequency=1, ignored_exceptions=(StaleElementReferenceException,)).until(approved)
     except TimeoutException as error:
         raise BrowserError(
-            f"LinkedIn app approval was not completed within {timeout} seconds. No profile changes were submitted."
+            f"LinkedIn sign-in approval was not completed within {timeout} seconds. "
+            f"Checkpoint diagnostics: {last.summary()}. No profile changes were submitted."
         ) from error
 
 
 def _headless_login_ready(driver: WebDriver, settings: Capture) -> bool:
     """
-    Observe login success or dispatch a recognized app-approval prompt during any unattended login phase.
+    Observe login success or allow a bounded approval window for any checkpoint without a recognized hard failure.
 
     Args:
         driver (WebDriver): Browser whose current authentication state is being polled.
@@ -457,8 +494,8 @@ def _headless_login_ready(driver: WebDriver, settings: Capture) -> bool:
     if _authenticated(driver):
         return True
 
-    if state in _LOGIN_BLOCKED_STATES and _check_login_challenge(driver) == "approval":
-        return _wait_for_app_approval(driver, settings)
+    if state in _LOGIN_BLOCKED_STATES:
+        return _wait_for_app_approval(driver, settings, _check_login_challenge(driver))
 
     return False
 
@@ -1015,9 +1052,9 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             )
         except TimeoutException as error:
             # Retain the actual failed page for markup/debugging work instead of reporting only a generic timeout.
-            diagnostic = root / ".cache/capture/profile.html"
+            diagnostic = _state_root(root) / "capture/profile.html"
             diagnostic.write_text(driver.page_source, encoding="utf-8")
-            driver.save_screenshot(str(root / ".cache/capture/profile.png"))
+            driver.save_screenshot(str(_state_root(root) / "capture/profile.png"))
             raise BrowserError(f"The profile heading did not load at {driver.current_url}; inspect {diagnostic}.") from error
 
         # A successful navigation can still land on an auth wall or another profile; bind collection to the requested owner.
@@ -1034,7 +1071,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             exceptions=(NoSuchElementException, StaleElementReferenceException, TimeoutException),
         )
         html = merge_profile_html(snapshots)
-        (root / ".cache/capture/profile.html").write_text(html, encoding="utf-8")
+        (_state_root(root) / "capture/profile.html").write_text(html, encoding="utf-8")
         profile = parse_profile(html, username)
         routes = detail_links(html, username)
 
@@ -1054,7 +1091,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
                     exceptions=(TimeoutException, StaleElementReferenceException, NoSuchElementException),
                 )
             finally:
-                (root / f".cache/capture/{key}.html").write_text(driver.page_source, encoding="utf-8")
+                (_state_root(root) / f"capture/{key}.html").write_text(driver.page_source, encoding="utf-8")
 
         # Preserve profile order and append any detail-only sections discovered outside the initial cards.
         sections = [replacements.pop(section.key, section) for section in profile.sections]
@@ -1082,6 +1119,6 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
     # Browser access is finished; checkpoint the text before independent media downloads can fail or be interrupted.
     save_profile(
         evolve(profile, warnings=[*warnings, "Media download is not yet complete."]),
-        root / ".cache/capture/profile.json",
+        _state_root(root) / "capture/profile.json",
     )
     return cache_media(profile, config, root)

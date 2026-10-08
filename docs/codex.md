@@ -90,6 +90,14 @@ read permissions, a read-only Codex permission profile, and the action's
 `drop-sudo` strategy. The API key is supplied only to the Codex action.
 Signing and publication keep their existing jobs and credentials.
 
+The summary-input artifact also uploads the prepared prompts and context for
+seven days. Contact fields embedded in ordinary prose are not automatically
+redacted. The read-only action can read the job's checkout, including the restored
+full profile; the prompt filter is not an exclusive file-access boundary.
+`--ephemeral` does not change API retention or remove workflow artifacts/logs.
+Review [AI processing and storage](data-handling.md#optional-ai-processing) before
+enabling either generator.
+
 ## Single-origin resumes
 
 Add company/job targets under `codex.companies`. Each target generates an additional

@@ -424,7 +424,13 @@ def test_upload_workflow_requires_verified_current_tag_and_explicit_settings() -
     workflow = yaml.safe_load((root / ".github/workflows/stage-linkedin-resume.yml").read_text())
     job = workflow["jobs"]["resume"]
     assert caller["needs"] == ["source", "release-stage"]
-    assert set(caller["secrets"]) == {"LINKEDIN_USERNAME", "LINKEDIN_PASSWORD"}
+    assert set(caller["secrets"]) == {
+        "LINKEDIN_USERNAME",
+        "LINKEDIN_PASSWORD",
+        "RESUMEME_CACHE_PRIVATE_KEY",
+        "RESUMEME_CACHE_PUBLIC_KEY",
+        "RESUMEME_CACHE_KEY_PASSWORD",
+    }
     assert workflow["permissions"] == {"contents": "read"}
 
     for stage in (caller, job):
@@ -440,7 +446,8 @@ def test_upload_workflow_requires_verified_current_tag_and_explicit_settings() -
     assert download["with"] == {"name": "signed-resume", "path": ".cache/publication"}
     verify = next(step for step in steps if step.get("run") == "bash scripts/release/verify.sh")
     upload = steps[-1]
-    assert upload["run"] == "poetry run resumeme publish-resume --headless --pdf .cache/publication/resume.pdf"
+    assert upload["uses"] == "./.github/actions/linkedin-session"
+    assert upload["with"]["command"] == "publish-resume"
     assert set(upload["env"]) == {"LINKEDIN_USERNAME", "LINKEDIN_PASSWORD"}
     assert steps.index(download) < steps.index(verify) < steps.index(upload)
 
