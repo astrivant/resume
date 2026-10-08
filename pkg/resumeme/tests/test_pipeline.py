@@ -272,6 +272,7 @@ def test_config_defaults_and_unknown_fields(tmp_path: Path) -> None:
     assert config.output.pdf == "resume.pdf"
     assert config.section_order == list(DEFAULT_SECTION_ORDER)
     assert config.style.show_header_photo is True
+    assert config.style.display_profile_photo is True
     assert config.style.paper == "letter"
     assert config.style.background == "FFFFFF"
     path.write_text("linkedin:\n  username: example-person\n  password: forbidden\n", encoding="utf-8")
@@ -425,16 +426,18 @@ def test_disabling_every_section_keeps_the_profile_header(tmp_path: Path) -> Non
 
 
 @pytest.mark.parametrize("show_header_photo", [False, True])
+@pytest.mark.parametrize("display_profile_photo", [False, True])
 @pytest.mark.parametrize("custom_template", [False, True])
 def test_header_photo_visibility_preserves_other_images_and_snapshot(
-    tmp_path: Path, show_header_photo: bool, custom_template: bool
+    tmp_path: Path, show_header_photo: bool, display_profile_photo: bool, custom_template: bool
 ) -> None:
     """
-    Toggle cover photos without hiding portraits or section media or modifying captured data.
+    Toggle covers and portraits independently without hiding section media or modifying captured data.
 
     Args:
         tmp_path (Path): Temporary project directory.
         show_header_photo (bool): Whether cover photos should be rendered and staged.
+        display_profile_photo (bool): Whether the profile portrait should be rendered and staged.
         custom_template (bool): Whether to inspect the complete input to a custom template.
 
     Returns:
@@ -442,7 +445,8 @@ def test_header_photo_visibility_preserves_other_images_and_snapshot(
     """
     config_path = tmp_path / "resumeme.config.yaml"
     config_path.write_text(
-        f"linkedin:\n  username: example-person\nstyle:\n  show_header_photo: {str(show_header_photo).lower()}\n",
+        f"linkedin:\n  username: example-person\nstyle:\n  show_header_photo: {str(show_header_photo).lower()}\n"
+        f"  display_profile_photo: {str(display_profile_photo).lower()}\n",
         encoding="utf-8",
     )
     config = load_config(config_path)
@@ -477,7 +481,7 @@ def test_header_photo_visibility_preserves_other_images_and_snapshot(
     for name in ["cover", "portrait", "logo"]:
         data = (tmp_path / f"{name}.png").read_bytes()
         asset = hashlib.sha256(data).hexdigest() + ".png"
-        visible = name != "cover" or show_header_photo
+        visible = (name != "cover" or show_header_photo) and (name != "portrait" or display_profile_photo)
         assert (f"assets/{asset}" in rendered) == visible
 
         if visible:
@@ -487,6 +491,7 @@ def test_header_photo_visibility_preserves_other_images_and_snapshot(
 
     if not custom_template:
         assert rendered.count(r"\includegraphics[width=\linewidth]") == (3 if show_header_photo else 0)
+        assert (r"\portraitphoto{assets/" in rendered) is display_profile_photo
 
     assert "Alex Example" in rendered
     assert "Engineer" in rendered

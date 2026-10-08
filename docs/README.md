@@ -112,6 +112,7 @@ See [logging controls and record fields](CLI.md#logging).
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; disabled in the author's personal config |
+| `style.display_profile_photo` | `true` | Display the round profile portrait in either first-page column; independent of the cover photo |
 | `style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page profile column |
 | `style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
 | `style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |
@@ -196,7 +197,8 @@ their project previews still consolidate into Projects.
   conservative role-at-company match when an explicit headline field is absent.
 - `github.username` adds a public GitHub link below LinkedIn; `null` hides it.
   Both links have platform icons. This setting is top-level identity configuration.
-- `show_header_photo` controls the cover image; the portrait remains visible.
+- `show_header_photo` controls the cover image; `display_profile_photo` independently
+  controls the round portrait. Both default to `true`; hiding the portrait removes its layout space.
 - `show_table_of_contents` adds links to visible sections in document order.
 - `show_connection_count` and `show_connection_link` control connection metadata
   independently. Enabling both links the count.

@@ -239,8 +239,11 @@ style:
   company_font_size: 13
   company_color: '191919'
 
-  # Set true to display the cover/background photo; the portrait stays visible.
+  # Set true to display the cover/background photo independently of the portrait.
   show_header_photo: false
+
+  # Display the round profile portrait in the first-page profile column.
+  display_profile_photo: false
 
   # Link visible sections beneath the LinkedIn profile link in the first-page profile column.
   show_table_of_contents: true

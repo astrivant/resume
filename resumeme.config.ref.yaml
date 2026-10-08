@@ -215,8 +215,9 @@ style:
   company_font_size: 13
   company_color: '191919'
 
-  # Cover/background photo only; false leaves the portrait visible.
+  # Cover/background photo and portrait visibility are independent.
   show_header_photo: true
+  display_profile_photo: true
   show_headline: false
   show_table_of_contents: true
   highlight_job_subheadings: true

@@ -204,8 +204,13 @@
           ]
         },
         "show_header_photo": {
-          "description": "Display the cover/background photo while retaining the portrait and section images.",
+          "description": "Display the cover/background photo independently of the profile portrait and section images.",
           "type": "boolean"
+        },
+        "display_profile_photo": {
+          "description": "Display the profile portrait independently of the cover photo and section images.",
+          "type": "boolean",
+          "default": true
         },
         "show_table_of_contents": {
           "description": "Link visible sections below the LinkedIn profile link in the first-page identity column; enabled by default.",
@@ -297,6 +302,9 @@
               },
               "show_header_photo": {
                 "$ref": "#/properties/style/properties/show_header_photo"
+              },
+              "display_profile_photo": {
+                "$ref": "#/properties/style/properties/display_profile_photo"
               },
               "show_table_of_contents": {
                 "$ref": "#/properties/style/properties/show_table_of_contents"

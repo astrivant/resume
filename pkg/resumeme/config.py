@@ -383,6 +383,7 @@ class StyleOverrides(TypedDict, total=False):
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile cover photo.
+        display_profile_photo (bool): Whether to display the profile portrait.
         show_headline (bool): Whether to display the captured headline beneath the portrait.
         show_table_of_contents (bool): Whether to link visible sections beneath the LinkedIn profile link.
         highlight_job_subheadings (bool): Whether to emphasize recognized job subsection labels; False keeps their text plain.
@@ -407,6 +408,7 @@ class StyleOverrides(TypedDict, total=False):
     background: str
     font_size: int
     show_header_photo: bool
+    display_profile_photo: bool
     show_headline: bool
     show_table_of_contents: bool
     highlight_job_subheadings: bool
@@ -437,6 +439,7 @@ class Style:
         background (str): Six-digit hexadecimal page background color.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile's cover/background photo.
+        display_profile_photo (bool): Display the profile portrait; enabled by default.
         show_headline (bool): Display the captured headline beneath the portrait; hidden by default.
         show_table_of_contents (bool): Link visible sections beneath the LinkedIn profile link in the identity column.
         highlight_job_subheadings (bool): Emphasize recognized job subsection labels; False keeps their text plain.
@@ -463,6 +466,7 @@ class Style:
     background: str = "FFFFFF"
     font_size: int = 10
     show_header_photo: bool = True
+    display_profile_photo: bool = True
     show_headline: bool = False
     show_table_of_contents: bool = True
     highlight_job_subheadings: bool = True

@@ -223,10 +223,19 @@ def render_profile(
             positions=[stage_entry(position) for position in entry.positions],
         )
 
-    # Build a template-specific view while leaving the captured snapshot available for later re-enabling of content.
+    # Filter identity photos before staging so hidden portraits need no asset and consume no layout space in either column.
+    # Keep the captured snapshot available for later re-enabling of content, including through custom templates.
     prepared = evolve(
         visible,
-        images=stage([image for image in profile.images if style.show_header_photo or not is_header_photo(image)], profile.links),
+        images=stage(
+            [
+                image
+                for image in profile.images
+                if (style.show_header_photo or not is_header_photo(image))
+                and (style.display_profile_photo or image_role(image, header=True) != "portrait")
+            ],
+            profile.links,
+        ),
         sections=[
             evolve(
                 section,
