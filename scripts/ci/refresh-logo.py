@@ -5,11 +5,13 @@ Render the README logo from the same source revision used by résumé publicatio
 from __future__ import annotations
 
 import argparse
+import os
 from datetime import date
 from pathlib import Path
 
 from resumeme.config import load_config
 from resumeme.github.readme import update_project_branding
+from resumeme.telemetry import logging_context
 from resumeme.visualization.branding import render_logo
 
 
@@ -33,7 +35,10 @@ def main() -> None:
     render_logo(assets, arguments.output, arguments.seed, previous=assets / "resumeme-logo.png")
 
     if arguments.brew_date is not None:
-        update_project_branding(Path.cwd(), load_config(Path("resumeme.config.yaml")), arguments.brew_date)
+        config = load_config(Path("resumeme.config.yaml"))
+
+        with logging_context(os.environ.get("RESUMEME_LOG_LEVEL") or config.logging.level):
+            update_project_branding(Path.cwd(), config, arguments.brew_date)
 
 
 if __name__ == "__main__":

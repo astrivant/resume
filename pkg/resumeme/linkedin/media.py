@@ -11,6 +11,7 @@ import re
 import socket
 import time
 from io import BytesIO
+from time import monotonic
 from typing import TYPE_CHECKING
 from urllib.parse import urljoin, urlsplit
 
@@ -75,7 +76,7 @@ class _ExponentialRetry(Retry):
             extra={
                 "retry.attempt": len(self.history) + 1,
                 "retry.delay_seconds": delay,
-                "http.response.status_code": response.status if response else 0,
+                **({"http.response.status_code": response.status} if response is not None else {}),
             },
         )
         time.sleep(delay)
@@ -129,26 +130,26 @@ def fetch_public(session: requests.Session, url: str, timeout: int) -> tuple[byt
         _validate_remote(url)
         session.cookies.clear()
 
-        started = time.monotonic()
+        started = monotonic()
         attributes = {"http.request.method": "GET", "url.full": safe_log_url(url), "request.timeout_seconds": timeout}
         _LOGGER.debug("HTTP request started", extra=attributes)
 
         try:
-            response = session.get(url, timeout=(timeout, timeout), stream=True, allow_redirects=False)
+            pending = session.get(url, timeout=(timeout, timeout), stream=True, allow_redirects=False)
         except requests.RequestException as error:
             _LOGGER.debug(
                 "HTTP request failed",
-                extra={**attributes, "error.type": type(error).__name__, "request.duration_seconds": time.monotonic() - started},
+                extra={**attributes, "error.type": type(error).__name__, "request.duration_seconds": monotonic() - started},
             )
             raise
 
-        with response:
+        with pending as response:
             _LOGGER.debug(
                 "HTTP response received",
                 extra={
                     **attributes,
                     "http.response.status_code": response.status_code,
-                    "request.duration_seconds": time.monotonic() - started,
+                    "request.duration_seconds": monotonic() - started,
                 },
             )
 
@@ -170,7 +171,7 @@ def fetch_public(session: requests.Session, url: str, timeout: int) -> tuple[byt
 
             _LOGGER.debug(
                 "HTTP download completed",
-                extra={**attributes, "http.response.body.size": len(body), "request.duration_seconds": time.monotonic() - started},
+                extra={**attributes, "http.response.body.size": len(body), "request.duration_seconds": monotonic() - started},
             )
             return bytes(body), url
 

@@ -129,10 +129,16 @@ def _run(args: argparse.Namespace) -> int:
         int: Zero on success, two on failure, or 130 on user cancellation.
     """
     try:
+        override = args.log_level or os.environ.get("RESUMEME_LOG_LEVEL")
+
+        if override:
+            set_log_level(override)
+
         # Anchor every stage to the config directory, regardless of where the command was invoked.
         config = load_config(args.config)
-        set_log_level(args.log_level or os.environ.get("RESUMEME_LOG_LEVEL") or config.logging.level)
+        set_log_level(override or config.logging.level)
         _LOGGER.info("Starting command", extra={"resumeme.command": args.command})
+        _LOGGER.debug("Configuration loaded", extra={"file.path": str(args.config), "resumeme.command": args.command})
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
 
@@ -173,7 +179,7 @@ def _run(args: argparse.Namespace) -> int:
 
             save_profile(profile, snapshot)
             _LOGGER.info("Saved profile snapshot", extra={"file.path": str(snapshot), "profile.sections": len(profile.sections)})
-            print(snapshot)
+            print(f"Saved {snapshot}")
             return 0
 
         # Enforce ownership on every offline path so a fork cannot accidentally publish the previous owner's resume.

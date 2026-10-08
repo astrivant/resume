@@ -11,6 +11,7 @@ from pathlib import Path
 from resumeme.codex.skills import load_skill_suggestions, prepare_skills
 from resumeme.compiler.asts.profile import load_profile
 from resumeme.config import load_config, project_path
+from resumeme.telemetry import logging_context
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("command", choices=("prepare", "validate"))
@@ -31,7 +32,8 @@ if enabled:
         if os.environ.get("OPENAI_KEY_CONFIGURED") != "true":
             raise ValueError("codex.skills.enabled requires the OPENAI_API_KEY repository secret.")
 
-        prepare_skills(profile, config, root, tag)
+        with logging_context(os.environ.get("RESUMEME_LOG_LEVEL") or config.logging.level):
+            prepare_skills(profile, config, root, tag)
     else:
         load_skill_suggestions(root / ".cache/codex/skills/skills.json", profile, config, root, tag)
 

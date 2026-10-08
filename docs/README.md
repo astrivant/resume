@@ -53,6 +53,11 @@ profile while signed in. Configuration and snapshot ownership are validated befo
 rendering. All paths are relative to the configuration file, even when the command
 runs from another directory. Unknown fields and paths escaping that directory fail.
 
+`logging.level` defaults to `ERROR`. Logs use the OpenTelemetry SDK's JSON console
+format on stdout. `INFO` reports progress; `DEBUG` adds sanitized request and browser
+details. Override with `RESUMEME_LOG_LEVEL` or `resumeme --log-level DEBUG capture`.
+See [logging controls and record fields](CLI.md#logging).
+
 | Setting | Default | Purpose |
 | --- | --- | --- |
 | `linkedin.username` | Required | Profile slug from `/in/<username>/`; replace the reference's `your-linkedin-username` placeholder |
@@ -65,6 +70,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `linkedin.ownership.update_about` | `false` | Update live About with the public signing fingerprint after a signed release |
 | `linkedin.ownership.repository` | `null` | Release repository (`OWNER/REPO`); defaults to Actions context or local origin |
 | `linkedin.ownership.releases_url` | `null` | Optional HTTPS short link; otherwise use the repository releases page |
+| `logging.level` | `ERROR` | Minimum severity for OpenTelemetry JSON logs on stdout; override with `RESUMEME_LOG_LEVEL` or `--log-level` |
 | `section_order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
 | `project_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
 | `projects.include` | `null` | Project filters with `name`, `affiliation`, or both; `null` keeps all projects, `[]` selects none |

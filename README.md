@@ -194,6 +194,10 @@ After editing your LinkedIn profile, run `poetry run resumeme capture` again, re
 the changed snapshot and assets, and commit and push them. For layout changes,
 edit `resumeme.config.yaml` and push; the saved profile can be reused.
 
+Logs default to `ERROR`. Set `logging.level: DEBUG` or use `--log-level DEBUG`
+before the command for request and browser diagnostics. Logs use OpenTelemetry
+JSON on stdout; see [logging controls](docs/CLI.md#logging).
+
 ### Refresh links and previews
 
 To discover URLs in already captured text and refresh their destinations, page

@@ -9,6 +9,7 @@ in collapsible blocks, plus command behavior and examples.
 ## Contents
 
 - [Invocation and paths](#invocation-and-paths)
+- [Logging](#logging)
 - [Commands](#commands)
   - [resumeme capture](#resumeme-capture)
   - [resumeme enrich](#resumeme-enrich)
@@ -46,38 +47,83 @@ and [environment variables](../README.md#fork-environment-variables).
 <summary>resumeme</summary>
 
 ~~~text
-usage: resumeme [-h] [--config CONFIG]
-                {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,skills-prompt,publish-skills} ...
+usage: - [-h] [--config CONFIG]
+         [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+         {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,skills-prompt,publish-skills} ...
 
 Capture your LinkedIn profile and build an illustrated PDF résumé.
 
 positional arguments:
   {capture,enrich,validate,summary-prompt,render,build,site,publish-ownership,skills-prompt,publish-skills}
-    capture             Open the configured browser, wait for login, and save your
-                        expanded profile and images
-    enrich              Discover text links, resolve destinations, and cache previews
-                        from the saved profile
+    capture             Open the configured browser, wait for login, and save
+                        your expanded profile and images
+    enrich              Discover text links, resolve destinations, and cache
+                        previews from the saved profile
     validate            Validate configuration and snapshot ownership
-    summary-prompt      Prepare a Codex summary prompt and output schema from visible
-                        profile text
+    summary-prompt      Prepare a Codex summary prompt and output schema from
+                        visible profile text
     render              Generate tex/resume.tex from the saved profile
-    build               Render LaTeX and compile resume.pdf with Docker or the bundled
-                        container toolchain
-    site                Prepare a GitHub Pages site in .cache/pages from the existing
-                        PDF
-    publish-ownership   Update live LinkedIn About with a signed release's public key
-                        identity
-    skills-prompt       Prepare an evidence-backed Codex skill proposal for the
-                        checked-out tag
-    publish-skills      Add missing proposed skills to LinkedIn without changing
-                        existing skills
+    build               Render LaTeX and compile resume.pdf with Docker or the
+                        bundled container toolchain
+    site                Prepare a GitHub Pages site in .cache/pages from the
+                        existing PDF
+    publish-ownership   Update live LinkedIn About with a signed release's
+                        public key identity
+    skills-prompt       Prepare an evidence-backed Codex skill proposal for
+                        the checked-out tag
+    publish-skills      Add missing proposed skills to LinkedIn without
+                        changing existing skills
 
 options:
   -h, --help            show this help message and exit
   --config CONFIG       Configuration file (default: resumeme.config.yaml)
+  --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Override RESUMEME_LOG_LEVEL and logging.level
+                        (default: ERROR)
 ~~~
 
 </details>
+
+## Logging
+
+Application logs use the [OpenTelemetry SDK console exporter](https://opentelemetry-python.readthedocs.io/en/latest/sdk/_logs.export.html)
+and are written to stdout as one JSON object per line. Records include UTC event
+and observation timestamps, severity name and number, `service.name: resumeme`,
+package version, logger name, structured attributes, and any active OpenTelemetry
+trace/span IDs. No collector or network telemetry export is configured.
+
+The default level is `ERROR`. Set `logging.level` to `DEBUG`, `INFO`, `WARNING`,
+`ERROR`, or `CRITICAL` in `resumeme.config.yaml`:
+
+```yaml
+logging:
+  level: ERROR
+```
+
+Precedence is **`--log-level` > `RESUMEME_LOG_LEVEL` > `logging.level`**. Place the
+global CLI option before the command; CLI and environment values are case-insensitive.
+
+```bash
+resumeme --log-level DEBUG capture
+RESUMEME_LOG_LEVEL=INFO resumeme build
+```
+
+`INFO` reports pipeline progress. `WARNING` includes retries and recoverable
+capture failures. `DEBUG` adds request method, sanitized URL, response status,
+duration, downloaded byte count, browser navigation, compiler passes, and error
+details. Request/response bodies, headers, cookies, and Selenium wire payloads
+are not logged. URL credentials, query strings, fragments, and configured secret
+values are redacted before export.
+
+Command results remain on stdout alongside enabled logs: output paths, validation
+status, and explicit dry-run text are not log records. Argument parser usage errors
+remain on stderr. Application failures are structured `ERROR` records on stdout.
+Local browser-driver and compiler diagnostic files remain separate from this log stream.
+
+Library callers can opt into the same exporter with
+`resumeme.telemetry.logging_context(level="DEBUG")`; importing the package does
+not configure the host application's root logger. The context restores handlers
+when it exits, so repeated calls do not duplicate records.
 
 ## Commands
 
@@ -428,7 +474,8 @@ options:
 | `2` | Invalid arguments, configuration, snapshot, or a reported pipeline/browser failure |
 | `130` | Operation interrupted with Ctrl-C |
 
-Failures are reported on stderr. Commands print result paths or status on stdout;
+Application failures are logged as OpenTelemetry JSON on stdout; argument usage
+errors remain on stderr. Commands print result paths or status on stdout;
 `publish-ownership --dry-run` prints the proposed About text. After a browser
 interruption during Save, inspect the live profile or rerun the command to
 reconcile persisted changes.

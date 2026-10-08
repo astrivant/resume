@@ -13,6 +13,7 @@ from resumeme.codex.companies import prepare_companies
 from resumeme.codex.request import prepare_summary
 from resumeme.compiler.asts.profile import load_profile
 from resumeme.config import load_config, project_path
+from resumeme.telemetry import logging_context
 
 root = Path.cwd()
 config = load_config(root / "resumeme.config.yaml")
@@ -25,8 +26,11 @@ if enabled:
         raise ValueError("codex.enabled requires the OPENAI_API_KEY repository secret. Configure it in Actions secrets.")
 
     profile = load_profile(project_path(root, config.output.profile), config.linkedin.username)
-    prepare_summary(profile, config, root)
-    prepare_companies(profile, config, root)
+
+    # Employer requests use the same stdout diagnostics and verbosity as local CLI commands.
+    with logging_context(os.environ.get("RESUMEME_LOG_LEVEL") or config.logging.level):
+        prepare_summary(profile, config, root)
+        prepare_companies(profile, config, root)
 
     # Matrix keys are artifact-safe; prompt paths and compiler outputs retain the readable company/job hierarchy.
     matrix.extend(
