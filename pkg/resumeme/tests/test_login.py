@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import pytest
+from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
 
@@ -34,8 +35,8 @@ def _browser(monkeypatch: MonkeyPatch) -> tuple[MagicMock, MagicMock, MagicMock,
     driver.current_url = "https://www.linkedin.com/login?token=private-token#private-fragment"
     driver.get_cookie.return_value = None
     controls = {
-        (By.CSS_SELECTOR, 'input#username, input[autocomplete="username"]'): [username],
-        (By.CSS_SELECTOR, 'input#password, input[autocomplete="current-password"]'): [password],
+        (By.CSS_SELECTOR, 'input#username, input[autocomplete~="username"]'): [username],
+        (By.CSS_SELECTOR, 'input#password, input[autocomplete~="current-password"]'): [password],
     }
     driver.find_elements.side_effect = lambda kind, selector: controls[kind, selector]
     password.find_elements.return_value = [submit]
@@ -122,8 +123,8 @@ def test_login_form_retries_with_configured_exponential_backoff(monkeypatch: Mon
     """
     driver, username, password, submit = _browser(monkeypatch)
     lookup: dict[tuple[str, str], list[MagicMock]] = {
-        (By.CSS_SELECTOR, 'input#username, input[autocomplete="username"]'): [username],
-        (By.CSS_SELECTOR, 'input#password, input[autocomplete="current-password"]'): [password],
+        (By.CSS_SELECTOR, 'input#username, input[autocomplete~="username"]'): [username],
+        (By.CSS_SELECTOR, 'input#password, input[autocomplete~="current-password"]'): [password],
     }
     attempts = 0
 
@@ -210,7 +211,7 @@ def test_redirect_during_form_retry_rejects_untrusted_origin(monkeypatch: Monkey
     with pytest.raises(ValueError, match="unexpected origin"):
         _login(driver, Capture(page_timeout_seconds=0, retry_attempts=2), headless=True)
 
-    driver.find_elements.assert_called_once_with(By.CSS_SELECTOR, 'input#username, input[autocomplete="username"]')
+    driver.find_elements.assert_called_once_with(By.CSS_SELECTOR, 'input#username, input[autocomplete~="username"]')
     username.send_keys.assert_not_called()
     password.send_keys.assert_not_called()
     submit.click.assert_not_called()
@@ -284,6 +285,75 @@ def test_form_ignores_hidden_duplicate_controls(monkeypatch: MonkeyPatch, contro
     assert _login_form(driver) == (username, password, submit)
     hidden.send_keys.assert_not_called()
     hidden.click.assert_not_called()
+
+
+@pytest.mark.parametrize("before_entry", [False, True])
+def test_login_tracks_autocomplete_tokens_after_hydration(monkeypatch: MonkeyPatch, before_entry: bool) -> None:
+    """
+    Retain the visible form when LinkedIn appends WebAuthn to generated-ID autocomplete fields.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies synthetic credentials without a network request.
+        before_entry (bool): Whether hydration finishes before finding the form or during credential entry.
+
+    Returns:
+        None: Real CSS matching finds the hydrated controls and submits exactly once.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    markup = BeautifulSoup(
+        '<input id="hidden-email" autocomplete="username">'
+        '<input id="unrelated-email" autocomplete="not-username">'
+        '<input id="generated-email" autocomplete="username">'
+        '<input id="generated-password" autocomplete="current-password">',
+        "html.parser",
+    )
+    hidden, unrelated = MagicMock(), MagicMock()
+    hidden.is_displayed.return_value = False
+    controls = {
+        "hidden-email": hidden,
+        "unrelated-email": unrelated,
+        "generated-email": username,
+        "generated-password": password,
+    }
+
+    def hydrate() -> None:
+        """
+        Add autocomplete tokens as the client enables passkey support.
+
+        Returns:
+            None: The visible controls retain their purpose inside token lists.
+        """
+        markup.select("#generated-email")[0]["autocomplete"] = "section-login username webauthn"
+        markup.select("#generated-password")[0]["autocomplete"] = "section-login current-password"
+
+    def select_controls(kind: str, selector: str) -> list[MagicMock]:
+        """
+        Evaluate production CSS against minimal markup instead of returning a predefined match.
+
+        Args:
+            kind (str): Selenium selector mechanism.
+            selector (str): CSS expression supplied by the login implementation.
+
+        Returns:
+            list[MagicMock]: Controls matching the current DOM attributes in document order.
+        """
+        assert kind == By.CSS_SELECTOR
+        return [controls[str(node["id"])] for node in markup.select(selector)]
+
+    driver.find_elements.side_effect = select_controls
+
+    # Exercise both a fully hydrated page and an attribute change between locating and submitting the form.
+    if before_entry:
+        hydrate()
+    else:
+        password.send_keys.side_effect = lambda value: hydrate()
+
+    _login(driver, Capture(page_timeout_seconds=0, retry_attempts=1), headless=True)
+    username.send_keys.assert_called_once_with("test@example.org")
+    password.send_keys.assert_called_once_with("synthetic-password")
+    submit.click.assert_called_once()
+    hidden.send_keys.assert_not_called()
+    unrelated.send_keys.assert_not_called()
 
 
 @pytest.mark.parametrize("enables", [False, True])

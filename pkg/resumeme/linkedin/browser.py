@@ -361,11 +361,12 @@ def _login_form(driver: WebDriver) -> tuple[WebElement, WebElement, WebElement] 
         return True
 
     # LinkedIn serves both fixed-ID forms and generated-ID components with semantic autocomplete attributes.
+    # Match autocomplete tokens: hydration can append "webauthn" after the form is found, including during credential entry.
     # Responsive layouts contain duplicate controls, so inspect all matches rather than waiting on a hidden first copy.
     username = next(
         (
             control
-            for control in driver.find_elements(By.CSS_SELECTOR, 'input#username, input[autocomplete="username"]')
+            for control in driver.find_elements(By.CSS_SELECTOR, 'input#username, input[autocomplete~="username"]')
             if control.is_displayed() and control.is_enabled()
         ),
         None,
@@ -373,7 +374,7 @@ def _login_form(driver: WebDriver) -> tuple[WebElement, WebElement, WebElement] 
     password = next(
         (
             control
-            for control in driver.find_elements(By.CSS_SELECTOR, 'input#password, input[autocomplete="current-password"]')
+            for control in driver.find_elements(By.CSS_SELECTOR, 'input#password, input[autocomplete~="current-password"]')
             if control.is_displayed() and control.is_enabled()
         ),
         None,

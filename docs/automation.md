@@ -161,6 +161,8 @@ from a hosted runner. Waiting for a usable login form uses
 Capture supports both LinkedIn's fixed-ID login form and generated-ID layouts
 using autocomplete attributes and a regular Sign in button. It selects visible
 controls and waits for the submit button to enable after filling the fields.
+Autocomplete matching accepts token lists such as `username webauthn`, including
+when LinkedIn enables passkey support while the form is being filled.
 Credentials are submitted once. If that click times out during navigation, the
 client checks the existing session for login completion without submitting again.
 Unattended authentication then waits for the page timeout and reports the failed
