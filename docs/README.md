@@ -63,7 +63,7 @@ See [logging controls and record fields](CLI.md#logging).
 | `linkedin.username` | Required | Profile slug from `/in/<username>/`; replace the reference's `your-linkedin-username` placeholder |
 | `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
 | `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
-| `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after signed tag releases; enabled in this repository |
+| `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after signed tag releases; `false` skips generation and its API usage |
 | `codex.skills.publish` | `false` | Opt in to adding missing skills to LinkedIn; existing skills and endorsements are always retained |
 | `codex.skills.max_skills` | `20` | Maximum suggested skill names per tagged release |
 | `codex.skills.context` | Empty | Skill selection preferences; [generation and publishing instructions](skills.md) |

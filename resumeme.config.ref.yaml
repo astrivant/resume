@@ -79,9 +79,11 @@ codex:
 
   skills:
     # Generate evidence-backed skill proposals only on tags, independently of summary generation.
+    # false skips proposal generation and its API usage, even when an OPENAI_API_KEY secret exists.
     enabled: false
 
     # Optional live additions after release; requires enabled: true. Existing skills and endorsements are retained.
+    # false only disables LinkedIn writes; use enabled: false above to stop generating proposals.
     publish: false
     max_skills: 20
     context: ''

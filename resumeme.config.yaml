@@ -68,9 +68,11 @@ codex:
 
   # Independent of résumé summaries: generate proposals only on a tag push, using captured profile evidence.
   skills:
-    enabled: true
+    # false skips proposal generation and its API usage, even when an OPENAI_API_KEY secret exists.
+    enabled: false
 
     # Opt in to live additions after the signed release. All existing skills and endorsements are retained.
+    # false only disables LinkedIn writes; use enabled: false above to stop generating proposals.
     publish: false
     max_skills: 20
     context: ''

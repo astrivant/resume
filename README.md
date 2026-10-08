@@ -398,6 +398,7 @@ features you use. GitHub supplies the publication token:
 - **`OPENAI_API_KEY` - required when `codex.enabled` or `codex.skills.enabled` is `true`.** Create a project key on
   the [OpenAI API keys page](https://platform.openai.com/api-keys) and store it as an Actions repository secret. The Codex summary
   jobs receive it; pull-request checks do not. API usage is billed to that project.
+  To stop API usage, set `codex.enabled`, `codex.skills.enabled`, and `codex.skills.publish` to `false`.
   See [Codex setup](docs/codex.md) and [tag-only skill suggestions](docs/skills.md).
 - **`COSIGN_PRIVATE_KEY` - required for signed releases.** Set this to the complete
   PEM contents of your own Cosign private key, including the header, footer, and

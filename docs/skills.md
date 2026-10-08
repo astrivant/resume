@@ -24,9 +24,9 @@ codex:
 ```
 
 - `enabled`: generate a proposal after a signed tag release. The package default
-  is `false`; this repository enables generation in its config.
+  is `false`. Set it to `false` to skip generation and its API usage.
 - `publish`: opt in to live LinkedIn additions after generation and validation.
-  Defaults to `false`, including in this repository.
+  Defaults to `false`; this stops LinkedIn writes but does not stop generation.
 - `max_skills`: maximum proposed names per tag, from 1 to 100; defaults to 20.
 - `context`: selection preferences. Captured text remains the evidence source.
 
@@ -36,6 +36,12 @@ Publication also needs `LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD`, using the
 configured Firefox or Chrome browser. Neither feature runs on branch pushes,
 pull requests, monthly refreshes, or manual branch workflows. Ordinary résumé
 summary generation keeps its existing main-branch behavior.
+
+To stop all Codex API usage, set `codex.enabled`, `codex.skills.enabled`, and
+`codex.skills.publish` to `false`. PDF builds, signed releases, and Pages publication
+remain available using the captured profile. No API key is required in this mode.
+Commit the config before pushing the next tag: rerunning an existing tag uses
+the config at that tag, not the updated config on `main`.
 
 ## Proposal contract
 
