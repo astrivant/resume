@@ -22,18 +22,69 @@ from resumeme.compiler.asts.profile import load_profile
 from resumeme.compiler.backends.latex.compilation import tex_image
 from resumeme.compiler.constants.escaping import PUNCTUATION
 from resumeme.config import project_path
+from resumeme.visualization.branding import render_brew_badge
 
 if TYPE_CHECKING:
+    from datetime import date
+
     from resumeme.compiler.asts.profile import Profile
     from resumeme.config import Config
 
-__all__ = ["PREVIEW_PATH", "personal_readme", "render_readme", "restore_readme", "stage_readme"]
+__all__ = ["PREVIEW_PATH", "personal_readme", "render_readme", "restore_readme", "stage_readme", "update_project_branding"]
 
 PREVIEW_PATH = "docs/assets/resume-preview.png"
+_BRANDING_START = "<!-- resumeme:branding:start -->"
+_BRANDING_END = "<!-- resumeme:branding:end -->"
+_BREW_BADGE_PATH = "docs/assets/branding/brew-date.svg"
 _PUBLICATION_PATH = ".cache/publication"
 _BOILERPLATE = (
     "My résumé, kept current from LinkedIn and published here as a PDF. Open the full document for every page and clickable links."
 )
+
+
+def update_project_branding(root: Path, config: Config, brewed_on: date) -> None:
+    """
+    Refresh the local date badge and only the marked branding block of a project README.
+
+    Args:
+        root (Path): Publishing checkout containing an optional custom README.
+        config (Config): Configured PDF destination for the badge link.
+        brewed_on (date): UTC build date transported with the verified PDF artifact.
+
+    Returns:
+        None: The SVG is refreshed; README text outside the opt-in branding markers is preserved exactly.
+
+    Raises:
+        ValueError: Existing branding markers are duplicated, incomplete, or reversed.
+    """
+    path = root / "README.md"
+    original = path.read_bytes().decode("utf-8") if path.exists() else ""
+    updated = original
+
+    # A custom README without our markers opts out of markup updates; never insert branding into an unrelated landing page.
+    if _BRANDING_START in original or _BRANDING_END in original:
+        if original.count(_BRANDING_START) != 1 or original.count(_BRANDING_END) != 1:
+            raise ValueError("README branding requires exactly one start marker and one end marker.")
+
+        start, end = original.index(_BRANDING_START), original.index(_BRANDING_END)
+
+        if end < start:
+            raise ValueError("README branding end marker must follow its start marker.")
+
+        pdf = "./" + quote(Path(config.output.pdf).as_posix(), safe="/")
+        block = (
+            f'{_BRANDING_START}\n<p align="left">\n'
+            '  <img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>\n'
+            f'  <a href="{pdf}"><img src="{_BREW_BADGE_PATH}" alt="Brew date: {brewed_on.isoformat()} (UTC)" '
+            f'width="220" height="28"></a>\n</p>\n{_BRANDING_END}'
+        )
+        updated = original[:start] + block + original[end + len(_BRANDING_END) :]
+
+    # Validate the managed block before replacing either file so malformed custom edits cannot leave a partial update.
+    render_brew_badge(project_path(root, _BREW_BADGE_PATH), brewed_on)
+
+    if updated != original:
+        path.write_bytes(updated.encode("utf-8"))
 
 
 def personal_readme(config: Config, is_fork: bool) -> bool:

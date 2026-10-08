@@ -44,7 +44,8 @@ jobs:
         with:
           groups: main
 
-      # Hosted Ubuntu includes Firefox and geckodriver. Only this step receives LinkedIn authentication secrets.
+      # Hosted Ubuntu includes Firefox and Chrome with their drivers; capture.browser selects one.
+      # Only this step receives LinkedIn authentication secrets.
       - name: Refresh LinkedIn profile and downloaded media
         if: steps.source.outputs.refresh == 'true'
         env:

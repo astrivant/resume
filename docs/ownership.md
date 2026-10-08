@@ -57,11 +57,12 @@ resumeme publish-ownership --public-key .cache/ownership-release/cosign.pub --dr
 resumeme publish-ownership --public-key .cache/ownership-release/cosign.pub
 ```
 
-The first command opens Firefox and previews the complete About text without
+The first command opens the browser selected by `capture.browser` (Firefox by
+default, or Chrome) and previews the complete About text without
 saving. The second explicitly updates the live profile, regardless of the CI
 `update_about` setting. It requires no captured snapshot. Use `--headless` with
 the LinkedIn environment variables for unattended operation, or `--connect-port`
-to attach to an existing Firefox Marionette session. Interactive login waits
+to attach to an existing Firefox Marionette session with `capture.browser: firefox`. Interactive login waits
 until you finish; unattended challenges fail after the configured page timeout.
 
 Use LinkedIn's English interface. The updater checks the configured profile's

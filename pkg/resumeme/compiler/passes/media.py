@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from resumeme.compiler.asts.profile import Entry, Media
 
-__all__ = ["employer_badge", "image_role", "is_header_photo"]
+__all__ = ["employer_badge", "image_role", "is_header_photo", "school_badge"]
 
 
 def employer_badge(entry: Entry) -> tuple[int, Media] | None:
@@ -49,6 +49,27 @@ def employer_badge(entry: Entry) -> tuple[int, Media] | None:
 
     # Standalone jobs place their employer immediately before the employment dates; undated or absent names stay unchanged.
     return (0, logos[0]) if dates and dates[0] == 1 else None
+
+
+def school_badge(entry: Entry) -> tuple[int, Media] | None:
+    """
+    Associate an education logo with its school heading rather than the degree or dates.
+
+    Args:
+        entry (Entry): Visible education entry with staged images.
+
+    Returns:
+        tuple[int, Media] | None: Heading index (-1) and school logo, or no badge when branding is absent.
+    """
+    logos = [image for image in entry.images if image_role(image) == "logo"]
+
+    if not logos:
+        return None
+
+    # Prefer the school's named logo when other organizations have attachments; unlabeled captures retain their first logo.
+    school = entry.title.strip().casefold()
+    logo = next((image for image in logos if image.alt.strip().casefold().removesuffix(" logo").strip() == school), logos[0])
+    return -1, logo
 
 
 def is_header_photo(image: Media) -> bool:

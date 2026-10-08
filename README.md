@@ -1,6 +1,11 @@
 # resumeme
 
-<img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220" align="left">
+<!-- resumeme:branding:start -->
+<p align="left">
+  <img src="docs/assets/branding/resumeme-logo.png" alt="resumeme: a coffee-stained LinkedIn mark" width="220"><br>
+  <a href="./resume.pdf"><img src="docs/assets/branding/brew-date.svg" alt="Brew date: 2026-10-08 (UTC)" width="220" height="28"></a>
+</p>
+<!-- resumeme:branding:end -->
 
 **Your résumé deserves better than LinkedIn's PDF export.** Skip the clunky
 formatting and the copy-paste routine of maintaining a second résumé. `resumeme` ☕ turns your profile into a polished, illustrated PDF you'll *actually want to send* to a hiring manager offline.
@@ -61,7 +66,7 @@ version you want to share to get a signed release.
 ### 1. Install
 
 In your fork's local checkout, install the package. Local capture requires
-Python 3.13+, Poetry 2.5.1, and Firefox. GitHub Actions handles PDF compilation;
+Python 3.13+, Poetry 2.5.1, and Firefox (default) or Chrome. GitHub Actions handles PDF compilation;
 Docker is needed only for a local PDF preview.
 
 ```bash
@@ -101,9 +106,12 @@ poetry run resumeme capture
 poetry run resumeme validate
 ```
 
-Sign in to LinkedIn in the Firefox window and leave it open. Capture waits for you
+Sign in to LinkedIn in the browser window and leave it open. Capture waits for you
 to finish signing in, then saves your profile and images locally. **A username
 change alone does not fetch a profile in CI:** Actions builds the snapshot you push.
+
+To use Chrome, set `capture.browser: chrome` in the config; `firefox` is the default.
+Install the selected browser first. See [browser setup](docs/README.md#local-capture).
 
 ### 3. Publish
 
@@ -135,7 +143,7 @@ The PDF and preview links stay relative to your fork and follow `output.pdf`.
 Open your checkout in an agent with terminal access and give it this prompt:
 
 > Read `SKILL.md` and generate my résumé PDF from LinkedIn username `YOUR-USERNAME`.
-> Handle setup, capture, validation, and the build. Let me sign in to Firefox,
+> Handle setup, capture, validation, and the build. Let me sign in to the browser,
 > then give me the finished PDF.
 
 The portable [agent skill](SKILL.md) covers first-run setup, the browser login
@@ -145,7 +153,7 @@ my fork's GitHub Actions workflow" when you also want a signed release.
 
 ## How it works
 
-The Python package captures your profile through local Firefox and uses `requests`
+The Python package captures your profile through local Firefox or Chrome and uses `requests`
 to cache images and project previews. Your browser login stays in the ignored local
 profile. The portable inputs are `data/profile.json` and `data/assets/`.
 
@@ -394,7 +402,7 @@ to adjust retry or local browser settings.
 #### LinkedIn authentication
 
 Set the public profile slug under `linkedin.username` in `resumeme.config.yaml`.
-Local `resumeme capture` opens Firefox and waits for you to finish signing in.
+Local `resumeme capture` opens the configured browser and waits for you to finish signing in.
 When both login environment variables are present, it submits them automatically;
 interactive capture still waits for you to complete MFA. Scheduled runs use
 `capture --headless` and fail without updating `main` if authentication requires

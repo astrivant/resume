@@ -14,6 +14,14 @@ mark stays fixed at 80% opacity and 80% saturation beneath the coffee layer.
 A retry uses the same seed and locked Pillow dependency, and reproduces the same
 PNG bytes. No API key, network request, clock, or run counter is involved.
 
+The local `brew-date.svg` badge sits below the logo and links to `output.pdf`.
+It shows the last published build's UTC date as `YYYY-MM-DD`. The build stage
+records that date in the PDF artifact; deployment refreshes the badge and logo
+in the same commit, retaining the date on retries. Only the content between
+`<!-- resumeme:branding:start -->` and `<!-- resumeme:branding:end -->` is managed
+in project READMEs. Removing both markers opts out of README markup updates.
+Personal READMEs on forks continue to use the first-page PDF preview.
+
 Preview a revision locally from the repository root:
 
 ```bash
@@ -23,6 +31,12 @@ poetry run python scripts/ci/refresh-logo.py --seed "$(git rev-parse HEAD)"
 Use `--output .cache/branding-preview.png` to preview without replacing the README
 asset. Changing the bundled layers or renderer changes the composition; keep
 them with the source revision when reproducing an older logo.
+
+To also refresh the badge and managed README block, pass the PDF's UTC build date:
+
+```bash
+poetry run python scripts/ci/refresh-logo.py --seed "$(git rev-parse HEAD)" --brew-date 2026-10-07
+```
 
 ## Generation prompts
 

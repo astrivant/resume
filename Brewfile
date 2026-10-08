@@ -17,5 +17,7 @@ brew "actionlint"
 # The browser client expects Firefox in /Applications; Selenium manages geckodriver.
 cask "firefox", args: { appdir: "/Applications" }
 
+# Optional alternative for capture.browser: chrome: brew install --cask google-chrome
+
 # Local PDF compilation uses the pinned TeX image, so no host TeX installation is needed.
 cask "docker-desktop"

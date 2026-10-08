@@ -12,6 +12,10 @@ a fresh coffee stain. CI varies its orientation, proportions, placement, and
 density using the verified source commit as a seed. Retries reproduce the same
 logo; unchanged PDFs and profile inputs produce no extra commit. This uses the
 bundled image layers and Pillow, with no image-generation API calls or secrets.
+The linked **Brew date** badge below the logo shows the published PDF build's UTC
+date and opens the configured résumé PDF. Build artifacts carry the date so
+deployment retries preserve it. Only the marked branding block is updated in
+project READMEs; surrounding documentation is retained.
 The logo is README branding; it does not add stains to the résumé PDF.
 
 ## Configure a fork
@@ -42,7 +46,8 @@ gh secret set LINKEDIN_PASSWORD
   repository, or `pypi` environment secret to `POETRY_PYPI_TOKEN_PYPI`. Resume-only
   forks do not need it; see [package publication](development.md#publish-to-pypi).
 
-The runner uses headless Firefox. Browser state and diagnostics stay in its
+The runner uses headless Firefox or Chrome, selected by `capture.browser` with
+Firefox as the default. Browser state and diagnostics stay in its
 temporary workspace; only the profile and referenced downloaded media are
 transferred to downstream jobs. No browser cookies or passwords enter commits
 or uploaded capture artifacts.
@@ -121,7 +126,7 @@ poetry run resumeme capture
 poetry run resumeme validate
 ```
 
-Complete any challenge in Firefox, then commit the accepted snapshot and assets
+Complete any challenge in the selected browser, then commit the accepted snapshot and assets
 and push them to `main`. Update incorrect secrets and rerun the refresh. Accounts
 that consistently require interaction can use this local capture path; scheduled
 authentication cannot guarantee unattended access.

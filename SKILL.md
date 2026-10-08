@@ -2,7 +2,7 @@
 name: resumeme
 description: >-
   Generate a resume PDF from a user's LinkedIn profile with this repository's
-  Python CLI. Use for first-time setup, interactive Firefox capture, rebuilding
+  Python CLI. Use for first-time setup, interactive browser capture, rebuilding
   saved profile data, or applying resume configuration changes. Includes optional
   GitHub publication when requested.
 ---
@@ -44,16 +44,18 @@ Choose the appropriate starting point:
   Validation checks ownership; changing the username does not fetch new data.
 - Link resolution or preview refresh on acquired text: run `poetry run resumeme enrich`
   against the saved snapshot, then validate and build. This makes bounded public
-  HTTP requests and needs no Firefox session. Original text and URLs are retained;
+  HTTP requests and needs no browser session. Original text and URLs are retained;
   the snapshot gains resolved destinations, page titles, and cached previews.
 
 ## Prepare the local environment
 
-Use Python 3.13+, Poetry 2.5.1, Firefox for capture, and a running Docker daemon
+Use Python 3.13+, Poetry 2.5.1, Firefox or Chrome for capture, and a running Docker daemon
 for the default local PDF build. On macOS, follow the
 [Homebrew bootstrap](docs/README.md#install); `Brewfile` supplies host tools, and
 the bootstrap installs the pinned Poetry version. On other hosts, use equivalent
-tools and a graphical session for Firefox. Reuse an existing working environment.
+tools and a graphical session for the selected browser. Reuse an existing working environment.
+`capture.browser` selects `firefox` (default) or `chrome`; install the selected browser.
+On macOS, Chrome is optional via `brew install --cask google-chrome`.
 
 Install runtime dependencies from the committed lockfile:
 
@@ -80,11 +82,11 @@ Run capture in a persistent process whose lifetime allows the user to sign in:
 poetry run resumeme capture
 ```
 
-Once Firefox opens, tell the user to sign in there, complete any MFA, and leave
+Once the configured browser opens, tell the user to sign in there, complete any MFA, and leave
 the window open. The command detects login completion automatically and has no
 login deadline. Keep the process running while the user finds their password;
 poll its status without imposing a short overall command timeout or starting
-duplicate captures. Login credentials can be entered in Firefox or supplied using
+duplicate captures. Login credentials can be entered in the browser or supplied using
 `LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD`; never request or print secret values
 in chat. Interactive capture still waits for manual MFA. The explicit `--headless`
 mode is for unattended CI and fails when an account challenge requires interaction.
@@ -92,7 +94,8 @@ mode is for unattended CI and fails when an account challenge requires interacti
 Wait for capture to finish successfully before validating or building. It saves
 the snapshot and downloaded media at the configured paths, normally
 `data/profile.json` and `data/assets/`. The session persists under ignored
-`.cache/firefox/`; preserve it for retries. Capture already applies capped
+`.cache/firefox/` or `.cache/chrome/`; preserve it for retries. Each browser needs its
+own initial login. Capture already applies capped
 exponential backoff to transient failures. See
 [local capture](docs/README.md#local-capture) for browser attachment and diagnostics.
 

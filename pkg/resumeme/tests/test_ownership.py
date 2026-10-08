@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import pytest
+from attrs import evolve
 from jsonschema import ValidationError
 from selenium.common.exceptions import TimeoutException
 
@@ -21,6 +22,8 @@ from resumeme.linkedin.ownership import _editor, _update_about, publish_ownershi
 from resumeme.signing import public_key_fingerprint
 
 if TYPE_CHECKING:
+    from typing import Literal
+
     from pytest import MonkeyPatch
 
 _FINGERPRINT = "SHA256:" + "a" * 64
@@ -392,6 +395,37 @@ def test_missing_credentials_fail_before_browser(tmp_path: Path, monkeypatch: Mo
         publish_ownership(_config(), tmp_path, tmp_path / "missing.pub", headless=True)
 
     firefox.assert_not_called()
+
+
+@pytest.mark.parametrize("browser", ["firefox", "chrome"])
+def test_ownership_uses_configured_browser(tmp_path: Path, monkeypatch: MonkeyPatch, browser: Literal["firefox", "chrome"]) -> None:
+    """
+    Use the same browser selection for live About previews as for profile capture.
+
+    Args:
+        tmp_path (Path): Temporary browser state directory.
+        monkeypatch (MonkeyPatch): Browser, public key, and editor boundaries.
+        browser (Literal["firefox", "chrome"]): Selected Selenium browser.
+
+    Returns:
+        None: Selection and login settings reach the shared browser client without submitting a real edit.
+    """
+    config = evolve(_config(), capture=Capture(browser=browser))
+    session = MagicMock()
+    driver = session.return_value.__enter__.return_value
+    login = MagicMock()
+    update = MagicMock(return_value=_BLOCK)
+    monkeypatch.setattr("resumeme.linkedin.ownership._browser", session)
+    monkeypatch.setattr("resumeme.linkedin.ownership._login", login)
+    monkeypatch.setattr("resumeme.linkedin.ownership._update_about", update)
+    monkeypatch.setattr("resumeme.linkedin.ownership.public_key_fingerprint", MagicMock(return_value=_FINGERPRINT))
+    monkeypatch.setattr(
+        "resumeme.linkedin.ownership.release_destination", MagicMock(return_value="https://github.com/fork/resumeme/releases")
+    )
+    assert publish_ownership(config, tmp_path, tmp_path / "key.pub", dry_run=True) == _BLOCK
+    session.assert_called_once_with(tmp_path, config.capture, None, headless=False)
+    login.assert_called_once_with(driver, config.capture, headless=False)
+    update.assert_called_once_with(driver, config, tmp_path, _BLOCK, dry_run=True)
 
 
 @pytest.mark.parametrize("edit_route", ["edit/intro/", "edit/forms/summary/new/"])

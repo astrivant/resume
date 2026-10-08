@@ -21,7 +21,7 @@
 
 ## Install
 
-In your fork's checkout, use Python 3.13+, Poetry 2.5.1, and Firefox for capture.
+In your fork's checkout, use Python 3.13+, Poetry 2.5.1, and Firefox or Chrome for capture.
 Docker is required for local PDF builds; Actions supplies its own toolchain.
 
 ```bash
@@ -72,6 +72,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `github.contributions.months` | `1` | Trailing calendar months, from 1 through 12, including both boundary dates |
 | `github.contributions.placement` | `profile` | Below the GitHub link in the profile column, or `appendix` for a separate final page |
 | `github.contributions.as_of` | `null` | Quoted ISO end date; null uses today's UTC date |
+| `capture.browser` | `firefox` | `firefox` or `chrome` for capture and live About updates |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
 | `capture.max_scrolls` | `60` | Maximum expansion iterations per page |
 | `capture.max_pages_per_section` | `30` | Bound on section pagination |
@@ -405,16 +406,38 @@ poetry run resumeme capture
 poetry run resumeme validate
 ```
 
-Firefox opens with a dedicated local profile under ignored `.cache/firefox/`. Sign in directly in that window,
+Select the browser in `resumeme.config.yaml`; Firefox remains the default:
+
+```yaml
+capture:
+  browser: chrome  # firefox or chrome
+```
+
+Install the selected browser locally. On macOS, the Brewfile installs Firefox;
+install the optional Chrome alternative with `brew install --cask google-chrome`.
+Both browsers use Selenium, including its
+[Chrome options](https://www.selenium.dev/documentation/webdriver/browsers/chrome/)
+and [automatic driver management](https://www.selenium.dev/documentation/selenium_manager/).
+
+Each browser opens a dedicated profile under ignored `.cache/firefox/` or
+`.cache/chrome/`. Switching browsers requires a separate first login; subsequent
+captures reuse that browser's login. The setting also applies to `capture --headless`
+and `publish-ownership`. The GitHub Actions Ubuntu runner
+[includes both browsers and their drivers](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#browsers-and-drivers).
+The published container bundles Firefox; use local Chrome capture and build the
+saved snapshot in the container when choosing Chrome.
+
+Sign in directly in the selected browser window,
 complete any MFA, and leave the window open until the command finishes. Login has
 no deadline: capture polls once per second until a LinkedIn tab has an authenticated
 session cookie and has left the login or challenge page. No extra thread or subprocess
 is needed; the same process owns the browser and cleans up on cancellation. Press
 Ctrl-C or close the window to cancel. Network page loads retain bounded timeouts. The Python
-browser client uses macOS's application launcher so Firefox can access its profile
-and normal application services; Selenium connects to its loopback Marionette port.
-Other platforms use Selenium's native Firefox launcher. Selenium Manager downloads
-the driver on first use into `.cache/selenium/`.
+browser client uses macOS's application launcher for interactive Firefox so it can
+access its profile and normal application services; Selenium connects to its loopback
+Marionette port. Chrome, headless Firefox, and Firefox on other platforms use Selenium's
+native launcher. Selenium Manager resolves the selected browser's driver and caches
+downloads under `.cache/selenium/`.
 
 Capture expands text and lazy lists, follows owner-scoped detail links, and traverses
 pagination. It preserves grouped positions, full text, link targets, and referenced
@@ -431,7 +454,7 @@ It does not crawl the page's outgoing links. Direct binary downloads
 retain their destination without inventing an image preview.
 
 Run `poetry run resumeme enrich` to apply this to an existing snapshot without
-starting Firefox. Original text and source URLs remain intact. Shared URLs and
+starting a browser. Original text and source URLs remain intact. Shared URLs and
 images are fetched once per run, and existing local images are reused. Contact
 links and LinkedIn navigation are not inspected. `capture.fetch_link_previews: false`
 disables remote inspection, while prose URL discovery remains available. Inspection
@@ -449,7 +472,8 @@ not include the browser login, private messages, contacts, or profile-view analy
 
 If attaching to a Firefox instance you deliberately opened with Marionette, use
 `resumeme capture --connect-port PORT`. The command owns that automation session and
-closes it on completion. Ordinary capture requires no port configuration.
+closes it on completion. This attachment option requires `capture.browser: firefox`;
+Chrome launches its own dedicated session. Ordinary capture requires no port configuration.
 
 ## Rendering and PDF builds
 

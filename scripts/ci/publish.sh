@@ -23,8 +23,14 @@ readme_mode="$(poetry run python scripts/ci/readme-artifact.py restore)"
 # A fresh coffee stain accompanies real resume changes; unchanged builds must not create logo-only bot commits.
 # Use the source revision so a retry reconstructs the exact tree of a successful earlier publication.
 if [[ "$readme_mode" == project ]] && ! git diff --cached --quiet; then
-    poetry run python scripts/ci/refresh-logo.py --seed "$SOURCE_SHA"
-    git add -- docs/assets/branding/resumeme-logo.png
+    # The build artifact owns this UTC date; a deploy retry on another day must reproduce the same branding.
+    read -r brew_date <.cache/publication/brew-date.txt
+    poetry run python scripts/ci/refresh-logo.py --seed "$SOURCE_SHA" --brew-date "$brew_date"
+    git add -- docs/assets/branding/resumeme-logo.png docs/assets/branding/brew-date.svg
+
+    if [[ -f README.md ]]; then
+        git add -- README.md
+    fi
 fi
 
 if [[ "$(git rev-parse origin/main)" != "$SOURCE_SHA" ]]; then

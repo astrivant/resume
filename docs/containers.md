@@ -53,6 +53,9 @@ contains neither Poetry nor development dependencies.
 
 ## Capture with Firefox
 
+The packaged browser is Firefox. For `capture.browser: chrome`, capture locally
+with Chrome installed, then use this image to render or build the saved snapshot.
+
 On macOS and Windows, use the documented local `poetry run resumeme capture` flow,
 then run the container against the resulting snapshot. The published image can
 also run visible Firefox when connected to a Linux graphical display. For a local

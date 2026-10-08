@@ -11,11 +11,43 @@ from PIL import Image, ImageEnhance, ImageOps
 from PIL.PngImagePlugin import PngInfo
 
 if TYPE_CHECKING:
+    from datetime import date
     from pathlib import Path
 
-__all__ = ["render_logo"]
+__all__ = ["render_brew_badge", "render_logo"]
 
 _SIZE = 768
+
+
+def render_brew_badge(output: Path, brewed_on: date) -> None:
+    """
+    Render a local SVG date badge using the project's coffee palette.
+
+    Args:
+        output (Path): Destination SVG; parent directories are created as needed.
+        brewed_on (date): UTC calendar date recorded with the published PDF artifact.
+
+    Returns:
+        None: A deterministic, accessible badge is written without external image requests.
+    """
+    label = f"Brew date: {brewed_on.isoformat()} (UTC)"
+
+    # Fixed date formatting keeps the badge width stable across builds; the README owns the clickable PDF destination.
+    content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="220" height="28" viewBox="0 0 220 28" role="img" aria-labelledby="title">
+  <title id="title">{label}</title>
+  <defs><clipPath id="badge"><rect width="220" height="28" rx="4"/></clipPath></defs>
+  <g clip-path="url(#badge)">
+    <rect width="220" height="28" fill="#6B2737"/>
+    <rect x="90" width="130" height="28" fill="#F7EADD"/>
+  </g>
+  <g font-family="Verdana,DejaVu Sans,sans-serif" font-size="11" text-anchor="middle">
+    <text x="45" y="18" fill="#FFFFFF">Brew date:</text>
+    <text x="155" y="18" fill="#363636">{brewed_on.isoformat()}</text>
+  </g>
+</svg>
+"""
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(content, encoding="utf-8")
 
 
 def render_logo(assets: Path, output: Path, seed: str) -> None:

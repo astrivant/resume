@@ -6,16 +6,42 @@ from __future__ import annotations
 
 import hashlib
 import os
+import runpy
 import shlex
 import shutil
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Media, Profile, Section, save_profile
+
+
+def test_pdf_artifact_carries_utc_build_date_across_midnight(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Stage the completed PDF's UTC date independently of the staging clock or runner timezone.
+
+    Args:
+        tmp_path (Path): Temporary checkout with a configured PDF destination.
+        monkeypatch (pytest.MonkeyPatch): Scoped working directory for the real artifact staging script.
+
+    Returns:
+        None: The transferred date matches the PDF's completion timestamp and its bytes remain intact.
+    """
+    script = Path(__file__).resolve().parents[3] / "scripts/ci/stage-pdf.py"
+    (tmp_path / "resumeme.config.yaml").write_text("linkedin: {username: example}\noutput: {pdf: documents/cv.pdf}\n")
+    pdf = tmp_path / "documents/cv.pdf"
+    pdf.parent.mkdir()
+    pdf.write_bytes(b"%PDF-1.7\nfixture")
+    completed = datetime(2026, 1, 2, 23, 59, tzinfo=UTC).timestamp()
+    os.utime(pdf, (completed, completed))
+    monkeypatch.chdir(tmp_path)
+    runpy.run_path(str(script))
+    assert (tmp_path / ".cache/publication/resume.pdf").read_bytes() == pdf.read_bytes()
+    assert (tmp_path / ".cache/publication/brew-date.txt").read_text() == "2026-01-02\n"
 
 
 @pytest.mark.parametrize("matching_revision", [False, True])
@@ -132,6 +158,9 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         shutil.copyfile(project / relative, destination)
 
     (root / "resumeme.config.yaml").write_text("linkedin:\n  username: example-person\n", encoding="utf-8")
+    (root / "README.md").write_text(
+        "# Project\n\n<!-- resumeme:branding:start -->\nInitial branding\n<!-- resumeme:branding:end -->\n\nCustom introduction\n"
+    )
     _git(root, "add", ".")
     _git(root, "commit", "-m", "source")
     source = _git(root, "rev-parse", "HEAD")
@@ -139,6 +168,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     artifact = root / ".cache/publication/resume.pdf"
     artifact.parent.mkdir(parents=True)
     artifact.write_bytes(b"%PDF-1.7\nfixture")
+    artifact.with_name("brew-date.txt").write_text("2026-01-02\n", encoding="ascii")
 
     # Build artifacts arrive together; publication must stage only the prepared README and image on forks.
     if fork:
@@ -188,11 +218,21 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
     assert output.read_text() == f"published-sha={published}\n"
     files = _git(remote, "diff-tree", "--no-commit-id", "--name-only", "-r", published).splitlines()
     expected_files = (
-        ["README.md", "docs/assets/resume-preview.png", "resume.pdf"] if fork else ["docs/assets/branding/resumeme-logo.png", "resume.pdf"]
+        ["README.md", "docs/assets/resume-preview.png", "resume.pdf"]
+        if fork
+        else ["README.md", "docs/assets/branding/resumeme-logo.png", "docs/assets/branding/brew-date.svg", "resume.pdf"]
     )
     assert files == sorted(["data/assets/logo.png", "data/profile.json", *expected_files] if refresh else expected_files)
     logo = root / ("docs/assets/resume-preview.png" if fork else "docs/assets/branding/resumeme-logo.png")
     published_logo = logo.read_bytes()
+
+    if not fork:
+        # Publication uses the artifact date even when Git's source date and the deploy clock differ from it.
+        assert "2026-01-02" in (root / "docs/assets/branding/brew-date.svg").read_text()
+        markdown = (root / "README.md").read_text()
+        assert 'href="./resume.pdf"' in markdown
+        assert "Brew date: 2026-01-02 (UTC)" in markdown
+        assert markdown.endswith("Custom introduction\n")
 
     # Model a new user commit arriving after the first PDF publication; a retry must not publish that older build as current.
     if advanced:
@@ -227,6 +267,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
 
         # A subsequent accepted PDF earns a new stain in the same atomic publication commit.
         artifact.write_bytes(b"%PDF-1.7\nupdated fixture")
+        artifact.with_name("brew-date.txt").write_text("2026-02-03\n", encoding="ascii")
 
         if fork:
             (bundle / "pdf.sha256").write_text(hashlib.sha256(artifact.read_bytes()).hexdigest())
@@ -235,6 +276,9 @@ def test_publication_resumes_only_for_the_identical_generated_commit(tmp_path: P
         subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
         assert _git(remote, "rev-parse", "main") != published
         assert logo.read_bytes() != published_logo
+
+        if not fork:
+            assert "2026-02-03" in (root / "docs/assets/branding/brew-date.svg").read_text()
 
 
 def test_draft_creation_recovers_a_lost_success_response(tmp_path: Path) -> None:

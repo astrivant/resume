@@ -4,7 +4,9 @@ Verify fork landing pages, artifact consistency, and explicit README overrides.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING
+from xml.etree import ElementTree
 
 import pytest
 from jsonschema import ValidationError
@@ -13,10 +15,95 @@ from pypdf import PdfWriter
 
 from resumeme.compiler.asts.profile import Profile, save_profile
 from resumeme.config import Config, GitHub, LinkedIn, Output, Readme, load_config
-from resumeme.github.readme import PREVIEW_PATH, personal_readme, render_readme, restore_readme, stage_readme
+from resumeme.github.readme import PREVIEW_PATH, personal_readme, render_readme, restore_readme, stage_readme, update_project_branding
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+def test_project_brew_badge_preserves_custom_readme_and_links_configured_pdf(tmp_path: Path) -> None:
+    """
+    Replace only the marked branding with a local UTC date badge pointing at the configured resume.
+
+    Args:
+        tmp_path (Path): Temporary checkout with edited README content.
+
+    Returns:
+        None: Repeated publication is byte-identical and later dates update the badge without losing surrounding text.
+    """
+    before, after = "# My project\r\n\r\n", "\r\n\r\nKeep **my** installation steps.\r\n"
+    path = tmp_path / "README.md"
+    path.write_bytes((before + "<!-- resumeme:branding:start -->old<!-- resumeme:branding:end -->" + after).encode())
+    config = Config(LinkedIn("example"), output=Output(pdf="documents/cv.pdf"))
+    update_project_branding(tmp_path, config, date(2026, 1, 2))
+    markdown = path.read_bytes()
+    assert markdown.startswith(before.encode())
+    assert markdown.endswith(after.encode())
+    assert b'href="./documents/cv.pdf"' in markdown
+    assert b"Brew date: 2026-01-02 (UTC)" in markdown
+    assert markdown.index(b"resumeme-logo.png") < markdown.index(b"<br>") < markdown.index(b"brew-date.svg")
+    badge = tmp_path / "docs/assets/branding/brew-date.svg"
+    first = badge.read_bytes()
+    svg = ElementTree.fromstring(first)
+    assert svg.findtext("{http://www.w3.org/2000/svg}title") == "Brew date: 2026-01-02 (UTC)"
+    assert "https://" not in first.decode()
+    update_project_branding(tmp_path, config, date(2026, 1, 2))
+    assert path.read_bytes() == markdown
+    assert badge.read_bytes() == first
+    update_project_branding(tmp_path, config, date(2026, 2, 3))
+    assert "2026-02-03" in badge.read_text()
+    assert "2026-01-02" not in path.read_text()
+
+
+@pytest.mark.parametrize("markdown", [None, "# A personal README\n"])
+def test_project_brew_badge_does_not_insert_branding_without_markers(tmp_path: Path, markdown: str | None) -> None:
+    """
+    Keep custom project READMEs opt-in while refreshing the reusable badge asset.
+
+    Args:
+        tmp_path (Path): Temporary publishing checkout.
+        markdown (str | None): Unmarked content, or an absent README.
+
+    Returns:
+        None: README content is neither created nor rewritten without managed branding markers.
+    """
+    path = tmp_path / "README.md"
+
+    if markdown is not None:
+        path.write_text(markdown)
+
+    update_project_branding(tmp_path, Config(LinkedIn("example")), date(2026, 1, 2))
+    assert (path.read_text() if path.exists() else None) == markdown
+    assert (tmp_path / "docs/assets/branding/brew-date.svg").exists()
+
+
+@pytest.mark.parametrize(
+    "markers",
+    [
+        "<!-- resumeme:branding:start -->",
+        "<!-- resumeme:branding:end --><!-- resumeme:branding:start -->",
+        "<!-- resumeme:branding:start --><!-- resumeme:branding:end --><!-- resumeme:branding:end -->",
+    ],
+)
+def test_invalid_branding_markers_fail_before_replacement(tmp_path: Path, markers: str) -> None:
+    """
+    Reject ambiguous block boundaries without dropping a user's README edits.
+
+    Args:
+        tmp_path (Path): Temporary checkout containing malformed markers.
+        markers (str): Incomplete, reversed, or duplicated branding delimiters.
+
+    Returns:
+        None: Neither README nor SVG is replaced on invalid input.
+    """
+    path = tmp_path / "README.md"
+    path.write_text(markers)
+
+    with pytest.raises(ValueError, match="README branding"):
+        update_project_branding(tmp_path, Config(LinkedIn("example")), date(2026, 1, 2))
+
+    assert path.read_text() == markers
+    assert not (tmp_path / "docs/assets/branding/brew-date.svg").exists()
 
 
 @pytest.mark.parametrize("mode", ["auto", "project", "resume"])

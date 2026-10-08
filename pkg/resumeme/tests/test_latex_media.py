@@ -10,7 +10,7 @@ import pytest
 from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
-from resumeme.compiler.passes.media import employer_badge, image_role
+from resumeme.compiler.passes.media import employer_badge, image_role, school_badge
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
 
@@ -112,32 +112,81 @@ def test_structured_company_groups_and_missing_employer_metadata() -> None:
     assert employer_badge(Entry("Engineer", ["Example", "2020 - Present"], images=[logo])) == (0, logo)
 
 
+@pytest.mark.parametrize("section_key", ["experience", "education"])
 @pytest.mark.parametrize("logo_state", ["missing", "unlinked", "linked"])
 @pytest.mark.parametrize("resolved", [False, True])
-def test_company_reference_is_replaced_only_by_a_clickable_logo(tmp_path: Path, logo_state: str, resolved: bool) -> None:
+def test_organization_reference_is_replaced_only_by_a_clickable_logo(
+    tmp_path: Path, section_key: str, logo_state: str, resolved: bool
+) -> None:
     """
-    Avoid duplicate employer references without losing the destination when its logo cannot supply a link.
+    Avoid duplicate organization references without losing the destination when its logo cannot supply a link.
 
     Args:
         tmp_path (Path): Isolated rendering and asset directory.
-        logo_state (str): Whether an employer logo is absent, decorative, or clickable.
-        resolved (bool): Whether capture resolved the original company reference to a different destination.
+        section_key (str): Experience or education section owning the organization.
+        logo_state (str): Whether an organization logo is absent, decorative, or clickable.
+        resolved (bool): Whether capture resolved the original organization reference to a different destination.
 
     Returns:
-        None: The employer destination appears once, as either a linked logo or its retained text reference.
+        None: The organization destination appears once, as either a linked logo or its retained text reference.
     """
     Image.new("RGB", (20, 20), "blue").save(tmp_path / "logo.png")
-    company_url = "https://www.linkedin.com/company/example/"
-    destination = "https://www.linkedin.com/company/resolved/" if resolved else company_url
+    organization = "school" if section_key == "education" else "company"
+    company_url = f"https://www.linkedin.com/{organization}/example/"
+    destination = f"https://www.linkedin.com/{organization}/resolved/" if resolved else company_url
     logo = Media("https://example.org/logo.png", alt="Example Co logo", path="logo.png", link=company_url if logo_state == "linked" else "")
     entry = Entry(
-        "Engineer",
-        ["Example Co", "2020 - Present"],
+        "Example Co" if section_key == "education" else "Engineer",
+        ["Mathematics" if section_key == "education" else "Example Co", "2020 - Present"],
         links=[Link(company_url, company_url, resolved_url=destination)],
         images=[] if logo_state == "missing" else [logo],
     )
-    profile = Profile("example-person", "Alex", sections=[Section("experience", "Experience", [entry])])
+    profile = Profile("example-person", "Alex", sections=[Section(section_key, section_key.title(), [entry])])
     source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
     assert source.count(r"\href{" + destination + "}") == 1
-    assert (r"\allowbreak{}company/" in source) is (logo_state != "linked")
+    assert (r"\allowbreak{}" + organization + "/" in source) is (logo_state != "linked")
     assert len(entry.links) == 1
+
+
+@pytest.mark.parametrize("named", [False, True])
+def test_school_logo_precedes_school_heading_and_preserves_degree_and_other_links(tmp_path: Path, named: bool) -> None:
+    """
+    Keep school branding inline without relocating the degree, duplicating images, or hiding unrelated references.
+
+    Args:
+        tmp_path (Path): Isolated rendering and asset directory.
+        named (bool): Whether LinkedIn supplied an accessible school name for its logo.
+
+    Returns:
+        None: School headings own one linked logo and retain their degree, dates, and additional references.
+    """
+    Image.new("RGB", (20, 20), "blue").save(tmp_path / "school.png")
+    Image.new("RGB", (40, 20), "green").save(tmp_path / "campus.png")
+    school = "Example & University"
+    url = "https://www.linkedin.com/school/example/"
+    logo = Media("https://media.licdn.com/company-logo_100_100/school", alt=school + " logo" if named else "", path="school.png", link=url)
+    preview = Media("https://media.licdn.com/articleshare-shrink_480/campus", alt="Campus preview", path="campus.png")
+    entry = Entry(
+        school,
+        ["BSc, Mathematics", "2015 - 2019"],
+        [Link(url, url), Link("Research paper", "https://example.org/paper")],
+        [preview, logo],
+    )
+    assert school_badge(entry) == (-1, logo)
+    assert school_badge(Entry(school, images=[preview])) is None
+    profile = Profile("example-person", "Alex", sections=[Section("education", "Education", [entry])])
+    path = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path)
+    body = path.read_text().split(r"\begin{document}", 1)[1]
+    logo_asset = next(
+        asset for asset in (path.parent / "assets").glob("*.png") if asset.read_bytes() == (tmp_path / "school.png").read_bytes()
+    )
+    image_path = "assets/" + logo_asset.name
+
+    # The logo and school share the heading row, followed by the complete degree and attendance dates.
+    assert body.count(image_path) == 1
+    assert body.index(r"\companyline{") < body.index(image_path) < body.index(r"Example \& University") < body.index("BSc, Mathematics")
+    assert body.count(rf"\href{{{url}}}") == 1
+    assert r"\allowbreak{}school/" not in body
+    assert "2015 - 2019" in body
+    assert r"\href{https://example.org/paper}{Research paper}" in body
+    assert entry.images == [preview, logo]
