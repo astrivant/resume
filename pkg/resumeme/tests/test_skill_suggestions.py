@@ -142,6 +142,25 @@ def test_prompt_reuses_visibility_and_excludes_contact_and_employer_requirements
     assert profile.sections[1].entries[0].skills == [Skill("Python", 7)]
 
 
+def test_reasoning_change_invalidates_skill_proposal(tagged: Path) -> None:
+    """
+    Keep explicit reasoning settings in the proposal fingerprint without changing default evidence.
+
+    Args:
+        tagged (Path): Existing tagged checkout.
+
+    Returns:
+        None: Default evidence keeps its shape and a proposal cannot be reused with another reasoning level.
+    """
+    config, profile = _config(), _profile()
+    assert "reasoning_effort" not in skill_evidence(profile, config, "resume-test", tag_revision(tagged, "resume-test"))
+    path = _proposal(tagged, profile, config, [{"name": "Rust", "evidence": "Rust"}])
+    changed = evolve(config, codex=evolve(config.codex, reasoning_effort="low"))
+
+    with pytest.raises(ValueError):
+        load_skill_suggestions(path, profile, changed, tagged, "resume-test")
+
+
 @pytest.mark.parametrize(
     "skills",
     [
@@ -495,6 +514,45 @@ def test_ci_contract_is_tag_only_and_keeps_model_and_linkedin_credentials_separa
     assert workflow["publish"]["concurrency"]["group"] == "resumeme-linkedin-ownership-${{ github.repository }}"
     assert "LINKEDIN_PASSWORD" not in json.dumps(workflow["generate"])
     assert "OPENAI_API_KEY" not in json.dumps(workflow["publish"])
+    generator = next(step for step in workflow["generate"]["steps"] if step.get("uses", "").startswith("openai/codex-action@"))
+    assert generator["with"]["effort"] == "${{ steps.settings.outputs.effort }}"
+
+
+@pytest.mark.parametrize("effort", [None, "low"])
+def test_ci_skill_preparation_exports_reasoning(tagged: Path, monkeypatch: MonkeyPatch, effort: str | None) -> None:
+    """
+    Pass configured model and reasoning settings from the tag's config to the upstream action.
+
+    Args:
+        tagged (Path): Fixture repository containing the selected tag.
+        monkeypatch (MonkeyPatch): Scoped process arguments and trusted event state.
+        effort (str | None): Explicit reasoning level or the CLI default.
+
+    Returns:
+        None: Preparation exports matching action inputs without receiving or using an API key.
+    """
+    script = Path(__file__).resolve().parents[3] / "scripts/ci/skills-artifact.py"
+    (tagged / "resumeme.config.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "linkedin": {"username": "example-person"},
+                "codex": {"model": "gpt-6-astra", "reasoning_effort": effort, "skills": {"enabled": True}},
+            }
+        )
+    )
+    save_profile(_profile(), tagged / "data/profile.json")
+    output = tagged / "actions-output"
+    monkeypatch.chdir(tagged)
+    monkeypatch.setattr("sys.argv", [str(script), "prepare"])
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("GITHUB_REF", "refs/tags/resume-test")
+    monkeypatch.setenv("RELEASE_TAG", "resume-test")
+    monkeypatch.setenv("OPENAI_KEY_CONFIGURED", "true")
+    monkeypatch.setenv("GITHUB_OUTPUT", str(output))
+    runpy.run_path(str(script), run_name="__main__")
+    assert "model=gpt-6-astra\n" in output.read_text()
+    assert f"effort={effort or ''}\n" in output.read_text()
+    assert (tagged / ".cache/codex/skills/prompt.txt").is_file()
 
 
 def test_ci_script_rejects_branch_events(tagged: Path, monkeypatch: MonkeyPatch) -> None:

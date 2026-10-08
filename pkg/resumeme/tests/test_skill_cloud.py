@@ -206,6 +206,40 @@ def test_cloud_can_be_replaced_by_the_original_skills_list(tmp_path: Path) -> No
     assert "assets/skills-" not in source.read_text()
 
 
+def test_size_legend_is_optional_without_changing_the_cloud(tmp_path: Path) -> None:
+    """
+    Toggle character-size examples independently of the endorsement scale and skill image.
+
+    Args:
+        tmp_path (Path): Temporary template and generated asset directory.
+
+    Returns:
+        None: The default hides examples, opt-in shows them, and a theme can disable them without changing scores or pixels.
+    """
+    profile = Profile("example-person", "Alex", sections=[Section("skills", "Skills", [Entry("Python", ["3 endorsements"])])])
+    config = Config(LinkedIn(profile.username))
+    source = render_profile(profile, config, tmp_path)
+    image = next((source.parent / "assets").glob("skills-*.png"))
+    pixels = image.read_bytes()
+    manifest = (source.parent / "skills.weights.json").read_bytes()
+    samples = r"0 & 1+ & 5+"
+    scale = r"\pgfuseshading{skillendorsements}"
+    assert samples not in source.read_text()
+    assert scale in source.read_text()
+
+    # The legend is template-only decoration; scores, the rendered word cloud, and its centering stay independent.
+    enabled = evolve(config, style=evolve(config.style, skills_size_legend=True))
+    render_profile(profile, enabled, tmp_path)
+    assert samples in source.read_text()
+    assert scale in source.read_text()
+    assert image.read_bytes() == pixels
+    assert (source.parent / "skills.weights.json").read_bytes() == manifest
+    hidden = evolve(enabled, style=evolve(enabled.style, theme="minimal", themes={"minimal": {"skills_size_legend": False}}))
+    render_profile(profile, hidden, tmp_path)
+    assert samples not in source.read_text()
+    assert scale in source.read_text()
+
+
 def test_tags_can_generate_a_cloud_without_a_skills_section(tmp_path: Path) -> None:
     """
     Aggregate explicit job tags on sparse profiles without adding unrelated prose as skills.

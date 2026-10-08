@@ -30,7 +30,8 @@ codex:
 - `max_skills`: maximum proposed names per tag, from 1 to 100; defaults to 20.
 - `context`: selection preferences. Captured text remains the evidence source.
 
-Generation uses `codex.model` and the existing `OPENAI_API_KEY` repository secret.
+Generation uses `codex.model`, `codex.reasoning_effort`, and the existing `OPENAI_API_KEY`
+repository secret. See [model choices and API key setup](codex.md#model-selection).
 Publication also needs `LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD`, using the
 configured Firefox or Chrome browser. Neither feature runs on branch pushes,
 pull requests, monthly refreshes, or manual branch workflows. Ordinary résumé
@@ -92,7 +93,8 @@ CODEX_API_KEY="$OPENAI_API_KEY" codex exec --ephemeral --sandbox read-only \
 ```
 
 Use the [same pinned Codex CLI](codex.md#local-generation-and-preview) as CI and
-pass `--model` if `codex.model` is set. The command prepares inputs; CI uses the
+pass `--model` if `codex.model` is set and `-c 'model_reasoning_effort="low"'` for
+`codex.reasoning_effort: low` (adjust the value to match your config). The command prepares inputs; CI uses the
 upstream Codex action to generate the structured response.
 
 ## Preservation and retry behavior

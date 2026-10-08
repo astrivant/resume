@@ -77,9 +77,11 @@ top 20 skills, scores, colors, and legend.
 zero endorsements; the last represents the highest endorsement count among the
 20 displayed skills. Intermediate counts interpolate between the stops.
 The centered cloud includes a compact, unnumbered vertical color scale to its left.
-Below the scale, three progressively larger `a` samples illustrate 0, 1+, and 5+
+Set `style.skills_size_legend: true` to show three progressively larger `a` samples
+below the scale, illustrating 0, 1+, and 5+
 endorsements. These are size references, not exact font-size thresholds: profile
 mentions also contribute to size. Single-color palettes omit the scale and its legend.
+The size legend defaults to `false` and supports inline theme overrides.
 
 ```text
 color percentage = 100 * skill endorsements / highest displayed endorsement count

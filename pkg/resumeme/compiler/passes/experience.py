@@ -12,6 +12,7 @@ from attrs import evolve
 
 from resumeme.compiler.asts.dates import employment_period
 from resumeme.compiler.constants.experience import ATTRIBUTION as _ATTRIBUTION
+from resumeme.compiler.passes.selection import matches_fields
 
 if TYPE_CHECKING:
     from resumeme.compiler.asts.dates import EmploymentPeriod
@@ -80,9 +81,7 @@ def _disabled(title: str, company: str, selectors: list[JobSelector]) -> bool:
 
     # A selector combines its fields with AND; separate selectors provide alternative ways to exclude a role.
     return any(
-        (selector.title is None or _normalized(selector.title) == _normalized(title))
-        and (selector.company is None or _normalized(selector.company) == _normalized(company))
-        for selector in selectors
+        matches_fields((selector.title, (title,), _normalized), (selector.company, (company,), _normalized)) for selector in selectors
     )
 
 

@@ -23,7 +23,9 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-@pytest.mark.parametrize("include", [None, [], [{"name": "Tool"}], [{"name": "Tool", "affiliation": "Example Co."}]])
+@pytest.mark.parametrize(
+    "include", [None, [], [{"name": "Tool"}], [{"affiliation": "Example Co."}], [{"name": "Tool", "affiliation": "Example Co."}]]
+)
 def test_project_include_configuration(tmp_path: Path, include: list[dict[str, str]] | None) -> None:
     """
     Load explicit selectors while retaining existing behavior for minimal configurations.
@@ -44,7 +46,9 @@ def test_project_include_configuration(tmp_path: Path, include: list[dict[str, s
     assert config.project_filter == DEFAULT_PROJECT_FILTER
 
 
-@pytest.mark.parametrize("exclude", [[], [{"name": "Tool"}], [{"name": "Tool", "affiliation": "Example Co."}]])
+@pytest.mark.parametrize(
+    "exclude", [[], [{"name": "Tool"}], [{"affiliation": "Example Co."}], [{"name": "Tool", "affiliation": "Example Co."}]]
+)
 def test_project_exclude_configuration(tmp_path: Path, exclude: list[dict[str, str]]) -> None:
     """
     Load typed exclusion selectors without changing the default inclusion policy.
@@ -71,7 +75,10 @@ def test_project_exclude_configuration(tmp_path: Path, exclude: list[dict[str, s
         "Tool",
         ["Tool"],
         [{}],
-        [{"affiliation": "Acme"}],
+        [{"affiliation": " "}],
+        [{"affiliation": None}],
+        [{"affiliation": False}],
+        [{"name": None}],
         [{"name": " "}],
         [{"name": 3}],
         [{"name": "Tool", "affiliation": " "}],
@@ -160,9 +167,13 @@ def test_affiliation_guides_unlinked_descriptions_to_the_correct_role_attachment
     assert not any(section.key == "projects" for section in rejected.sections)
 
 
-def test_grouped_role_affiliations_survive_featured_deduplication() -> None:
+@pytest.mark.parametrize("name", [None, "tool"])
+def test_grouped_role_affiliations_survive_featured_deduplication(name: str | None) -> None:
     """
     Match organizations learned from grouped employment while retaining shared Featured evidence.
+
+    Args:
+        name (str | None): Optional project name alongside the company filter.
 
     Returns:
         None: A resolved URL still identifies one project even when multiple companies or posts reference it.
@@ -181,7 +192,7 @@ def test_grouped_role_affiliations_survive_featured_deduplication() -> None:
             Section("featured", "Featured", [Entry("Post", ["Ordinary post text"], [Link("Tool", "https://lnkd.in/tool", url)])]),
         ],
     )
-    selected, _ = consolidate_projects(profile, enabled=True, include=[ProjectSelector("tool", "Second Company")])
+    selected, _ = consolidate_projects(profile, enabled=True, include=[ProjectSelector(name, "Second Company")])
     projects = next(section.entries for section in selected.sections if section.key == "projects")
     assert len(projects) == 1
     assert projects[0].paragraphs == [
@@ -190,6 +201,41 @@ def test_grouped_role_affiliations_survive_featured_deduplication() -> None:
         "Featured project",
     ]
     assert len(projects[0].links) == 1
+
+
+@pytest.mark.parametrize(
+    "selection,retained",
+    [
+        (Projects(include=[ProjectSelector(affiliation=" hqo. ")]), [0, 1]),
+        (Projects(exclude=[ProjectSelector(affiliation=" hqo. ")]), [2, 3, 4]),
+        (Projects(include=[ProjectSelector(affiliation="HqO")], exclude=[ProjectSelector(name="Tool B")]), [0]),
+        (Projects(include=[ProjectSelector(affiliation="HqO"), ProjectSelector(name="Independent")]), [0, 1, 3]),
+        (Projects(exclude=[ProjectSelector(affiliation="HqO"), ProjectSelector(name="Independent")]), [2, 4]),
+        (Projects(include=[ProjectSelector(name="Tool A", affiliation="Other Company")]), [2]),
+    ],
+)
+def test_optional_fields_compose_as_filters(selection: Projects, retained: list[int]) -> None:
+    """
+    Apply affiliation-only rules across names and combine them with ordinary project filters.
+
+    Args:
+        selection (Projects): Inclusion and exclusion rules containing one or both supported fields.
+        retained (list[int]): Expected project indices in their captured order.
+
+    Returns:
+        None: Fields use AND, selectors use OR, and exclusions win without matching prose or company substrings.
+    """
+    entries = [
+        Entry("Tool A", ["Associated with HqO"]),
+        Entry("Tool B", ["Associated with HqO"]),
+        Entry("Tool A", ["Associated with Other Company"]),
+        Entry("Independent", ["HqO is mentioned in this description."]),
+        Entry("Tool C", ["Associated with HqO Labs"]),
+    ]
+    profile = Profile("example-person", "Alex", sections=[Section("projects", "Projects", entries)])
+    selected, _ = consolidate_projects(profile, enabled=True, include=selection.include, exclude=selection.exclude)
+    assert selected.sections[0].entries == [entries[index] for index in retained]
+    assert profile.sections[0].entries == entries
 
 
 @pytest.mark.parametrize("affiliation", [None, "  FIRST   company. "])
@@ -251,7 +297,8 @@ def test_unknown_affiliation_and_prose_cannot_join_or_select_different_employers
 
 @pytest.mark.parametrize("custom", [False, True])
 @pytest.mark.parametrize("exclusion", [False, True])
-def test_selection_precedes_media_skills_navigation_and_summary(tmp_path: Path, custom: bool, exclusion: bool) -> None:
+@pytest.mark.parametrize("name", [None, "Tool"])
+def test_selection_precedes_media_skills_navigation_and_summary(tmp_path: Path, custom: bool, exclusion: bool, name: str | None) -> None:
     """
     Keep excluded project content out of rendering and summary evidence without changing source snapshots.
 
@@ -259,6 +306,7 @@ def test_selection_precedes_media_skills_navigation_and_summary(tmp_path: Path, 
         tmp_path (Path): Isolated render directory.
         custom (bool): Whether to inspect a custom-template profile or the packaged LaTeX.
         exclusion (bool): Whether an explicit exclusion overrides an inclusion matching both projects.
+        name (str | None): Optional project name narrowing the affiliation filter.
 
     Returns:
         None: Excluded tiles do not stage missing images, contribute skill scores, or enter generated summaries.
@@ -273,9 +321,9 @@ def test_selection_precedes_media_skills_navigation_and_summary(tmp_path: Path, 
     )
     profile = Profile("example-person", "Alex", sections=[Section("projects", "Projects", [kept, excluded])])
     selection = (
-        Projects(include=[ProjectSelector("Tool")], exclude=[ProjectSelector("Tool", "Excluded Company")])
+        Projects(include=[ProjectSelector("Tool")], exclude=[ProjectSelector(name, "Excluded Company")])
         if exclusion
-        else Projects(include=[ProjectSelector("Tool", "Kept Company")])
+        else Projects(include=[ProjectSelector(name, "Kept Company")])
     )
     config = Config(LinkedIn(profile.username), projects=selection)
 

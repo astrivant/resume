@@ -207,6 +207,8 @@ class Codex:
         headline_max_words (int): Maximum words in the summary beneath the portrait.
         companies (list[CompanyTarget]): Additional employer/job variants; the generic resume is always retained.
         skills (CodexSkills): Independent tag-only skill generation and optional profile publication.
+        reasoning_effort (Literal["none", "minimal", "low", "medium", "high", "xhigh", "max"] | None):
+            Model reasoning level, or None for the pinned CLI's default; support depends on the selected model.
     """
 
     enabled: bool = False
@@ -216,6 +218,7 @@ class Codex:
     headline_max_words: int = 18
     companies: list[CompanyTarget] = field(factory=list)
     skills: CodexSkills = field(factory=CodexSkills)
+    reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh", "max"] | None = None
 
 
 @frozen
@@ -311,14 +314,14 @@ class Education:
 @frozen
 class ProjectSelector:
     """
-    Select a displayed project by name and optional captured affiliation.
+    Select a displayed project by name, captured affiliation, or both.
 
     Attributes:
-        name (str): Exact displayed project name, ignoring case and repeated whitespace.
+        name (str | None): Exact displayed project name, or any name when omitted; case and repeated whitespace are ignored.
         affiliation (str | None): Captured company or organization, or any affiliation when omitted.
     """
 
-    name: str
+    name: str | None = None
     affiliation: str | None = None
 
 
@@ -328,7 +331,7 @@ class Projects:
     Restrict consolidated project tiles without altering the saved profile.
 
     Attributes:
-        include (list[ProjectSelector] | None): Alternative selectors; None allows all names, while an empty list selects none.
+        include (list[ProjectSelector] | None): Alternative selectors; None allows all projects, while an empty list selects none.
         exclude (list[ProjectSelector]): Matching selectors remove tiles even when include also matches; empty excludes nothing.
     """
 
@@ -373,6 +376,7 @@ class StyleOverrides(TypedDict, total=False):
         display_birthday (bool): Whether to display the birthday field in enabled contact information.
         skills_word_cloud (bool): Whether to replace the Skills list with a cloud.
         skills_allow_vertical (bool): Whether the cloud may mix vertical and horizontal labels.
+        skills_size_legend (bool): Whether to show character-size examples beneath the endorsement color scale.
         ink (str): Six-digit hexadecimal body text color.
         name_color (str): Six-digit hexadecimal profile name color.
         heading_color (str): Six-digit hexadecimal section heading color.
@@ -396,6 +400,7 @@ class StyleOverrides(TypedDict, total=False):
     display_birthday: bool
     skills_word_cloud: bool
     skills_allow_vertical: bool
+    skills_size_legend: bool
     ink: str
     name_color: str
     heading_color: str
@@ -425,6 +430,7 @@ class Style:
         display_birthday (bool): Display the birthday field when contact information is enabled.
         skills_word_cloud (bool): Replace the Skills list with a cloud weighted by references and endorsements.
         skills_allow_vertical (bool): Allow a mix of vertical and horizontal cloud labels; False keeps all labels horizontal.
+        skills_size_legend (bool): Show character-size examples beneath the endorsement color scale; hidden by default.
         ink (str): Six-digit hexadecimal body text color.
         name_color (str): Six-digit hexadecimal profile name color.
         heading_color (str): Six-digit hexadecimal section heading color.
@@ -450,6 +456,7 @@ class Style:
     display_birthday: bool = False
     skills_word_cloud: bool = True
     skills_allow_vertical: bool = False
+    skills_size_legend: bool = False
     ink: str = "363636"
     name_color: str = "191919"
     heading_color: str = "191919"

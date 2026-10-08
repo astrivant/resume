@@ -39,6 +39,7 @@ def test_selected_theme_overrides_base_without_mutation(tmp_path: Path) -> None:
         "  company_font_size: 13\n  company_color: '191919'\n"
         "  themes:\n    my-print-theme:\n      paper: a4\n      accent: 'A44813'\n"
         "      company_font_size: 14\n      company_color: '6B2737'\n"
+        "      skills_size_legend: true\n"
         "      show_header_photo: false\n      skill_colors: ['6B2737', 'C44A11']\n",
         encoding="utf-8",
     )
@@ -54,6 +55,7 @@ def test_selected_theme_overrides_base_without_mutation(tmp_path: Path) -> None:
     assert base.company_font_size == 13 and base.company_color == "191919"
     assert effective.show_header_photo is False
     assert effective.skill_colors == ("6B2737", "C44A11")
+    assert effective.skills_size_legend is True and base.skills_size_legend is False
     assert selected.accent == "112233" and selected.paper == "letter"
     assert resolve_style(evolve(selected, theme=None)) == base
 
@@ -70,6 +72,7 @@ def test_selected_theme_overrides_base_without_mutation(tmp_path: Path) -> None:
         {"accent": "#A44813"},
         {"ink": None},
         {"show_header_photo": "false"},
+        {"skills_size_legend": "false"},
         {"skill_colors": []},
         {"skill_colors": ["bogus"]},
         {"theme": "recursive"},

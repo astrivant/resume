@@ -38,6 +38,7 @@ gh secret set LINKEDIN_PASSWORD
 - `LINKEDIN_PASSWORD`: account password, passed only to capture or an explicitly enabled
   ownership update.
 - `OPENAI_API_KEY`: needed if `codex.enabled` or `codex.skills.enabled` is true.
+  Create it on the [OpenAI API keys page](https://platform.openai.com/api-keys) and save it as an Actions secret.
   The first enables main-branch summaries; the second enables tag-only skill proposals.
 - `COSIGN_PRIVATE_KEY` and optional `COSIGN_PASSWORD`: needed when publishing a
   signed tag release, not for monthly refreshes. The private-key secret contains

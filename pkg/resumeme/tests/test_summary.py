@@ -135,7 +135,7 @@ def test_evidence_honors_exclusions_without_contact_data(profile: Profile) -> No
     )
 
 
-@pytest.mark.parametrize("change", ["owner", "context", "profile", "word_limit", "disabled"])
+@pytest.mark.parametrize("change", ["owner", "context", "profile", "word_limit", "model", "effort", "disabled"])
 def test_changed_inputs_reject_summary(profile: Profile, tmp_path: Path, change: str) -> None:
     """
     Reject cross-owner and stale responses even when their JSON remains structurally valid.
@@ -159,6 +159,10 @@ def test_changed_inputs_reject_summary(profile: Profile, tmp_path: Path, change:
         config = evolve(config, codex=evolve(config.codex, context="Changed target role"))
     elif change == "word_limit":
         config = evolve(config, codex=evolve(config.codex, about_max_words=50))
+    elif change == "model":
+        config = evolve(config, codex=evolve(config.codex, model="gpt-6-astra"))
+    elif change == "effort":
+        config = evolve(config, codex=evolve(config.codex, reasoning_effort="low"))
     else:
         config = evolve(config, codex=evolve(config.codex, enabled=False))
 
@@ -248,7 +252,16 @@ def test_prompt_and_cli_use_explicit_local_artifacts(profile: Profile, tmp_path:
 
 
 @pytest.mark.parametrize(
-    "override", [{"api_key": "not-allowed"}, {"about_max_words": 0}, {"headline_max_words": 41}, {"model": "bad\nmodel"}]
+    "override",
+    [
+        {"api_key": "not-allowed"},
+        {"about_max_words": 0},
+        {"headline_max_words": 41},
+        {"model": "bad\nmodel"},
+        {"reasoning_effort": "light"},
+        {"reasoning_effort": "low\nmodel=other"},
+        {"reasoning_effort": False},
+    ],
 )
 def test_codex_config_rejects_credentials_and_invalid_limits(tmp_path: Path, override: dict[str, object]) -> None:
     """
@@ -266,6 +279,28 @@ def test_codex_config_rejects_credentials_and_invalid_limits(tmp_path: Path, ove
 
     with pytest.raises(ValidationError):
         load_config(config)
+
+
+@pytest.mark.parametrize("effort", [None, "none", "minimal", "low", "medium", "high", "xhigh", "max"])
+def test_codex_reasoning_effort_configuration(tmp_path: Path, effort: str | None) -> None:
+    """
+    Load reasoning independently of the model while preserving CLI defaults when omitted.
+
+    Args:
+        tmp_path (Path): Isolated configuration directory.
+        effort (str | None): Supported CLI effort value or an explicit default.
+
+    Returns:
+        None: The selected level survives schema validation and typed configuration loading.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(
+        yaml.safe_dump({"linkedin": {"username": "example-person"}, "codex": {"model": "gpt-6-astra", "reasoning_effort": effort}})
+    )
+    config = load_config(path)
+    assert config.codex.model == "gpt-6-astra"
+    assert config.codex.reasoning_effort == effort
+    assert Codex().reasoning_effort is None
 
 
 def test_prepare_requires_enabled_complete_source(profile: Profile, tmp_path: Path) -> None:
@@ -301,6 +336,10 @@ def test_ci_shares_one_summary_without_key_exposure() -> None:
     assert "github.ref == 'refs/heads/main' && github.event_name != 'pull_request'" in stage
     assert "permission-profile: ':read-only'" in stage and "safety-strategy: drop-sudo" in stage
     assert "OPENAI_API_KEY:" not in stage.split("jobs:", 1)[1]
+    jobs = yaml.safe_load(stage)["jobs"]
+    assert jobs["prepare"]["outputs"]["effort"] == "${{ steps.prepare.outputs.effort }}"
+    generator = next(step for step in jobs["summary"]["steps"] if step.get("uses", "").startswith("openai/codex-action@"))
+    assert generator["with"]["effort"] == "${{ needs.prepare.outputs.effort }}"
 
     for name in ["test", "build"]:
         job = pipeline["jobs"][f"{name}-stage"]
@@ -314,8 +353,9 @@ def test_ci_shares_one_summary_without_key_exposure() -> None:
 @pytest.mark.parametrize(
     "enabled,trusted,key_present", [(False, True, False), (True, False, False), (True, True, False), (True, True, True)]
 )
+@pytest.mark.parametrize("effort", [None, "low"])
 def test_ci_preparation_requires_opt_in_trust_and_key(
-    profile: Profile, tmp_path: Path, monkeypatch: MonkeyPatch, enabled: bool, trusted: bool, key_present: bool
+    profile: Profile, tmp_path: Path, monkeypatch: MonkeyPatch, enabled: bool, trusted: bool, key_present: bool, effort: str | None
 ) -> None:
     """
     Exercise the actual setup script across disabled, untrusted, missing-key, and enabled CI paths.
@@ -327,13 +367,18 @@ def test_ci_preparation_requires_opt_in_trust_and_key(
         enabled (bool): Whether local configuration opts into generation.
         trusted (bool): Whether the workflow selected a trusted main-branch event.
         key_present (bool): Presence flag without access to the secret itself.
+        effort (str | None): Optional reasoning override passed to every summary matrix item.
 
     Returns:
         None: Only fully configured trusted runs produce a prompt; missing credentials fail explicitly.
     """
     script = Path(__file__).resolve().parents[3] / "scripts/ci/prepare-summary.py"
     config = tmp_path / "resumeme.config.yaml"
-    config.write_text(yaml.safe_dump({"linkedin": {"username": profile.username}, "codex": {"enabled": enabled}}))
+    config.write_text(
+        yaml.safe_dump(
+            {"linkedin": {"username": profile.username}, "codex": {"enabled": enabled, "model": "gpt-6-astra", "reasoning_effort": effort}}
+        )
+    )
     save_profile(profile, tmp_path / "data/profile.json")
     output = tmp_path / "actions-output"
     monkeypatch.chdir(tmp_path)
@@ -350,4 +395,6 @@ def test_ci_preparation_requires_opt_in_trust_and_key(
 
     runpy.run_path(str(script))
     assert f"enabled={str(enabled and trusted).lower()}" in output.read_text()
+    assert "model=gpt-6-astra\n" in output.read_text()
+    assert f"effort={effort or ''}\n" in output.read_text()
     assert (tmp_path / ".cache/codex/prompt.txt").is_file() is (enabled and trusted)

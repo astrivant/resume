@@ -134,7 +134,7 @@ def skill_evidence(profile: Profile, config: Config, tag: str, revision: str) ->
     if profile.warnings or profile.username != config.linkedin.username:
         raise ValueError("Skill proposals require a complete capture belonging to linkedin.username.")
 
-    return {
+    evidence: dict[str, object] = {
         "username": profile.username,
         "source_tag": tag,
         "source_revision": revision,
@@ -143,6 +143,12 @@ def skill_evidence(profile: Profile, config: Config, tag: str, revision: str) ->
         "max_skills": config.codex.skills.max_skills,
         "source_lines": _source_lines(summary_evidence(profile, config)["sections"]),
     }
+
+    # Bind proposals to an explicitly selected reasoning effort just as summaries are bound to their generation settings.
+    if config.codex.reasoning_effort is not None:
+        evidence["reasoning_effort"] = config.codex.reasoning_effort
+
+    return evidence
 
 
 def skill_digest(evidence: dict[str, object]) -> str:

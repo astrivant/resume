@@ -40,4 +40,5 @@ if enabled:
 
 with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
     output.write(f"enabled={str(enabled).lower()}\nmodel={config.codex.model or ''}\n")
+    output.write(f"effort={config.codex.reasoning_effort or ''}\n")
     output.write("matrix=" + json.dumps({"include": matrix}) + "\n")

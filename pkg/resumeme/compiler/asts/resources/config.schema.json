@@ -214,6 +214,11 @@
           "type": "boolean",
           "default": false
         },
+        "skills_size_legend": {
+          "description": "Show small, medium, and large character examples beneath the skill cloud's endorsement color scale.",
+          "type": "boolean",
+          "default": false
+        },
         "ink": {
           "description": "Body text color.",
           "type": "string",
@@ -292,6 +297,9 @@
               },
               "skills_allow_vertical": {
                 "$ref": "#/properties/style/properties/skills_allow_vertical"
+              },
+              "skills_size_legend": {
+                "$ref": "#/properties/style/properties/skills_size_legend"
               },
               "ink": {
                 "$ref": "#/properties/style/properties/ink"
@@ -558,6 +566,12 @@
           ],
           "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$"
         },
+        "reasoning_effort": {
+          "type": ["string", "null"],
+          "enum": [null, "none", "minimal", "low", "medium", "high", "xhigh", "max"],
+          "default": null,
+          "description": "Codex reasoning effort override; null uses the CLI default. Supported levels depend on the selected model."
+        },
         "about_max_words": {
           "type": "integer",
           "minimum": 1,
@@ -614,10 +628,10 @@
         "include": {
           "type": ["array", "null"],
           "default": null,
-          "description": "Project names and optional affiliations to display. Null keeps all names; [] selects none. The source URL filter still applies.",
+          "description": "Project filters by name, affiliation, or both. Null keeps all projects; [] selects none. The source URL filter still applies.",
           "items": {
             "type": "object",
-            "required": ["name"],
+            "minProperties": 1,
             "additionalProperties": false,
             "properties": {
               "name": {"type": "string", "pattern": "\\S"},
@@ -628,7 +642,7 @@
         "exclude": {
           "type": "array",
           "default": [],
-          "description": "Project names and optional affiliations to omit after consolidation. Exclusions override include; [] excludes nothing.",
+          "description": "Project filters by name, affiliation, or both to omit after consolidation. Exclusions override include; [] excludes nothing.",
           "items": {"$ref": "#/properties/projects/properties/include/items"}
         }
       }

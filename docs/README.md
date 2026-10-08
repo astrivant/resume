@@ -63,7 +63,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `linkedin.ownership.releases_url` | `null` | Optional HTTPS short link; otherwise use the repository releases page |
 | `section_order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
 | `project_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
-| `projects.include` | `null` | Project selectors requiring `name` with optional `affiliation`; `null` keeps all names, `[]` selects none |
+| `projects.include` | `null` | Project filters with `name`, `affiliation`, or both; `null` keeps all projects, `[]` selects none |
 | `projects.exclude` | `[]` | Omit matching name/affiliation selectors; exclusions override `include` |
 | `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
 | `experience.last_years` | `null` | Trailing N calendar years when `since` is unset; null keeps all dates |
@@ -92,6 +92,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `codex.enabled` | `false` | Enable optional generated About and portrait summaries; requires the `OPENAI_API_KEY` Actions secret |
 | `codex.context` | `''` | Additional background, target roles, audience, and tone supplied to Codex |
 | `codex.model` | `null` | Codex model override, or the pinned CLI's default |
+| `codex.reasoning_effort` | `null` | Reasoning level override; this repository selects `low` with `gpt-6-astra`. See [model selection](codex.md#model-selection) |
 | `codex.about_max_words` | `100` | Maximum generated About length, from 1 to 300 words |
 | `codex.headline_max_words` | `18` | Maximum portrait summary length, from 1 to 40 words |
 | `codex.companies` | `[]` | Company usernames and job URLs for additional tailored PDFs under `single-origin/`; see [company summaries](codex.md#single-origin-resumes) |
@@ -108,6 +109,7 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 | `style.display_birthday` | `false` | Show the birthday field when Contact info is enabled |
 | `style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
 | `style.skills_allow_vertical` | `false` | Allow mixed vertical and horizontal cloud labels; enabled in this repository |
+| `style.skills_size_legend` | `false` | Show character-size examples for 0, 1+, and 5+ endorsements beneath the cloud's color scale |
 | `style.ink` | `363636` | Six-digit hexadecimal body text color; soft charcoal by default |
 | `style.name_color` | `191919` | Six-digit hexadecimal profile name color |
 | `style.heading_color` | `191919` | Six-digit hexadecimal section heading color |
@@ -194,6 +196,8 @@ their project previews still consolidate into Projects.
   endorsements relative to the highest count among those 20 skills.
 - `skills_allow_vertical` allows vertical labels alongside horizontal ones in the cloud.
   The package default is `false`; this repository enables it.
+- `skills_size_legend` shows small, medium, and large `a` examples beneath the
+  endorsement color scale. It defaults to `false`; the color scale remains visible.
 
 Set `skills_word_cloud: false` for the text list or comment out `skills` in `section_order` to
 hide the section. See [skill scoring](profile-schema.md#scoring-and-rendering) and
@@ -586,29 +590,38 @@ Use `projects.include` to select individual projects and `projects.exclude` to o
 projects:
   include:
     - name: resumeme
+    - affiliation: Another Company
     - name: Deployment platform
       affiliation: Example Company
   exclude:
+    - affiliation: Archived Company
     - name: resumeme
       affiliation: Former Company
 ```
 
-Each selector requires the exact **displayed project name**. Add `affiliation` to
-select one company or organization when multiple projects have the same name.
+Each selector accepts `name`, `affiliation`, or both. A name-only filter matches
+the exact **displayed project name** across affiliations. An affiliation-only
+filter matches every project associated with that company or organization.
+Supply both fields to select a particular company's project by name.
 Names and affiliations ignore case and repeated whitespace; affiliation matching
 also ignores a trailing period, consistent with company-logo matching. These are
 literal matches, not substring searches or regexes. For example, `Deployment
 platform` does not match `Deployment platform v2`.
 
-Both fields in a selector must match. Any matching inclusion selector includes the project;
+Every supplied field in a selector must match. Any matching inclusion selector includes the project;
 the existing project order is preserved. `include: null` (the default) adds no
-name restriction. `include: []` selects no project tiles. `project_filter` still
+selector restriction. `include: []` selects no project tiles. `project_filter` still
 applies: set it to `null` when selecting projects without GitHub or source links.
 Projects must also remain enabled in `section_order`.
 
 `exclude` uses the same selectors and removes a tile if any selector matches,
 even if `include` also matches. Its default, `[]`, excludes nothing. To keep
 everything except specific projects, use `include: null` with an `exclude` list.
+
+The same field rules apply to `experience.disable` (`title`, `company`) and
+`education.disable` (`school`, `degree`, `major`). Each filter requires at least
+one supported field. Empty mappings, blank or null field values, and unknown keys
+fail configuration validation.
 
 Selection runs after consolidation, so it covers native Projects, attachments
 from visible jobs, and previews from enabled Featured posts. Affiliations come

@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from resumeme.compiler.asts.dates import employment_period
+from resumeme.compiler.passes.selection import matches_fields
 
 if TYPE_CHECKING:
     from resumeme.compiler.asts.profile import Entry
@@ -58,9 +59,11 @@ def filter_education(entries: list[Entry], settings: Education) -> list[Entry]:
             major = degree
 
         disabled = any(
-            (selector.school is None or _normalized(selector.school) == school)
-            and (selector.degree is None or _normalized(selector.degree) in {degree, qualification})
-            and (selector.major is None or _normalized(selector.major) == major)
+            matches_fields(
+                (selector.school, (school,), _normalized),
+                (selector.degree, (degree, qualification), _normalized),
+                (selector.major, (major,), _normalized),
+            )
             for selector in settings.disable
         )
 

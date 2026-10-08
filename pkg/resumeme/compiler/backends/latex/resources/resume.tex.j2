@@ -180,6 +180,7 @@
 \node[anchor=south west,inner sep=0pt] (skillscale) at (0,0) {\resizebox{2mm}{\skilllegendheight}{\pgfuseshading{skillendorsements}}};
 \node[rotate=90,anchor=south,inner sep=0pt] at (-4mm,0.5\skilllegendheight) {\skilllegendlabel};
 
+((* if style.skills_size_legend *))
 % These size examples illustrate endorsement tiers; mentions still contribute to the cloud's combined weights.
 % Anchor the samples below the bar without moving its center or consuming any of the cloud's width.
 \node[anchor=north east,inner sep=0pt,font=\scriptsize] at (2mm,-3mm) {%
@@ -191,6 +192,7 @@
     \multicolumn{3}{@{}c@{}}{\tiny mentions}
   \end{tabular}%
 };
+((* endif *))
 \end{tikzpicture}\hspace{3mm}}%
 ((* endif -*))
 % Scale both bounds to 75% of the original display size without changing the cloud's proportions or weights.

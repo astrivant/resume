@@ -39,3 +39,4 @@ if arguments.command == "prepare":
     with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
         output.write(f"enabled={str(enabled).lower()}\npublish={str(enabled and config.codex.skills.publish).lower()}\n")
         output.write(f"model={config.codex.model or ''}\n")
+        output.write(f"effort={config.codex.reasoning_effort or ''}\n")

@@ -91,6 +91,10 @@ def summary_evidence(profile: Profile, config: Config, company: CompanyEvidence 
         ],
     }
 
+    # Explicit reasoning changes invalidate generated copy; leaving it unset preserves existing default-based artifacts.
+    if config.codex.reasoning_effort is not None:
+        evidence["reasoning_effort"] = config.codex.reasoning_effort
+
     # Generic evidence deliberately excludes the target list, so adding employers cannot alter the generic summary.
     if company is not None:
         evidence["employer"] = asdict(company)

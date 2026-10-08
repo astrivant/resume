@@ -8,7 +8,8 @@ to LinkedIn while retaining every existing skill and endorsement.
 
 ## Enable in your fork
 
-Add an **`OPENAI_API_KEY`** repository secret under **Settings -> Secrets and
+Create a project key on the [OpenAI API keys page](https://platform.openai.com/api-keys).
+Add it as an **`OPENAI_API_KEY`** repository secret under **Settings -> Secrets and
 variables -> Actions**, or use the GitHub CLI's interactive prompt:
 
 ```bash
@@ -20,7 +21,8 @@ Configure [resumeme.config.yaml](../resumeme.config.yaml):
 ```yaml
 codex:
   enabled: true
-  model: null
+  model: gpt-6-astra
+  reasoning_effort: low
   about_max_words: 100
   headline_max_words: 18
   context: |
@@ -31,14 +33,40 @@ codex:
 
 `context` accepts writing preferences and additional factual background. It is
 committed with the configuration and sent with visible professional text to
-OpenAI. Keep credentials out of this field. `model: null` uses the pinned Codex
-CLI's default; set a model ID available to your API project to override it.
+OpenAI. Keep credentials out of this field. `model: null` and
+`reasoning_effort: null` use the pinned Codex CLI's defaults.
 API usage is billed to that project.
 
 Push to `main` or manually dispatch the pipeline on `main`. Generation is off by
 default. Summary generation does not run on pull requests, other branches, or tags.
 Tags can run the separately enabled skill proposal flow. Enabling either generator
 without the API secret fails with a setup message.
+
+## Model selection
+
+This repository selects `gpt-6-astra` with `reasoning_effort: low` for light
+reasoning. The model ID and reasoning level are separate settings. Both settings
+apply to generic summaries, company/job variants, and tag-only skill proposals.
+The upstream [Codex Action](https://learn.chatgpt.com/docs/github-action) receives
+them through its `model` and `effort` inputs.
+
+| `codex.model` | Use case |
+| --- | --- |
+| [`gpt-6-astra`](https://developers.openai.com/api/docs/models/gpt-6-astra) | Detailed writing and demanding reasoning; selected here with low effort. |
+| [`gpt-6.1-sol`](https://developers.openai.com/api/docs/models/gpt-6.1-sol) | Complex work with a lower cost than Astra. |
+| [`gpt-6-luna`](https://developers.openai.com/api/docs/models/gpt-6-luna) | Focused, frequent generation with low cost and latency. |
+| [`gpt-6-sol`](https://developers.openai.com/api/docs/models/gpt-6-sol) | An alternative for existing Sol-based workflows. |
+
+Select a model available to your API project. These choices use the same
+`OPENAI_API_KEY` secret; there is no separate key per model. See the
+[API setup guide](https://developers.openai.com/api/docs/quickstart) and
+[model catalog](https://developers.openai.com/api/docs/models) for current access
+and pricing details.
+
+`reasoning_effort` accepts `none`, `minimal`, `low`, `medium`, `high`, `xhigh`,
+`max`, or `null`; the selected model must support the value. For Astra, use
+`low`, `medium`, `high`, `xhigh`, or `max`. Lower effort favors speed and fewer
+reasoning tokens. See [reasoning controls](https://developers.openai.com/api/docs/guides/reasoning).
 
 ## Inputs and output
 
@@ -51,7 +79,7 @@ without the API secret fails with a setup message.
   Responses exceeding those limits fail validation.
 - Minimal profiles can return empty fields. Empty fields retain ordinary rendering.
 - JSON includes an owner and input fingerprint. Changes to the evidence, context,
-  model, or word limits require regeneration. Model output is escaped as plain text.
+  model, explicit reasoning effort, or word limits require regeneration. Model output is escaped as plain text.
 
 The `resumeme-summary` Actions artifact contains the generated JSON and any
 company/job evidence snapshots. The test and build stages download that same
@@ -158,13 +186,16 @@ Set `OPENAI_API_KEY` through your local secret manager or shell, then run:
 
 ```bash
 CODEX_API_KEY="$OPENAI_API_KEY" codex exec --ephemeral --sandbox read-only \
+    --model gpt-6-astra -c 'model_reasoning_effort="low"' \
     --output-schema .cache/codex/schema.json \
     --output-last-message .cache/codex/summary.json - < .cache/codex/prompt.txt
 poetry run resumeme build --summary .cache/codex/summary.json
 ```
 
-If you set `codex.model`, pass the same ID with `--model` to the local Codex
-command. Review both summary fields before publishing. Requests and generated
+Match `--model` to `codex.model` and `-c 'model_reasoning_effort="low"'` to
+`codex.reasoning_effort`; omit the corresponding flag when its value is `null`.
+See the [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).
+Review both summary fields before publishing. Requests and generated
 JSON stay under ignored `.cache/codex/`; no credentials are written into them.
 
 An ordinary `resumeme build` remains offline and uses captured text. The compiler

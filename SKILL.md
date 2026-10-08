@@ -109,7 +109,7 @@ Follow these settings and their linked contracts:
 | Capability | Configuration and behavior |
 | --- | --- |
 | Section visibility and order | Reorder `section_order`; remove or comment out keys to hide them. There is no separate top-level `disable` list. Empty sections are skipped. [Section rules](docs/README.md#section-visibility-order-and-tiles). |
-| Project selection | `project_filter` matches resolved source URLs and defaults to GitHub. `projects.include` selects exact displayed names with optional affiliation; `projects.exclude` uses the same rules and wins. `include: null` allows all names, `include: []` selects none, and `exclude: []` excludes nothing. [Project consolidation](docs/README.md#project-consolidation-and-links). |
+| Project selection | `project_filter` matches resolved source URLs and defaults to GitHub. `projects.include` and `projects.exclude` accept `name`, `affiliation`, or both. Supplied fields use AND, list entries use OR, and exclusions win. `include: null` allows all projects, `include: []` selects none, and `exclude: []` excludes nothing. [Project consolidation](docs/README.md#project-consolidation-and-links). |
 | Job history | `experience.disable` matches title/company. `since` supplies a fixed inclusive start and overrides `last_years`; `as_of` fixes the endpoint. Include jobs overlapping the window, not just jobs starting within it. [Job filters](docs/README.md#job-filtering). |
 | Education | `education.disable` matches school, degree, major, or their combination. Omit `education` from `section_order` to hide the whole section. [Education filters](docs/README.md#education-filtering). |
 | Job text | Tune `experience.reflow_soft_breaks`, literal `experience.subheadings`, and `style.highlight_job_subheadings` to preserve paragraphs while recognizing small headers. [Text parsing](docs/README.md#job-text-and-subheadings). |
@@ -129,7 +129,9 @@ LinkedIn or the source snapshot.
 
 ## Generate optional Codex outputs
 
-For requested summaries, set `codex.enabled` and relevant context/model/word limits.
+For requested summaries, set `codex.enabled` and relevant context/model/effort/word limits.
+Use separate `codex.model` and `codex.reasoning_effort` values; this repository selects
+`gpt-6-astra` and `low`. See [models and API key setup](docs/codex.md#model-selection).
 `summary-prompt` writes the filtered prompt and schema; it does not call a model.
 Use the existing upstream action in CI or the pinned CLI and invocation in
 [local generation](docs/codex.md#local-generation-and-preview). `OPENAI_API_KEY`

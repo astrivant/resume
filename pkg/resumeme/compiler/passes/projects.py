@@ -16,6 +16,7 @@ from resumeme.compiler.asts.profile import Entry, Link, Section
 from resumeme.compiler.passes.experience import regroup_positions
 from resumeme.compiler.passes.media import image_role
 from resumeme.compiler.passes.project_descriptions import partition_descriptions
+from resumeme.compiler.passes.selection import matches_fields
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -74,13 +75,14 @@ def _matches(entry: Entry, selector: ProjectSelector) -> bool:
 
     Args:
         entry (Entry): Consolidated project with all captured associations.
-        selector (ProjectSelector): Required name and optional affiliation.
+        selector (ProjectSelector): Optional name and affiliation, combined when both are supplied.
 
     Returns:
         bool: Whether every supplied field matches the project.
     """
-    return _name_key(selector.name) == _name_key(entry.title) and (
-        selector.affiliation is None or company_key(selector.affiliation) in _affiliations(entry)
+    return matches_fields(
+        (selector.name, (entry.title,), _name_key),
+        (selector.affiliation, _affiliations(entry), company_key),
     )
 
 
@@ -246,7 +248,7 @@ def consolidate_projects(
         profile (Profile): Visible profile after employment and section filtering.
         enabled (bool): Whether the Projects section is enabled; false still removes relocated cards.
         project_filter (str | None): Python regex searched against source URLs after deduplication; None includes unlinked projects too.
-        include (list[ProjectSelector] | None): Alternative name/affiliation selectors applied after consolidation; None keeps all names.
+        include (list[ProjectSelector] | None): Alternative name/affiliation selectors applied after consolidation; None keeps all projects.
         exclude (Sequence[ProjectSelector]): Matching selectors remove consolidated tiles even when include also matches.
 
     Returns:

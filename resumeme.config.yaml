@@ -52,8 +52,12 @@ pages:
 
 # Optional Codex-generated About and portrait summary. Set OPENAI_API_KEY as an Actions secret before enabling.
 codex:
-  enabled: false
-  model: null
+  enabled: true
+
+  # Astra with light reasoning. Alternatives and setup: docs/codex.md#model-selection
+  # Create an API key at https://platform.openai.com/api-keys and store it as the OPENAI_API_KEY Actions secret.
+  model: gpt-6-astra
+  reasoning_effort: low
   about_max_words: 100
   headline_max_words: 18
 
@@ -111,18 +115,22 @@ project_filter: '(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
 
 projects:
 
-  # null keeps all names allowed by project_filter; [] hides every project tile.
-  # Select by displayed name, with an optional company/organization to distinguish same-named projects.
+  # null keeps all projects allowed by project_filter; [] hides every project tile.
+  # Filter by name, affiliation, or both. Every supplied field must match; separate list entries are alternatives.
   # Matching ignores case and repeated spaces. The source URL filter above still applies.
   include: null
   # include:
   #   - name: resumeme
+  #   - affiliation: Another Company
   #   - name: Deployment platform
   #     affiliation: Example Company
 
   # Omit matching tiles even when include also matches. Uses the same name/affiliation rules; [] excludes nothing.
-  exclude: []
+  exclude:
+    - affiliation: HqO
+    - name: gitlabci-lint-pre-commit-hook
   # exclude:
+  #   - affiliation: Another Company
   #   - name: Archived tool
   #   - name: Deployment platform
   #     affiliation: Former Company
@@ -239,6 +247,9 @@ style:
 
   # Mix vertical and horizontal labels in the cloud; false keeps every label horizontal.
   skills_allow_vertical: true
+
+  # Show small, medium, and large 'a' examples below the endorsement color bar; disabled by default.
+  skills_size_legend: false
 
   # Each named theme can override any presentation field above, or the text/cloud colors below.
   # Theme fields win over base style fields; omitted fields keep their base values.

@@ -361,7 +361,7 @@ Add the `OPENAI_API_KEY` Actions secret, set `codex.enabled: true`, and provide
 target roles, tone, or extra background under `codex.context` in
 [resumeme.config.yaml](resumeme.config.yaml). Main-branch CI generates the copy
 once for both document checks and the PDF build. The captured profile stays intact.
-See [Codex setup and local previews](docs/codex.md).
+See [model choices and API key setup](docs/codex.md#model-selection) and [local previews](docs/codex.md#local-generation-and-preview).
 
 ## Publishing
 
@@ -385,8 +385,8 @@ features you use. GitHub supplies the publication token:
 - **`LINKEDIN_PASSWORD` - required for monthly refresh.** The login password. These
   two secrets reach capture on refresh runs and the optional
   [LinkedIn signing identity update](docs/ownership.md) after signed releases.
-- **`OPENAI_API_KEY` - required when `codex.enabled` or `codex.skills.enabled` is `true`.** An API key from
-  your OpenAI project, stored as an Actions repository secret. The Codex summary
+- **`OPENAI_API_KEY` - required when `codex.enabled` or `codex.skills.enabled` is `true`.** Create a project key on
+  the [OpenAI API keys page](https://platform.openai.com/api-keys) and store it as an Actions repository secret. The Codex summary
   jobs receive it; pull-request checks do not. API usage is billed to that project.
   See [Codex setup](docs/codex.md) and [tag-only skill suggestions](docs/skills.md).
 - **`COSIGN_PRIVATE_KEY` - required for signed releases.** Set this to the complete
