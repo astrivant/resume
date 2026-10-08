@@ -220,6 +220,54 @@ def test_approval_wait_has_one_bounded_deadline(monkeypatch: MonkeyPatch, second
     driver.get.assert_not_called()
 
 
+@pytest.mark.parametrize("completes", [False, True])
+def test_blank_redirect_during_approval_keeps_original_deadline(monkeypatch: MonkeyPatch, completes: bool) -> None:
+    """
+    Observe a blank intermediate document without restarting approval or polling indefinitely.
+
+    Args:
+        monkeypatch (MonkeyPatch): Controls navigation and elapsed time without real sleeping.
+        completes (bool): Whether the blank page resolves to an authenticated regional LinkedIn page.
+
+    Returns:
+        None: Approval either completes in the same session or expires at its original bound.
+    """
+    now, delays = _clock(monkeypatch)
+    driver = _driver("<h1>Check your LinkedIn app</h1>")
+
+    def navigate(seconds: float) -> None:
+        """
+        Advance the simulated redirect between challenge, blank document, and authenticated session.
+
+        Args:
+            seconds (float): Elapsed poll interval.
+
+        Returns:
+            None: Browser state advances without submitting or reloading anything.
+        """
+        now[0] += seconds
+        delays.append(seconds)
+        driver.current_url = "about:blank"
+
+        if completes and now[0] >= 2:
+            driver.current_url = "https://uk.linkedin.com/feed/"
+            driver.get_cookie.return_value = {"name": "li_at", "value": "synthetic-cookie"}
+
+    monkeypatch.setattr("selenium.webdriver.support.wait.time.sleep", navigate)
+    settings = Capture(app_approval_timeout_seconds=3)
+
+    if completes:
+        assert _headless_login_ready(driver, settings)
+        assert now == [2] and delays == [1, 1]
+    else:
+        with pytest.raises(BrowserError, match="approval was not completed within 3 seconds"):
+            _headless_login_ready(driver, settings)
+
+        assert 3 <= now[0] <= 4
+
+    driver.get.assert_not_called()
+
+
 @pytest.mark.parametrize(
     "html,message",
     [

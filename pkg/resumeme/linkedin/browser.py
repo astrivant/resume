@@ -348,27 +348,61 @@ def _authenticated(driver: WebDriver) -> bool:
     Returns:
         bool: The current LinkedIn tab has finished authentication.
     """
-    location = urlsplit(driver.current_url)
-    host = location.hostname or ""
-    path = location.path.casefold().strip("/").split("/", 1)[0]
-    authenticating = path in {"login", "signup", "checkpoint", "challenge", "authwall", "uas"}
-    return (host == "linkedin.com" or host.endswith(".linkedin.com")) and not authenticating and driver.get_cookie("li_at") is not None
+    try:
+        state = _login_page(driver)
+    except BrowserError:
+        # Interactive sign-in can visit another tab; only a trusted LinkedIn page can establish completion.
+        return False
+
+    authenticating = state in {"loading", "login", "signup", "checkpoint", "challenge", "authwall", "uas"}
+    return not authenticating and driver.get_cookie("li_at") is not None
 
 
 def _login_page(driver: WebDriver) -> str:
     """
-    Classify the login location without exposing URL tokens or account identifiers.
+    Classify pending navigation and LinkedIn routes, rejecting unsafe destinations with sanitized diagnostics.
 
     Args:
         driver (WebDriver): Browser being authenticated.
 
     Returns:
-        str: Allowlisted route category, never a raw URL, cookie, or page body.
-    """
-    location = urlsplit(driver.current_url)
+        str: Loading state or allowlisted LinkedIn route category, never a raw URL, cookie, or page body.
 
-    if location.scheme != "https" or location.hostname not in {"linkedin.com", "www.linkedin.com"}:
-        return "unexpected origin"
+    Raises:
+        BrowserError: The destination is malformed, outside HTTPS LinkedIn, or a browser-owned error page.
+    """
+    current_url = driver.current_url
+
+    try:
+        location = urlsplit(current_url)
+        port = location.port
+    except ValueError:
+        # URL parsing errors can echo their input, including private checkpoint tokens or embedded credentials.
+        raise BrowserError("LinkedIn login reached an invalid browser destination. Automatic sign-in stopped.") from None
+
+    # An empty document is a pending navigation, never a form or evidence of successful authentication.
+    if not current_url or (location.scheme == "about" and not location.netloc and location.path == "blank"):
+        return "loading"
+
+    browser_error = location.scheme == "about" and location.path in {"neterror", "certerror", "blocked"}
+
+    if browser_error or (location.scheme == "chrome-error" and location.hostname == "chromewebdata"):
+        raise BrowserError(
+            "LinkedIn login navigation reached a browser error page. "
+            "Check the runner's network, DNS, and TLS connectivity to LinkedIn; this is not a credential rejection."
+        )
+
+    # Apply the same domain boundary to regional LinkedIn redirects, credential controls, and session cookies.
+    host = location.hostname or ""
+    trusted_host = host == "linkedin.com" or host.endswith(".linkedin.com")
+
+    if location.scheme != "https" or not trusted_host or port not in {None, 443} or location.username is not None:
+        # Log only the origin components; checkpoint paths, userinfo, queries, and fragments can carry private values.
+        origin = f"scheme={ascii(location.scheme[:32])}, host={ascii(host[:253])}, port={port if port is not None else 'default'}"
+        raise BrowserError(
+            f"LinkedIn login redirected to an unexpected origin ({origin}). "
+            "Automatic sign-in stopped; no credentials will be sent to this destination."
+        )
 
     route = location.path.casefold().strip("/").split("/", 1)[0]
     return route if route in {"login", "signup", "checkpoint", "challenge", "authwall", "uas", "feed", "in"} else "other LinkedIn page"
@@ -445,8 +479,8 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture, observation: Ch
         nonlocal last
         state = _login_page(page)
 
-        if state == "unexpected origin":
-            raise BrowserError("LinkedIn login redirected to an unexpected origin.")
+        if state == "loading":
+            return False
 
         if _authenticated(page):
             return True
@@ -488,8 +522,8 @@ def _headless_login_ready(driver: WebDriver, settings: Capture) -> bool:
     """
     state = _login_page(driver)
 
-    if state == "unexpected origin":
-        raise BrowserError("LinkedIn login redirected to an unexpected origin.")
+    if state == "loading":
+        return False
 
     if _authenticated(driver):
         return True
@@ -519,8 +553,8 @@ def _login_form(
     """
 
     # Redirects can finish during the wait; check the origin before looking up or returning credential controls.
-    if _login_page(driver) == "unexpected origin":
-        raise BrowserError("LinkedIn login redirected to an unexpected origin.")
+    if _login_page(driver) == "loading":
+        return False
 
     authenticated = _headless_login_ready(driver, unattended) if unattended is not None else _authenticated(driver)
 
@@ -697,6 +731,13 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         )
     except TimeoutException as error:
         state = _login_page(driver)
+
+        if state == "loading":
+            raise BrowserError(
+                "LinkedIn login navigation did not finish (page state: loading). "
+                "The browser remained blank; check the runner's network and browser availability. "
+                "Credentials were not resubmitted."
+            ) from error
 
         # A checkpoint does not establish that credentials are wrong; report the external verification requirement explicitly.
         if state in _LOGIN_BLOCKED_STATES:

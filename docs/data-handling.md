@@ -329,6 +329,11 @@ Paths, names in ordinary text, profile slugs, and non-secret attributes may rema
 Redaction is not a general personal-information detector or a guarantee against
 encoded/partial secret leakage.
 
+Rejected login destinations report their scheme, hostname, and port, without
+paths, URL userinfo, queries, or fragments. A hostname can still identify a
+service or tenant. Malformed destinations and browser-owned error pages receive
+fixed messages without the raw URL or parser exception text.
+
 Checkpoint notices expose classification, fixed detector names, readability, and
 visible input/frame counts, not raw page text or cookies. Separate raw driver
 logs, HTML, screenshots, compiler logs, plain CLI prints, Codex output, and shell

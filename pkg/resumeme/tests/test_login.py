@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 
 from resumeme.config import Capture
 from resumeme.exceptions import BrowserError
-from resumeme.linkedin.browser import _login, _login_form
+from resumeme.linkedin.browser import _authenticated, _login, _login_form
 
 if TYPE_CHECKING:
     from pytest import CaptureFixture, MonkeyPatch
@@ -239,6 +239,168 @@ def test_redirect_during_form_retry_rejects_untrusted_origin(monkeypatch: Monkey
     username.send_keys.assert_not_called()
     password.send_keys.assert_not_called()
     submit.click.assert_not_called()
+
+
+@pytest.mark.parametrize("host", ["linkedin.com", "www.linkedin.com", "uk.linkedin.com", "www.linkedin.com:443"])
+def test_login_accepts_consistent_linkedin_origins(monkeypatch: MonkeyPatch, host: str) -> None:
+    """
+    Use the same HTTPS destination rules for credential entry and authenticated session detection.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies synthetic credentials and controls.
+        host (str): LinkedIn authority reached during navigation.
+
+    Returns:
+        None: A legitimate LinkedIn destination permits one login and recognizes the resulting session.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    driver.current_url = f"https://{host}/login"
+    _login(driver, Capture(page_timeout_seconds=0), headless=True)
+    username.send_keys.assert_called_once()
+    password.send_keys.assert_called_once()
+    submit.click.assert_called_once()
+    driver.current_url = f"https://{host}/feed/"
+    assert _authenticated(driver)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://www.linkedin.com/login",
+        "https://www.linkedin.com:8443/login",
+        "https://notlinkedin.com/login",
+        "https://www.linkedin.com.unrelated.example/private-path?token=private-query#private-fragment",
+        "https://private-user:private-password@unrelated.example/login",
+        "https://private-user:private-password@www.linkedin.com/login",
+    ],
+)
+def test_login_rejects_unsafe_destinations_with_redacted_diagnostics(monkeypatch: MonkeyPatch, url: str) -> None:
+    """
+    Identify rejected origins without disclosing URL credentials, paths, query strings, or fragments.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies synthetic login controls.
+        url (str): Untrusted destination, including lookalikes and insecure LinkedIn origins.
+
+    Returns:
+        None: Neither cached cookies nor a matching form bypass the origin check.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    driver.current_url = url
+    driver.get_cookie.return_value = {"name": "li_at", "value": "synthetic-cookie"}
+    assert not _authenticated(driver)
+    driver.get_cookie.assert_not_called()
+
+    with pytest.raises(BrowserError, match="unexpected origin.*scheme=.*host=.*port=") as error:
+        _login(driver, Capture(page_timeout_seconds=0), headless=True)
+
+    driver.find_elements.assert_not_called()
+    username.send_keys.assert_not_called()
+    password.send_keys.assert_not_called()
+    submit.click.assert_not_called()
+    assert "private-" not in str(error.value)
+
+
+@pytest.mark.parametrize("url", ["", "about:blank", "about:blank#private-fragment"])
+def test_login_waits_for_initial_blank_navigation(monkeypatch: MonkeyPatch, url: str) -> None:
+    """
+    Let initial blank navigation settle under the existing form retry deadline.
+
+    Args:
+        monkeypatch (MonkeyPatch): Completes navigation during deterministic backoff.
+        url (str): Temporary empty browser location.
+
+    Returns:
+        None: Blank documents never receive credentials; the eventual LinkedIn form is submitted once.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    driver.current_url = url
+    assert _login_form(driver) is False
+    driver.find_elements.assert_not_called()
+    driver.get_cookie.assert_not_called()
+    monkeypatch.setattr(
+        "resumeme.linkedin.retrying.time.sleep", lambda delay: setattr(driver, "current_url", "https://www.linkedin.com/login")
+    )
+    _login(driver, Capture(page_timeout_seconds=0, retry_attempts=2, retry_backoff_seconds=0), headless=True)
+    username.send_keys.assert_called_once()
+    password.send_keys.assert_called_once()
+    submit.click.assert_called_once()
+
+
+@pytest.mark.parametrize("url", ["about:neterror?u=private-url", "about:certerror?u=private-url", "chrome-error://chromewebdata/"])
+def test_login_distinguishes_browser_error_pages(monkeypatch: MonkeyPatch, url: str) -> None:
+    """
+    Report browser navigation failures independently from account credentials or external redirects.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies synthetic login controls.
+        url (str): Browser-owned network or certificate failure page.
+
+    Returns:
+        None: Diagnostics identify navigation failure without echoing the failed URL or submitting credentials.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    driver.current_url = url
+
+    with pytest.raises(BrowserError, match="browser error page") as error:
+        _login(driver, Capture(page_timeout_seconds=0), headless=True)
+
+    assert "private-url" not in str(error.value)
+    driver.find_elements.assert_not_called()
+    username.send_keys.assert_not_called()
+    password.send_keys.assert_not_called()
+    submit.click.assert_not_called()
+
+
+@pytest.mark.parametrize("url", ["https://www.linkedin.com:private-port/login", "https://[private-host/login"])
+def test_invalid_login_destination_omits_parser_details(monkeypatch: MonkeyPatch, url: str) -> None:
+    """
+    Convert malformed browser URLs to a safe failure without copying parser inputs.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies synthetic credentials and controls.
+        url (str): Malformed URL containing values that must stay out of diagnostics.
+
+    Returns:
+        None: Sign-in stops without leaking URL fragments or sending credentials.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    driver.current_url = url
+
+    with pytest.raises(BrowserError, match="invalid browser destination") as error:
+        _login(driver, Capture(page_timeout_seconds=0), headless=True)
+
+    assert "private-" not in str(error.value)
+    username.send_keys.assert_not_called()
+    password.send_keys.assert_not_called()
+    submit.click.assert_not_called()
+
+
+@pytest.mark.parametrize("submitted", [False, True])
+def test_blank_navigation_exhausts_existing_deadlines(monkeypatch: MonkeyPatch, submitted: bool) -> None:
+    """
+    Fail a permanently blank page at the current stage without retrying credential submission.
+
+    Args:
+        monkeypatch (MonkeyPatch): Keeps navigation blank and bypasses real retry delays.
+        submitted (bool): Whether the blank document appears before or after the single sign-in click.
+
+    Returns:
+        None: Existing deadlines terminate waiting and the error identifies a loading page.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+    monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", lambda delay: None)
+
+    if submitted:
+        submit.click.side_effect = lambda: setattr(driver, "current_url", "about:blank")
+    else:
+        driver.current_url = "about:blank"
+
+    with pytest.raises(BrowserError, match="page state: loading"):
+        _login(driver, Capture(page_timeout_seconds=0, retry_attempts=2), headless=True)
+
+    assert submit.click.call_count == int(submitted)
+    assert username.send_keys.call_count == password.send_keys.call_count == int(submitted)
 
 
 def test_existing_session_detected_while_waiting_for_form(monkeypatch: MonkeyPatch) -> None:

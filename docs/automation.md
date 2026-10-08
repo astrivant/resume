@@ -199,6 +199,16 @@ client checks the existing session for login completion without submitting again
 Unattended authentication then waits for the page timeout and reports the failed
 stage and a sanitized page category, such as `login` or `checkpoint`.
 
+Origin checks accept HTTPS `linkedin.com` and its subdomains on the default port
+or port `443`, including regional redirects. Other hosts, HTTP, URL userinfo,
+and nonstandard ports stop automatic sign-in. The error reports only the scheme,
+hostname, and port, omitting URL paths, credentials, queries, and fragments.
+Empty locations and `about:blank` wait within the current stage's existing
+deadline and retry limits; they never receive credentials. Browser-owned network
+or certificate error pages report a navigation failure instead of a login error.
+A blank document during app approval does not reset its deadline. These errors
+do not establish that the login secrets are wrong.
+
 When LinkedIn displays its [app sign-in approval prompt](https://www.linkedin.com/help/linkedin/answer/a1426391),
 the command prints a notice to open the LinkedIn app and tap **Yes, it's me**.
 `capture.app_approval_timeout_seconds` defaults to `900` (15 minutes), accepts

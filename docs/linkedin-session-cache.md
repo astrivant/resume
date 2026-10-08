@@ -30,7 +30,14 @@ files are removed. Add `--key-dir /path/to/backup` to reuse an identity or retry
 an interrupted upload. These keys are separate from Cosign release signing.
 Generating a new pair rotates the cache namespace and requires a fresh login.
 
-After the workflow changes are on `main`, seed the shared cache:
+With these secrets configured, CI creates the first encrypted session cache
+automatically after a successful LinkedIn capture. A cache miss on the first run
+is normal. Users do not create or upload a cache file. GitHub authentication
+authorizes the setup script to store repository secrets when the account has
+the required permissions; it does not authenticate that browser to LinkedIn.
+
+After the workflow changes are on `main`, you can optionally warm its shared
+cache before tagging by starting a refresh:
 
 ```bash
 gh workflow run ci.yml --repo YOUR-USERNAME/YOUR-FORK --ref main -f refresh=true
