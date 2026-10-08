@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
 from attrs import evolve
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, NoSuchWindowException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -30,6 +31,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile
 from resumeme.compiler.asts.profile import save_profile
+from resumeme.compiler.asts.sections import section_key
 from resumeme.exceptions import BrowserElementError, BrowserError, BrowserLaunchError, BrowserTimeoutError, BrowserWindowError
 from resumeme.linkedin.challenges import observe_challenge
 from resumeme.linkedin.credentials import login_credentials
@@ -855,25 +857,232 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
     raise BrowserError("Capture reached max_scrolls before the page settled; raise the limit and retry.")
 
 
-def _detail_tabs(driver: WebDriver) -> dict[str, WebElement]:
+def _primary_content(driver: WebDriver) -> WebElement:
+    """
+    Select profile content without including sibling sidebar forms.
+
+    Args:
+        driver (WebDriver): Browser displaying a profile or detail page.
+
+    Returns:
+        WebElement: Primary content section, or main for the older layout.
+    """
+    primary = driver.find_elements(By.CSS_SELECTOR, 'main section[aria-label="Primary content"]')
+    return primary[0] if primary else driver.find_element(By.CSS_SELECTOR, "main")
+
+
+def _detail_tabs(driver: WebDriver, scope: WebElement | None = None) -> dict[str, WebElement]:
     """
     Find visible content tabs while excluding sidebar forms and footer controls.
 
     Args:
         driver (WebDriver): Browser on a dedicated profile section page.
+        scope (WebElement | None): One profile card for inline tabs, or None for the detail page's primary content.
 
     Returns:
         dict[str, WebElement]: Visible tab labels mapped to their interactive elements.
     """
 
     # Scope tab discovery to profile content so unrelated sidebar forms do not become capture targets.
-    primary = driver.find_elements(By.CSS_SELECTOR, 'main section[aria-label="Primary content"]')
-    scope = primary[0] if primary else driver.find_element(By.CSS_SELECTOR, "main")
+    if scope is None:
+        scope = _primary_content(driver)
     return {
         label: element
         for element in scope.find_elements(By.CSS_SELECTOR, "label[for], [role='tab']")
         if element.is_displayed() and (label := element.text.strip())
     }
+
+
+def _tab_selected(driver: WebDriver, tab: WebElement) -> bool:
+    """
+    Read the selected state from an ARIA tab or the input associated with a label.
+
+    Args:
+        driver (WebDriver): Browser owning the tab and its associated input.
+        tab (WebElement): Freshly acquired tab control.
+
+    Returns:
+        bool: Whether this tab is already active, including labels whose input is visually hidden.
+    """
+    if tab.get_attribute("aria-selected") == "true" or tab.get_attribute("aria-checked") == "true":
+        return True
+
+    # LinkedIn's newer layout uses labels and hidden inputs instead of role=tab controls.
+    identifier = tab.get_attribute("for")
+    return bool(identifier and any(control.is_selected() for control in driver.find_elements(By.ID, identifier)))
+
+
+def _select_tab(driver: WebDriver, label: str, scope: Callable[[], WebElement], settings: Capture) -> None:
+    """
+    Activate a tab without assuming the first listed tab is currently selected.
+
+    Args:
+        driver (WebDriver): Browser displaying profile content.
+        label (str): Visible tab label discovered within the target section.
+        scope (Callable[[], WebElement]): Reacquires the current content container after DOM replacement.
+        settings (Capture): Timeout for tab activation.
+
+    Returns:
+        None: The tab was already active or its content changed; expansion still waits for loading to settle.
+
+    Raises:
+        BrowserElementError: A discovered tab disappeared before it could be collected.
+        TimeoutException: Rendered content does not acknowledge the tab switch.
+    """
+    container = scope()
+    tab = _detail_tabs(driver, container).get(label)
+
+    if tab is None:
+        raise BrowserElementError(f"The {label} tab disappeared during profile capture.")
+
+    if _tab_selected(driver, tab):
+        return
+
+    before = container.text
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'})", tab)
+    tab.click()
+
+    def selected(page: WebDriver) -> bool:
+        """
+        Observe changed content without retaining stale DOM references.
+
+        Args:
+            page (WebDriver): Browser being polled by Selenium.
+
+        Returns:
+            bool: The target control still exists and its content acknowledges the switch.
+        """
+        current = scope()
+        control = _detail_tabs(page, current).get(label)
+
+        # A checkbox can update before the tab's request returns. Do not merge the previous tab's entries into the next one.
+        return control is not None and current.text != before
+
+    WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(selected)
+
+
+def _profile_card(driver: WebDriver, key: str, settings: Capture) -> WebElement:
+    """
+    Find one profile card, scrolling to restore it when LinkedIn has virtualized it away.
+
+    Args:
+        driver (WebDriver): Browser on the owner profile.
+        key (str): Normalized section heading to locate.
+        settings (Capture): Bounds on loading and scrolling.
+
+    Returns:
+        WebElement: Current section container, excluding neighboring cards and sidebar controls.
+
+    Raises:
+        BrowserElementError: The previously observed section cannot be located within the scroll bound.
+    """
+
+    def locate(page: WebDriver) -> WebElement | Literal[False]:
+        """
+        Resolve a heading to its nearest section in the profile's primary content.
+
+        Args:
+            page (WebDriver): Current owner profile page.
+
+        Returns:
+            WebElement | Literal[False]: Matching card, or False until it is rendered.
+        """
+        content = _primary_content(page)
+
+        for heading in content.find_elements(By.CSS_SELECTOR, "h2"):
+            if section_key(heading.text) == key:
+                return heading.find_element(By.XPATH, "ancestor::section[1]")
+
+        return False
+
+    card = locate(driver)
+
+    if card:
+        return card
+
+    # Revisit earlier cards without reloading the page or resetting the tab selected by the caller.
+    driver.execute_script(_SCROLL_SCRIPT, "top")
+
+    for _ in range(settings.max_scrolls):
+        try:
+            return WebDriverWait(driver, 1.5, ignored_exceptions=(StaleElementReferenceException,)).until(locate)
+        except TimeoutException:
+            driver.execute_script(_SCROLL_SCRIPT, "next")
+
+    raise BrowserElementError(f"The {key} profile section disappeared during tab capture.")
+
+
+def _inline_section(snapshots: list[str], key: str, title: str) -> Section:
+    """
+    Parse the last observed version of one inline tab after expansion settles.
+
+    Args:
+        snapshots (list[str]): Rendered pages collected after selecting this tab.
+        key (str): Section identifier.
+        title (str): Display heading retained in the snapshot.
+
+    Returns:
+        Section: Selected tab's entries or an explicit empty state.
+
+    Raises:
+        BrowserElementError: The target card was absent from every expanded viewport.
+    """
+
+    # Earlier frames can still contain the previous tab. Prefer the last observation, not the longest card across frames.
+    for html in reversed(snapshots):
+        soup = BeautifulSoup(html, "html.parser")
+        primary = soup.select_one('main section[aria-label="Primary content"]') or soup.select_one("main")
+
+        if primary is None:
+            continue
+
+        for heading in primary.select("h2"):
+            if section_key(heading.get_text(" ", strip=True)) == key and (card := heading.find_parent("section")) is not None:
+                return parse_detail(f"<main>{card}</main>", key, title)
+
+    raise BrowserElementError(f"No inline content found for {title} after tab expansion.")
+
+
+def _inline_tabs(driver: WebDriver, username: str, section: Section, settings: Capture) -> Section:
+    """
+    Collect every profile-card tab when the initial view exposes no detail-page link.
+
+    Args:
+        driver (WebDriver): Authenticated browser reused for all tab selections.
+        username (str): Owner slug constraining any detail links revealed by other tabs.
+        section (Section): Preview whose content must be replaced only after complete collection.
+        settings (Capture): Existing expansion, navigation, and pagination bounds.
+
+    Returns:
+        Section: All inline variants, or the complete dedicated section when a tab reveals a detail link.
+
+    Raises:
+        BrowserError: A tab, section, or pagination boundary cannot be fully collected.
+        TimeoutException: Profile navigation or tab activation fails to settle.
+    """
+    _navigate(driver, f"https://www.linkedin.com/in/{username}/", settings)
+    snapshots = _expand(driver, settings)
+    scope = partial(_profile_card, driver, section.key, settings)
+    labels = list(_detail_tabs(driver, scope()))
+    entries: list[Entry] = []
+
+    for label in labels or [""]:
+        if label:
+            _LOGGER.info("Capturing inline profile tab", extra={"profile.section": section.key, "profile.tab": label})
+            _select_tab(driver, label, scope, settings)
+            snapshots = _expand(driver, settings)
+
+        # A different tab may reveal Show all. Its owner-scoped detail page can then exhaust every tab and page.
+        route = detail_links(merge_profile_html(snapshots), username).get(section.key)
+
+        if route:
+            _LOGGER.info("Following detail page revealed by profile tab", extra={"profile.section": section.key})
+            return _details(driver, route, section.key, section.title, settings)
+
+        collected = _inline_section(snapshots, section.key, section.title)
+        entries.extend(evolve(entry, title=f"{label}: {entry.title}") if label else entry for entry in collected.entries)
+
+    return evolve(section, entries=entries)
 
 
 def _details(driver: WebDriver, url: str, key: str, title: str, settings: Capture) -> Section:
@@ -904,26 +1113,15 @@ def _details(driver: WebDriver, url: str, key: str, title: str, settings: Captur
     if key in {"recommendations", "interests"}:
         tabs = list(_detail_tabs(driver))
 
-    collected = _detail_pages(driver, key, title, settings)
-
     if not tabs:
-        return collected
+        return _detail_pages(driver, key, title, settings)
 
     entries: list[Entry] = []
 
-    for index, label in enumerate(tabs):
-        if index:
-            # Pagination and tab switches replace DOM nodes; reacquire the tab instead of reusing a stale element.
-            tab = _detail_tabs(driver).get(label)
-
-            if tab is None:
-                raise BrowserElementError(f"The {label} tab disappeared while capturing {title}.")
-
-            before = driver.find_element(By.CSS_SELECTOR, "main").text
-            driver.execute_script("arguments[0].scrollIntoView({block: 'center'})", tab)
-            tab.click()
-            WebDriverWait(driver, settings.page_timeout_seconds).until(_text_changed(before))
-            collected = _detail_pages(driver, key, title, settings)
+    for label in tabs:
+        _LOGGER.info("Capturing detail tab", extra={"profile.section": key, "profile.tab": label})
+        _select_tab(driver, label, partial(_primary_content, driver), settings)
+        collected = _detail_pages(driver, key, title, settings)
 
         # Carry tab provenance into the portable text so the merged section remains understandable without browser state.
         entries.extend(evolve(entry, title=f"{label}: {entry.title}") for entry in collected.entries)
@@ -1119,6 +1317,22 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
         # Dedicated detail pages supersede preview cards only after their full expansion and pagination succeed.
         replacements: dict[str, Section] = {}
 
+        # Small tabbed sections may have no Show all link until another tab is selected; collect those cards directly.
+        for section in profile.sections:
+            if section.key in {"recommendations", "interests"} and section.key not in routes:
+                _LOGGER.info("Capturing profile section inline", extra={"profile.section": section.key})
+
+                try:
+                    replacements[section.key] = retry(
+                        partial(_inline_tabs, driver, username, section, config.capture),
+                        attempts=config.capture.retry_attempts,
+                        backoff=config.capture.retry_backoff_seconds,
+                        max_backoff=config.capture.retry_max_backoff_seconds,
+                        exceptions=(TimeoutException, StaleElementReferenceException, NoSuchElementException),
+                    )
+                finally:
+                    (_state_root(root) / f"capture/{section.key}.html").write_text(driver.page_source, encoding="utf-8")
+
         for key, url in routes.items():
             title = next((section.title for section in profile.sections if section.key == key), key.replace("-", " ").title())
             _LOGGER.info("Capturing profile section", extra={"profile.section": key})
@@ -1137,10 +1351,6 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
         # Preserve profile order and append any detail-only sections discovered outside the initial cards.
         sections = [replacements.pop(section.key, section) for section in profile.sections]
         sections.extend(replacements.values())
-
-        # Tabs can contain additional content that a single view does not expose.
-        if any(section.key in {"recommendations", "interests"} and section.key not in routes for section in sections):
-            warnings.append("Profile contains tabbed content; verify all tab variants are represented before accepting the snapshot.")
 
         if f"/in/{username}/overlay/contact-info" in html:
             _LOGGER.info("Capturing contact information")

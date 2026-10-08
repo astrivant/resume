@@ -877,9 +877,15 @@ and [LinkedIn's account export](https://www.linkedin.com/help/linkedin/answer/a1
 This project reads what the authenticated browser displays and cannot guarantee
 content hidden by LinkedIn or anticipate all future markup changes.
 
-Missing headings, empty detail pages, looping pagination, and exhausted expansion
-limits fail capture. Unvisited tabbed sections and failed media downloads are recorded as
-warnings. A warning-bearing result is written to `.cache/capture/profile.json` for
+Recommendations and Interests are collected across every visible tab, including
+tabs on the profile itself when there is no initial Show all link. A detail link
+revealed by another tab is followed for full pagination. Tab labels are retained
+with each entry. Capture collects these sections even when the PDF configuration
+hides them.
+
+Missing headings, unreadable tabs, empty detail pages without an explicit empty
+state, looping pagination, and exhausted expansion limits fail capture. Failed
+media downloads are recorded as warnings. A warning-bearing result is written to `.cache/capture/profile.json` for
 review instead of replacing the accepted snapshot. `--allow-incomplete` is an
 explicit override on capture, validation, render, and build; CI never uses it.
 
