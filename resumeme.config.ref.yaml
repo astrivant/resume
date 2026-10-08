@@ -91,28 +91,28 @@ codex:
 # All known sections in package-default order. Remove or comment out a key to hide it; reorder to move sections.
 # Missing/empty sections are skipped. [] shows only the profile header. Review contact fields before publishing.
 section_order:
-  - contact
+  # - contact
   - about
-  - featured
-  - activity
+  # - featured
+  # - activity
   - experience
   - education
-  - services
-  - career-breaks
-  - certifications
-  - volunteering-experiences
+  # - services
+  # - career-breaks
+  # - certifications
+  # - volunteering-experiences
   - projects
   - publications
-  - patents
-  - courses
-  - honors
-  - test-scores
+  # - patents
+  # - courses
+  # - honors
+  # - test-scores
   - skills
-  - recommendations
-  - languages
-  - organizations
-  - interests
-  - causes
+  # - recommendations
+  # - languages
+  # - organizations
+  # - interests
+  # - causes
 
 # Python regex applied to resolved project URLs. null includes all sources, including unlinked projects.
 # Single quotes preserve backslashes. This default matches github.com, ignoring case.
