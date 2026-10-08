@@ -158,6 +158,9 @@ Check the Actions tab if an expected refresh is missing. See
 LinkedIn can require MFA, a CAPTCHA, or another account challenge, particularly
 from a hosted runner. Waiting for a usable login form uses
 `capture.page_timeout_seconds` and the configured exponential retry policy.
+Capture supports both LinkedIn's fixed-ID login form and generated-ID layouts
+using autocomplete attributes and a regular Sign in button. It selects visible
+controls and waits for the submit button to enable after filling the fields.
 Credentials are submitted once. If that click times out during navigation, the
 client checks the existing session for login completion without submitting again.
 Unattended authentication then waits for the page timeout and reports the failed

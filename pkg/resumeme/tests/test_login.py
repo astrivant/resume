@@ -157,25 +157,30 @@ def test_login_form_retries_with_configured_exponential_backoff(monkeypatch: Mon
     submit.click.assert_called_once()
 
 
-def test_missing_login_form_reports_stage_without_leaking_page_data(monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]) -> None:
+@pytest.mark.parametrize("raises", [False, True])
+def test_missing_login_form_reports_stage_without_leaking_page_data(
+    monkeypatch: MonkeyPatch, capsys: CaptureFixture[str], raises: bool
+) -> None:
     """
     Bound a permanently missing form and report the failed phase without private browser data.
 
     Args:
         monkeypatch (MonkeyPatch): Installs synthetic credentials and immediate retry delays.
         capsys (CaptureFixture[str]): Captures progress and retry diagnostics.
+        raises (bool): Whether Selenium raises during lookup instead of returning no matching controls.
 
     Returns:
         None: Retries exhaust without typing, submitting, or printing secrets and URL tokens.
     """
     driver, username, password, submit = _browser(monkeypatch)
-    driver.find_elements.side_effect = NoSuchElementException("private-page-data")
+    driver.find_elements.side_effect = NoSuchElementException("private-page-data") if raises else None
+    driver.find_elements.return_value = []
     settings = Capture(page_timeout_seconds=0, retry_attempts=2, retry_backoff_seconds=0)
 
     with pytest.raises(ValueError, match=r"login form did not become ready after 2 attempts.*page state: login") as error:
         _login(driver, settings, headless=True)
 
-    assert driver.find_elements.call_count == 2
+    assert driver.find_elements.call_count == (2 if raises else 4)
     username.send_keys.assert_not_called()
     password.send_keys.assert_not_called()
     submit.click.assert_not_called()
@@ -328,6 +333,34 @@ def test_submit_reacquires_a_button_replaced_after_typing(monkeypatch: MonkeyPat
     _login(driver, Capture(page_timeout_seconds=0), headless=True)
     submit.click.assert_not_called()
     replacement.click.assert_called_once()
+    username.send_keys.assert_called_once()
+    password.send_keys.assert_called_once()
+
+
+@pytest.mark.parametrize("authenticated", [False, True])
+def test_submit_rechecks_origin_and_session_after_typing(monkeypatch: MonkeyPatch, authenticated: bool) -> None:
+    """
+    Observe a completed login or reject a redirected form before clicking a reacquired button.
+
+    Args:
+        monkeypatch (MonkeyPatch): Supplies a form whose destination changes after password entry.
+        authenticated (bool): Whether entry completes authentication instead of redirecting to another origin.
+
+    Returns:
+        None: Neither an already completed login nor an unrelated destination receives a submit click.
+    """
+    driver, username, password, submit = _browser(monkeypatch)
+
+    if authenticated:
+        password.send_keys.side_effect = lambda value: submit.click.side_effect()
+        _login(driver, Capture(page_timeout_seconds=0), headless=True)
+    else:
+        password.send_keys.side_effect = lambda value: setattr(driver, "current_url", "https://unrelated.example/login")
+
+        with pytest.raises(ValueError, match="unexpected origin"):
+            _login(driver, Capture(page_timeout_seconds=0), headless=True)
+
+    submit.click.assert_not_called()
     username.send_keys.assert_called_once()
     password.send_keys.assert_called_once()
 
