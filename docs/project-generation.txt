@@ -1,9 +1,10 @@
 resumeme: building it together
 Emma and AI (Codex)
 
-Exported 2026-10-08 from this conversation's saved user-visible record.
-Covers the initial project request on 2026-10-07 (UTC) through the request to
-export the conversation on 2026-10-08 (UTC).
+Exported and updated 2026-10-08 from this conversation's saved user-visible record.
+Covers the initial project request on 2026-10-07 (UTC) through the latest request
+to update this log on 2026-10-08 (America/New_York), including the CI concurrency
+changes and the preference for operators at the start of continuation lines.
 
 This is the original back-and-forth, including corrections, questions, and
 progress updates. Consecutive messages by the same speaker are grouped together.
@@ -2786,3 +2787,159 @@ CI caches encrypted browser state and cleans temporary plaintext. Use `--key-dir
 Local parallel tests, pre-commit checks, actionlint, and lockfile validation passed. Secret uploads were tested with mocked GitHub calls; no remote secrets were changed or hosted CI run.
 
 **Emma: Document / export this conversation, the back and forth -> docs/project-generation.txt, so anyone can read it and see how we got here, together. You and me:)
+
+**AI: I'll save a readable transcript in `docs/project-generation.txt`, preserving your requests and the replies available to me. I'll mark gaps where earlier assistant messages aren't available so the record stays accurate.
+
+I found the local conversation record, including the earlier replies and login/setup questions. I can export the actual back-and-forth with timestamps, rather than reconstructing it from the surviving context.
+
+**Emma: Make it like ~
+
+Emma: ...
+
+AI: ... <responses & questions>
+
+Emma: ...
+
+AI: ...
+
+**AI: I'll simplify it to `Emma:` and `AI:`, grouping consecutive AI updates, questions, and replies together.
+
+Saved [docs/project-generation.txt](/Users/emmadoyle/projects/personal/resume/docs/project-generation.txt) as alternating `Emma:` / `AI:` dialogue, preserving our requests, questions, replies, and progress updates in order.
+
+**Emma: Add specific classifiers / etc. for PyPi to the pyproject.toml
+
+**AI: I'll check the package metadata and add PyPI classifiers that match its purpose, license, and supported Python versions.
+
+Updated [pyproject.toml](/Users/emmadoyle/projects/personal/resume/pyproject.toml) with 13 classifiers covering maturity, CLI use, audience, platforms, Python, typing, and document processing. Added search keywords and corrected project links.
+
+Poetry validation and pre-commit passed. Built both distributions and verified their metadata.
+
+**Emma: Let's be sure to document sensitive data handling and how it exactly is performed and what is stored and why and when, under SECURITY.md if need-be, but also in the docs. We need to be very precise and clear about the risks for end-users. We take no responsibility upstream for any forks of this project; only our own. We probably shouldn't include that lawyer-speak, but.
+
+**AI: I'll trace what the code stores, sends, and publishes, then document the lifecycle and risks in `SECURITY.md` and the operational docs. I'll also make the responsibility split clear in plain language: we maintain this repository; fork owners control their secrets, runners, and published data.
+
+The main distinction is important: session-cache encryption protects the saved browser login, not the captured profile or résumé artifacts. Hidden sections remain in the source snapshot, and optional AI prompts are stored as ordinary CI artifacts. I'm documenting those exposures, retention periods, cleanup limits, and what fork owners need to review before publishing.
+
+I'm also using the OpenAI Docs skill to verify the AI-processing disclosures. The docs will distinguish the prepared prompt's filtered contents from files readable by the action, and avoid implying that `--ephemeral` controls API-side retention.
+
+The inventory now covers local files, CI artifacts, public outputs, and key backups. It also makes two limits explicit: backup directories contain both the encrypted key and its password, and browser cleanup does not erase other job files or guarantee recovery from a host crash. I'm correcting older wording that overstated those protections.
+
+Updated [SECURITY.md](/Users/emmadoyle/projects/personal/resume/SECURITY.md) and [data-handling.md](/Users/emmadoyle/projects/personal/resume/docs/data-handling.md) with storage locations, recipients, retention, encryption, cleanup, key rotation, and fork-owner responsibilities.
+
+Explicitly documented that browser-cache encryption does not protect profile snapshots, AI prompts, or published artifacts, and hiding PDF sections does not remove their source data.
+
+Verified documentation links, all 13 artifact retention settings, pre-commit checks, and whitespace checks. Documentation only; no runtime changes.
+
+**Emma: &#x20; {"body": "LinkedIn login redirected to an unexpected origin.", "severity_number": 17, "severity_text": "ERROR", "attributes": {"error.type": "BrowserError", "logger.name": "resumeme.cli"}, "dropped_attributes": 0, "timestamp": "2026-10-08T20:54:46.410728Z", "observed_timestamp": "2026-10-08T20:54:46.413584Z", "trace_id": "0x00000000000000000000000000000000", "span_id": "0x0000000000000000", "trace_flags": 0, "resource": {"attributes": {"telemetry.sdk.language": "python", "telemetry.sdk.name": "opentelemetry", "telemetry.sdk.version": "1.45.1", "service.instance.id": "e6d74832-0345-4140-8ed1-bf8142f33243", "service.name": "resumeme", "service.version": "0.2.0"}, "schema_url": ""}, "event_name": ""}
+
+[https://github.com/astrivant/resumeme/actions/runs/37842802692/job/113536231593](https://github.com/astrivant/resumeme/actions/runs/37842802692/job/113536231593)
+
+**AI: I'll check the failed job and the redirect check to find which browser state triggered this error, then make a focused fix.
+
+The run had no cached session, then failed with an error that omitted the destination host. That leaves the cause unclear. The code also treats temporary blank pages as redirects and checks LinkedIn hosts inconsistently. I'm fixing those cases and adding a sanitized diagnostic so a remaining failure identifies the destination without exposing URL tokens.
+
+The new regression tests reproduced the blank-page and regional-host failures. The fix applies the same HTTPS checks throughout login, waits for blank pages within the existing time limits, and reports browser network/error pages separately. Unrelated hosts still fail before receiving credentials.
+
+**Emma: Why can't you generate the first cached session instead of having an end-user manually create it. If they've auth'ed to push their code, they're auth'ed to create this cache/secure it etc.
+
+**AI: Users should not have to create a cache manually. CI already encrypts and saves the browser session automatically after a successful capture.
+
+GitHub authentication authorizes GitHub operations; it does not authenticate the browser to LinkedIn. This run had no saved session and stopped during login, so it never reached the cache-saving step. LinkedIn may still require the first app approval or MFA, but creating and securing the cache afterward should be automatic.
+
+No manual cache creation is required. With the encryption secrets configured, CI automatically creates, encrypts, and saves the session after successful capture.
+
+GitHub access authorizes storage and setup. LinkedIn must separately authenticate the browser, potentially requiring app approval or MFA. The failed run stopped before caching could occur. I clarified this in the docs.
+
+I also corrected blank-page and regional-host handling and added sanitized redirect diagnostics. **125 tests and relevant pre-commit checks passed.** Hosted CI remains unverified; the original log omitted the destination needed to establish its exact cause.
+
+**Emma: [https://github.com/astrivant/resumeme/actions/runs/37844024955/job/113540553224](https://github.com/astrivant/resumeme/actions/runs/37844024955/job/113540553224)
+
+Assertion errors in tests
+
+**AI: I'll inspect the failed assertions, reproduce them locally, and fix the cause.
+
+All six failures reproduce locally. The tests count logos, links, and company names across the whole document, which now includes the current-employer sidebar. I'll scope those assertions to Experience or Education and keep explicit checks for the sidebar's single logo.
+
+Fixed all six assertions. They counted the current-employer sidebar as duplicate Experience content. Tests now check each section separately and verify the sidebar's single logo.
+
+**145 related tests passed**, plus pre-commit checks. PDF behavior is unchanged; hosted CI has not been rerun.
+
+**Emma: &#x20; Cache not found for input keys: resumeme-session-v1-fb3c94165d3ff36cf430af969d52f3f1cb58ed6fd05170e6f575d1c18c5afbca-4148090968bb0072431c7ad9dc2262e9f8464420931432ec9e0f93a081dd91fa-37844549255-1-capture, resumeme-session-v1-fb3c94165d3ff36cf430af969d52f3f1cb58ed6fd05170e6f575d1c18c5afbca-4148090968bb0072431c7ad9dc2262e9f8464420931432ec9e0f93a081dd91fa-\
+\
+&#x20;     \
+&#x20;       \
+&#x20;       \
+&#x20;     \
+&#x20;     \
+&#x20;   \
+Run poetry run python scripts/ci/linkedin-session.py run --command "$SESSION_COMMAND"\
+&#x20;
+
+[https://github.com/astrivant/resumeme/actions/runs/37844549255/job/113542087684](https://github.com/astrivant/resumeme/actions/runs/37844549255/job/113542087684)
+
+How come this is stuck on poetry?
+
+**AI: I'll check the live job to see whether Poetry is still starting the command or the browser is waiting without showing progress.
+
+`poetry run` is the label for the entire capture command. Dependency setup finished; GitHub reports the LinkedIn capture step still running.
+
+The cache miss means it must start a fresh session. With logging defaulted to `ERROR`, browser startup, navigation, and retries can run silently. App approval can also wait up to 15 minutes.
+
+For visible progress, set:
+
+```yaml
+logging:
+  level: INFO
+```
+
+GitHub won't expose the unfinished job's logs through the CLI, so I can't yet identify its exact waiting phase. No files changed.
+
+**Emma: On push to main, I don't want to separate pipelines to appear; consolidate openssf's update -> our original pipeline
+
+**AI: I'll move the OpenSSF Scorecard job into the main CI workflow so pushes to `main` produce one workflow run.
+
+Scorecard's badge publishing API restricts the workflows it accepts. I'm checking its support for reusable workflows so consolidation preserves the existing badge updates. [Upstream requirements](https://github.com/ossf/scorecard-action#workflow-restrictions)
+
+The upstream API supports reusable workflows. I'll make Scorecard a stage of the existing pipeline and move its weekly schedule there too. Weekly Scorecard runs will skip résumé capture and generation.
+
+Consolidated OpenSSF Scorecard into the existing CI pipeline. Pushes to `main` now trigger one workflow. Badge publishing and weekly scans remain enabled; weekly scans skip résumé generation.
+
+Validated with actionlint, pre-commit, and nine event-routing checks. Hosted CI has not been run.
+
+**Emma: I'm fine with having as many stages as we can, but let's lean closer to amdahl's law for independent work in our pipeline and run it in parallel in fewer stages.
+
+**AI: I'll review the job dependencies and let independent checks, builds, and publishing jobs run in parallel while preserving the verification gates.
+
+The main bottleneck is that package builds, container builds, and tests wait for AI summaries. I'm moving source-only builds ahead of capture, running tests alongside summaries once profile data is ready, and letting registry uploads run alongside the signed release. Release-note updates will wait for both publishing jobs to finish.
+
+The dependency changes are in place. Package and container builds start alongside capture; tests, summaries, and tag-only skill proposals run in parallel once the profile is ready. PDF compilation and document review then run together. The publication gate still requires every check and build to pass, and live LinkedIn writes still wait for a signed release.
+
+The focused CI and publication tests passed: 158 tests, including failure cases for each required branch. I'm finishing lint and type checks. The docs now describe the parallel jobs and note that enabled skill generation can use API credits before another branch fails.
+
+Reduced sequential dependencies:
+
+- Package and container builds run alongside capture.
+- Tests, summaries, and skill proposals run together once profile data is ready.
+- PDF compilation and document review run together.
+- Registry uploads, PyPI publication, and signing run together after verification.
+
+Release-note updates and live LinkedIn writes retain their required ordering.
+
+**158 focused tests passed**, plus actionlint and pre-commit checks. Hosted runtime improvements remain unmeasured.
+
+**Emma: if: >-
+      !cancelled() &&
+
+^ can we break the &&'s over multiple lines to make it more readble.
+
+**AI: I'll format multiline workflow conditions with one predicate per line.
+
+Done. Workflow conditions now put each predicate on its own line. Logic is unchanged; actionlint and YAML equivalence checks passed.
+
+**Emma: I'd prefer the infix operators following newlines, not before, in these predicates
+
+**AI: I'll move the operators to the start of each continuation line and check that the conditions stay equivalent.
+
+Done. `&&` and `||` now start continuation lines throughout the predicates. Conditions are unchanged; actionlint and schema checks passed.
+
+**Emma: docs/project-generation.txt <- update this;) pls.

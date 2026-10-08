@@ -45,7 +45,9 @@ runs:
         RESUMEME_SESSION_CACHE_DIR: ${{ inputs.cache-directory }}
       run: poetry run python scripts/ci/linkedin-session.py run --command "$SESSION_COMMAND"
     - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-      if: always() && steps.session.outputs.cache-ready == 'true'
+      if: >-
+        always()
+        && steps.session.outputs.cache-ready == 'true'
       with:
         path: ${{ steps.prepare.outputs.cache-path }}
         key: ${{ steps.prepare.outputs.cache-key }}

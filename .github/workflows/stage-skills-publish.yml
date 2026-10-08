@@ -29,7 +29,9 @@ defaults:
 jobs:
   publish:
     name: Add missing skills to LinkedIn
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
     runs-on: ${{ fromJSON(vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]') }}
     timeout-minutes: 30
 

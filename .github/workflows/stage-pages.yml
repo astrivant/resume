@@ -14,7 +14,9 @@ defaults:
 jobs:
   prepare:
     name: Prepare static resume site
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: >-
+      github.ref == 'refs/heads/main'
+      && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:

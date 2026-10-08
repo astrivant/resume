@@ -29,9 +29,10 @@ jobs:
   scorecard-stage:
     name: OpenSSF Scorecard
     if: >-
-      github.event.repository.fork == false &&
-      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
-      (github.event_name == 'push' || github.event_name == 'schedule')
+      github.event.repository.fork == false
+      && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      && (github.event_name == 'push'
+      || github.event_name == 'schedule')
     uses: ./.github/workflows/stage-scorecard.yml
     permissions:
       contents: read
@@ -59,7 +60,9 @@ jobs:
   build-stage:
     name: Build package and container
     needs: source
-    if: ${{ !cancelled() && needs.source.result == 'success' }}
+    if: >-
+      ${{ !cancelled()
+      && needs.source.result == 'success' }}
     uses: ./.github/workflows/stage-build.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -68,9 +71,12 @@ jobs:
     name: Refresh LinkedIn source
     needs: source
     if: >-
-      needs.source.outputs.refresh == 'true' &&
-      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
-      (github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')))
+      needs.source.outputs.refresh == 'true'
+      && ((github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/'))
+      || (github.ref == 'refs/heads/main'
+      && (github.event_name == 'schedule'
+      || github.event_name == 'workflow_dispatch')))
     runs-on: ${{ fromJSON(vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]') }}
     timeout-minutes: 45
     steps:
@@ -108,9 +114,12 @@ jobs:
     name: Summarize
     needs: [source, capture]
     if: >-
-      !cancelled() && needs.source.result == 'success' &&
-      ((needs.source.outputs.refresh == 'true' && needs.capture.result == 'success') ||
-      (needs.source.outputs.refresh != 'true' && needs.capture.result == 'skipped'))
+      !cancelled()
+      && needs.source.result == 'success'
+      && ((needs.source.outputs.refresh == 'true'
+      && needs.capture.result == 'success')
+      || (needs.source.outputs.refresh != 'true'
+      && needs.capture.result == 'skipped'))
     uses: ./.github/workflows/stage-summary.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -122,9 +131,12 @@ jobs:
     needs: [source, capture]
     # Schema checks validate the selected capture; Python tests have no dependency on generated summaries.
     if: >-
-      !cancelled() && needs.source.result == 'success' &&
-      ((needs.source.outputs.refresh == 'true' && needs.capture.result == 'success') ||
-      (needs.source.outputs.refresh != 'true' && needs.capture.result == 'skipped'))
+      !cancelled()
+      && needs.source.result == 'success'
+      && ((needs.source.outputs.refresh == 'true'
+      && needs.capture.result == 'success')
+      || (needs.source.outputs.refresh != 'true'
+      && needs.capture.result == 'skipped'))
     uses: ./.github/workflows/stage-test.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -134,7 +146,10 @@ jobs:
   documents-stage:
     name: Review documents
     needs: [source, summary-stage]
-    if: ${{ !cancelled() && needs.source.result == 'success' && needs.summary-stage.result == 'success' }}
+    if: >-
+      ${{ !cancelled()
+      && needs.source.result == 'success'
+      && needs.summary-stage.result == 'success' }}
     uses: ./.github/workflows/stage-documents.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -143,7 +158,10 @@ jobs:
   resume-stage:
     name: Build resume
     needs: [source, summary-stage]
-    if: ${{ !cancelled() && needs.source.result == 'success' && needs.summary-stage.result == 'success' }}
+    if: >-
+      ${{ !cancelled()
+      && needs.source.result == 'success'
+      && needs.summary-stage.result == 'success' }}
     uses: ./.github/workflows/stage-resume.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -153,7 +171,10 @@ jobs:
   # Run the gate after failures too; a skipped or cancelled upstream stage must never look like successful verification.
   verified:
     name: CI verification
-    if: always() && !(github.event_name == 'schedule' && github.event.schedule == '43 6 * * 1')
+    if: >-
+      always()
+      && !(github.event_name == 'schedule'
+      && github.event.schedule == '43 6 * * 1')
     needs: [source, capture, summary-stage, test-stage, build-stage, documents-stage, resume-stage]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -173,8 +194,11 @@ jobs:
     name: Publish coverage badge
     needs: [source, test-stage]
     if: >-
-      !cancelled() && needs.source.result == 'success' && needs.test-stage.result == 'success' &&
-      github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      !cancelled()
+      && needs.source.result == 'success'
+      && needs.test-stage.result == 'success'
+      && github.event_name == 'push'
+      && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -232,11 +256,14 @@ jobs:
     # Token-authenticated publication commits run normal CI, but their parent run already published these outputs.
     # Gate only republishing on a main push; tagging that generated commit must still capture and release normally.
     if: >-
-      !cancelled() && needs.source.result == 'success' && needs.verified.result == 'success' &&
-      github.ref == 'refs/heads/main' && github.event_name != 'pull_request' &&
-      !(github.event_name == 'push' &&
-        github.event.head_commit.author.name == 'github-actions[bot]' &&
-        contains(github.event.head_commit.message, 'Resumeme-Publication: true'))
+      !cancelled()
+      && needs.source.result == 'success'
+      && needs.verified.result == 'success'
+      && github.ref == 'refs/heads/main'
+      && github.event_name != 'pull_request'
+      && !(github.event_name == 'push'
+      && github.event.head_commit.author.name == 'github-actions[bot]'
+      && contains(github.event.head_commit.message, 'Resumeme-Publication: true'))
     uses: ./.github/workflows/stage-deploy.yml
     permissions:
       contents: write
@@ -252,8 +279,11 @@ jobs:
     name: Publish resume website
     needs: deploy-stage
     if: >-
-      !cancelled() && needs.deploy-stage.result == 'success' &&
-      github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.deploy-stage.outputs.published-sha != ''
+      !cancelled()
+      && needs.deploy-stage.result == 'success'
+      && github.ref == 'refs/heads/main'
+      && github.event_name != 'pull_request'
+      && needs.deploy-stage.outputs.published-sha != ''
     uses: ./.github/workflows/stage-pages.yml
     permissions:
       contents: read
@@ -267,7 +297,9 @@ jobs:
   release-stage:
     name: Release signed PDF
     needs: [source, verified]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-release.yml
     permissions:
       contents: write
@@ -281,7 +313,9 @@ jobs:
   ownership-stage:
     name: Publish signing identity to LinkedIn
     needs: [source, release-stage]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-ownership.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -296,7 +330,9 @@ jobs:
   linkedin-resume-stage:
     name: Optionally upload the released resume to LinkedIn
     needs: [source, release-stage]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-linkedin-resume.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -312,8 +348,11 @@ jobs:
     name: Propose LinkedIn skills
     needs: [source, capture]
     if: >-
-      !cancelled() && needs.source.result == 'success' && needs.capture.result == 'success' &&
-      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+      !cancelled()
+      && needs.source.result == 'success'
+      && needs.capture.result == 'success'
+      && github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-skills.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -325,9 +364,13 @@ jobs:
     name: Publish LinkedIn skills
     needs: [source, skills-stage, release-stage]
     if: >-
-      !cancelled() && needs.source.result == 'success' && needs.skills-stage.result == 'success' &&
-      needs.release-stage.result == 'success' && needs.skills-stage.outputs.publish == 'true' &&
-      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+      !cancelled()
+      && needs.source.result == 'success'
+      && needs.skills-stage.result == 'success'
+      && needs.release-stage.result == 'success'
+      && needs.skills-stage.outputs.publish == 'true'
+      && github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-skills-publish.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -343,7 +386,9 @@ jobs:
   pypi-stage:
     name: Publish Python package
     needs: [source, verified]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/v')
     uses: ./.github/workflows/stage-pypi.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -354,7 +399,9 @@ jobs:
   container-stage:
     name: Publish container
     needs: [source, verified]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/stage-container.yml
     permissions:
       contents: read
@@ -369,8 +416,11 @@ jobs:
     name: Publish container pull commands
     needs: [source, container-stage, release-stage]
     if: >-
-      !cancelled() && needs.source.result == 'success' && needs.release-stage.result == 'success' &&
-      (needs.container-stage.outputs.ghcr-tags != '' || needs.container-stage.outputs.dockerhub-tags != '')
+      !cancelled()
+      && needs.source.result == 'success'
+      && needs.release-stage.result == 'success'
+      && (needs.container-stage.outputs.ghcr-tags != ''
+      || needs.container-stage.outputs.dockerhub-tags != '')
     uses: ./.github/workflows/stage-container-notes.yml
     permissions:
       contents: write

@@ -57,7 +57,9 @@ jobs:
           args: README.md . html .cache/textidote/readme.html -1 "--check en"
       - name: Review generated LaTeX and profile prose
         id: resume
-        if: ${{ !cancelled() && steps.documents.outcome == 'success' }}
+        if: >-
+          ${{ !cancelled()
+          && steps.documents.outcome == 'success' }}
         uses: docker://gokhlayeh/textidote@sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441
         with:
           args: >-
@@ -87,7 +89,9 @@ jobs:
 
       # Preserve any completed report if the other document check fails, while treating a missing report directory as an error.
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: always() && steps.documents.outcome == 'success'
+        if: >-
+          always()
+          && steps.documents.outcome == 'success'
         with:
           name: textidote-reports
           path: .cache/textidote/*.html

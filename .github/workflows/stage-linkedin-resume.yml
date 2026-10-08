@@ -25,7 +25,9 @@ defaults:
 jobs:
   resume:
     name: Upload the released application resume
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
     runs-on: ${{ fromJSON(vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]') }}
     timeout-minutes: 30
     concurrency:
