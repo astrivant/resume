@@ -150,7 +150,9 @@ experience:
 
   # Match a job title, company, or both (case-insensitive).
   # Example: [{title: DevOps Engineer, company: HqO}]
-  disable: []
+  disable:
+    - company: astrivant
+    - company: Tiger Lily Plants LLC.
     # - title: Founder
     #   company: PremiScale
 
