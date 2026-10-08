@@ -2,6 +2,9 @@
 
 Use Python 3.13+ and Poetry 2.5.1 in the existing checkout. Dependencies install
 from `poetry.lock`; local checks and CI share the settings in `pyproject.toml`.
+Dependency constraints allow patch releases within the tested major/minor lines.
+Use `poetry update` to refresh the lockfile; major/minor upgrades require updating
+those constraints and rerunning the checks below. CI installs the committed lockfile.
 
 ## Install and verify
 
