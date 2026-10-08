@@ -455,3 +455,4 @@ interaction. See [automation setup and recovery](docs/automation.md).
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
 - [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR and Docker Hub.
 - [Development](docs/development.md): setup, parallel tests, tooling, and document checks.
+- [Studies](studies/README.md): design assessments, including the proposed automated job application workflow.
