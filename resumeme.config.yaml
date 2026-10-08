@@ -57,7 +57,7 @@ pages:
 
 # Optional Codex-generated About and portrait summary. Set OPENAI_API_KEY as an Actions secret before enabling.
 codex:
-  enabled: true
+  enabled: false
 
   # Astra with light reasoning. Alternatives and setup: docs/codex.md#model-selection
   # Create an API key at https://platform.openai.com/api-keys and store it as the OPENAI_API_KEY Actions secret.
