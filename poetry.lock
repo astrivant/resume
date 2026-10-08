@@ -2531,14 +2531,22 @@ files = [
 
 [[package]]
 name = "shfmt-py"
-version = "3.12.0.2"
-description = "Python wrapper around invoking shfmt (https://github.com/mvdan/sh)"
+version = "4.2.0"
+description = "Installs the shfmt shell script formatter binary, plus a ready-made pre-commit hook"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "shfmt_py-3.12.0.2.tar.gz", hash = "sha256:6a0dc675b37d000eb236609cf15aedd9e7a538927ea02c57b617908b6f237e9c"},
+    {file = "shfmt_py-4.2.0-py2.py3-none-macosx_10_9_x86_64.whl", hash = "sha256:aaf9e195c2e115309c32ef0d8d05b42afc4a23468b61230a09a8a4bdac95d027"},
+    {file = "shfmt_py-4.2.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:7b7fa81b120fdccebbe60b9c3411ce1b549fa2828f2809e8fa5e231a9bac65dd"},
+    {file = "shfmt_py-4.2.0-py2.py3-none-manylinux2014_aarch64.whl", hash = "sha256:e615cfcfe3e184f59e3ac2574895542976995a46f7506b327c8af71ae02de84c"},
+    {file = "shfmt_py-4.2.0-py2.py3-none-manylinux2014_x86_64.whl", hash = "sha256:867b55792952d4e4aa27a1b2d578e63b745a77e11b7742d2f6258ef123a9c8f2"},
+    {file = "shfmt_py-4.2.0-py2.py3-none-win_amd64.whl", hash = "sha256:566f46c036cb475ac84ac952d83122b67c9557418c24b04628c5782f9f57eccf"},
+    {file = "shfmt_py-4.2.0.tar.gz", hash = "sha256:cf7842d69e9f787ce97503c1280e65417f2c08014d594018dda245fcba96ff51"},
 ]
+
+[package.extras]
+test = ["pytest (>=7)", "setuptools (>=70.1)"]
 
 [[package]]
 name = "six"
@@ -2952,4 +2960,4 @@ h11 = ">=0.16.0,<1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4.0"
-content-hash = "70b1f79a68064429f806e3a42334f1f005437036c8ab2a2181cee77320cb4aaf"
+content-hash = "4b7694f20321e673d2cddd127c9c07f0a63dae4a31bc4ea028ad259650db0d14"
