@@ -45,7 +45,7 @@ readme:
 
 # Enable after selecting GitHub Actions as the publishing source in your fork's Settings > Pages.
 pages:
-  enabled: false
+  enabled: true
 
   # Site-relative directory with leading/trailing slashes. / serves index.html at the site's root; /cv/ serves a subdirectory.
   # GitHub's automatic /REPOSITORY prefix is handled separately; do not repeat it here.
@@ -53,7 +53,7 @@ pages:
 
   # Optional check against the domain configured in Settings > Pages, e.g. resume.tiger-lily-plants.com.
   # This does not change DNS or GitHub's domain settings. null also supports USER.github.io/REPOSITORY sites.
-  custom_domain: null
+  custom_domain: resume.tiger-lily-plants.com
 
 # Optional Codex-generated About and portrait summary. Set OPENAI_API_KEY as an Actions secret before enabling.
 codex:

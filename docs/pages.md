@@ -31,14 +31,17 @@ that environment's deployment rules. See
 
 ## Custom domain
 
-For `https://resume.tiger-lily-plants.com/` on the personal account `emmeowzing`:
+For `https://resume.tiger-lily-plants.com/` from `astrivant/resumeme`:
 
 1. In the fork's **Settings > Pages > Custom domain**, save
    `resume.tiger-lily-plants.com`.
-2. At the DNS provider for `tiger-lily-plants.com`, add a **CNAME** record named
-   `resume` with target **`emmeowzing.github.io`**. Use your GitHub account's Pages
-   hostname when adapting these instructions. The target does not include a
-   repository name or `https://`.
+2. At the DNS provider for `tiger-lily-plants.com`, set a **CNAME** record named
+   `resume` targeting **`astrivant.github.io`**. Use the publishing repository
+   owner's Pages hostname when adapting these instructions. The target does not
+   include a repository name or `https://`. Replace existing A records for
+   `resume` with this CNAME; GitHub's subdomain validation rejects that A-record
+   setup even when those addresses point to GitHub. Leave the parent domain's
+   records unchanged.
 3. Set the configuration below, push it, and select **Enforce HTTPS** in Pages
    settings once GitHub makes the certificate available.
 
@@ -52,6 +55,10 @@ For `https://resume.tiger-lily-plants.com/` on the personal account `emmeowzing`
 The resulting URLs are `https://resume.tiger-lily-plants.com/`,
 `https://resume.tiger-lily-plants.com/index.html`, and
 `https://resume.tiger-lily-plants.com/resume.pdf`.
+The root displays the PDF inside `index.html`; `/resume.pdf` serves the actual
+PDF file. Selecting **GitHub Actions** as the Pages source is required for this
+project's generated viewer. Publishing directly from the repository branch would
+serve repository content instead of the generated site artifact.
 
 `custom_domain` checks that GitHub's configured hostname matches your expectation;
 it does not configure DNS or change repository settings. Keep it `null` to use
