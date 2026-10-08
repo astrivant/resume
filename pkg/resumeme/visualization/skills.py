@@ -22,6 +22,7 @@ from resumeme.compiler.asts.profile import Skill
 from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.asts.skills import endorsement_count
 from resumeme.compiler.constants.backend import CLOUD_FONT, LATEX_PACKAGE
+from resumeme.exceptions import RenderingError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -83,10 +84,10 @@ def endorsement_colors(scores: dict[str, SkillScore], colors: tuple[str, ...]) -
         dict[str, str]: CSS hexadecimal color for each label; zero-count profiles use the first stop.
 
     Raises:
-        ValueError: The palette is empty.
+        RenderingError: The palette is empty.
     """
     if not colors:
-        raise ValueError("The skill cloud requires at least one theme color.")
+        raise RenderingError("The skill cloud requires at least one theme color.")
 
     maximum = max((score.endorsements for score in scores.values()), default=0)
     stops = [tuple(int(color[offset : offset + 2], 16) for offset in (0, 2, 4)) for color in colors]
@@ -224,7 +225,7 @@ def render_skill_cloud(
         str | None: Relative PNG path, or None when no skills are present.
 
     Raises:
-        ValueError: The palette is empty or the available canvas cannot display every selected skill legibly.
+        RenderingError: The palette is empty or the available canvas cannot display every selected skill legibly.
     """
     manifest = directory / "skills.weights.json"
 
@@ -250,7 +251,7 @@ def render_skill_cloud(
         return None
 
     if not colors:
-        raise ValueError("The skill cloud requires at least one theme color.")
+        raise RenderingError("The skill cloud requires at least one theme color.")
 
     # Select before scaling so the cloud stays readable; equal weights use the same stable name ordering as the score manifest.
     selected = dict(sorted(scores.items(), key=lambda item: (-item[1].weight, _normalized(item[0])))[:_MAX_CLOUD_SKILLS])
@@ -288,6 +289,6 @@ def render_skill_cloud(
             (directory / "assets" / name).write_bytes(data)
             return f"assets/{name}"
 
-    raise ValueError(
+    raise RenderingError(
         "The skill cloud could not fit every selected label. Set style.skills_word_cloud: false to render the complete text list."
     )

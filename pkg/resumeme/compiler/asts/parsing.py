@@ -19,6 +19,7 @@ from resumeme.compiler.asts.skills import endorsement_count, skill_labels
 from resumeme.compiler.constants.parsing import BLOCK_TAGS, PARAGRAPH_BREAK
 from resumeme.compiler.constants.parsing import IGNORED_SECTIONS as _IGNORED_SECTIONS
 from resumeme.compiler.constants.parsing import UI_TEXT as _UI_TEXT
+from resumeme.exceptions import ProfileError
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -378,7 +379,7 @@ def parse_profile(html: str, username: str) -> Profile:
         Profile: Ordered sections and intro content.
 
     Raises:
-        ValueError: Profile identity is missing or the page is an authentication form.
+        ProfileError: Profile identity is missing or the page is an authentication form.
     """
     soup = BeautifulSoup(html, "html.parser")
     main = soup.select_one('section[aria-label="Primary content"]') or soup.select_one("main")
@@ -387,13 +388,13 @@ def parse_profile(html: str, username: str) -> Profile:
     heading = main.select_one("h1, h2") if main else None
 
     if main is None or heading is None or soup.select_one("input[type='password']"):
-        raise ValueError("No profile heading found. Finish login and open your profile; LinkedIn may also have changed its markup.")
+        raise ProfileError("No profile heading found. Finish login and open your profile; LinkedIn may also have changed its markup.")
 
     name = heading.get_text(" ", strip=True)
     intro_node = heading.find_parent("section") or heading.parent
 
     if not isinstance(intro_node, Tag) or not name or name.casefold() in {"sign in", "join linkedin", "security verification"}:
-        raise ValueError("The profile intro is missing.")
+        raise ProfileError("The profile intro is missing.")
 
     intro = _clean(intro_node)
 
@@ -456,13 +457,13 @@ def parse_detail(html: str, key: str, title: str) -> Section:
         Section: Complete loaded entries for replacement of the profile preview.
 
     Raises:
-        ValueError: The page has no supported content list.
+        ProfileError: The page has no supported content list.
     """
     soup = BeautifulSoup(html, "html.parser")
     main = soup.select_one('section[aria-label="Primary content"]') or soup.select_one("main")
 
     if main is None:
-        raise ValueError(f"No detail entries found for {title}; refusing to discard its preview.")
+        raise ProfileError(f"No detail entries found for {title}; refusing to discard its preview.")
 
     key = section_key(key)
 
@@ -481,7 +482,7 @@ def parse_detail(html: str, key: str, title: str) -> Section:
     entries = [entry for entry in entries if entry.title.casefold() != title.casefold() or entry.paragraphs or entry.images]
 
     if not entries:
-        raise ValueError(f"No detail entries found for {title}; refusing to discard its preview.")
+        raise ProfileError(f"No detail entries found for {title}; refusing to discard its preview.")
 
     return Section(key=key, title=title, entries=entries)
 
@@ -497,7 +498,7 @@ def parse_contact(html: str) -> Section:
         Section: Contact fields and website links in their displayed order.
 
     Raises:
-        ValueError: The contact dialog is missing or empty.
+        ProfileError: The contact dialog is missing or empty.
     """
     soup = BeautifulSoup(html, "html.parser")
 
@@ -521,4 +522,4 @@ def parse_contact(html: str) -> Section:
             if entry.title:
                 return Section("contact", "Contact info", [entry])
 
-    raise ValueError("The profile contact information dialog did not load.")
+    raise ProfileError("The profile contact information dialog did not load.")

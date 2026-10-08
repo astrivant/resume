@@ -30,6 +30,16 @@ Runtime options remain in `config.py`. See the [compiler architecture](compiler.
 See [pipeline and package ownership](README.md#pipeline-and-ownership), the
 [profile schema](profile-schema.md), and the [template interface](templates.md).
 
+## Exceptions
+
+Define package exceptions under `pkg/resumeme/exceptions/` and import them from
+`resumeme.exceptions`. `ResumemeError` is the shared base; domain classes identify
+configuration, profile, summary, media, contribution, rendering, compilation,
+publication, signing, and browser failures. They retain their previous built-in
+or Selenium bases so existing catch clauses and retry policies continue to work.
+Preserve exception chaining when translating a dependency failure. Untranslated
+dependency exceptions keep their original types.
+
 ## Publish to PyPI
 
 The package is named [`resumeme`](https://pypi.org/project/resumeme/). Pushing a

@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 
 from attrs import evolve
 
+from resumeme.exceptions import ConfigurationError
+
 if TYPE_CHECKING:
     from resumeme.config import Style
 
@@ -25,14 +27,14 @@ def resolve_style(style: Style) -> Style:
         Style: Effective presentation values; omitted theme fields retain their base values.
 
     Raises:
-        ValueError: The selected name is absent from style.themes, including configs constructed directly in Python.
+        ConfigurationError: The selected name is absent from style.themes, including configs constructed directly in Python.
     """
 
     if style.theme is None:
         return style
 
     if style.theme not in style.themes:
-        raise ValueError(f"Unknown style.theme {style.theme!r}; define it under style.themes or use null.")
+        raise ConfigurationError(f"Unknown style.theme {style.theme!r}; define it under style.themes or use null.")
 
     # Apply overrides by key presence so False remains meaningful; theme/themes themselves cannot be overridden.
     return evolve(style, **style.themes[style.theme])

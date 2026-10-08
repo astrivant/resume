@@ -10,6 +10,8 @@ import subprocess
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
+from resumeme.exceptions import SigningError
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -36,7 +38,7 @@ def release_destination(settings: Ownership, root: Path, *, allow_missing: bool 
         str: HTTPS destination, or an empty string when discovery is optional and no repository exists.
 
     Raises:
-        ValueError: No GitHub repository can be identified or the URL is unsafe for plain text.
+        SigningError: No GitHub repository can be identified or the URL is unsafe for plain text.
     """
 
     # A supplied short link is an explicit destination; no shortening service or credential is required.
@@ -50,7 +52,7 @@ def release_destination(settings: Ownership, root: Path, *, allow_missing: bool 
             or location.password is not None
             or any(character.isspace() or ord(character) < 32 for character in settings.releases_url)
         ):
-            raise ValueError("linkedin.ownership.releases_url must be an HTTPS URL without credentials or whitespace.")
+            raise SigningError("linkedin.ownership.releases_url must be an HTTPS URL without credentials or whitespace.")
 
         return settings.releases_url
 
@@ -73,7 +75,7 @@ def release_destination(settings: Ownership, root: Path, *, allow_missing: bool 
         return ""
 
     if not _REPOSITORY.fullmatch(repository) or repository.split("/")[-1] in {".", ".."}:
-        raise ValueError("Set linkedin.ownership.repository to OWNER/REPO, or configure a GitHub origin remote.")
+        raise SigningError("Set linkedin.ownership.repository to OWNER/REPO, or configure a GitHub origin remote.")
 
     return f"https://github.com/{repository}/releases"
 
@@ -90,10 +92,10 @@ def ownership_block(fingerprint: str, releases_url: str) -> str:
         str: Two public lines containing no authentication or private key material.
 
     Raises:
-        ValueError: The fingerprint does not match the canonical release format.
+        SigningError: The fingerprint does not match the canonical release format.
     """
     if not _FINGERPRINT.fullmatch(fingerprint):
-        raise ValueError("Expected a SHA256 fingerprint of the public key's DER encoding.")
+        raise SigningError("Expected a SHA256 fingerprint of the public key's DER encoding.")
 
     return f"resume signature: {fingerprint}\nreleases: {releases_url}"
 
@@ -110,14 +112,16 @@ def reconcile_about(current: str, block: str) -> str:
         str: Complete replacement text, identical on repeat runs with the same identity.
 
     Raises:
-        ValueError: Existing ownership labels are incomplete, duplicated, or manually reformatted.
+        SigningError: Existing ownership labels are incomplete, duplicated, or manually reformatted.
     """
     matches = list(_MANAGED.finditer(current))
     labels = list(_LABEL.finditer(current))
 
     # Stop on ambiguous edits rather than deleting a paragraph that merely resembles our managed block.
     if labels and (len(matches) != 1 or len(labels) != 2):
-        raise ValueError("About contains ambiguous ownership lines. Keep exactly one 'resume signature:' / 'releases:' pair or remove it.")
+        raise SigningError(
+            "About contains ambiguous ownership lines. Keep exactly one 'resume signature:' / 'releases:' pair or remove it."
+        )
 
     if matches:
         match = matches[0]

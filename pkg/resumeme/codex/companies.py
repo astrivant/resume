@@ -19,6 +19,7 @@ from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.compiler.passes.summary import summary_digest
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import project_path
+from resumeme.exceptions import SummaryError
 from resumeme.linkedin.media import fetch_public
 from resumeme.linkedin.retrying import retry
 
@@ -46,7 +47,7 @@ def _page_text(content: bytes, *, job: bool) -> str:
         str: Plain text with the page heading and a substantive description.
 
     Raises:
-        ValueError: No usable description is exposed by the page.
+        SummaryError: No usable description is exposed by the page.
     """
     soup = BeautifulSoup(content, "html.parser")
     kind = "JobPosting" if job else "Organization"
@@ -88,7 +89,7 @@ def _page_text(content: bytes, *, job: bool) -> str:
         descriptions = [str(node) for node in soup.select(selectors)]
 
     if not descriptions:
-        raise ValueError("The page exposes no company/job description. Supply company_context or job_context in codex.companies.")
+        raise SummaryError("The page exposes no company/job description. Supply company_context or job_context in codex.companies.")
 
     heading = soup.find("h1")
     parts = [heading.get_text(" ", strip=True)] if heading else []
@@ -107,7 +108,7 @@ def _page_text(content: bytes, *, job: bool) -> str:
     result = "\n\n".join(parts)
 
     if len(result) < 40 or len(result) > _MAX_CONTEXT:
-        raise ValueError("Company/job evidence must contain 40-40000 characters. Supply a complete text override in the config.")
+        raise SummaryError("Company/job evidence must contain 40-40000 characters. Supply a complete text override in the config.")
 
     return result
 
@@ -125,7 +126,7 @@ def _fetch_context(url: str, config: Config, *, job: bool) -> str:
         str: Acquired plain-text company or job evidence.
 
     Raises:
-        ValueError: A login wall, unavailable listing, or unsupported page requires a configured text override.
+        SummaryError: A login wall, unavailable listing, or unsupported page requires a configured text override.
         requests.RequestException: Transient failures exhaust the configured retries.
     """
     with requests.Session() as session:
@@ -142,12 +143,12 @@ def _fetch_context(url: str, config: Config, *, job: bool) -> str:
                 content, destination = fetch_public(session, url, config.capture.page_timeout_seconds)
             except requests.HTTPError as error:
                 if error.response is not None and error.response.status_code not in {408, 429, 500, 502, 503, 504}:
-                    raise ValueError(f"Cannot read {url}; supply company_context or job_context for this target.") from error
+                    raise SummaryError(f"Cannot read {url}; supply company_context or job_context for this target.") from error
 
                 raise
 
             if any(part in urlsplit(destination).path.lower() for part in ("authwall", "checkpoint", "/login", "/signin")):
-                raise ValueError(f"{url} requires login. Supply company_context or job_context for this target.")
+                raise SummaryError(f"{url} requires login. Supply company_context or job_context for this target.")
 
             return _page_text(content, job=job)
 
@@ -173,10 +174,10 @@ def prepare_companies(profile: Profile, config: Config, root: Path) -> list[Path
         list[Path]: Per-target directories containing prompt, schema, and exact employer evidence.
 
     Raises:
-        ValueError: Generation is disabled, capture is incomplete, or employer evidence cannot be acquired.
+        SummaryError: Generation is disabled, capture is incomplete, or employer evidence cannot be acquired.
     """
     if not config.codex.enabled or profile.warnings:
-        raise ValueError("Company summaries require codex.enabled and a complete profile capture.")
+        raise SummaryError("Company summaries require codex.enabled and a complete profile capture.")
 
     directories: list[Path] = []
     logging.getLogger(__name__).info("Preparing tailored summaries", extra={"summary.companies": len(config.codex.companies)})
@@ -193,7 +194,7 @@ def prepare_companies(profile: Profile, config: Config, root: Path) -> list[Path
         job = target.job_context or _fetch_context(target.job_url, config, job=True)
 
         if any(not text.strip() or len(text) > _MAX_CONTEXT for text in (company, job)):
-            raise ValueError("Company and job context must be nonempty and at most 40000 characters each.")
+            raise SummaryError("Company and job context must be nonempty and at most 40000 characters each.")
 
         directories.append(prepare_summary(profile, config, root, CompanyEvidence(target, company, job)))
 
@@ -212,12 +213,12 @@ def load_company(path: Path, target: CompanyTarget) -> CompanyEvidence:
         CompanyEvidence: Validated target-bound source text.
 
     Raises:
-        ValueError: The artifact is malformed, belongs to another target, or no longer matches its configuration.
+        SummaryError: The artifact is malformed, belongs to another target, or no longer matches its configuration.
     """
     raw: object = json.loads(path.read_text(encoding="utf-8"))
 
     if not isinstance(raw, dict) or set(raw) != {"target", "company", "job"} or raw["target"] != asdict(target):
-        raise ValueError("Company summary target changed. Prepare and generate this company's summary again.")
+        raise SummaryError("Company summary target changed. Prepare and generate this company's summary again.")
 
     company, job = raw["company"], raw["job"]
 
@@ -226,7 +227,7 @@ def load_company(path: Path, target: CompanyTarget) -> CompanyEvidence:
         or not isinstance(job, str)
         or any(not text.strip() or len(text) > _MAX_CONTEXT for text in (company, job))
     ):
-        raise ValueError("Company summary evidence must include bounded, nonempty company and job descriptions.")
+        raise SummaryError("Company summary evidence must include bounded, nonempty company and job descriptions.")
 
     return CompanyEvidence(target, company, job)
 
@@ -272,7 +273,7 @@ def render_companies(
         list[Path]: Configured company's PDFs or TeX sources in configuration order.
 
     Raises:
-        ValueError: A required summary is stale, malformed, or belongs to another company or applicant.
+        SummaryError: A required summary is stale, malformed, or belongs to another company or applicant.
     """
     selected: list[tuple[CompanyEvidence, Path]] = []
 

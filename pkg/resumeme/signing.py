@@ -8,6 +8,8 @@ import hashlib
 import subprocess
 from typing import TYPE_CHECKING
 
+from resumeme.exceptions import SigningError
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -25,14 +27,14 @@ def public_key_fingerprint(public_key: Path) -> str:
         str: SHA256 followed by a colon and the lowercase hexadecimal digest.
 
     Raises:
-        ValueError: OpenSSL cannot parse the supplied public key.
+        SigningError: OpenSSL cannot parse the supplied public key.
     """
 
     # Some OpenSSL-compatible implementations accept private PEMs despite -pubin; reject those before invoking the tool.
     lines = public_key.read_bytes().strip().splitlines()
 
     if not lines or lines[0] != b"-----BEGIN PUBLIC KEY-----" or lines[-1] != b"-----END PUBLIC KEY-----":
-        raise ValueError("Expected a Cosign public key PEM, not a private key or fingerprint file.")
+        raise SigningError("Expected a Cosign public key PEM, not a private key or fingerprint file.")
 
     # Match the encoding used in release provenance; textual PEM hashes change with line wrapping.
     result = subprocess.run(
@@ -43,6 +45,6 @@ def public_key_fingerprint(public_key: Path) -> str:
     )
 
     if result.returncode:
-        raise ValueError("Cannot read the Cosign public key; supply the release's cosign.pub file.")
+        raise SigningError("Cannot read the Cosign public key; supply the release's cosign.pub file.")
 
     return "SHA256:" + hashlib.sha256(result.stdout).hexdigest()

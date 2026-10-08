@@ -17,6 +17,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from resumeme.compiler.constants.backend import AST_PACKAGE
 from resumeme.compiler.constants.contributions import CALENDAR_SCHEMA
+from resumeme.exceptions import ContributionError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -129,19 +130,19 @@ def validate_calendar(calendar: ContributionCalendar, username: str, start: date
         None: Every requested date appears exactly once under the configured identity.
 
     Raises:
-        ValueError: The account, date window, day coverage, or activity levels are inconsistent.
+        ContributionError: The account, date window, day coverage, or activity levels are inconsistent.
     """
     if calendar.username.casefold() != username.casefold() or (calendar.start, calendar.end) != (start.isoformat(), end.isoformat()):
-        raise ValueError("GitHub calendar owner or date range does not match the configured username, months, and as_of.")
+        raise ContributionError("GitHub calendar owner or date range does not match the configured username, months, and as_of.")
 
     expected = [(start + timedelta(days=offset)).isoformat() for offset in range((end - start).days + 1)]
 
     # Missing dates indicate a changed or restricted response; never fill them with fabricated zero-contribution days.
     if not expected or [day.date for day in calendar.days] != expected:
-        raise ValueError("GitHub calendar is incomplete or contains duplicated/out-of-order dates.")
+        raise ContributionError("GitHub calendar is incomplete or contains duplicated/out-of-order dates.")
 
     if any(day.count < 0 or day.level not in range(5) or (day.count == 0) != (day.level == 0) for day in calendar.days):
-        raise ValueError("GitHub calendar has inconsistent activity counts or intensity levels.")
+        raise ContributionError("GitHub calendar has inconsistent activity counts or intensity levels.")
 
 
 def load_calendar(path: Path) -> ContributionCalendar:

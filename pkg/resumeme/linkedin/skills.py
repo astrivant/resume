@@ -18,6 +18,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from resumeme.codex.skills import load_skill_suggestions, normalize_skill
 from resumeme.compiler.asts.profile import load_profile
 from resumeme.config import project_path
+from resumeme.exceptions import BrowserElementError, BrowserError, BrowserWaitError
 from resumeme.linkedin.browser import _browser, _details, _login, _navigate
 from resumeme.linkedin.retrying import retry
 
@@ -47,7 +48,7 @@ def _check_owner(driver: WebDriver, config: Config) -> str:
         str: Verified owner-scoped profile path.
 
     Raises:
-        ValueError: A redirect or missing owner controls prevents profile mutation.
+        BrowserError: A redirect or missing owner controls prevents profile mutation.
     """
     path = f"/in/{config.linkedin.username}/"
     _navigate(driver, f"https://www.linkedin.com{path}", config.capture)
@@ -57,7 +58,7 @@ def _check_owner(driver: WebDriver, config: Config) -> str:
     location = urlsplit(driver.current_url)
 
     if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path.rstrip("/") != path.rstrip("/"):
-        raise ValueError("LinkedIn redirected away from the configured owner; skills were not edited.")
+        raise BrowserError("LinkedIn redirected away from the configured owner; skills were not edited.")
 
     # An intro edit link also identifies owners whose Skills section is still empty.
     editable = any(
@@ -68,7 +69,7 @@ def _check_owner(driver: WebDriver, config: Config) -> str:
     )
 
     if not editable:
-        raise ValueError("No owner edit control found. Sign in as linkedin.username before publishing skills.")
+        raise BrowserError("No owner edit control found. Sign in as linkedin.username before publishing skills.")
 
     return path
 
@@ -85,14 +86,14 @@ def _current_skills(driver: WebDriver, config: Config) -> set[str]:
         set[str]: Complete normalized skill names, including skills excluded from the PDF.
 
     Raises:
-        ValueError: Ownership changes, navigation redirects, or complete pagination cannot be established.
+        BrowserError: Ownership changes, navigation redirects, or complete pagination cannot be established.
     """
     path = _check_owner(driver, config) + "details/skills/"
     section = _details(driver, f"https://www.linkedin.com{path}", "skills", "Skills", config.capture)
     location = urlsplit(driver.current_url)
 
     if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path.rstrip("/") != path.rstrip("/"):
-        raise ValueError("LinkedIn did not retain the owner's Skills page; no skills were submitted.")
+        raise BrowserError("LinkedIn did not retain the owner's Skills page; no skills were submitted.")
 
     return {
         normalize_skill(name)
@@ -113,12 +114,12 @@ def _skill_dialog(driver: WebDriver) -> WebElement:
         WebElement: Unique visible dialog.
 
     Raises:
-        NoSuchElementException: No unique dialog is available yet.
+        BrowserElementError: No unique dialog is available yet.
     """
     dialogs = [dialog for dialog in driver.find_elements(By.CSS_SELECTOR, '[role="dialog"]') if dialog.is_displayed()]
 
     if len(dialogs) != 1:
-        raise NoSuchElementException("Expected one visible LinkedIn skill dialog.")
+        raise BrowserElementError("Expected one visible LinkedIn skill dialog.")
 
     return dialogs[0]
 
@@ -136,7 +137,7 @@ def _add_skill(driver: WebDriver, config: Config, name: str) -> None:
         None: Save was clicked and the dialog closed; the caller must verify persisted state.
 
     Raises:
-        ValueError: The route or form is ambiguous, or LinkedIn offers no exact skill match.
+        BrowserError: The route or form is ambiguous, or LinkedIn offers no exact skill match.
     """
     path = f"/in/{config.linkedin.username}/edit/forms/skill/new/"
     _navigate(driver, f"https://www.linkedin.com{path}", config.capture)
@@ -145,7 +146,7 @@ def _add_skill(driver: WebDriver, config: Config, name: str) -> None:
     location = urlsplit(driver.current_url)
 
     if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path != path:
-        raise ValueError("LinkedIn did not open the configured owner's Add skill form.")
+        raise BrowserError("LinkedIn did not open the configured owner's Add skill form.")
 
     fields = [
         field
@@ -154,7 +155,7 @@ def _add_skill(driver: WebDriver, config: Config, name: str) -> None:
     ]
 
     if len(fields) != 1:
-        raise ValueError("Cannot identify the skill input. Use LinkedIn's English interface and inspect the form.")
+        raise BrowserError("Cannot identify the skill input. Use LinkedIn's English interface and inspect the form.")
 
     fields[0].clear()
     fields[0].send_keys(name)
@@ -178,7 +179,7 @@ def _add_skill(driver: WebDriver, config: Config, name: str) -> None:
     options = wait.until(exact_options)
 
     if len(options) != 1:
-        raise ValueError(f"LinkedIn offered ambiguous matches for {name!r}; no skill was saved.")
+        raise BrowserError(f"LinkedIn offered ambiguous matches for {name!r}; no skill was saved.")
 
     options[0].click()
     dialog = _skill_dialog(driver)
@@ -189,7 +190,7 @@ def _add_skill(driver: WebDriver, config: Config, name: str) -> None:
     ]
 
     if len(buttons) != 1:
-        raise ValueError("Cannot identify the skill Save button; no changes were submitted.")
+        raise BrowserError("Cannot identify the skill Save button; no changes were submitted.")
 
     # Do not select associations, endorsement controls, or suggested additional skills.
     buttons[0].click()
@@ -211,7 +212,7 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
         list[str]: Names missing at the initial read, either previewed or confirmed present.
 
     Raises:
-        ValueError: The proposal exceeds available skill slots or the live owner/form is ambiguous.
+        BrowserError: The proposal exceeds available skill slots or the live owner/form is ambiguous.
     """
     current = retry(
         lambda: _current_skills(driver, config),
@@ -227,7 +228,9 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
     )
 
     if len(current) + len(missing) > _MAX_PROFILE_SKILLS:
-        raise ValueError("Proposed additions exceed LinkedIn's 100-skill limit. Reduce the proposal; existing skills will not be removed.")
+        raise BrowserError(
+            "Proposed additions exceed LinkedIn's 100-skill limit. Reduce the proposal; existing skills will not be removed."
+        )
 
     if dry_run or not missing:
         return missing
@@ -257,7 +260,7 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
             observed = _current_skills(driver, config)
 
             if not preserved.issubset(observed):
-                raise ValueError("Existing LinkedIn skills changed during publication. Stopped without removing or replacing any skill.")
+                raise BrowserError("Existing LinkedIn skills changed during publication. Stopped without removing or replacing any skill.")
 
             preserved.update(observed)
 
@@ -265,19 +268,19 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
                 return
 
             if len(observed) >= _MAX_PROFILE_SKILLS:
-                raise ValueError("LinkedIn's skill list filled during publication. No existing skills were removed.")
+                raise BrowserError("LinkedIn's skill list filled during publication. No existing skills were removed.")
 
             _add_skill(driver, config, name)
             confirmed = _current_skills(driver, config)
 
             # Never proceed after an unexpected loss; additions must preserve every previously observed skill.
             if not preserved.issubset(confirmed):
-                raise ValueError("Existing LinkedIn skills changed during publication. Stopped without removing or replacing any skill.")
+                raise BrowserError("Existing LinkedIn skills changed during publication. Stopped without removing or replacing any skill.")
 
             preserved.update(confirmed)
 
             if normalize_skill(name) not in confirmed:
-                raise TimeoutException("LinkedIn has not confirmed the saved skill; reread before any retry.")
+                raise BrowserWaitError("LinkedIn has not confirmed the saved skill; reread before any retry.")
 
         retry(
             reconcile,
@@ -317,10 +320,10 @@ def publish_skills(
         list[str]: Newly added or proposed missing names; existing names are skipped.
 
     Raises:
-        ValueError: Opt-in, tag, evidence, owner, or authentication requirements are not met.
+        BrowserError: Opt-in, tag, evidence, owner, or authentication requirements are not met.
     """
     if not dry_run and not config.codex.skills.publish:
-        raise ValueError("Set codex.skills.publish: true to opt in to live LinkedIn skill additions.")
+        raise BrowserError("Set codex.skills.publish: true to opt in to live LinkedIn skill additions.")
 
     profile = load_profile(project_path(root, config.output.profile), config.linkedin.username)
     proposal = load_skill_suggestions(suggestions, profile, config, root, tag)
@@ -329,7 +332,7 @@ def publish_skills(
         return []
 
     if headless and (connect_port is not None or not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD"))):
-        raise ValueError("Headless skill publication requires LinkedIn login secrets and cannot attach to an interactive browser.")
+        raise BrowserError("Headless skill publication requires LinkedIn login secrets and cannot attach to an interactive browser.")
 
     with _browser(root, config.capture, connect_port, headless=headless) as driver:
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)

@@ -19,6 +19,8 @@ from opentelemetry.sdk._logs import LoggerProvider
 from opentelemetry.sdk._logs.export import ConsoleLogRecordExporter, SimpleLogRecordProcessor
 from opentelemetry.sdk.resources import Resource
 
+from resumeme.exceptions import ConfigurationError
+
 if TYPE_CHECKING:
     from collections.abc import Iterator
     from typing import TextIO
@@ -146,12 +148,12 @@ def set_log_level(level: str) -> None:
         None: Application logger threshold is updated.
 
     Raises:
-        ValueError: The level is not a supported named severity.
+        ConfigurationError: The level is not a supported named severity.
     """
     normalized = level.upper()
 
     if normalized not in LOG_LEVELS:
-        raise ValueError("Logging level must be DEBUG, INFO, WARNING, ERROR, or CRITICAL.")
+        raise ConfigurationError("Logging level must be DEBUG, INFO, WARNING, ERROR, or CRITICAL.")
 
     logging.getLogger("resumeme").setLevel(normalized)
 
@@ -169,7 +171,7 @@ def logging_context(level: str = "ERROR", *, stream: TextIO | None = None) -> It
         None: The application's logging namespace emits one JSON record per line until context exit.
 
     Raises:
-        ValueError: The initial level is invalid.
+        ConfigurationError: The initial level is invalid.
     """
     logger = logging.getLogger("resumeme")
     previous_level, previous_handlers, previous_propagate = logger.level, logger.handlers[:], logger.propagate

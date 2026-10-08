@@ -13,6 +13,7 @@ from attrs import evolve
 from resumeme.compiler.asts.dates import employment_period
 from resumeme.compiler.constants.experience import ATTRIBUTION as _ATTRIBUTION
 from resumeme.compiler.passes.selection import matches_fields
+from resumeme.exceptions import ProfileError
 
 if TYPE_CHECKING:
     from resumeme.compiler.asts.dates import EmploymentPeriod
@@ -114,7 +115,7 @@ def regroup_positions(entry: Entry, selected: list[Entry | None]) -> Entry:
         Entry: Company context and selected descriptions, references, and skills.
 
     Raises:
-        ValueError: Recorded role boundaries cannot be reconciled with the captured company text.
+        ProfileError: Recorded role boundaries cannot be reconciled with the captured company text.
     """
 
     # Splice each recorded role in order, preserving company context between roles and avoiding ambiguous title-only matches.
@@ -128,7 +129,7 @@ def regroup_positions(entry: Entry, selected: list[Entry | None]) -> Entry:
         )
 
         if start is None:
-            raise ValueError(f"Cannot locate grouped role {position.title!r}. Run `resumeme capture` to refresh its role boundaries.")
+            raise ProfileError(f"Cannot locate grouped role {position.title!r}. Run `resumeme capture` to refresh its role boundaries.")
 
         paragraphs.extend(entry.paragraphs[cursor:start])
 
@@ -183,7 +184,7 @@ def _select(entry: Entry, settings: Experience, cutoff: date | None, as_of: date
         Entry | None: Selected entry, or None when all of its roles are excluded.
 
     Raises:
-        ValueError: An old flattened group needs recapture to safely separate individual roles.
+        ProfileError: An old flattened group needs recapture to safely separate individual roles.
     """
     dated = [(index, period) for index, line in enumerate(entry.paragraphs) if (period := employment_period(line)) is not None]
 
@@ -216,7 +217,7 @@ def _select(entry: Entry, settings: Experience, cutoff: date | None, as_of: date
 
         # Old snapshots cannot attribute media or tags to individual roles; require recapture instead of guessing ownership.
         if not all(retained):
-            raise ValueError(
+            raise ProfileError(
                 f"Filtering individual roles at {entry.title!r} needs role boundaries. Run `resumeme capture` once to refresh."
             )
 
@@ -252,7 +253,7 @@ def filter_experience(entries: list[Entry], settings: Experience, *, today: date
         list[Entry]: Selected jobs with original descriptions and dates intact.
 
     Raises:
-        ValueError: The fixed start is after the effective endpoint, or a legacy group cannot be safely separated.
+        ProfileError: The fixed start is after the effective endpoint, or a legacy group cannot be safely separated.
     """
 
     # Preserve the original records when filtering is disabled, including legacy groups without role boundaries.
@@ -270,6 +271,6 @@ def filter_experience(entries: list[Entry], settings: Experience, *, today: date
         cutoff = date(year, as_of.month, min(as_of.day, calendar.monthrange(year, as_of.month)[1])) if year > 0 else date.min
 
     if cutoff is not None and cutoff > as_of:
-        raise ValueError(f"experience.since must be on or before the effective experience.as_of ({as_of.isoformat()}).")
+        raise ProfileError(f"experience.since must be on or before the effective experience.as_of ({as_of.isoformat()}).")
 
     return [selected for entry in entries if (selected := _select(entry, settings, cutoff, as_of)) is not None]

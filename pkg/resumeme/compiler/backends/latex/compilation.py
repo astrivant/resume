@@ -18,6 +18,7 @@ from zipfile import ZipFile
 from resumeme.compiler.backends.pdf import release_footer
 from resumeme.compiler.constants.backend import COMPILER_TIMEOUT_SECONDS, FONT_ARCHIVE, LATEX_PACKAGE, SOURCE_DATE_EPOCH, TOOLCHAIN
 from resumeme.config import project_path
+from resumeme.exceptions import CompilationError, ConfigurationError
 from resumeme.linkedin.identity import release_destination
 
 if TYPE_CHECKING:
@@ -39,7 +40,7 @@ def tex_image() -> str:
     value: object = json.loads(files(LATEX_PACKAGE).joinpath(TOOLCHAIN).read_text(encoding="utf-8"))["tex_image"]
 
     if not isinstance(value, str):
-        raise ValueError("The packaged TeX image reference is invalid.")
+        raise ConfigurationError("The packaged TeX image reference is invalid.")
 
     return value
 
@@ -57,8 +58,8 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
         Path: Completed PDF.
 
     Raises:
-        RuntimeError: Docker or pdfLaTeX fails; the previous PDF is preserved.
-        ValueError: RESUMEME_TEX_BACKEND is neither docker nor local.
+        CompilationError: Docker or pdfLaTeX fails; the previous PDF is preserved.
+        ConfigurationError: RESUMEME_TEX_BACKEND is neither docker nor local.
         subprocess.TimeoutExpired: A compiler pass exceeds two minutes.
     """
 
@@ -66,7 +67,7 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
     backend = os.environ.get("RESUMEME_TEX_BACKEND", "docker")
 
     if backend not in {"docker", "local"}:
-        raise ValueError("RESUMEME_TEX_BACKEND must be docker or local.")
+        raise ConfigurationError("RESUMEME_TEX_BACKEND must be docker or local.")
 
     source = source.resolve()
     _LOGGER.info("Compiling PDF", extra={"compiler.backend": backend, "file.path": str(source)})
@@ -143,13 +144,13 @@ def compile_pdf(source: Path, config: Config, root: Path) -> Path:
             )
 
             if result.returncode:
-                raise RuntimeError(f"PDF compilation failed; inspect {log}.")
+                raise CompilationError(f"PDF compilation failed; inspect {log}.")
 
         # A successful process exit alone is not enough; validate the expected artifact before atomically replacing the destination.
         compiled = output / source.with_suffix(".pdf").name
 
         if not compiled.is_file() or not compiled.read_bytes().startswith(b"%PDF-"):
-            raise RuntimeError("The compiler did not produce a PDF.")
+            raise CompilationError("The compiler did not produce a PDF.")
 
         destination.parent.mkdir(parents=True, exist_ok=True)
         pending = destination.with_suffix(".pending.pdf")

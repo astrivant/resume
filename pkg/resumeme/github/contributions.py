@@ -15,6 +15,7 @@ from requests.adapters import HTTPAdapter
 
 from resumeme.compiler.asts.contributions import ContributionCalendar, ContributionDay, calendar_window, validate_calendar
 from resumeme.compiler.constants.contributions import CONTRIBUTION_COUNT
+from resumeme.exceptions import ContributionError
 from resumeme.linkedin.media import _ExponentialRetry, fetch_public
 
 if TYPE_CHECKING:
@@ -36,7 +37,7 @@ def parse_calendar(html: bytes, start: date, end: date) -> list[ContributionDay]
         list[ContributionDay]: Sorted observed days, without filling gaps or estimating activity levels.
 
     Raises:
-        ValueError: GitHub omitted an activity count or supplied malformed calendar metadata.
+        ContributionError: GitHub omitted an activity count or supplied malformed calendar metadata.
     """
     soup = BeautifulSoup(html, "html.parser")
     labels = {str(label.get("for")): label.get_text(" ", strip=True) for label in soup.select("tool-tip[for]")}
@@ -52,7 +53,7 @@ def parse_calendar(html: bytes, start: date, end: date) -> list[ContributionDay]
         count = CONTRIBUTION_COUNT.match(labels.get(str(cell.get("id")), ""))
 
         if count is None:
-            raise ValueError("GitHub changed its public contribution-calendar markup; no activity counts were guessed.")
+            raise ContributionError("GitHub changed its public contribution-calendar markup; no activity counts were guessed.")
 
         days.append(
             ContributionDay(current.isoformat(), 0 if count[1] == "No" else int(count[1].replace(",", "")), int(str(cell["data-level"])))
@@ -72,13 +73,13 @@ def fetch_calendar(config: Config) -> ContributionCalendar:
         ContributionCalendar: Complete validated public observations for the configured interval.
 
     Raises:
-        ValueError: No username is configured or GitHub did not return the requested public calendar.
+        ContributionError: No username is configured or GitHub did not return the requested public calendar.
         requests.RequestException: Transient HTTP retries are exhausted or a permanent response fails.
     """
     username = config.github.username
 
     if username is None:
-        raise ValueError("Set github.username before fetching contributions.")
+        raise ContributionError("Set github.username before fetching contributions.")
 
     start, end = calendar_window(config.github.contributions)
     logging.getLogger(__name__).info(
@@ -110,7 +111,7 @@ def fetch_calendar(config: Config) -> ContributionCalendar:
             location = urlsplit(final_url)
 
             if location.hostname != "github.com" or location.path.casefold() != f"/users/{username}/contributions".casefold():
-                raise ValueError("GitHub redirected away from the configured account's public contribution calendar.")
+                raise ContributionError("GitHub redirected away from the configured account's public contribution calendar.")
 
             days.extend(parse_calendar(html, first, last))
 

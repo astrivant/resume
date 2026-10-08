@@ -14,6 +14,7 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
+from resumeme.exceptions import BrowserError
 from resumeme.linkedin.browser import _browser, _login, _navigate
 from resumeme.linkedin.identity import ownership_block, reconcile_about, release_destination
 from resumeme.linkedin.retrying import retry
@@ -43,7 +44,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
         tuple[WebElement, WebElement]: The unique About textarea and Save button.
 
     Raises:
-        ValueError: Navigation or available controls do not identify the configured owner's editor.
+        BrowserError: Navigation or available controls do not identify the configured owner's editor.
     """
     username = config.linkedin.username
     profile_path = f"/in/{username}/"
@@ -55,7 +56,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     location = urlsplit(driver.current_url)
 
     if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path.rstrip("/") != profile_path.rstrip("/"):
-        raise ValueError("LinkedIn redirected away from the configured owner; About was not edited.")
+        raise BrowserError("LinkedIn redirected away from the configured owner; About was not edited.")
 
     # Owner edit links also cover a minimal profile whose About section has not yet been created.
     owner_paths = {summary_path, f"{profile_path}edit/intro/"}
@@ -68,19 +69,19 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     )
 
     if not editable:
-        raise ValueError("No owner edit control found. Sign in as linkedin.username before updating About.")
+        raise BrowserError("No owner edit control found. Sign in as linkedin.username before updating About.")
 
     _navigate(driver, f"https://www.linkedin.com{summary_path}", config.capture)
     wait.until(lambda page: page.find_elements(By.CSS_SELECTOR, '[role="dialog"] textarea'))
     location = urlsplit(driver.current_url)
 
     if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path != summary_path:
-        raise ValueError("LinkedIn did not open the configured owner's About editor.")
+        raise BrowserError("LinkedIn did not open the configured owner's About editor.")
 
     dialogs = [dialog for dialog in driver.find_elements(By.CSS_SELECTOR, '[role="dialog"]') if dialog.is_displayed()]
 
     if len(dialogs) != 1:
-        raise ValueError("Expected one About dialog; no changes were submitted.")
+        raise BrowserError("Expected one About dialog; no changes were submitted.")
 
     dialog = dialogs[0]
     fields = [element for element in dialog.find_elements(By.CSS_SELECTOR, "textarea") if element.is_displayed()]
@@ -91,7 +92,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     ]
 
     if len(fields) != 1 or len(buttons) != 1:
-        raise ValueError("Cannot identify the About textarea and Save button. Use LinkedIn's English interface and retry.")
+        raise BrowserError("Cannot identify the About textarea and Save button. Use LinkedIn's English interface and retry.")
 
     return fields[0], buttons[0]
 
@@ -111,7 +112,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
         str: Complete resulting About text, or the proposed text in preview mode.
 
     Raises:
-        ValueError: Concurrent changes, an ambiguous block, or a field limit prevent a safe update.
+        BrowserError: Concurrent changes, an ambiguous block, or a field limit prevent a safe update.
     """
     baseline: str | None = None
     desired: str | None = None
@@ -133,7 +134,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
                 return desired
 
             if current != baseline:
-                raise ValueError("About changed during this update. No further writes were attempted; review it and retry.")
+                raise BrowserError("About changed during this update. No further writes were attempted; review it and retry.")
         else:
             baseline = current
             desired = reconcile_about(current, block)
@@ -145,7 +146,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
         maximum = field.get_attribute("maxlength")
 
         if maximum and int(maximum) >= 0 and len(desired.encode("utf-16-le")) // 2 > int(maximum):
-            raise ValueError("The ownership block exceeds LinkedIn's About character limit. Shorten your About text and retry.")
+            raise BrowserError("The ownership block exceeds LinkedIn's About character limit. Shorten your About text and retry.")
 
         # Keep a recoverable local copy with private permissions; neither backups nor browser state are CI artifacts.
         directory = root / ".cache/ownership"
@@ -160,7 +161,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
         field.send_keys(desired)
 
         if field.get_attribute("value") != desired:
-            raise ValueError("LinkedIn did not accept the complete About text; Save was not clicked.")
+            raise BrowserError("LinkedIn did not accept the complete About text; Save was not clicked.")
 
         save.click()
         _LOGGER.info("About submitted; verifying persisted text")
@@ -172,7 +173,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
         confirmed, _ = _editor(driver, config)
 
         if confirmed.get_attribute("value") != desired:
-            raise ValueError("LinkedIn did not retain the expected About text. Inspect the live profile before retrying.")
+            raise BrowserError("LinkedIn did not retain the expected About text. Inspect the live profile before retrying.")
 
         return desired
 
@@ -203,13 +204,13 @@ def publish_ownership(
         str: Previewed or confirmed About text.
 
     Raises:
-        ValueError: Authentication options, public key, destination, or profile ownership are invalid.
+        BrowserError: Authentication options, public key, destination, or profile ownership are invalid.
     """
     if headless and connect_port is not None:
-        raise ValueError("Headless ownership updates cannot attach to an interactive browser session.")
+        raise BrowserError("Headless ownership updates cannot attach to an interactive browser session.")
 
     if headless and not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD")):
-        raise ValueError("Headless ownership updates require LINKEDIN_USERNAME and LINKEDIN_PASSWORD.")
+        raise BrowserError("Headless ownership updates require LINKEDIN_USERNAME and LINKEDIN_PASSWORD.")
 
     # Derive all public values before opening the browser; this command never receives the private signing key.
     block = ownership_block(public_key_fingerprint(public_key), release_destination(config.linkedin.ownership, root))

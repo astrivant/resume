@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from resumeme.compiler.asts.summary import summary_schema
 from resumeme.compiler.passes.summary import summary_digest, summary_evidence
 from resumeme.config import project_path
+from resumeme.exceptions import SummaryError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -53,13 +54,13 @@ def prepare_summary(profile: Profile, config: Config, root: Path, company: Compa
         Path: Directory containing prompt.txt and schema.json for the Codex invocation.
 
     Raises:
-        ValueError: Summary generation is disabled or the source capture is incomplete.
+        SummaryError: Summary generation is disabled or the source capture is incomplete.
     """
     if not config.codex.enabled:
-        raise ValueError("Set codex.enabled: true to prepare a Codex summary.")
+        raise SummaryError("Set codex.enabled: true to prepare a Codex summary.")
 
     if profile.warnings:
-        raise ValueError("Resolve capture warnings before summarizing the profile.")
+        raise SummaryError("Resolve capture warnings before summarizing the profile.")
 
     relative = f".cache/codex/companies/{company.target.key}" if company else ".cache/codex"
     directory = project_path(root, relative)

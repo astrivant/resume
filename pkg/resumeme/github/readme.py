@@ -24,6 +24,7 @@ from resumeme.compiler.asts.profile import load_profile
 from resumeme.compiler.backends.latex.compilation import tex_image
 from resumeme.compiler.constants.escaping import PUNCTUATION
 from resumeme.config import Ownership, project_path
+from resumeme.exceptions import PublicationError
 from resumeme.linkedin.identity import release_destination
 from resumeme.visualization.branding import render_brew_badge
 
@@ -59,7 +60,7 @@ def update_project_branding(root: Path, config: Config, brewed_on: date, *, repo
         None: The SVG is refreshed; README text outside the opt-in branding markers is preserved exactly.
 
     Raises:
-        ValueError: Existing branding markers are invalid or no GitHub repository can be resolved.
+        PublicationError: Existing branding markers are invalid or no GitHub repository can be resolved.
     """
     path = root / "README.md"
     original = path.read_bytes().decode("utf-8") if path.exists() else ""
@@ -68,12 +69,12 @@ def update_project_branding(root: Path, config: Config, brewed_on: date, *, repo
     # A custom README without our markers opts out of markup updates; never insert branding into an unrelated landing page.
     if _BRANDING_START in original or _BRANDING_END in original:
         if original.count(_BRANDING_START) != 1 or original.count(_BRANDING_END) != 1:
-            raise ValueError("README branding requires exactly one start marker and one end marker.")
+            raise PublicationError("README branding requires exactly one start marker and one end marker.")
 
         start, end = original.index(_BRANDING_START), original.index(_BRANDING_END)
 
         if end < start:
-            raise ValueError("README branding end marker must follow its start marker.")
+            raise PublicationError("README branding end marker must follow its start marker.")
 
         # Raw URLs work when package indexes render this Markdown without the checkout's relative asset paths.
         # Resolve the publishing repository independently of any inherited signing-release destination override.
@@ -139,15 +140,15 @@ def render_readme(profile: Profile, config: Config, repository: str, pages: int)
         str: Complete UTF-8 Markdown with an absolute preview image URL and destination-relative document links.
 
     Raises:
-        ValueError: The snapshot owner, repository identifier, or page count is invalid.
+        PublicationError: The snapshot owner, repository identifier, or page count is invalid.
     """
 
     # Repository identity comes from Actions, so forks never inherit the upstream owner's releases link.
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9_.-]+", repository) or pages < 1:
-        raise ValueError("Personal README publication requires a GitHub owner/repository and a nonempty PDF.")
+        raise PublicationError("Personal README publication requires a GitHub owner/repository and a nonempty PDF.")
 
     if profile.username.casefold() != config.linkedin.username.casefold():
-        raise ValueError("The README snapshot belongs to another LinkedIn owner.")
+        raise PublicationError("The README snapshot belongs to another LinkedIn owner.")
 
     name = _plain_text(profile.name.strip() or profile.username)
     introduction = _plain_text(config.readme.introduction or _BOILERPLATE)
@@ -264,7 +265,7 @@ def stage_readme(root: Path, config: Config, repository: str) -> None:
         None: Markdown, preview, and source PDF digest are staged under .cache/publication/readme.
 
     Raises:
-        ValueError: The snapshot has incomplete capture warnings or belongs to another owner.
+        PublicationError: The snapshot has incomplete capture warnings or belongs to another owner.
         subprocess.CalledProcessError: Preview rendering fails; no new README bundle is published.
     """
     publication = project_path(root, _PUBLICATION_PATH)
@@ -272,7 +273,7 @@ def stage_readme(root: Path, config: Config, repository: str) -> None:
     profile = load_profile(project_path(root, config.output.profile), config.linkedin.username)
 
     if profile.warnings:
-        raise ValueError("Resolve incomplete capture warnings before publishing a personal README.")
+        raise PublicationError("Resolve incomplete capture warnings before publishing a personal README.")
 
     markdown = render_readme(profile, config, repository, len(PdfReader(pdf).pages))
     logging.getLogger(__name__).info("Preparing README preview", extra={"file.path": config.readme.output})
@@ -298,7 +299,7 @@ def restore_readme(root: Path, config: Config) -> tuple[str, str]:
         tuple[str, str]: Explicit repository-relative files to stage with the PDF.
 
     Raises:
-        ValueError: The preview belongs to a different PDF or a configured path would be overwritten.
+        PublicationError: The preview belongs to a different PDF or a configured path would be overwritten.
         OSError: The bundle is incomplete or the preview is not a valid PNG.
     """
     publication = project_path(root, _PUBLICATION_PATH)
@@ -308,14 +309,14 @@ def restore_readme(root: Path, config: Config) -> tuple[str, str]:
     digest = hashlib.sha256((publication / "resume.pdf").read_bytes()).hexdigest()
 
     if (bundle / "pdf.sha256").read_text(encoding="ascii").strip() != digest:
-        raise ValueError("The README preview belongs to a different PDF; rebuild the publication artifact.")
+        raise PublicationError("The README preview belongs to a different PDF; rebuild the publication artifact.")
 
     markdown = (bundle / "README.md").read_bytes()
     preview = (bundle / "resume-preview.png").read_bytes()
 
     with Image.open(bundle / "resume-preview.png") as image:
         if image.format != "PNG":
-            raise ValueError("The README preview must be a PNG.")
+            raise PublicationError("The README preview must be a PNG.")
 
         image.verify()
 
@@ -329,7 +330,7 @@ def restore_readme(root: Path, config: Config) -> tuple[str, str]:
     if len(set(destinations)) != len(destinations) or any(
         destination == project_path(root, value) for destination in destinations for value in inputs
     ):
-        raise ValueError("Personal README paths must be distinct from configured inputs and outputs.")
+        raise PublicationError("Personal README paths must be distinct from configured inputs and outputs.")
 
     for destination, data in zip(destinations, (markdown, preview), strict=True):
         destination.parent.mkdir(parents=True, exist_ok=True)

@@ -13,6 +13,7 @@ from pypdf.annotations import Link
 from pypdf.generic import ArrayObject, ContentStream, DecodedStreamObject, DictionaryObject, NameObject, NumberObject, TextStringObject
 
 from resumeme.compiler.constants.footer import FOOTER_BASELINE, FOOTER_FONT_SIZE, FOOTER_GRAY, FOOTER_LEADING, FOOTER_MARGIN, FOOTER_NAME
+from resumeme.exceptions import RenderingError
 
 __all__ = ["release_footer"]
 
@@ -30,12 +31,12 @@ def release_footer(pdf: bytes, release_url: str, fingerprint: str | None = None)
         bytes: Deterministic PDF preserving content, page count, metadata, and existing navigation.
 
     Raises:
-        ValueError: Release identity is invalid or the document lacks a supported final page.
+        RenderingError: Release identity is invalid or the document lacks a supported final page.
     """
 
     # The footer carries a public key identity, never the private key or a self-referential hash of the PDF.
     if fingerprint is not None and (not re.fullmatch(r"SHA256:[a-f0-9]{64}", fingerprint) or not release_url):
-        raise ValueError("A release footer requires its HTTPS URL and the public key's SHA256 fingerprint.")
+        raise RenderingError("A release footer requires its HTTPS URL and the public key's SHA256 fingerprint.")
 
     location = urlsplit(release_url)
 
@@ -46,18 +47,18 @@ def release_footer(pdf: bytes, release_url: str, fingerprint: str | None = None)
         or location.password is not None
         or any(character.isspace() or ord(character) < 32 for character in release_url)
     ):
-        raise ValueError("The release footer URL must use HTTPS without credentials or whitespace.")
+        raise RenderingError("The release footer URL must use HTTPS without credentials or whitespace.")
 
     # Clone the entire document so named destinations, internal role links, and author metadata survive publication.
     writer = PdfWriter(clone_from=BytesIO(pdf))
 
     if not writer.pages:
-        raise ValueError("Cannot add a release footer to a PDF without pages.")
+        raise RenderingError("Cannot add a release footer to a PDF without pages.")
 
     page = writer.pages[-1]
 
     if page.rotation or page.mediabox.left != 0 or page.mediabox.bottom != 0:
-        raise ValueError("The resume footer requires an unrotated page with its origin at the lower left.")
+        raise RenderingError("The resume footer requires an unrotated page with its origin at the lower left.")
 
     width = float(page.mediabox.width)
     label = "Release and verification" if fingerprint else "Releases"

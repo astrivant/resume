@@ -25,6 +25,7 @@ from urllib3.util.retry import Retry
 from resumeme.compiler.asts.links import discover_profile_links, safe_url
 from resumeme.compiler.asts.profile import Entry, Media
 from resumeme.config import project_path
+from resumeme.exceptions import MediaError
 from resumeme.telemetry import safe_log_url
 
 if TYPE_CHECKING:
@@ -93,19 +94,19 @@ def _validate_remote(url: str) -> None:
         None: The URL resolves exclusively to public addresses.
 
     Raises:
-        ValueError: The URL is not a public HTTP destination.
+        MediaError: The URL is not a public HTTP destination.
         OSError: DNS resolution fails.
     """
     parsed = urlsplit(url)
 
     if not safe_url(url) or parsed.hostname is None or parsed.port not in {None, 80, 443}:
-        raise ValueError("Media references must be public HTTP(S) URLs on standard ports.")
+        raise MediaError("Media references must be public HTTP(S) URLs on standard ports.")
 
     # Reject mixed public/private DNS answers as well as explicit private hosts before issuing the HTTP request.
     addresses = socket.getaddrinfo(parsed.hostname, parsed.port or (443 if parsed.scheme == "https" else 80), type=socket.SOCK_STREAM)
 
     if not addresses or any(not ipaddress.ip_address(address[4][0]).is_global for address in addresses):
-        raise ValueError("Media references cannot target local or private networks.")
+        raise MediaError("Media references cannot target local or private networks.")
 
 
 def fetch_public(session: requests.Session, url: str, timeout: int) -> tuple[bytes, str]:
@@ -121,7 +122,7 @@ def fetch_public(session: requests.Session, url: str, timeout: int) -> tuple[byt
         tuple[bytes, str]: Response body and final URL for relative references.
 
     Raises:
-        ValueError: The response is too large or exceeds the redirect limit.
+        MediaError: The response is too large or exceeds the redirect limit.
         requests.RequestException: The request or HTTP status fails.
     """
 
@@ -167,7 +168,7 @@ def fetch_public(session: requests.Session, url: str, timeout: int) -> tuple[byt
                 body.extend(chunk)
 
                 if len(body) > _MAX_BYTES:
-                    raise ValueError("Remote resource exceeds the 10 MiB download limit.")
+                    raise MediaError("Remote resource exceeds the 10 MiB download limit.")
 
             _LOGGER.debug(
                 "HTTP download completed",
@@ -175,7 +176,7 @@ def fetch_public(session: requests.Session, url: str, timeout: int) -> tuple[byt
             )
             return bytes(body), url
 
-    raise ValueError("Remote resource exceeded five redirects.")
+    raise MediaError("Remote resource exceeded five redirects.")
 
 
 def _download(image: Media, session: requests.Session, root: Path, config: Config) -> Media:
@@ -233,7 +234,7 @@ def _preview(url: str, session: requests.Session, timeout: int) -> tuple[str, st
     # LinkedIn short links can return an HTTP-200 exit page rather than a redirect; follow only its explicit external-site control.
     for _ in range(6):
         if url in visited:
-            raise ValueError("LinkedIn short link points to a previously visited page.")
+            raise MediaError("LinkedIn short link points to a previously visited page.")
 
         visited.add(url)
         content, destination = fetch_public(session, url, timeout)
@@ -250,13 +251,13 @@ def _preview(url: str, session: requests.Session, timeout: int) -> tuple[str, st
             url = safe_url(str(external.get("href", "")), destination)
 
             if not url:
-                raise ValueError("LinkedIn short link has an invalid external destination.")
+                raise MediaError("LinkedIn short link has an invalid external destination.")
 
             continue
 
         break
     else:
-        raise ValueError("LinkedIn short link exceeded five exit pages.")
+        raise MediaError("LinkedIn short link exceeded five exit pages.")
 
     title_meta = soup.select_one('meta[property="og:title"]') or soup.select_one('meta[name="twitter:title"]')
     title = str(title_meta.get("content", "")).strip() if title_meta else ""

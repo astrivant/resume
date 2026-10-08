@@ -21,6 +21,7 @@ from resumeme.compiler.constants.backend import AST_PACKAGE, CONFIG_SCHEMA
 from resumeme.compiler.constants.links import DEFAULT_PROJECT_FILTER
 from resumeme.compiler.constants.lists import BODY_HEADINGS
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
+from resumeme.exceptions import ConfigurationError
 
 __all__ = [
     "Capture",
@@ -533,14 +534,14 @@ def project_path(root: Path, value: str) -> Path:
         Path: Absolute path beneath the root.
 
     Raises:
-        ValueError: The path is absolute, points at the root, or escapes it.
+        ConfigurationError: The path is absolute, points at the root, or escapes it.
     """
 
     # Resolve symlinks before checking containment; lexical '..' checks alone would allow existing links to escape.
     target = (root / value).resolve()
 
     if Path(value).is_absolute() or target == root.resolve() or not target.is_relative_to(root.resolve()):
-        raise ValueError(f"Expected a path within the configuration directory: {value}")
+        raise ConfigurationError(f"Expected a path within the configuration directory: {value}")
 
     return target
 
@@ -557,7 +558,7 @@ def load_config(path: Path) -> Config:
 
     Raises:
         jsonschema.ValidationError: A value is invalid or a field is unknown.
-        ValueError: A configured date window, identity, theme, or project path is inconsistent.
+        ConfigurationError: A configured date window, identity, theme, or project path is inconsistent.
     """
 
     # Validate raw types before cattrs can coerce them, including real calendar dates for the job window.
@@ -568,25 +569,25 @@ def load_config(path: Path) -> Config:
 
     # A publish opt-in must have a corresponding proposal producer.
     if config.codex.skills.publish and not config.codex.skills.enabled:
-        raise ValueError("codex.skills.publish requires codex.skills.enabled.")
+        raise ConfigurationError("codex.skills.publish requires codex.skills.enabled.")
 
     # Validated ISO dates sort chronologically; reject reversed explicit bounds before any capture or rendering work.
     if config.experience.since and config.experience.as_of and config.experience.since > config.experience.as_of:
-        raise ValueError("experience.since must be on or before experience.as_of.")
+        raise ConfigurationError("experience.since must be on or before experience.as_of.")
 
     # Distinct URLs for the same LinkedIn job can differ only in tracking parameters; never let them overwrite one output.
     company_keys = [company.key for company in config.codex.companies]
 
     if len(company_keys) != len(set(company_keys)):
-        raise ValueError("codex.companies must select distinct company/job pairs.")
+        raise ConfigurationError("codex.companies must select distinct company/job pairs.")
 
     # Contribution ownership is explicit: never infer a GitHub account from the LinkedIn username or a repository owner.
     if config.github.contributions.enabled and config.github.username is None:
-        raise ValueError("Set github.username before enabling github.contributions.")
+        raise ConfigurationError("Set github.username before enabling github.contributions.")
 
     # Reject selector typos even for validation-only commands; themes are user-defined, not a hard-coded registry.
     if config.style.theme is not None and config.style.theme not in config.style.themes:
-        raise ValueError(f"Unknown style.theme {config.style.theme!r}; define it under style.themes or use null.")
+        raise ConfigurationError(f"Unknown style.theme {config.style.theme!r}; define it under style.themes or use null.")
 
     # Inputs, templates, and outputs share one root but must never resolve to the same file or directory.
     paths = [config.output.profile, config.output.assets, config.output.tex, config.output.pdf, config.readme.output]
@@ -598,10 +599,10 @@ def load_config(path: Path) -> Config:
     resolved = [project_path(path.resolve().parent, value) for value in paths]
 
     if len(resolved) != len(set(resolved)):
-        raise ValueError("Input, output, and template paths must be distinct.")
+        raise ConfigurationError("Input, output, and template paths must be distinct.")
 
     # Generated Markdown must not replace the configuration needed by the next publication.
     if project_path(path.resolve().parent, config.readme.output) == path.resolve():
-        raise ValueError("readme.output must not replace the configuration file.")
+        raise ConfigurationError("readme.output must not replace the configuration file.")
 
     return config

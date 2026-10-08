@@ -14,6 +14,7 @@ from jsonschema import Draft202012Validator
 
 from resumeme.compiler.constants.backend import AST_PACKAGE, SUMMARY_SCHEMA
 from resumeme.config import CompanyTarget
+from resumeme.exceptions import SummaryError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -82,11 +83,11 @@ def load_summary(path: Path, *, username: str, source_digest: str, settings: Cod
         Summary: Validated plain-text replacement fields.
 
     Raises:
-        ValueError: Generation is disabled, ownership or inputs differ, or a word limit is exceeded.
+        SummaryError: Generation is disabled, ownership or inputs differ, or a word limit is exceeded.
         jsonschema.ValidationError: The artifact does not satisfy the summary contract.
     """
     if not settings.enabled:
-        raise ValueError("Set codex.enabled: true before supplying a generated summary.")
+        raise SummaryError("Set codex.enabled: true before supplying a generated summary.")
 
     raw = json.loads(path.read_text(encoding="utf-8"))
     Draft202012Validator(summary_schema()).validate(raw)
@@ -94,13 +95,13 @@ def load_summary(path: Path, *, username: str, source_digest: str, settings: Cod
 
     # A fork or changed context must generate new copy rather than inheriting another owner's résumé text.
     if result.username != username or result.source_digest != source_digest:
-        raise ValueError("Summary inputs changed or the owner differs. Generate a new Codex summary for this profile and config.")
+        raise SummaryError("Summary inputs changed or the owner differs. Generate a new Codex summary for this profile and config.")
 
     for label, value, maximum in (
         ("About", result.about, settings.about_max_words),
         ("Headline", result.headline, settings.headline_max_words),
     ):
         if len(value.split()) > maximum:
-            raise ValueError(f"Generated {label} exceeds its {maximum}-word limit. Regenerate the summary.")
+            raise SummaryError(f"Generated {label} exceeds its {maximum}-word limit. Regenerate the summary.")
 
     return result

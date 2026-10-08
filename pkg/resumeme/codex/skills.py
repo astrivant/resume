@@ -19,6 +19,7 @@ from jsonschema import Draft202012Validator
 from resumeme.compiler.asts.skill_suggestions import SkillSuggestions, skill_suggestions_schema
 from resumeme.compiler.passes.summary import summary_evidence
 from resumeme.config import project_path
+from resumeme.exceptions import SummaryError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -67,12 +68,12 @@ def tag_revision(root: Path, tag: str) -> str:
         str: Commit selected by the tag and the current checkout.
 
     Raises:
-        ValueError: The tag is invalid, missing, points elsewhere, or Actions is not processing its push.
+        SummaryError: The tag is invalid, missing, points elsewhere, or Actions is not processing its push.
     """
     if os.environ.get("GITHUB_ACTIONS") == "true" and (
         os.environ.get("GITHUB_EVENT_NAME") != "push" or os.environ.get("GITHUB_REF") != f"refs/tags/{tag}"
     ):
-        raise ValueError("Skill generation and publication require a matching tag-push event.")
+        raise SummaryError("Skill generation and publication require a matching tag-push event.")
 
     # Fully qualified refs prevent option injection and branch/tag ambiguity, including annotated tags.
     revisions = []
@@ -81,12 +82,12 @@ def tag_revision(root: Path, tag: str) -> str:
         result = subprocess.run(["git", "-C", str(root), *arguments], capture_output=True, text=True, check=False)
 
         if result.returncode:
-            raise ValueError("Select an existing Git tag and check out its commit before preparing or publishing skills.")
+            raise SummaryError("Select an existing Git tag and check out its commit before preparing or publishing skills.")
 
         revisions.append(result.stdout.strip())
 
     if revisions[1] != revisions[2]:
-        raise ValueError("The selected skills tag does not point to the checked-out commit.")
+        raise SummaryError("The selected skills tag does not point to the checked-out commit.")
 
     return revisions[1]
 
@@ -127,13 +128,13 @@ def skill_evidence(profile: Profile, config: Config, tag: str, revision: str) ->
         dict[str, object]: Complete generation input containing only observed evidence and explicit preferences.
 
     Raises:
-        ValueError: Generation is disabled, the profile is incomplete, or its owner differs.
+        SummaryError: Generation is disabled, the profile is incomplete, or its owner differs.
     """
     if not config.codex.skills.enabled:
-        raise ValueError("Set codex.skills.enabled: true before generating or publishing proposed skills.")
+        raise SummaryError("Set codex.skills.enabled: true before generating or publishing proposed skills.")
 
     if profile.warnings or profile.username != config.linkedin.username:
-        raise ValueError("Skill proposals require a complete capture belonging to linkedin.username.")
+        raise SummaryError("Skill proposals require a complete capture belonging to linkedin.username.")
 
     evidence: dict[str, object] = {
         "username": profile.username,
@@ -203,7 +204,7 @@ def load_skill_suggestions(path: Path, profile: Profile, config: Config, root: P
         SkillSuggestions: Proposal suitable for review or an explicitly enabled publisher.
 
     Raises:
-        ValueError: The proposal is stale, duplicated, unsupported, oversized, or belongs to a different owner or tag.
+        SummaryError: The proposal is stale, duplicated, unsupported, oversized, or belongs to a different owner or tag.
         jsonschema.ValidationError: JSON does not satisfy the strict proposal schema.
     """
     evidence = skill_evidence(profile, config, tag, tag_revision(root, tag))
@@ -212,12 +213,12 @@ def load_skill_suggestions(path: Path, profile: Profile, config: Config, root: P
     proposal = cattrs.Converter(forbid_extra_keys=True).structure(raw, SkillSuggestions)
 
     if (proposal.username, proposal.source_tag, proposal.source_digest) != (profile.username, tag, skill_digest(evidence)):
-        raise ValueError("Skill proposal owner, tag, or inputs changed. Regenerate from the selected tag.")
+        raise SummaryError("Skill proposal owner, tag, or inputs changed. Regenerate from the selected tag.")
 
     names = [normalize_skill(skill.name) for skill in proposal.skills]
 
     if len(names) > config.codex.skills.max_skills or len(names) != len(set(names)):
-        raise ValueError("Skill proposals must contain unique names within codex.skills.max_skills.")
+        raise SummaryError("Skill proposals must contain unique names within codex.skills.max_skills.")
 
     lines = [normalize_skill(line) for line in _source_lines(evidence["source_lines"])]
 
@@ -232,6 +233,6 @@ def load_skill_suggestions(path: Path, profile: Profile, config: Config, root: P
             or not mentioned
             or not any(quote in line for line in lines)
         ):
-            raise ValueError(f"Proposed skill {skill.name!r} needs a captured quote containing that exact skill name.")
+            raise SummaryError(f"Proposed skill {skill.name!r} needs a captured quote containing that exact skill name.")
 
     return proposal

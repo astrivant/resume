@@ -23,6 +23,7 @@ from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Ownership, load_config, project_path
+from resumeme.exceptions import ConfigurationError, ProfileError, ResumemeError
 from resumeme.github.contributions import fetch_calendar
 from resumeme.github.pages import build_site
 from resumeme.linkedin.browser import capture_profile
@@ -175,7 +176,7 @@ def _run(args: argparse.Namespace) -> int:
                 # Preserve recoverable diagnostics without replacing the last accepted, publishable snapshot.
                 diagnostic = root / ".cache/capture/profile.json"
                 save_profile(profile, diagnostic)
-                raise ValueError(f"Capture needs review at {diagnostic}: " + "; ".join(profile.warnings))
+                raise ProfileError(f"Capture needs review at {diagnostic}: " + "; ".join(profile.warnings))
 
             save_profile(profile, snapshot)
             _LOGGER.info("Saved profile snapshot", extra={"file.path": str(snapshot), "profile.sections": len(profile.sections)})
@@ -207,7 +208,7 @@ def _run(args: argparse.Namespace) -> int:
 
         if args.command == "validate":
             if profile.warnings and not args.allow_incomplete:
-                raise ValueError("Capture warnings: " + "; ".join(profile.warnings))
+                raise ProfileError("Capture warnings: " + "; ".join(profile.warnings))
 
             print(f"Valid profile: {profile.name} ({len(profile.sections)} sections)")
             return 0
@@ -217,7 +218,7 @@ def _run(args: argparse.Namespace) -> int:
 
         if args.github_calendar:
             if not config.github.contributions.enabled:
-                raise ValueError("Enable github.contributions before supplying --github-calendar.")
+                raise ConfigurationError("Enable github.contributions before supplying --github-calendar.")
 
             contributions = load_calendar(project_path(root, str(args.github_calendar)))
         elif config.github.contributions.enabled:
@@ -256,7 +257,16 @@ def _run(args: argparse.Namespace) -> int:
     except TimeoutException:
         _LOGGER.error("LinkedIn timed out. Rerun the command; increase capture.page_timeout_seconds if needed.")
         return 2
-    except (OSError, ValueError, RuntimeError, ValidationError, yaml.YAMLError, WebDriverException, subprocess.TimeoutExpired) as error:
+    except (
+        ResumemeError,
+        OSError,
+        ValueError,
+        RuntimeError,
+        ValidationError,
+        yaml.YAMLError,
+        WebDriverException,
+        subprocess.TimeoutExpired,
+    ) as error:
         _LOGGER.error("%s", error, extra={"error.type": type(error).__name__})
         _LOGGER.debug("Command failure details", exc_info=True)
         return 2

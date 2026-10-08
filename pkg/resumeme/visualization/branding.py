@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING
 from PIL import Image, ImageEnhance, ImageOps
 from PIL.PngImagePlugin import PngInfo
 
+from resumeme.exceptions import RenderingError
+
 if TYPE_CHECKING:
     from datetime import date
     from pathlib import Path
@@ -67,11 +69,11 @@ def render_logo(assets: Path, output: Path, seed: str, *, previous: Path | None 
         None: A composed logo is written without modifying either source layer or contacting an image service.
 
     Raises:
-        ValueError: The seed is empty, saved history is invalid, or a source layer has no visible pixels.
+        RenderingError: The seed is empty, saved history is invalid, or a source layer has no visible pixels.
         OSError: Source layers cannot be read or the destination cannot be written.
     """
     if not seed:
-        raise ValueError("A nonempty source revision is required for reproducible coffee stains.")
+        raise RenderingError("A nonempty source revision is required for reproducible coffee stains.")
 
     # Derive variation from content rather than time or run number, so a publication retry has the same Git tree.
     digest = hashlib.sha256(seed.encode("utf-8")).digest()
@@ -85,7 +87,7 @@ def render_logo(assets: Path, output: Path, seed: str, *, previous: Path | None 
     mark_bounds = base.getbbox()
 
     if mark_bounds is None:
-        raise ValueError("The LinkedIn mark must contain visible pixels.")
+        raise RenderingError("The LinkedIn mark must contain visible pixels.")
 
     mark_size = (mark_bounds[2] - mark_bounds[0], mark_bounds[3] - mark_bounds[1])
 
@@ -100,7 +102,7 @@ def render_logo(assets: Path, output: Path, seed: str, *, previous: Path | None 
     bounds = stain.getbbox()
 
     if bounds is None:
-        raise ValueError("The coffee overlay must contain visible pixels.")
+        raise RenderingError("The coffee overlay must contain visible pixels.")
 
     stain = stain.crop(bounds)
 
@@ -127,7 +129,7 @@ def _stain_history(previous: Path | None) -> list[str]:
         list[str]: At most five unique revisions, newest first.
 
     Raises:
-        ValueError: Stored history is malformed or inconsistent with its source revision.
+        RenderingError: Stored history is malformed or inconsistent with its source revision.
         OSError: An existing logo cannot be opened.
     """
     if previous is None or not previous.exists():
@@ -142,23 +144,23 @@ def _stain_history(previous: Path | None) -> list[str]:
         return [source] if isinstance(source, str) and source else []
 
     if not isinstance(encoded, str):
-        raise ValueError("Coffee stain history must be a JSON list of source revisions.")
+        raise RenderingError("Coffee stain history must be a JSON list of source revisions.")
 
     values: object = json.loads(encoded)
 
     if not isinstance(values, list) or not 1 <= len(values) <= _MAX_STAINS:
-        raise ValueError("Coffee stain history must contain one to five source revisions.")
+        raise RenderingError("Coffee stain history must contain one to five source revisions.")
 
     history: list[str] = []
 
     for value in values:
         if not isinstance(value, str) or not value or value in history:
-            raise ValueError("Coffee stain history must contain unique, nonempty source revisions.")
+            raise RenderingError("Coffee stain history must contain unique, nonempty source revisions.")
 
         history.append(value)
 
     if history[0] != source:
-        raise ValueError("The newest coffee stain must match the logo's source revision.")
+        raise RenderingError("The newest coffee stain must match the logo's source revision.")
 
     return history
 

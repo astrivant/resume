@@ -13,6 +13,7 @@ from attrs import field, frozen
 from jsonschema import Draft202012Validator
 
 from resumeme.compiler.constants.backend import AST_PACKAGE, PROFILE_SCHEMA
+from resumeme.exceptions import ProfileError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -153,7 +154,7 @@ def load_profile(path: Path, username: str) -> Profile:
         Profile: Validated snapshot.
 
     Raises:
-        ValueError: The snapshot belongs to another username.
+        ProfileError: The snapshot belongs to another username.
         jsonschema.ValidationError: The snapshot does not satisfy the schema.
     """
 
@@ -165,7 +166,7 @@ def load_profile(path: Path, username: str) -> Profile:
 
     # Ownership is independent of schema validity: a valid snapshot can still belong to the upstream fork.
     if profile.username.casefold() != username.casefold():
-        raise ValueError("Snapshot username differs from configuration. Run `resumeme capture` for the new owner.")
+        raise ProfileError("Snapshot username differs from configuration. Run `resumeme capture` for the new owner.")
 
     return profile
 

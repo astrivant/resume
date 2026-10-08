@@ -14,7 +14,9 @@ Build and release your résumé like software: fork the project, set your userna
 capture your profile, and keep `main` current with monthly refreshes. Tag the
 version you want to share to get a signed release.
 
-**[View the résumé (PDF)](resume.pdf)** - [Preview a fork's README](FORK_EXAMPLE.md) - [Fork this project](https://github.com/astrivant/resume/fork)
+**[View the résumé (PDF)](resume.pdf)** - [Preview a fork's README](FORK_EXAMPLE.md) - [Fork this project][fork-resumeme]
+
+[fork-resumeme]: https://github.com/astrivant/resumeme/fork?name=resume&description=My%20resume%2C%20generated%20from%20LinkedIn%20and%20signed%20with%20GitHub%20Actions.&default_branch_only=true
 
 ## Why use this tool?
 
@@ -60,6 +62,9 @@ version you want to share to get a signed release.
   - [Documentation](#documentation)
 
 ## Quick start
+
+Fork into your own account as `resume`, with the description "My resume, generated
+from LinkedIn and signed with GitHub Actions." Select **Copy the main branch only**.
 
 ### 1. Install
 

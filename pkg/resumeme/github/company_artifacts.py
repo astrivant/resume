@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 from resumeme.codex.companies import company_config
 from resumeme.config import project_path
+from resumeme.exceptions import PublicationError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -34,7 +35,7 @@ def stage_companies(root: Path, config: Config, artifact: Path, *, generated: bo
         None: A complete manifest and its selected PDFs are written under the publication artifact.
 
     Raises:
-        ValueError: A selected output is not a PDF.
+        PublicationError: A selected output is not a PDF.
     """
     files: list[dict[str, str]] = []
 
@@ -43,7 +44,7 @@ def stage_companies(root: Path, config: Config, artifact: Path, *, generated: bo
         content = project_path(root, relative).read_bytes()
 
         if not content.startswith(b"%PDF-"):
-            raise ValueError(f"The company output is not a PDF: {relative}")
+            raise PublicationError(f"The company output is not a PDF: {relative}")
 
         destination = project_path(artifact, relative)
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -67,7 +68,7 @@ def restore_companies(root: Path, config: Config, artifact: Path) -> list[str]:
         list[str]: Explicit repository-relative PDF paths to stage with Git.
 
     Raises:
-        ValueError: Manifest entries, PDF headers, or content digests do not match the configured target set.
+        PublicationError: Manifest entries, PDF headers, or content digests do not match the configured target set.
     """
     manifest = artifact / "single-origin.json"
 
@@ -78,29 +79,29 @@ def restore_companies(root: Path, config: Config, artifact: Path) -> list[str]:
     raw: object = json.loads(manifest.read_text(encoding="utf-8"))
 
     if not isinstance(raw, dict) or set(raw) != {"generated", "files"} or not isinstance(raw["generated"], bool):
-        raise ValueError("Invalid single-origin publication manifest.")
+        raise PublicationError("Invalid single-origin publication manifest.")
 
     entries = raw["files"]
     expected = {target.key: company_config(config, target).output.pdf for target in config.codex.companies} if raw["generated"] else {}
 
     if not isinstance(entries, list) or len(entries) != len(expected):
-        raise ValueError("The company PDF artifact is incomplete.")
+        raise PublicationError("The company PDF artifact is incomplete.")
 
     selected: list[str] = []
 
     for entry in entries:
         if not isinstance(entry, dict) or set(entry) != {"key", "sha256"} or not isinstance(entry["key"], str):
-            raise ValueError("Invalid company PDF manifest entry.")
+            raise PublicationError("Invalid company PDF manifest entry.")
 
         relative = expected.pop(entry["key"], None)
 
         if relative is None:
-            raise ValueError("The company PDF artifact includes an unknown or repeated target.")
+            raise PublicationError("The company PDF artifact includes an unknown or repeated target.")
 
         content = project_path(artifact, relative).read_bytes()
 
         if not content.startswith(b"%PDF-") or hashlib.sha256(content).hexdigest() != entry["sha256"]:
-            raise ValueError(f"The company PDF artifact failed verification: {relative}")
+            raise PublicationError(f"The company PDF artifact failed verification: {relative}")
 
         selected.append(relative)
 

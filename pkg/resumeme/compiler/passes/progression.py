@@ -64,7 +64,7 @@ def experience_layout(entry: Entry) -> Entry:
         Entry: Display copy containing company-only paragraphs and ordered child roles, or the unchanged standalone entry.
 
     Raises:
-        ValueError: Structured positions cannot be reconciled with the flattened company text.
+        ProfileError: Structured positions cannot be reconciled with the flattened company text.
     """
     if entry.positions:
         # Reuse recorded boundaries; shared employer branding belongs on the company row, not on every role.

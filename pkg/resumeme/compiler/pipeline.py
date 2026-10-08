@@ -47,6 +47,7 @@ from resumeme.compiler.passes.summary import apply_summary, summary_digest
 from resumeme.compiler.passes.themes import resolve_style
 from resumeme.compiler.passes.visibility import visible_profile
 from resumeme.config import project_path
+from resumeme.exceptions import ProfileError
 from resumeme.visualization.skills import render_skill_cloud, skill_scores
 
 if TYPE_CHECKING:
@@ -87,12 +88,12 @@ def render_profile(
         Path: Generated LaTeX source.
 
     Raises:
-        ValueError: Capture warnings or missing assets prevent a complete résumé.
+        ProfileError: Capture warnings or missing assets prevent a complete résumé.
     """
 
     # Rendering must not silently promote a diagnostic capture into an apparently complete, publishable resume.
     if profile.warnings and not allow_incomplete:
-        raise ValueError("Capture is incomplete: " + "; ".join(profile.warnings))
+        raise ProfileError("Capture is incomplete: " + "; ".join(profile.warnings))
 
     _LOGGER.info("Rendering LaTeX", extra={"profile.sections": len(profile.sections), "summary.enabled": summary_path is not None})
     # Validate against the original inputs before display passes remove or relocate source text.
@@ -113,12 +114,12 @@ def render_profile(
     # Validate external activity before publishing generated source, and retain the exact observations beside that source.
     if config.github.contributions.enabled:
         if contributions is None or config.github.username is None:
-            raise ValueError("Enabled GitHub contributions require a captured calendar and github.username.")
+            raise ProfileError("Enabled GitHub contributions require a captured calendar and github.username.")
 
         validate_calendar(contributions, config.github.username, *calendar_window(config.github.contributions))
         save_calendar(contributions, target.parent / "github-contributions.json")
     elif contributions is not None:
-        raise ValueError("Enable github.contributions before supplying a calendar.")
+        raise ProfileError("Enable github.contributions before supplying a calendar.")
 
     asset_directory = target.parent / "assets"
     asset_directory.mkdir(exist_ok=True)
@@ -143,7 +144,7 @@ def render_profile(
                 if allow_incomplete:
                     continue
 
-                raise ValueError(f"Image was not downloaded: {item.alt or item.url}")
+                raise ProfileError(f"Image was not downloaded: {item.alt or item.url}")
 
             source = project_path(root, item.path)
 
@@ -151,7 +152,7 @@ def render_profile(
                 if allow_incomplete:
                     continue
 
-                raise ValueError(f"Expected a captured PNG asset: {item.path}")
+                raise ProfileError(f"Expected a captured PNG asset: {item.path}")
 
             # Give templates stable relative paths and reuse the same filename for identical captured bytes.
             name = hashlib.sha256(source.read_bytes()).hexdigest() + ".png"

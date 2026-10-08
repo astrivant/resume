@@ -19,6 +19,7 @@ from pypdf.errors import PdfReadError
 
 from resumeme.compiler.passes.themes import resolve_style
 from resumeme.config import project_path
+from resumeme.exceptions import PublicationError
 
 if TYPE_CHECKING:
     from resumeme.compiler.asts.profile import Profile
@@ -41,26 +42,26 @@ def build_site(profile: Profile, config: Config, root: Path, repository: str) ->
         Path: Generated index.html beneath .cache/pages, the directory uploaded as a Pages artifact.
 
     Raises:
-        ValueError: Ownership, repository, capture completeness, or PDF content is invalid.
+        PublicationError: Ownership, repository, capture completeness, or PDF content is invalid.
         OSError: The accepted PDF cannot be read or the generated site cannot be written.
     """
     if profile.username.casefold() != config.linkedin.username.casefold() or profile.warnings:
-        raise ValueError("Pages requires a complete profile belonging to the configured LinkedIn username.")
+        raise PublicationError("Pages requires a complete profile belonging to the configured LinkedIn username.")
 
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9_.-]+", repository) or repository.split("/")[-1] in {".", ".."}:
-        raise ValueError("Pages requires the publishing GitHub repository as OWNER/REPO.")
+        raise PublicationError("Pages requires the publishing GitHub repository as OWNER/REPO.")
 
     # Use the accepted document verbatim, including its existing layout and footer; site generation never rebuilds it.
     pdf = project_path(root, config.output.pdf)
 
     if not pdf.read_bytes().startswith(b"%PDF-"):
-        raise ValueError("Pages requires a nonempty PDF. Build the resume before generating the site.")
+        raise PublicationError("Pages requires a nonempty PDF. Build the resume before generating the site.")
 
     try:
         if not PdfReader(pdf).pages:
-            raise ValueError("Pages requires a PDF containing at least one page.")
+            raise PublicationError("Pages requires a PDF containing at least one page.")
     except PdfReadError as error:
-        raise ValueError("Pages could not read the PDF. Rebuild the resume before generating the site.") from error
+        raise PublicationError("Pages could not read the PDF. Rebuild the resume before generating the site.") from error
 
     name = profile.name.strip() or profile.username
     style = resolve_style(config.style)

@@ -29,6 +29,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile
 from resumeme.compiler.asts.profile import save_profile
+from resumeme.exceptions import BrowserElementError, BrowserError, BrowserLaunchError, BrowserTimeoutError, BrowserWindowError
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry
 from resumeme.telemetry import safe_log_url
@@ -89,7 +90,7 @@ def _wait_for_browser(port: int) -> None:
         None: Firefox accepts local connections.
 
     Raises:
-        TimeoutError: Firefox did not start successfully.
+        BrowserTimeoutError: Firefox did not start successfully.
     """
 
     # Bound application startup separately from interactive login, which deliberately has no deadline.
@@ -102,7 +103,7 @@ def _wait_for_browser(port: int) -> None:
         except OSError:
             time.sleep(0.25)
 
-    raise TimeoutError("Firefox did not open its local automation port. Close any profile-error dialog and retry.")
+    raise BrowserTimeoutError("Firefox did not open its local automation port. Close any profile-error dialog and retry.")
 
 
 @contextmanager
@@ -155,7 +156,7 @@ def _firefox(root: Path, connect_port: int | None, *, headless: bool = False) ->
             )
 
             if not browser.open("https://www.linkedin.com/login"):
-                raise RuntimeError("macOS could not launch Firefox.")
+                raise BrowserLaunchError("macOS could not launch Firefox.")
         else:
             # Native Selenium launch is sufficient on other platforms, but it must use the same persistent profile.
             options.add_argument("-profile")
@@ -238,10 +239,10 @@ def _browser(root: Path, settings: Capture, connect_port: int | None = None, *, 
         WebDriver: Browser owned by the selected launcher.
 
     Raises:
-        ValueError: Chrome was selected with a Firefox-only attachment port.
+        BrowserError: Chrome was selected with a Firefox-only attachment port.
     """
     if settings.browser == "chrome" and connect_port is not None:
-        raise ValueError("--connect-port is only supported with capture.browser: firefox. Omit it to launch Chrome.")
+        raise BrowserError("--connect-port is only supported with capture.browser: firefox. Omit it to launch Chrome.")
 
     # Both capture and ownership updates share selection so changing the config cannot route them to different sessions.
     session = _chrome(root, headless=headless) if settings.browser == "chrome" else _firefox(root, connect_port, headless=headless)
@@ -349,13 +350,13 @@ def _login_form(driver: WebDriver) -> tuple[WebElement, WebElement, WebElement] 
             False while any control is hidden or disabled.
 
     Raises:
-        ValueError: The form is no longer on LinkedIn's HTTPS origin.
-        NoSuchElementException: A control has not appeared; the caller's explicit wait retries the lookup.
+        BrowserError: The form is no longer on LinkedIn's HTTPS origin.
+        BrowserElementError: A control has not appeared; the caller's explicit wait retries the lookup.
     """
 
     # Redirects can finish during the wait; check the origin before looking up or returning credential controls.
     if _login_page(driver) == "unexpected origin":
-        raise ValueError("LinkedIn login redirected to an unexpected origin.")
+        raise BrowserError("LinkedIn login redirected to an unexpected origin.")
 
     if _authenticated(driver):
         return True
@@ -381,13 +382,13 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         None: Authentication succeeded, including any manually completed challenge in interactive mode.
 
     Raises:
-        ValueError: Credentials are incomplete or unattended authentication requires intervention.
+        BrowserError: Credentials are incomplete or unattended authentication requires intervention.
     """
     username = os.environ.get("LINKEDIN_USERNAME", "")
     password = os.environ.get("LINKEDIN_PASSWORD", "")
 
     if bool(username) != bool(password) or (headless and not username):
-        raise ValueError("Set both LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD for unattended capture.")
+        raise BrowserError("Set both LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD for unattended capture.")
 
     if username and not _authenticated(driver):
         _LOGGER.info("Waiting for the LinkedIn login form")
@@ -407,7 +408,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
                 # A challenge is not a transient missing form. Never reload it or replay credentials to get past it.
                 if _login_page(driver) in {"checkpoint", "challenge", "authwall"}:
                     if headless:
-                        raise ValueError(
+                        raise BrowserError(
                             f"LinkedIn login form is unavailable (page state: {_login_page(driver)}). "
                             "Complete sign-in interactively using this command without --headless. No credentials were submitted."
                         ) from error
@@ -431,7 +432,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
                 _wait_for_login(driver)
                 return
 
-            raise ValueError(
+            raise BrowserError(
                 f"LinkedIn login form did not become ready after {settings.retry_attempts} attempts "
                 f"(page state: {_login_page(driver)}). No credentials were submitted. "
                 "Check LinkedIn in an interactive browser or increase capture.page_timeout_seconds for a slow page."
@@ -461,7 +462,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
     try:
         WebDriverWait(driver, settings.page_timeout_seconds).until(_authenticated)
     except TimeoutException as error:
-        raise ValueError(
+        raise BrowserError(
             f"Unattended LinkedIn login did not complete (page state: {_login_page(driver)}). "
             "Check LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD, or run this command without --headless "
             "to complete an account challenge interactively. No profile changes were submitted."
@@ -479,7 +480,7 @@ def _wait_for_login(driver: WebDriver) -> None:
         None: A LinkedIn tab has an authenticated session and has left login or challenge pages.
 
     Raises:
-        NoSuchWindowException: The user closed every browser window.
+        BrowserWindowError: The user closed every browser window.
         KeyboardInterrupt: The user cancelled the capture command.
     """
 
@@ -489,7 +490,7 @@ def _wait_for_login(driver: WebDriver) -> None:
         _LOGGER.debug("Checking browser login state", extra={"browser.tabs": len(handles)})
 
         if not handles:
-            raise NoSuchWindowException("The capture window was closed during login.")
+            raise BrowserWindowError("The capture window was closed during login.")
 
         # Login can finish in a different tab, so inspect all open tabs rather than trusting the initially active one.
         for handle in handles:
@@ -516,7 +517,7 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
         list[str]: DOM snapshots retaining content evicted during virtualized scrolling.
 
     Raises:
-        ValueError: A loading or expansion bound prevents a complete capture.
+        BrowserError: A loading or expansion bound prevents a complete capture.
     """
 
     # Always start at the top: later snapshots may evict earlier cards from LinkedIn's virtualized DOM.
@@ -570,7 +571,7 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
         except TimeoutException:
             pass
 
-    raise ValueError("Capture reached max_scrolls before the page settled; raise the limit and retry.")
+    raise BrowserError("Capture reached max_scrolls before the page settled; raise the limit and retry.")
 
 
 def _detail_tabs(driver: WebDriver) -> dict[str, WebElement]:
@@ -609,7 +610,7 @@ def _details(driver: WebDriver, url: str, key: str, title: str, settings: Captur
         Section: All entries collected across detail pages.
 
     Raises:
-        ValueError: Pagination loops or exceeds the configured limit.
+        BrowserError: Pagination loops or exceeds the configured limit.
     """
     _navigate(driver, url, settings)
     WebDriverWait(driver, settings.page_timeout_seconds).until(
@@ -635,7 +636,7 @@ def _details(driver: WebDriver, url: str, key: str, title: str, settings: Captur
             tab = _detail_tabs(driver).get(label)
 
             if tab is None:
-                raise NoSuchElementException(f"The {label} tab disappeared while capturing {title}.")
+                raise BrowserElementError(f"The {label} tab disappeared while capturing {title}.")
 
             before = driver.find_element(By.CSS_SELECTOR, "main").text
             driver.execute_script("arguments[0].scrollIntoView({block: 'center'})", tab)
@@ -663,7 +664,7 @@ def _detail_pages(driver: WebDriver, key: str, title: str, settings: Capture) ->
         Section: Entries from every loaded page of the selected tab.
 
     Raises:
-        ValueError: Pagination repeats content or exceeds the configured limit.
+        BrowserError: Pagination repeats content or exceeds the configured limit.
     """
     collected = parse_detail_after_expansion(driver, key, title, settings)
 
@@ -679,7 +680,7 @@ def _detail_pages(driver: WebDriver, key: str, title: str, settings: Capture) ->
 
         # Exhaustion is a capture failure, not permission to return a silently truncated employment history.
         if page_number == settings.max_pages_per_section:
-            raise ValueError(f"Capture reached max_pages_per_section for {title}.")
+            raise BrowserError(f"Capture reached max_pages_per_section for {title}.")
 
         before = driver.find_element(By.CSS_SELECTOR, "main").text
         next_button.click()
@@ -688,12 +689,12 @@ def _detail_pages(driver: WebDriver, key: str, title: str, settings: Capture) ->
         signature = driver.find_element(By.CSS_SELECTOR, "main").text
 
         if signature in seen:
-            raise ValueError(f"Pagination repeated content in {title}.")
+            raise BrowserError(f"Pagination repeated content in {title}.")
 
         seen.add(signature)
         collected = evolve(collected, entries=[*collected.entries, *section.entries])
 
-    raise ValueError(f"Capture reached max_pages_per_section for {title}.")
+    raise BrowserError(f"Capture reached max_pages_per_section for {title}.")
 
 
 def parse_detail_after_expansion(driver: WebDriver, key: str, title: str, settings: Capture) -> Section:
@@ -780,14 +781,14 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
 
     Raises:
         TimeoutException: A page did not load after bounded retries.
-        ValueError: The profile is missing, redirected, or cannot be fully expanded.
+        BrowserError: The profile is missing, redirected, or cannot be fully expanded.
     """
     if headless and connect_port is not None:
-        raise ValueError("Headless capture cannot attach to an interactive browser session.")
+        raise BrowserError("Headless capture cannot attach to an interactive browser session.")
 
     # Missing secrets fail before a browser is started; interactive users keep their unlimited login wait.
     if headless and not all(os.environ.get(key) for key in ("LINKEDIN_USERNAME", "LINKEDIN_PASSWORD")):
-        raise ValueError("Headless capture requires LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD.")
+        raise BrowserError("Headless capture requires LINKEDIN_USERNAME (login email) and LINKEDIN_PASSWORD.")
 
     name = config.capture.browser.title()
     _LOGGER.info("Starting LinkedIn capture", extra={"browser.name": name, "browser.headless": headless})
@@ -815,13 +816,13 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             diagnostic = root / ".cache/capture/profile.html"
             diagnostic.write_text(driver.page_source, encoding="utf-8")
             driver.save_screenshot(str(root / ".cache/capture/profile.png"))
-            raise ValueError(f"The profile heading did not load at {driver.current_url}; inspect {diagnostic}.") from error
+            raise BrowserError(f"The profile heading did not load at {driver.current_url}; inspect {diagnostic}.") from error
 
         # A successful navigation can still land on an auth wall or another profile; bind collection to the requested owner.
         expected = f"/in/{username}/".casefold()
 
         if urlsplit(driver.current_url).path.casefold().rstrip("/") + "/" != expected:
-            raise ValueError("LinkedIn redirected away from the configured profile.")
+            raise BrowserError("LinkedIn redirected away from the configured profile.")
 
         snapshots = retry(
             partial(_expand, driver, config.capture),

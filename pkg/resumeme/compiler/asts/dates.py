@@ -11,6 +11,7 @@ from attrs import frozen
 
 from resumeme.compiler.constants.dates import MONTHS as _MONTHS
 from resumeme.compiler.constants.dates import PERIOD as _PERIOD
+from resumeme.exceptions import ProfileError
 
 __all__ = ["EmploymentPeriod", "employment_period"]
 
@@ -41,7 +42,7 @@ def _boundary(value: str, *, end: bool) -> date:
         date: Calendar boundary without locale-dependent parsing.
 
     Raises:
-        ValueError: The text contains an invalid date or unsupported month.
+        ProfileError: The text contains an invalid date or unsupported month.
     """
 
     # Use an explicit English month map so build hosts with different locales interpret captured dates identically.
@@ -51,7 +52,7 @@ def _boundary(value: str, *, end: bool) -> date:
         month = _MONTHS.get(parts[0])
 
         if month is None:
-            raise ValueError("Unknown employment month.")
+            raise ProfileError("Unknown employment month.")
 
         year = int(parts[1])
     else:

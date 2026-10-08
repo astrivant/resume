@@ -8,6 +8,8 @@ import logging
 import time
 from typing import TYPE_CHECKING, TypeVar
 
+from resumeme.exceptions import ConfigurationError
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -33,12 +35,12 @@ def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers
         _T: First successful result.
 
     Raises:
-        ValueError: Retry limits are invalid.
+        ConfigurationError: Retry limits are invalid.
         Exception: The final transient failure or an undeclared failure is propagated.
     """
 
     if attempts < 1 or backoff < 0 or max_backoff < 0:
-        raise ValueError("Retries require at least one attempt and a nonnegative delay.")
+        raise ConfigurationError("Retries require at least one attempt and a nonnegative delay.")
 
     # Only caller-declared transient failures consume retries; programming errors and invalid content escape immediately.
     for attempt in range(attempts - 1):
