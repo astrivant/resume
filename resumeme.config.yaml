@@ -118,7 +118,7 @@ section_order:
 
 # Keep Projects whose resolved source URL matches this Python regex; null includes all projects, even without a URL.
 # Single quotes preserve regex backslashes. The default matches github.com, ignoring case.
-project_filter: '(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
+project_filter: null #'(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
 
 projects:
 
