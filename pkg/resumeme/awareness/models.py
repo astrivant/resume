@@ -9,6 +9,7 @@ from attrs import field, frozen
 FIGURES = {
     "knowledge-usage": "knowledge",
     "knowledge-map": "knowledge",
+    "decision-influences": "life",
     "knowledge-hierarchy": "knowledge",
     "toolbox-use": "repertoire",
     "problem-repertoire": "repertoire",

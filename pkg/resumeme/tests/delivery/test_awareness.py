@@ -20,7 +20,7 @@ from PIL import Image
 
 from resumeme.awareness.bundle import stage_figures, validate_bundle
 from resumeme.awareness.dispatch import receive
-from resumeme.awareness.models import Appendices, Awareness, AwarenessAppendix, FigureSelector, selected_figures
+from resumeme.awareness.models import FIGURES, Appendices, Awareness, AwarenessAppendix, FigureSelector, selected_figures
 from resumeme.compiler.asts.profile import Profile
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, company_config, load_config
@@ -36,7 +36,7 @@ def _bundle(*keys: str) -> bytes:
     Encode tiny synthetic figures with real PNG bytes and content hashes.
 
     Args:
-        *keys (str): Knowledge figure identifiers to include.
+        *keys (str): Catalog figure identifiers to include.
 
     Returns:
         bytes: Valid version-one JSON transport.
@@ -50,7 +50,7 @@ def _bundle(*keys: str) -> bytes:
             "figures": [
                 {
                     "id": key,
-                    "group": "knowledge",
+                    "group": FIGURES[key],
                     "title": "Evidence & observations",
                     "sha256": hashlib.sha256(image).hexdigest(),
                     "png": base64.b64encode(image).decode(),
@@ -277,3 +277,31 @@ def test_workflow_uses_main_code_and_one_dispatch_pipeline() -> None:
     assert checkout["with"]["ref"] == "${{ needs.source.outputs.sha }}"
     for name in ("stage-resume.yml", "stage-documents.yml"):
         assert "name: awareness-figures" in (root / ".github/workflows" / name).read_text()
+
+
+def test_decision_figure_config_bundle_and_render(tmp_path: Path) -> None:
+    """
+    Accept the Life figure through the public schema, selection rules, and LaTeX compiler.
+
+    Args:
+        tmp_path (Path): Isolated receiver with a two-figure bundle.
+
+    Returns:
+        None: Both enabled figures render in order; a life-only filter selects the decisions chart.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    settings = {
+        "profile": {"linkedin": {"username": "example-person"}},
+        "document": {"appendices": {"awareness": {"figures": {"knowledge-map": True, "decision-influences": True}}}},
+    }
+    path.write_text(yaml.safe_dump(settings, sort_keys=False))
+    config = load_config(path)
+    bundle = _bundle("knowledge-map", "decision-influences")
+    validate_bundle(bundle)
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data/awareness.json").write_bytes(bundle)
+    source = render_profile(Profile(username="example-person", name="Example Person"), config, tmp_path).read_text()
+    assert source.index(r"\hypertarget{awareness-knowledge-map}") < source.index(r"\hypertarget{awareness-decision-influences}")
+    appendix = evolve(config.appendices.awareness, include=(FigureSelector(group="life"),))
+    assert selected_figures(appendix) == ("decision-influences",)
+    assert selected_figures(evolve(appendix, exclude=(FigureSelector(group="life"),))) == ()

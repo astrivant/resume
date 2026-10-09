@@ -110,7 +110,8 @@ document:
     awareness:
       figures:
         knowledge-usage: false
-        knowledge-map: false
+        knowledge-map: true
+        decision-influences: true
         knowledge-hierarchy: false
         toolbox-use: false
         problem-repertoire: false
@@ -199,8 +200,8 @@ publishing:
 automation:
   # Accept GitHub-authenticated rebuild requests only from explicitly allowed account/App logins.
   awareness:
-    enabled: false
-    allowed_actors: []
+    enabled: true
+    allowed_actors: [emmeowzing]
 
   codex:
     enabled: false

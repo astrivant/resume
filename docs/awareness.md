@@ -5,6 +5,13 @@ a rebuild through GitHub's authenticated `repository_dispatch` API. Each figure
 is independently disabled by default. This integration uses the existing CI
 pipeline and publication checks, including the configured Pages deployment.
 
+These optional appendices provide a professional signature of your work: the
+problems you solve, skills and tools you apply, and recorded decisions that explain
+your approach. They make patterns of experience visible and support reflection as
+you work with an agent. Select figures that help the reader understand that work;
+the resume remains complete without them. This visual signature is separate from
+the release's cryptographic signature.
+
 ## Configure the receiver
 
 Commit these settings to the resume repository's `main` branch, together with
@@ -14,6 +21,7 @@ the awareness-capable workflow:
 automation:
   awareness:
     enabled: true
+    # GitHub account logins authorized to send awareness updates.
     allowed_actors: [your-github-login]
 
 document:
@@ -22,6 +30,7 @@ document:
       figures:
         knowledge-usage: true
         knowledge-map: false
+        decision-influences: false
         knowledge-hierarchy: false
         toolbox-use: true
         problem-repertoire: false
@@ -31,9 +40,29 @@ document:
       exclude: []
 ```
 
-Use the GitHub login that authenticates the dispatch, or the exact App bot login
-such as `example-app[bot]`. A public profile username is not inferred from any
-other configuration. Forks receive no authorization until their owner enables it.
+`your-github-login` means the **GitHub account username authenticated by the sender's
+credentials**. For example, if `octocat` uses their personal access token to update
+`example-org/resume`, set `allowed_actors: [octocat]`, even though an organization
+owns the destination. Use the bare username, without `@`, a profile URL, or an email
+address. This is separate from the LinkedIn username and is not inferred from
+other profile settings.
+
+For local GitHub CLI authentication or a personal access token, check the account
+using the same environment that will run `witful awareness push`:
+
+```bash
+gh api --hostname github.com user --jq .login
+```
+
+Copy that output into `allowed_actors`. For a GitHub App installation token, use
+the App's bot login, such as `example-app[bot]`; the personal-account command above
+does not apply. Multiple senders can be listed as `[octocat, 'example-app[bot]']`.
+
+This YAML field is a literal allowlist, not a credential or environment-variable
+reference. Resumeme does not expand `$GH_TOKEN` or `${GITHUB_ACTOR}` in it. The
+receiver compares the configured logins with GitHub's `GITHUB_ACTOR` and verifies
+that the event's `sender.login` matches. GitHub supplies those values; do not set
+them yourself. Forks receive no authorization until their owner enables it.
 
 Mapping order controls appendix order. `include: [{group: knowledge}]` narrows
 enabled figures to that category; it does not enable disabled switches.
@@ -45,7 +74,8 @@ can change these selections independently.
 | Figure ID | Group | Evidence shown |
 | --- | --- | --- |
 | `knowledge-usage` | `knowledge` | Recorded concept applications |
-| `knowledge-map` | `knowledge` | Concept relationships and observed reuse |
+| `knowledge-map` | `knowledge` | How my skills connect: relationships and observed reuse |
+| `decision-influences` | `life` | What informs my decisions: skills and lessons referenced by current accepted decisions |
 | `knowledge-hierarchy` | `knowledge` | Organized disciplines, skills, and lessons |
 | `toolbox-use` | `repertoire` | Recorded tool use by task |
 | `problem-repertoire` | `repertoire` | Problem taxonomy and observed tasks |
@@ -83,11 +113,30 @@ For an offline resume build, copy the reviewed bundle to `data/awareness.json`
 in the resume checkout, then run `resumeme build` normally.
 
 `gh auth login --hostname github.com` provides local authentication. Automation
-can use `GH_TOKEN` with a fine-grained token or GitHub App token granting
-**Contents: write** to the destination repository. The ordinary cross-repository
-`GITHUB_TOKEN` does not automatically grant this access. No extra webhook secret
-or public listener is required. GitHub Enterprise hosts are not supported by this
-initial adapter.
+can use `GH_TOKEN` with a fine-grained personal access token or GitHub App
+installation token granting **Contents: write** to the destination repository.
+`GH_TOKEN` overrides credentials stored by `gh auth login`, so the allowlist must
+match the account represented by that token. See [GitHub CLI environment variables](https://cli.github.com/manual/gh_help_environment).
+
+For example, store `octocat`'s token as an Actions secret named
+`AWARENESS_GITHUB_TOKEN` in the **sending** repository, then use this step after
+checking out the collection and installing Witful:
+
+```yaml
+- name: Publish awareness figures
+  env:
+    GH_TOKEN: ${{ secrets.AWARENESS_GITHUB_TOKEN }}
+  run: witful awareness --repo . push
+```
+
+The receiver's config still contains `allowed_actors: [octocat]`. The secret name
+is your choice; its value is the token, not the username. In this example the
+destination sees `octocat` as the sender, regardless of who triggered the sending
+workflow. An App installation token instead requires its bot login in the allowlist.
+
+The ordinary cross-repository `GITHUB_TOKEN` does not automatically grant this
+access. No extra webhook secret or public listener is required. GitHub Enterprise
+hosts are not supported by this initial adapter.
 
 ## Delivery and verification
 

@@ -93,6 +93,7 @@ document:
       figures:
         knowledge-usage: false
         knowledge-map: false
+        decision-influences: false
         knowledge-hierarchy: false
         toolbox-use: false
         problem-repertoire: false

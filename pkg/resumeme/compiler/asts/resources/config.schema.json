@@ -42,6 +42,10 @@
                   "type": "boolean",
                   "default": false
                 },
+                "decision-influences": {
+                  "type": "boolean",
+                  "default": false
+                },
                 "knowledge-hierarchy": {
                   "type": "boolean",
                   "default": false
@@ -75,6 +79,7 @@
                     "enum": [
                       "knowledge-usage",
                       "knowledge-map",
+                      "decision-influences",
                       "knowledge-hierarchy",
                       "toolbox-use",
                       "problem-repertoire",
@@ -85,6 +90,7 @@
                   "group": {
                     "enum": [
                       "knowledge",
+                      "life",
                       "repertoire",
                       "checkpoints"
                     ]
@@ -103,6 +109,7 @@
                     "enum": [
                       "knowledge-usage",
                       "knowledge-map",
+                      "decision-influences",
                       "knowledge-hierarchy",
                       "toolbox-use",
                       "problem-repertoire",
@@ -113,6 +120,7 @@
                   "group": {
                     "enum": [
                       "knowledge",
+                      "life",
                       "repertoire",
                       "checkpoints"
                     ]
