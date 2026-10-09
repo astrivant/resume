@@ -140,9 +140,10 @@ when it exits, so repeated calls do not duplicate records.
 ### resumeme capture
 
 Open Firefox or Chrome, wait for authentication, and save the expanded profile
-and downloaded assets to `output.profile` and `output.assets`. Interactive login
-waits until you finish. `--headless` requires `LINKEDIN_USERNAME` (email/phone) and
-`LINKEDIN_PASSWORD`. The same username variable accepts public usernames and
+and downloaded assets to `output.profile` and `output.assets`. Capture saves inputs
+only; run `resumeme render` to generate and clean TeX locally, or `resumeme build`
+to compile the PDF. Interactive login waits until you finish. `--headless` requires
+`LINKEDIN_USERNAME` (email/phone) and `LINKEDIN_PASSWORD`. The same username variable accepts public usernames and
 profile URLs, which are normalized and use manual login without `--headless`.
 See [credential setup](automation.md#configure-a-fork).
 `--connect-port` attaches to an existing Firefox Marionette

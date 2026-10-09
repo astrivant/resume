@@ -53,8 +53,20 @@ def _saved_resume_names(driver: WebDriver) -> set[str]:
 
         name = " ".join(element.text.split())
 
+        # LinkedIn's row action can include the PDF name in its label; do not treat that control as another saved file.
+        if re.match(r"^(?:show|more)\s+options\s+for\s+", name, re.IGNORECASE):
+            continue
+
+        # A saved-file row also contains upload metadata and the same menu label after the visible filename.
+        filename = re.match(r"^(.+?\.pdf)(?:\s|$)", name, re.IGNORECASE)
+
+        if filename is None:
+            continue
+
+        name = filename.group(1)
+
         # Preserve unusual Unicode and punctuation in names rather than overlooking a file during replacement.
-        if name.casefold().endswith(".pdf") and len(name) <= 255:
+        if len(name) <= 255:
             names.add(name)
 
     return names

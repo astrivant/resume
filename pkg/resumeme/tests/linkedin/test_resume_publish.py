@@ -381,14 +381,18 @@ def test_saved_resume_names_ignore_non_filename_text() -> None:
         None: Explanatory text, hidden names, and notices are not treated as resumes.
     """
     driver = MagicMock()
-    filename, explanation, hidden = MagicMock(), MagicMock(), MagicMock()
+    filename, explanation, hidden, action, row = (MagicMock() for _ in range(5))
     filename.text = "Résumé, Emma's file (2025).pdf"
     filename.is_displayed.return_value = True
     explanation.text = "Upload a PDF resume to apply"
     explanation.is_displayed.return_value = True
     hidden.text = "old-resume.pdf"
     hidden.is_displayed.return_value = False
-    driver.find_elements.side_effect = [[], [filename, explanation, hidden]]
+    action.text = "Show options for Résumé, Emma's file (2025).pdf"
+    action.is_displayed.return_value = True
+    row.text = "Résumé, Emma's file (2025).pdf Uploaded on 10/8/2026 Show options for Résumé, Emma's file (2025).pdf"
+    row.is_displayed.return_value = True
+    driver.find_elements.side_effect = [[], [filename, explanation, hidden, action, row]]
 
     assert _saved_resume_names(driver) == {"Résumé, Emma's file (2025).pdf"}
 

@@ -111,7 +111,12 @@ Capture your profile and check the saved snapshot:
 ```bash
 poetry run resumeme capture
 poetry run resumeme validate
+poetry run resumeme render
 ```
+
+`render` runs the same Jinja-to-LaTeX formatter locally and writes reviewable
+source to `tex/resume.tex`. Commit the updated profile and assets, then push;
+the main-branch workflow rebuilds the PDF from that snapshot.
 
 Sign in to LinkedIn in the browser window and leave it open. Capture waits for you
 to finish signing in, then saves your profile and images locally. **A username
@@ -204,9 +209,18 @@ See [configuration, architecture, and capture limits](docs/README.md) for the de
 
 ### Refresh your profile
 
-After editing your LinkedIn profile, run `poetry run resumeme capture` again, review
-the changed snapshot and assets, and commit and push them. For layout changes,
-edit `resumeme.config.yaml` and push; the saved profile can be reused.
+After editing your LinkedIn profile, run `poetry run resumeme capture` again, then
+validate and render before reviewing the snapshot, assets, and generated TeX:
+
+```bash
+poetry run resumeme capture
+poetry run resumeme validate
+poetry run resumeme render
+```
+
+Commit and push the changed snapshot and assets. The main-branch workflow rebuilds
+the PDF with the same formatter. For layout changes, edit `resumeme.config.yaml`
+and push; the saved profile can be reused.
 
 Logs default to `ERROR`. Set `logging.level: DEBUG` or use `--log-level DEBUG`
 before the command for request and browser diagnostics. Logs use OpenTelemetry

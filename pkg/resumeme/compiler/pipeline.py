@@ -21,6 +21,7 @@ from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.asts.summary import load_summary
 from resumeme.compiler.backends.latex.assets import stage_website_icon
 from resumeme.compiler.backends.latex.escaping import latex_contact_text, latex_escape, latex_linked_text, latex_url
+from resumeme.compiler.backends.latex.formatting import format_tex_source
 from resumeme.compiler.constants.backend import (
     BLOCK_END,
     BLOCK_START,
@@ -364,6 +365,7 @@ def render_profile(
         current_position=current_position,
         section_navigation=section_navigation,
     )
-    target.write_text(content, encoding="utf-8")
+    # Normalize Jinja's loop whitespace for readable, reviewable generated source.
+    target.write_text(format_tex_source(content), encoding="utf-8")
     _LOGGER.info("LaTeX rendered", extra={"file.path": str(target), "file.size": target.stat().st_size})
     return target

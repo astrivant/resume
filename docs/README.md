@@ -474,7 +474,12 @@ refreshes use `capture --headless`; ordinary branch builds consume committed sna
 ```bash
 poetry run resumeme capture
 poetry run resumeme validate
+poetry run resumeme render
 ```
+
+`capture` saves the profile and assets. `render` then runs the shared Jinja-to-LaTeX
+source cleanup locally, so the TeX inspected before a manual push uses the same
+spacing and section comments as the PDF build.
 
 Select the browser in `resumeme.config.yaml`; Firefox remains the default:
 

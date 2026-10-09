@@ -19,7 +19,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError, BrowserWaitError
-from resumeme.linkedin import resume_settings
+from resumeme.linkedin import browser_scripts, resume_settings
 from resumeme.linkedin.account import check_owner
 from resumeme.linkedin.retrying import retry_selenium
 
@@ -106,36 +106,13 @@ def _send_pdf_file(driver: WebDriver, field: WebElement, pdf: Path) -> None:
     original_style = field.get_attribute("style")
 
     # LinkedIn hides its file input behind a label; expose a 1px control briefly for Selenium's file selection.
-    driver.execute_script(
-        """
-        const input = arguments[0];
-        input.classList.remove('hidden');
-        for (const [name, value] of Object.entries({
-          display: 'block', visibility: 'visible', position: 'fixed', left: '0', top: '0',
-          width: '1px', height: '1px', opacity: '0.01'
-        })) input.style.setProperty(name, value, 'important');
-        """,
-        field,
-    )
+    driver.execute_script(browser_scripts.EXPOSE_FILE_INPUT, field)
 
     try:
         field.send_keys(str(pdf.resolve()))
     finally:
         # Restore LinkedIn's original hidden control after the file-change event has fired.
-        driver.execute_script(
-            """
-            const input = arguments[0];
-            const className = arguments[1];
-            const style = arguments[2];
-            if (className === null) input.removeAttribute('class');
-            else input.setAttribute('class', className);
-            if (style === null) input.removeAttribute('style');
-            else input.setAttribute('style', style);
-            """,
-            field,
-            original_class,
-            original_style,
-        )
+        driver.execute_script(browser_scripts.RESTORE_FILE_INPUT, field, original_class, original_style)
 
 
 def _saved(driver: WebDriver, filename: str) -> bool:

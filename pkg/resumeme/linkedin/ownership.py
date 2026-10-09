@@ -15,6 +15,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError
+from resumeme.linkedin import browser_scripts
 from resumeme.linkedin.browser import _browser, _login, _navigate
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.identity import ownership_block, reconcile_about, release_destination
@@ -53,20 +54,7 @@ def _about_text(driver: WebDriver, field: WebElement) -> str:
         return field.get_attribute("value") or ""
 
     # innerText contains visual line wraps, which become unintended hard breaks when text is saved again.
-    value = driver.execute_script(
-        """
-        const root = arguments[0];
-        const read = (node) => {
-          if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || '';
-          if (node.nodeType !== Node.ELEMENT_NODE) return '';
-          if (node.tagName === 'BR') return '\\n';
-          const text = Array.from(node.childNodes, read).join('');
-          return node !== root && ['P', 'DIV', 'LI'].includes(node.tagName) ? `${text}\\n` : text;
-        };
-        return read(root).replace(/\\n+$/, '');
-        """,
-        field,
-    )
+    value = driver.execute_script(browser_scripts.READ_ABOUT_EDITOR, field)
 
     if not isinstance(value, str):
         raise BrowserError("Cannot read the About editor's text; no changes were submitted.")
@@ -210,7 +198,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
 
     # The current client opens its native dialog through the owner link; a minimal profile may only expose intro editing.
     if summary is not None:
-        driver.execute_script("arguments[0].scrollIntoView({block: 'center'})", summary)
+        driver.execute_script(browser_scripts.SCROLL_ELEMENT_INTO_VIEW, summary)
         summary.click()
     else:
         _navigate(driver, f"https://www.linkedin.com{summary_path}", config.capture)

@@ -20,7 +20,7 @@ from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, par
 from resumeme.compiler.asts.profile import save_profile
 from resumeme.compiler.asts.sections import section_key
 from resumeme.exceptions import BrowserElementError, BrowserError
-from resumeme.linkedin import browser_auth, browser_runtime
+from resumeme.linkedin import browser_auth, browser_runtime, browser_scripts
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry_selenium
@@ -38,21 +38,6 @@ if TYPE_CHECKING:
 
 __all__ = ["capture_profile"]
 _LOGGER = logging.getLogger(__name__)
-_SCROLL_SCRIPT = """
-const main = document.querySelector('main');
-let node = main?.querySelector('section[aria-label="Primary content"]') || main;
-let target = document.scrollingElement;
-while (node && node !== document.body) {
-    if (['auto', 'scroll'].includes(getComputedStyle(node).overflowY) && node.scrollHeight > node.clientHeight) {
-        target = node;
-        break;
-    }
-    node = node.parentElement;
-}
-if (arguments[0] === 'top') target.scrollTop = 0;
-else target.scrollTop += Math.max(target.clientHeight * 0.8, 600);
-return target.scrollTop + target.clientHeight >= target.scrollHeight - 5;
-"""
 
 # Publicly consumed internal names remain available through this module for the capture workflow and existing integrations.
 _state_root = browser_runtime._state_root
@@ -84,7 +69,7 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
 
     # Always start at the top: later snapshots may evict earlier cards from LinkedIn's virtualized DOM.
     WebDriverWait(driver, settings.page_timeout_seconds).until(lambda page: page.find_elements(By.CSS_SELECTOR, "main"))
-    driver.execute_script(_SCROLL_SCRIPT, "top")
+    driver.execute_script(browser_scripts.SCROLL_PROFILE_CONTENT, "top")
     previous = ""
     settled = 0
     snapshots: list[str] = []
@@ -104,14 +89,14 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
         for button in buttons:
             try:
                 if button.is_displayed() and button.is_enabled() and "less" not in button.text.casefold():
-                    driver.execute_script("arguments[0].click()", button)
+                    driver.execute_script(browser_scripts.CLICK_ELEMENT, button)
                     clicked = True
             except StaleElementReferenceException:
                 # Restart this viewport with fresh DOM so a rerender cannot make the capture look complete prematurely.
                 clicked = True
                 break
 
-        at_bottom: object = driver.execute_script(_SCROLL_SCRIPT, "next")
+        at_bottom: object = driver.execute_script(browser_scripts.SCROLL_PROFILE_CONTENT, "next")
         current = driver.find_element(By.CSS_SELECTOR, "main").text
         _LOGGER.debug(
             "Expanding profile content",
@@ -220,7 +205,7 @@ def _select_tab(driver: WebDriver, label: str, scope: Callable[[], WebElement], 
         return
 
     before = container.text
-    driver.execute_script("arguments[0].scrollIntoView({block: 'center'})", tab)
+    driver.execute_script(browser_scripts.SCROLL_ELEMENT_INTO_VIEW, tab)
     tab.click()
 
     def selected(page: WebDriver) -> bool:
@@ -282,13 +267,13 @@ def _profile_card(driver: WebDriver, key: str, settings: Capture) -> WebElement:
         return card
 
     # Revisit earlier cards without reloading the page or resetting the tab selected by the caller.
-    driver.execute_script(_SCROLL_SCRIPT, "top")
+    driver.execute_script(browser_scripts.SCROLL_PROFILE_CONTENT, "top")
 
     for _ in range(settings.max_scrolls):
         try:
             return WebDriverWait(driver, 1.5, ignored_exceptions=(StaleElementReferenceException,)).until(locate)
         except TimeoutException:
-            driver.execute_script(_SCROLL_SCRIPT, "next")
+            driver.execute_script(browser_scripts.SCROLL_PROFILE_CONTENT, "next")
 
     raise BrowserElementError(f"The {key} profile section disappeared during tab capture.")
 

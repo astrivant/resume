@@ -58,6 +58,7 @@ include = [
     {path = "pkg/resumeme/compiler/asts/resources/**/*", format = ["sdist", "wheel"]},
     {path = "pkg/resumeme/compiler/backends/latex/resources/**/*", format = ["sdist", "wheel"]},
     {path = "pkg/resumeme/github/resources/**/*", format = ["sdist", "wheel"]},
+    {path = "pkg/resumeme/linkedin/scripts/**/*.js", format = ["sdist", "wheel"]},
 ]
 exclude = ["pkg/resumeme/tests"]
 

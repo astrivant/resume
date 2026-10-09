@@ -311,14 +311,17 @@ Local capture keeps its unlimited interactive wait:
 ```bash
 poetry run resumeme capture
 poetry run resumeme validate
+poetry run resumeme render
 ```
 
-Complete any challenge in the selected browser, then commit the accepted snapshot and assets
-and push them to `main`. Correct login secrets only when a credential error identifies
-them as the problem. Accounts that consistently require interaction can use this local capture path for ordinary
-branch builds. Tag releases now require a successful headless capture; committing
-a local snapshot does not bypass that requirement. Unattended authentication is
-not guaranteed from a hosted runner.
+Complete any challenge in the selected browser, render the saved profile locally,
+then commit the accepted snapshot and assets and push them to `main`. `render`
+applies the same post-Jinja TeX cleanup used by the automated PDF build. Correct
+login secrets only when a credential error identifies them as the problem.
+Accounts that consistently require interaction can use this local capture path
+for ordinary branch builds. Tag releases now require a successful headless
+capture; committing a local snapshot does not bypass that requirement.
+Unattended authentication is not guaranteed from a hosted runner.
 
 For session reuse, configure the [encrypted browser cache](linkedin-session-cache.md).
 Only ciphertext is saved to Actions cache or optional persistent runner storage.
