@@ -1,6 +1,13 @@
 default_language_version:
   python: python3.13
+  node: 26.10.0
 repos:
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v10.10.0
+    hooks:
+      - id: eslint
+        name: ESLint LinkedIn browser scripts
+        files: '^pkg/resumeme/linkedin/scripts/.*\.js$'
   - repo: local
     hooks:
       # Run the published hook command against the latest checkout, using the project's existing locked environment.

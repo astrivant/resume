@@ -104,6 +104,11 @@ Successful capture writes `output.profile` and `output.assets`, normally
 `.cache/chrome/` sessions for retries; the browsers have separate logins. The CLI
 already uses capped exponential backoff through `capture.retry_*`.
 
+Before manually pushing a locally authenticated refresh, run `resumeme validate`
+and `resumeme render`. The render command writes cleaned, section-marked TeX from
+the saved capture; the main-branch workflow runs the same renderer when building
+the PDF.
+
 Incomplete capture or enrichment saves diagnostics under `.cache/capture/` without
 replacing accepted inputs. Inspect the reported cause before retrying. Use
 `--allow-incomplete` only when the user accepts those omissions. After a closed

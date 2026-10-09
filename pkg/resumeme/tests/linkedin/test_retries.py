@@ -159,7 +159,7 @@ def test_login_waits_for_browser_state_without_a_deadline(monkeypatch: MonkeyPat
         None: Login completes on the observed browser state after any number of polls.
     """
     waits: list[float] = []
-    monkeypatch.setattr("resumeme.linkedin.browser.time.sleep", waits.append)
+    monkeypatch.setattr("resumeme.linkedin.browser_auth.time.sleep", waits.append)
     browser = MagicMock()
     browser.window_handles = ["login"]
     browser.current_url = "https://www.linkedin.com/feed/"
@@ -182,7 +182,7 @@ def test_login_waits_through_challenges_and_checks_other_tabs(monkeypatch: Monke
         None: Only the authenticated LinkedIn tab completes the wait.
     """
     sleep = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser.time.sleep", sleep)
+    monkeypatch.setattr("resumeme.linkedin.browser_auth.time.sleep", sleep)
     browser = MagicMock()
     browser.window_handles = ["first", "second"]
     type(browser).current_url = PropertyMock(
@@ -209,7 +209,7 @@ def test_login_wait_is_interruptible(monkeypatch: MonkeyPatch) -> None:
     Returns:
         None: Cancellation propagates immediately to the command's cleanup handler.
     """
-    monkeypatch.setattr("resumeme.linkedin.browser.time.sleep", MagicMock(side_effect=KeyboardInterrupt))
+    monkeypatch.setattr("resumeme.linkedin.browser_auth.time.sleep", MagicMock(side_effect=KeyboardInterrupt))
     browser = MagicMock()
     browser.window_handles = ["login"]
     browser.current_url = "https://www.linkedin.com/login"

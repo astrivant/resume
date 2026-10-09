@@ -36,6 +36,7 @@ this inventory in the same change whenever one of those pins changes.
 | Component | Pin | Source |
 | --- | --- | --- |
 | Local and Actions Python | `3.13.12` | [`.python-version`](../.python-version), [`.tool-versions`](../.tool-versions), and `actions/setup-python` below |
+| ESLint runtime Node.js | `26.10.0` | [`.tool-versions`](../.tool-versions) and the pre-commit `node` language version |
 | Production image Python | `python:3.14.7-slim-bookworm`, digest `sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56` | [`Dockerfile`](../Dockerfile) |
 | Poetry | `2.5.1` | [`.tool-versions`](../.tool-versions), [`setup-env.sh`](../scripts/tooling/setup-env.sh), [`Dockerfile`](../Dockerfile), and [`stage-pypi.yml`](../.github/workflows/stage-pypi.yml) |
 | Poetry build backend | `poetry-core==2.5.0` | [`pyproject.toml`](../pyproject.toml) build-system requirements |
@@ -44,6 +45,12 @@ this inventory in the same change whenever one of those pins changes.
 | Trivy scanner | `aquasec/trivy:0.75.0` | [`stage-test.yml`](../.github/workflows/stage-test.yml); version tag, not an immutable digest |
 | TeXtidote image | `gokhlayeh/textidote`, digest `sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441` | [`stage-documents.yml`](../.github/workflows/stage-documents.yml) |
 | Tini | Debian package `0.19.0-1+b3` | [`Dockerfile`](../Dockerfile) |
+| ESLint | `10.10.0` | [`.pre-commit-config.yaml`](../.pre-commit-config.yaml); lints standalone Selenium JavaScript resources |
+
+JavaScript executed in LinkedIn's browser is kept under
+[`pkg/resumeme/linkedin/scripts/`](../pkg/resumeme/linkedin/scripts/) and linted
+separately with ESLint. The Python package loads these files as resources at
+runtime, and the wheel includes them. The pre-commit hook runs locally and in CI.
 
 ### GitHub Actions
 
