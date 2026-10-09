@@ -8,13 +8,15 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
-from selenium.common.exceptions import InvalidSessionIdException, NoSuchWindowException, WebDriverException
+import requests
+from selenium.common.exceptions import InvalidSessionIdException, NoSuchWindowException, TimeoutException, WebDriverException
 from urllib3.response import HTTPResponse
 
 from resumeme.config import Capture
+from resumeme.exceptions import BrowserError, BrowserTimeoutError, ResumeUploadConfirmationError
 from resumeme.linkedin.browser import _wait_for_login
 from resumeme.linkedin.media import _ExponentialRetry
-from resumeme.linkedin.retrying import retry, retry_selenium
+from resumeme.linkedin.retrying import is_retryable_linkedin_error, retry, retry_selenium
 
 if TYPE_CHECKING:
     from pytest import MonkeyPatch
@@ -62,6 +64,54 @@ def test_permanent_errors_are_not_retried(monkeypatch: MonkeyPatch) -> None:
 
     operation.assert_called_once()
     sleep.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    [
+        (requests.ConnectionError("connection reset"), True),
+        (requests.ReadTimeout("request timed out"), True),
+        (requests.exceptions.RetryError("transient statuses exhausted"), True),
+        (requests.exceptions.SSLError("invalid certificate"), False),
+        (requests.exceptions.InvalidURL("bad URL"), False),
+        (InvalidSessionIdException("session gone"), True),
+        (NoSuchWindowException("window closed"), True),
+        (BrowserTimeoutError("profile page did not load"), True),
+        (ResumeUploadConfirmationError("upload not visible yet"), True),
+        (TimeoutException("transient browser wait"), True),
+        (BrowserError("LinkedIn requires MFA"), False),
+        (ValueError("bad configuration"), False),
+    ],
+)
+def test_linkedin_retry_classifier_distinguishes_transient_and_permanent_errors(error: Exception, expected: bool) -> None:
+    """
+    Retry network and browser instability without repeating authentication challenges or invalid configuration.
+
+    Args:
+        error (Exception): Failure raised by one LinkedIn command attempt.
+        expected (bool): Expected whole-command retry decision.
+
+    Returns:
+        None: The classifier distinguishes retryable transport failures from permanent account or input failures.
+    """
+    assert is_retryable_linkedin_error(error) is expected
+
+
+@pytest.mark.parametrize(("status", "expected"), [(408, True), (429, True), (500, True), (503, True), (403, False), (404, False)])
+def test_linkedin_http_retry_classifier_uses_response_status(status: int, expected: bool) -> None:
+    """
+    Retry server throttling and transient server errors, but stop on authorization or missing-resource responses.
+
+    Args:
+        status (int): HTTP status returned by the LinkedIn request.
+        expected (bool): Expected whole-command retry decision.
+
+    Returns:
+        None: Only rate limits and transient server statuses are classified for retry.
+    """
+    response = requests.Response()
+    response.status_code = status
+    assert is_retryable_linkedin_error(requests.HTTPError(response=response)) is expected
 
 
 def test_retry_predicate_stops_matched_nontransient_errors(monkeypatch: MonkeyPatch) -> None:

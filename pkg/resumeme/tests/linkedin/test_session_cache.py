@@ -303,26 +303,37 @@ def test_job_wrapper_reuses_only_ciphertext_and_cleans_failed_runs(tmp_path: Pat
 
 
 @pytest.mark.parametrize(
-    ("statuses", "expected_status", "expected_attempts"),
-    [((75, 75, 0), 0, 3), ((75, 75, 75, 75), 75, 4), ((2, 0), 2, 1)],
+    ("command_name", "statuses", "expected_status", "expected_attempts"),
+    [
+        ("capture", (75, 0), 0, 2),
+        ("capture-plan", (75, 0), 0, 2),
+        ("capture-shard", (75, 75, 0), 0, 3),
+        ("publish-ownership", (75, 75, 0), 0, 3),
+        ("publish-resume", (75, 75, 75, 75), 75, 4),
+        ("publish-skills", (2, 0), 2, 1),
+    ],
 )
-def test_mutating_actions_retry_only_classified_failures_with_fresh_sessions(
+def test_linkedin_commands_retry_only_classified_failures_with_fresh_sessions(
     tmp_path: Path,
+    keys: CacheKeys,
+    command_name: str,
     statuses: tuple[int, ...],
     expected_status: int,
     expected_attempts: int,
 ) -> None:
     """
-    Retry transient write failures three times at most, recreating and cleaning each browser session.
+    Retry transient LinkedIn reads and writes three times at most with a new session for every attempt.
 
     Args:
         tmp_path (Path): Disposable checkout, runner temp, fake executable, and attempt counter.
+        keys (CacheKeys): Synthetic pair required by distributed capture commands.
+        command_name (str): LinkedIn command run through the encrypted-session wrapper.
         statuses (tuple[int, ...]): Exit status returned by the fake LinkedIn client on each invocation.
         expected_status (int): Final wrapper status after successful recovery or retry exhaustion.
         expected_attempts (int): Number of complete command sessions expected.
 
     Returns:
-        None: Transient status 75 retries, while permanent status 2 exits immediately.
+        None: Every LinkedIn command retries transient status 75, while permanent status 2 exits immediately.
     """
     binary, runner, checkout = tmp_path / "bin", tmp_path / "runner", tmp_path / "checkout"
     binary.mkdir()
@@ -348,9 +359,16 @@ def test_mutating_actions_retry_only_classified_failures_with_fresh_sessions(
         "RUNNER_TEMP": str(runner),
         "ATTEMPT_COUNTER": str(counter),
         "ATTEMPT_STATUSES": ",".join(str(status) for status in statuses),
+        "RESUMEME_SESSION_CACHE_READ_ONLY": "true",
+        **_secrets(keys),
     }
+
+    if command_name == "capture-shard":
+        environment["SESSION_SHARD_INDEX"] = "1"
+        environment["SESSION_SHARD_COUNT"] = "6"
+
     result = subprocess.run(
-        [sys.executable, str(_ROOT / "scripts/ci/linkedin-session.py"), "run", "--command", "publish-ownership"],
+        [sys.executable, str(_ROOT / "scripts/ci/linkedin-session.py"), "run", "--command", command_name],
         cwd=checkout,
         env=environment,
         capture_output=True,

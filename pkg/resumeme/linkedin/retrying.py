@@ -9,6 +9,7 @@ import signal
 import time
 from typing import TYPE_CHECKING, TypeVar
 
+import requests
 from selenium.common.exceptions import (
     InvalidArgumentException,
     InvalidSelectorException,
@@ -18,14 +19,20 @@ from selenium.common.exceptions import (
     WebDriverException,
 )
 
-from resumeme.exceptions import ConfigurationError
+from resumeme.exceptions import BrowserTimeoutError, ConfigurationError, ResumeUploadConfirmationError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from resumeme.config import Capture
 
-__all__ = ["is_retryable_linkedin_exit_status", "is_retryable_selenium_error", "retry", "retry_selenium"]
+__all__ = [
+    "is_retryable_linkedin_error",
+    "is_retryable_linkedin_exit_status",
+    "is_retryable_selenium_error",
+    "retry",
+    "retry_selenium",
+]
 _T = TypeVar("_T")
 _LOGGER = logging.getLogger(__name__)
 _NON_RETRYABLE_SELENIUM_ERRORS = (
@@ -46,9 +53,50 @@ def is_retryable_linkedin_exit_status(status: int) -> bool:
         status (int): CLI exit status, negative when a child process was terminated by a signal.
 
     Returns:
-        bool: Whether a fresh LinkedIn browser session may retry this failed mutation.
+        bool: Whether a fresh LinkedIn browser session may retry this failed command.
     """
     return status == 75 or (status < 0 and -status in _RETRYABLE_PROCESS_SIGNALS)
+
+
+def is_retryable_linkedin_error(error: Exception) -> bool:
+    """
+    Classify transient browser and HTTP failures while leaving account challenges and bad requests terminal.
+
+    Args:
+        error (Exception): Failure raised during a LinkedIn browser operation or related HTTP request.
+
+    Returns:
+        bool: Whether repeating the complete command in a fresh browser session may succeed.
+    """
+    if isinstance(error, (BrowserTimeoutError, ResumeUploadConfirmationError)):
+        return True
+
+    # A dead window/session stops same-driver retries, but a complete attempt creates a fresh WebDriver session.
+    if isinstance(error, (InvalidSessionIdException, NoSuchWindowException)):
+        return True
+
+    if is_retryable_selenium_error(error):
+        return True
+
+    if isinstance(error, requests.exceptions.HTTPError):
+        status = error.response.status_code if error.response is not None else None
+        return status in {408, 429, 500, 502, 503, 504}
+
+    # Invalid URL, redirect, certificate, and proxy failures need correction rather than another browser session.
+    if isinstance(
+        error,
+        (
+            requests.exceptions.InvalidURL,
+            requests.exceptions.InvalidSchema,
+            requests.exceptions.MissingSchema,
+            requests.exceptions.TooManyRedirects,
+            requests.exceptions.SSLError,
+            requests.exceptions.ProxyError,
+        ),
+    ):
+        return False
+
+    return isinstance(error, requests.RequestException)
 
 
 def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers.

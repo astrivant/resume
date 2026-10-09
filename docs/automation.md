@@ -250,6 +250,19 @@ profile-data artifacts are not encrypted by the session-cache key. See the
 [artifact inventory and retention periods](data-handling.md#ci-artifacts-commits-and-public-output)
 and [cleanup limits](data-handling.md#encrypted-browser-sessions-in-ci).
 
+Every LinkedIn browser command in CI gets up to four complete attempts, with a
+fresh temporary browser session for each retry. This covers capture planning,
+all six section workers, and the enabled About, skills, and resume publishers.
+Each command also retains its operation-level retries. HTTP responses surfaced
+to Requests honor a 429 response's `Retry-After` value, capped by
+`capture.retry_max_backoff_seconds`. Selenium failures use the configured
+exponential delay because WebDriver does not expose LinkedIn response headers
+consistently. Network timeouts, connection resets, retryable HTTP statuses, and
+recoverable browser errors restart the command. MFA, CAPTCHA, rejected sign-in,
+owner mismatches, invalid configuration, and permanent HTTP errors stop without
+retry. Publishers reread LinkedIn state before replaying writes so uncertain
+outcomes are reconciled instead of blindly duplicated.
+
 ## Personal README
 
 See [the fork example](../FORK_EXAMPLE.md) for the generated landing page using this project's current profile and PDF.

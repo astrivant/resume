@@ -29,9 +29,9 @@ if TYPE_CHECKING:
 
 _SECRETS = ("RESUMEME_CACHE_PRIVATE_KEY", "RESUMEME_CACHE_PUBLIC_KEY", "RESUMEME_CACHE_KEY_PASSWORD")
 _LOGGER = logging.getLogger("resumeme.ci.linkedin_session")
-# GitHub has no native job retry policy, so retry the entire browser command in a clean session at most three times.
-_MAX_MUTATION_ATTEMPTS = 4
-_MUTATING_COMMANDS = frozenset({"publish-ownership", "publish-resume", "publish-skills"})
+# GitHub has no native job retry policy, so retry every LinkedIn command in a clean session at most three times.
+_MAX_LINKEDIN_ATTEMPTS = 4
+_LINKEDIN_COMMANDS = frozenset({"capture", "capture-plan", "capture-shard", "publish-ownership", "publish-resume", "publish-skills"})
 
 
 def cache_keys() -> CacheKeys | None:
@@ -135,7 +135,7 @@ def _execute_command(
     archive: Path,
     persistent: Path | None,
     *,
-    retry_mutations: bool,
+    retry_linkedin: bool,
 ) -> int:
     """
     Run one isolated browser attempt and persist state only after command success.
@@ -147,7 +147,7 @@ def _execute_command(
         context (bytes): Repository and owner binding authenticated with the archive.
         archive (Path): Checkout-local encrypted session archive.
         persistent (Path | None): Optional runner-local destination for encrypted bytes.
-        retry_mutations (bool): Whether the child may emit the reserved retry exit status.
+        retry_linkedin (bool): Whether the child may emit the reserved retry exit status.
 
     Returns:
         int: Successful status, permanent failure status, or a classified retry status.
@@ -169,8 +169,8 @@ def _execute_command(
         environment = {name: value for name, value in os.environ.items() if name not in _SECRETS}
         environment["RESUMEME_BROWSER_STATE_DIR"] = str(state)
 
-        if retry_mutations:
-            environment["RESUMEME_CI_RETRY_MUTATIONS"] = "1"
+        if retry_linkedin:
+            environment["RESUMEME_CI_RETRY_LINKEDIN"] = "1"
 
         result = subprocess.run(command, env=environment, check=False)
 
@@ -184,7 +184,7 @@ def _execute_command(
 
             output("cache-ready", "true")
 
-        if retry_mutations and is_retryable_linkedin_exit_status(result.returncode):
+        if retry_linkedin and is_retryable_linkedin_exit_status(result.returncode):
             raise subprocess.CalledProcessError(result.returncode, command)
 
         if result.returncode < 0:
@@ -193,9 +193,9 @@ def _execute_command(
         return result.returncode
 
 
-def _retryable_command_failure(error: Exception) -> bool:
+def _retryable_linkedin_failure(error: Exception) -> bool:
     """
-    Restrict the outer retry loop to explicitly classified child-process outcomes.
+    Restrict whole-command retries to explicitly classified LinkedIn failures.
 
     Args:
         error (Exception): Failure propagated from one browser command attempt.
@@ -204,6 +204,28 @@ def _retryable_command_failure(error: Exception) -> bool:
         bool: Whether the error carries a retryable LinkedIn process status.
     """
     return isinstance(error, subprocess.CalledProcessError) and is_retryable_linkedin_exit_status(error.returncode)
+
+
+def _should_retry_linkedin(error: Exception, command: str) -> bool:
+    """
+    Log the command boundary when a failed LinkedIn subprocess will receive another attempt.
+
+    Args:
+        error (Exception): Failure propagated from one browser command attempt.
+        command (str): Validated LinkedIn command name.
+
+    Returns:
+        bool: Whether the failure is classified for a full command retry.
+    """
+    retryable = _retryable_linkedin_failure(error)
+
+    if retryable:
+        _LOGGER.warning(
+            "Retrying LinkedIn command in a fresh browser session",
+            extra={"linkedin.command": command, "retry.limit": _MAX_LINKEDIN_ATTEMPTS},
+        )
+
+    return retryable
 
 
 def run() -> int:
@@ -302,9 +324,9 @@ def run() -> int:
         ]
 
     command = ["resumeme", args.command, *([] if args.interactive else ["--headless"]), *commands[args.command]]
-    retry_mutations = args.command in _MUTATING_COMMANDS
+    retry_linkedin = args.command in _LINKEDIN_COMMANDS
 
-    # Every outer retry rebuilds the browser session and rechecks live state before repeating a write.
+    # Every retry starts a clean browser session; writes reconcile server state before they are repeated.
     with logging_context(os.environ.get("RESUMEME_LOG_LEVEL") or config.logging.level):
         try:
             return retry(
@@ -315,21 +337,21 @@ def run() -> int:
                     context,
                     archive,
                     persistent,
-                    retry_mutations=retry_mutations,
+                    retry_linkedin=retry_linkedin,
                 ),
-                attempts=_MAX_MUTATION_ATTEMPTS if retry_mutations else 1,
+                attempts=_MAX_LINKEDIN_ATTEMPTS if retry_linkedin else 1,
                 backoff=config.capture.retry_backoff_seconds,
                 max_backoff=config.capture.retry_max_backoff_seconds,
                 exceptions=(subprocess.CalledProcessError,),
-                should_retry=_retryable_command_failure,
+                should_retry=lambda error: _should_retry_linkedin(error, args.command),
             )
         except subprocess.CalledProcessError as error:
             _LOGGER.error(
-                "LinkedIn mutation failed after bounded whole-session retries",
+                "LinkedIn command failed after bounded whole-session retries",
                 extra={
                     "error.type": type(error).__name__,
                     "process.exit_code": error.returncode,
-                    "retry.limit": _MAX_MUTATION_ATTEMPTS,
+                    "retry.limit": _MAX_LINKEDIN_ATTEMPTS,
                 },
             )
             return 128 + -error.returncode if error.returncode < 0 else error.returncode

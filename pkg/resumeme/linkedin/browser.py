@@ -19,7 +19,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, parse_contact, parse_detail, parse_profile
 from resumeme.compiler.asts.profile import save_profile
 from resumeme.compiler.asts.sections import section_key
-from resumeme.exceptions import BrowserElementError, BrowserError
+from resumeme.exceptions import BrowserElementError, BrowserError, BrowserTimeoutError
 from resumeme.linkedin import browser_auth, browser_runtime, browser_scripts
 from resumeme.linkedin.capture_shards import CaptureRoute, CaptureShard, assign_routes, make_capture_plan
 from resumeme.linkedin.credentials import login_credentials
@@ -66,7 +66,8 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
         list[str]: DOM snapshots retaining content evicted during virtualized scrolling.
 
     Raises:
-        BrowserError: A loading or expansion bound prevents a complete capture.
+        BrowserError: A configured expansion bound prevents a complete capture.
+        BrowserTimeoutError: LinkedIn content did not settle within the scrolling limit.
     """
 
     # Always start at the top: later snapshots may evict earlier cards from LinkedIn's virtualized DOM.
@@ -122,7 +123,7 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
         except TimeoutException:
             pass
 
-    raise BrowserError("Capture reached max_scrolls before the page settled; raise the limit and retry.")
+    raise BrowserTimeoutError("Capture reached max_scrolls before the page settled; raise the limit and retry.")
 
 
 def _primary_content(driver: WebDriver) -> WebElement:
@@ -571,7 +572,7 @@ def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False) 
             diagnostic = _state_root(root) / "capture/profile.html"
             diagnostic.write_text(driver.page_source, encoding="utf-8")
             driver.save_screenshot(str(_state_root(root) / "capture/profile.png"))
-            raise BrowserError(f"The profile heading did not load at {driver.current_url}; inspect {diagnostic}.") from error
+            raise BrowserTimeoutError(f"The profile heading did not load at {driver.current_url}; inspect {diagnostic}.") from error
 
         expected = f"/in/{username}/".casefold()
 
@@ -755,7 +756,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             diagnostic = _state_root(root) / "capture/profile.html"
             diagnostic.write_text(driver.page_source, encoding="utf-8")
             driver.save_screenshot(str(_state_root(root) / "capture/profile.png"))
-            raise BrowserError(f"The profile heading did not load at {driver.current_url}; inspect {diagnostic}.") from error
+            raise BrowserTimeoutError(f"The profile heading did not load at {driver.current_url}; inspect {diagnostic}.") from error
 
         # A successful navigation can still land on an auth wall or another profile; bind collection to the requested owner.
         expected = f"/in/{username}/".casefold()

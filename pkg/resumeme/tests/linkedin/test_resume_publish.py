@@ -12,11 +12,12 @@ from typing import TYPE_CHECKING
 from unittest.mock import ANY, MagicMock
 
 import pytest
+import requests
 import yaml
 from attrs import evolve
 from jsonschema import ValidationError
 from pypdf import PdfWriter
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchWindowException, TimeoutException
 from selenium.webdriver.common.by import By
 
 from resumeme.cli import _retryable_failure_status, main
@@ -619,22 +620,32 @@ def test_github_rerun_checks_the_exact_signed_pdf_before_upload(
     assert record.__dict__["github.sha"] == "a" * 40
 
 
-def test_outer_retry_classifier_is_limited_to_transient_mutating_browser_failures(monkeypatch: MonkeyPatch) -> None:
+def test_outer_retry_classifier_covers_transient_linkedin_reads_and_writes(monkeypatch: MonkeyPatch) -> None:
     """
-    Keep authentication, configuration, and read-only failures out of whole-session write retries.
+    Retry transient API failures for capture and publishing, while leaving checkpoints and rejected requests terminal.
 
     Args:
         monkeypatch (MonkeyPatch): Toggle the session wrapper's explicit retry marker.
 
     Returns:
-        None: Only transient Selenium or uncertain resume persistence failures receive the retry exit status.
+        None: All LinkedIn commands share transient failure handling, while permanent failures stop immediately.
     """
-    monkeypatch.setenv("RESUMEME_CI_RETRY_MUTATIONS", "1")
+    monkeypatch.setenv("RESUMEME_CI_RETRY_LINKEDIN", "1")
     assert _retryable_failure_status("publish-skills", TimeoutException()) == 75
     assert _retryable_failure_status("publish-resume", ResumeUploadConfirmationError("not confirmed")) == 75
     assert _retryable_failure_status("publish-ownership", BrowserError("LinkedIn checkpoint")) == 2
-    assert _retryable_failure_status("capture", TimeoutException()) == 2
-    monkeypatch.delenv("RESUMEME_CI_RETRY_MUTATIONS")
+    assert _retryable_failure_status("capture-plan", TimeoutException()) == 75
+    assert _retryable_failure_status("capture-shard", requests.ConnectionError("connection reset")) == 75
+    assert _retryable_failure_status("capture-shard", NoSuchWindowException("window closed")) == 75
+
+    rate_limited = requests.Response()
+    rate_limited.status_code = 429
+    rejected = requests.Response()
+    rejected.status_code = 403
+    assert _retryable_failure_status("capture-plan", requests.HTTPError(response=rate_limited)) == 75
+    assert _retryable_failure_status("capture-plan", requests.HTTPError(response=rejected)) == 2
+
+    monkeypatch.delenv("RESUMEME_CI_RETRY_LINKEDIN")
     assert _retryable_failure_status("publish-resume", TimeoutException()) == 2
 
 
