@@ -18,9 +18,9 @@
       "link": ""
     },
     {
-      "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+      "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_200_200/B4EZ07hupKHYAY-/0/1774820195522?e=1793232000&v=beta&t=6h0mKmEfWQxvH5X7Ot2SodlPOEh7n1vwcWIPqkjIaYk",
       "alt": "",
-      "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+      "path": "data/assets/ffc4ffcc4f5fa762251a16ce6be37e599042a752a715c4adea4e7c78f2a1d09f.png",
       "link": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true"
     },
     {
@@ -45,6 +45,1025 @@
     }
   ],
   "sections": [
+    {
+      "key": "about",
+      "title": "About",
+      "entries": [
+        {
+          "title": "I'm a platform engineer with a background in site reliability, security, and infrastructure operations. I build Kubernetes platforms, delivery pipelines, and automation that improve reliability and make developers' day-to-day work easier.\n\nMy experience spans Python, Go, Linux, Kubernetes, Terraform, Helm, AWS, and GCP. Earlier roles in SRE, security, and technical support shaped how I approach engineering: plan ahead, make systems easier to troubleshoot, and turn recurring operational headaches into maintainable, automation-focused tooling. I also build open-source projects focused on Kubernetes automation, Helm testing, and developer workflows.\n\nI'm looking to stay hands-on, guide technical direction, and help teams build infrastructure they can confidently operate and evolve.\n\nresume signature: SHA256:02767699f2dd0e097b0684fea09aece52298e4a107fc0e2f01be55c53ed367f2\nreleases: https://github.com/astrivant/resumeme/releases",
+          "paragraphs": [],
+          "links": [
+            {
+              "label": "https://github.com/astrivant/resumeme/releases",
+              "url": "https://github.com/astrivant/resumeme/releases",
+              "resolved_url": "https://github.com/astrivant/resumeme/releases",
+              "title": "Releases · astrivant/resumeme"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
+              "alt": "Releases · astrivant/resumeme",
+              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "link": "https://github.com/astrivant/resumeme/releases"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        }
+      ]
+    },
+    {
+      "key": "featured",
+      "title": "Featured",
+      "entries": [
+        {
+          "title": "Post",
+          "paragraphs": [
+            "Tired of choosing between LinkedIn's awkward PDF export and another resume you have to maintain by hand?\n\nI'm building resumeme, which turns your profile into a professional, readable PDF with proper typography, clickable links, project tiles, and a skills cloud weighted by endorsements:\n\nhttps://lnkd.in/evwPnqv9\n\nJust fork the project, sign in to LinkedIn normally, and push the collected data to a project pre-configured with relevant secrets.\n\nNo archaic languages or headaches.\n\nJust YAML.\n\nChoose which jobs and projects appear, adjust the theme, or generate summaries tailored to specific employers. There's even a codex integration at-current.\n\nMonthly automated refreshes / resume rebuilds, a personal resume website, and signed releases are available when you want them to prove authenticity.\n\nThe coffee stains are automated, too;)",
+            "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+            "github.com",
+            "1, number of reactions1",
+            "1 comment"
+          ],
+          "links": [
+            {
+              "label": "Post Tired of choosing between LinkedIn's awkward PDF export and another resume you have to maintain by hand? I'm building resumeme, which turns your profile into a professional, readable PDF with proper typography, clickable links, project tiles, and a skills cloud weighted by endorsements: https://lnkd.in/evwPnqv9 Just fork the project, sign in to LinkedIn normally, and push the collected data to a project pre-configured with relevant secrets. No archaic languages or headaches. Just YAML. Choose which jobs and projects appear, adjust the theme, or generate summaries tailored to specific employers. There's even a codex integration at-current. Monthly automated refreshes / resume rebuilds, a personal resume website, and signed releases are available when you want them to prove authenticity. The coffee stains are automated, too;) GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions github.com 1, number of reactions 1 1 comment",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7513843384734601217/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://lnkd.in/evwPnqv9",
+              "url": "https://lnkd.in/evwPnqv9",
+              "resolved_url": "https://github.com/astrivant/resumeme/",
+              "title": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792137600&v=beta&t=DF-3aDh0H7S3Culgrg5UGS5h_bb-UgpI10AUJL4dVAo",
+              "alt": "",
+              "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
+              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7513843384734601217/"
+            },
+            {
+              "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
+              "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "link": "https://lnkd.in/evwPnqv9"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Post",
+          "paragraphs": [
+            "I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for:\n\nhttps://lnkd.in/ektqstTY\n\nMost Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values.\n\nThat leaves many classes of bugs among structural complexities, unaddressed before release:\n\n- One value change can have downstream effects across multiple rendered resources.\n- Individually valid settings can fail when combined.\n- configurable fields exist only in templates and aren’t documented in values.yaml.\n- values paths are effectively dead and never change rendered output.\n- Different values within the same type constraints can still produce structurally different behavior.\n\nAnd all of these cases could pass a static 'helm lint'.\n\nhypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution.\n\nThe pipeline is roughly:\n\ncoalesce values -> pre-filter -> sort -> post-filter -> test -> validate\n\nThe tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have.\n\nI’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory.\n\nI’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself:\n\nhttps://lnkd.in/eqZRNAqJ\n\nThis example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures.",
+            "GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm",
+            "github.com",
+            "2, number of reactions2",
+            "2 comments"
+          ],
+          "links": [
+            {
+              "label": "Post I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for: https://lnkd.in/ektqstTY Most Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values. That leaves many classes of bugs among structural complexities, unaddressed before release: - One value change can have downstream effects across multiple rendered resources. - Individually valid settings can fail when combined. - configurable fields exist only in templates and aren’t documented in values.yaml. - values paths are effectively dead and never change rendered output. - Different values within the same type constraints can still produce structurally different behavior. And all of these cases could pass a static 'helm lint'. hypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution. The pipeline is roughly: coalesce values -> pre-filter -> sort -> post-filter -> test -> validate The tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have. I’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory. I’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself: https://lnkd.in/eqZRNAqJ This example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures. GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm github.com 2, number of reactions 2 2 comments",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://lnkd.in/ektqstTY",
+              "url": "https://lnkd.in/ektqstTY",
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm/",
+              "title": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts"
+            },
+            {
+              "label": "https://lnkd.in/eqZRNAqJ",
+              "url": "https://lnkd.in/eqZRNAqJ",
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm/blob/main/docs/reports/bitnami.pdf",
+              "title": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_480/B4EaCMSldGHAAY-/0/1789060078326?e=1792137600&v=beta&t=H76y_0NC2WPsabG3KZfM-AHJ4YHKm6rrDrtQpE4wjU4",
+              "alt": "",
+              "path": "data/assets/72ae39716a7955f5365b9db5f9f8aac4e377fd64d2408660f2a25c4339c787d6.png",
+              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
+              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "link": "https://lnkd.in/ektqstTY"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm",
+              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "link": "https://lnkd.in/eqZRNAqJ"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Post",
+          "paragraphs": [
+            "What if a microservice could change how it works, not just how many replicas it runs?\n\nI've been working on Polyad, a Kubernetes operator and Python SDK exploring a different approach to fault-tolerant microservices: applications that participate in their own adaptation as demand, dependencies, and available resources change.\n\nThe idea is to give developers a way to write microservices and pipelines by defining both the capabilities and its permitted responses to pressure. I'm hoping this opens the door to strategies of running production near or at-scale, while remaining adaptive and responsive to sudden impulses of traffic.\n\nFor example, a service might use high-throughput batch workers when resources are available, switch to a lower-memory implementation when constrained, or share compatible work with an authorized peer. Those transitions need to account for readiness, backpressure, and draining work already accepted in a safe manner.\n\nPolyad coordinates this at two levels:\n\nWithin a service: SDK strategies support changes to concurrency, worker profiles, admission, and peer connections.\n\nAcross the application: Graphs and nested \"PolyGraphs\" describe workloads and their relationships, allowing coordinated changes to topology, routing, and capacity within administrator-defined constraints.\n\nThis complements infrastructure scaling. KEDA can add replicas; optional VPA integration lets application code understand configured resource bounds and observe and react to current Linux cgroup allocations. \n\nThe application can then adjust how it uses that capacity.\n\nThere's a graph-theory component, too: Cheeger bounds help constrain structural bottlenecks. But a well-connected graph is not an SLA guarantee. We also need to measure whether work completes on time, delivers the required capability, and meets the agreed quality level. A service that remains reachable while producing unacceptable results hasn't necessarily remained useful.\n\nI'm exploring these interactions through local, process-based studies before spinning up cloud-based validation: comparing fixed and adaptive systems under controlled load, resource changes, and disruptions, with plots of latency, backlog, service-level attainment (SLA) that's computable at runtime, and adaptation behavior.\n\nThe intent is to make adaptation an explicit, testable part of the application contract and engineering process, not just a cascade of infrastructure reactions and PagerDuty pings after something fails.\n\nCode and architecture (WIP):\n\nhttps://lnkd.in/edjues52\n\nPython SDK:\n\nhttps://lnkd.in/ep4n-NpJ\n\nWorker adaptation study, with graphs:\n\nhttps://lnkd.in/enpeacGx\n\nService composition adaptation study, with graphs:\n\nhttps://lnkd.in/ew2XgdAX",
+            "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand.",
+            "github.com",
+            "11, number of reactions11"
+          ],
+          "links": [
+            {
+              "label": "Post What if a microservice could change how it works, not just how many replicas it runs? I've been working on Polyad, a Kubernetes operator and Python SDK exploring a different approach to fault-tolerant microservices: applications that participate in their own adaptation as demand, dependencies, and available resources change. The idea is to give developers a way to write microservices and pipelines by defining both the capabilities and its permitted responses to pressure. I'm hoping this opens the door to strategies of running production near or at-scale, while remaining adaptive and responsive to sudden impulses of traffic. For example, a service might use high-throughput batch workers when resources are available, switch to a lower-memory implementation when constrained, or share compatible work with an authorized peer. Those transitions need to account for readiness, backpressure, and draining work already accepted in a safe manner. Polyad coordinates this at two levels: Within a service: SDK strategies support changes to concurrency, worker profiles, admission, and peer connections. Across the application: Graphs and nested \"PolyGraphs\" describe workloads and their relationships, allowing coordinated changes to topology, routing, and capacity within administrator-defined constraints. This complements infrastructure scaling. KEDA can add replicas; optional VPA integration lets application code understand configured resource bounds and observe and react to current Linux cgroup allocations. The application can then adjust how it uses that capacity. There's a graph-theory component, too: Cheeger bounds help constrain structural bottlenecks. But a well-connected graph is not an SLA guarantee. We also need to measure whether work completes on time, delivers the required capability, and meets the agreed quality level. A service that remains reachable while producing unacceptable results hasn't necessarily remained useful. I'm exploring these interactions through local, process-based studies before spinning up cloud-based validation: comparing fixed and adaptive systems under controlled load, resource changes, and disruptions, with plots of latency, backlog, service-level attainment (SLA) that's computable at runtime, and adaptation behavior. The intent is to make adaptation an explicit, testable part of the application contract and engineering process, not just a cascade of infrastructure reactions and PagerDuty pings after something fails. Code and architecture (WIP): https://lnkd.in/edjues52 Python SDK: https://lnkd.in/ep4n-NpJ Worker adaptation study, with graphs: https://lnkd.in/enpeacGx Service composition adaptation study, with graphs: https://lnkd.in/ew2XgdAX GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand. github.com 11, number of reactions 11",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7507271032412704768/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://lnkd.in/edjues52",
+              "url": "https://lnkd.in/edjues52",
+              "resolved_url": "https://github.com/astrivant/polyad",
+              "title": "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand."
+            },
+            {
+              "label": "https://lnkd.in/ep4n-NpJ",
+              "url": "https://lnkd.in/ep4n-NpJ",
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/pkg/polyad-sdk",
+              "title": "polyad/pkg/polyad-sdk at main · astrivant/polyad"
+            },
+            {
+              "label": "https://lnkd.in/enpeacGx",
+              "url": "https://lnkd.in/enpeacGx",
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/studies/soul",
+              "title": "polyad/studies/soul at main · astrivant/polyad"
+            },
+            {
+              "label": "https://lnkd.in/ew2XgdAX",
+              "url": "https://lnkd.in/ew2XgdAX",
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/studies/nature",
+              "title": "polyad/studies/nature at main · astrivant/polyad"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGdP5KIxcpY2g/articleshare-shrink_480/B4EaDGvuAtHQAU-/0/1790040794209?e=1792137600&v=beta&t=m1WlUjPXwgxy47RS8LfffHffc_RpPTHjIT3Ss5j34Aw",
+              "alt": "",
+              "path": "data/assets/b8d75c5eb2a66a9f43e840f2bc5972afc656afb04b32aeb9cd644e1b4c503307.png",
+              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7507271032412704768/"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand.",
+              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "link": "https://lnkd.in/edjues52"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/pkg/polyad-sdk at main · astrivant/polyad",
+              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "link": "https://lnkd.in/ep4n-NpJ"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/studies/soul at main · astrivant/polyad",
+              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "link": "https://lnkd.in/enpeacGx"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/studies/nature at main · astrivant/polyad",
+              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "link": "https://lnkd.in/ew2XgdAX"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        }
+      ]
+    },
+    {
+      "key": "activity",
+      "title": "Activity",
+      "entries": [
+        {
+          "title": "Emma Doyle reposted this",
+          "paragraphs": [
+            "Yinheng Li",
+            "• Following",
+            "Research LLM Agent @ Microsoft",
+            "Oct 6",
+            "Excited to share our new paper: LLM-as-Jev! We show how to easily turn any LLM into a Jev-style decision model. While the community has explored similar ideas, our approach proves very competitive, and we provide a detailed quantitative comparison alongside a practical guide on when off-the-shelf LLMs are enough vs. when and how to fine-tune them.\nhttps://lnkd.in/gbjVQCSE",
+            "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune ThemLLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
+            "arxiv.org",
+            "1,076 reactions1,076",
+            "18 comments18 comments",
+            "•",
+            "54 reposts54 reposts",
+            "Comment",
+            "Send"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://www.linkedin.com/in/yinhengli/",
+              "url": "https://www.linkedin.com/in/yinhengli/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "Excited to share our new paper: LLM-as-Jev! We show how to easily turn any LLM into a Jev-style decision model. While the community has explored similar ideas, our approach proves very competitive, and we provide a detailed quantitative comparison alongside a practical guide on when off-the-shelf LLMs are enough vs. when and how to fine-tune them. https://lnkd.in/gbjVQCSE",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7514174715368816640/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://lnkd.in/gbjVQCSE",
+              "url": "https://lnkd.in/gbjVQCSE",
+              "resolved_url": "https://arxiv.org/abs/2610.02076v2",
+              "title": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them"
+            },
+            {
+              "label": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them arxiv.org",
+              "url": "https://arxiv.org/abs/2610.02076v2",
+              "resolved_url": "https://arxiv.org/abs/2610.02076v2",
+              "title": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them"
+            },
+            {
+              "label": "1,076 reactions 1,076",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/C4E03AQESfgI2DatI7A/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1660620479185?e=1793232000&v=beta&t=hnwBw36yTYHIoW1CdgoexzcwXlUhFxiw5FPGb2Yi9P4",
+              "alt": "View Yinheng Li’s profile",
+              "path": "data/assets/60714a2f8fd45bc5122168d953d96b3b04bde3246bd284aa958a956ab85d6a50.png",
+              "link": "https://www.linkedin.com/in/yinhengli/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQGlDoUwxR8YAw/articleshare-shrink_160/B56aESRwitHIAU-/0/1791308007903?e=1792137600&v=beta&t=DYbKf4DX0kdz4EiKNBdCjd31I6JDxd-hpaO0Q8nEA_0",
+              "alt": "",
+              "path": "data/assets/c247c919baf02ca8aa21c6384e8d1ffdd0a635ca8f6c2edd07a82c30f15913f4.png",
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Farxiv%2Eorg%2Fabs%2F2610%2E02076v2&urlhash=R-27&mt=on0ilRhVD-miKWz_0eZfrhA7f-uenh3XNIYfYng4a5oGOEeHBr6CmAmVamhGcloBQZWqSzKqK1MSz1z9cI50VtcgbPsFy75vt1XRzWj1glsZwnZT6YNgSLODig&isSdui=true"
+            },
+            {
+              "url": "https://arxiv.org/static/browse/0.3.4/images/arxiv-logo-fb.png",
+              "alt": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
+              "path": "data/assets/fed5d0d5f6fa2ad0269ec7e16816ce002477626a8ecbc07b0052a3ce0e9ba8d6.png",
+              "link": "https://lnkd.in/gbjVQCSE"
+            },
+            {
+              "url": "https://arxiv.org/static/browse/0.3.4/images/arxiv-logo-fb.png",
+              "alt": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
+              "path": "data/assets/fed5d0d5f6fa2ad0269ec7e16816ce002477626a8ecbc07b0052a3ce0e9ba8d6.png",
+              "link": "https://arxiv.org/abs/2610.02076v2"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle",
+          "paragraphs": [
+            "• You",
+            "Lead Platform Engineer | SRE | SMB Owner | Building reliable cloud infrastructure and better developer experiences | Kubernetes, Python & Go",
+            "Yesterday",
+            "Tired of choosing between LinkedIn's awkward PDF export and another resume you have to maintain by hand?\n\nI'm building resumeme, which turns your profile into a professional, readable PDF with proper typography, clickable links, project tiles, and a skills cloud weighted by endorsements:\n\nhttps://lnkd.in/evwPnqv9\n\nJust fork the project, sign in to LinkedIn normally, and push the collected data to a project pre-configured with relevant secrets.\n\nNo archaic languages or headaches.\n\nJust YAML.\n\nChoose which jobs and projects appear, adjust the theme, or generate summaries tailored to specific employers. There's even a codex integration at-current.\n\nMonthly automated refreshes / resume rebuilds, a personal resume website, and signed releases are available when you want them to prove authenticity.\n\nThe coffee stains are automated, too;)",
+            "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub ActionsGitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+            "github.com",
+            "1 reaction1",
+            "1 comment1 comment",
+            "Comment",
+            "Send",
+            "351 impressions",
+            "View analyticsView analytics"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "Tired of choosing between LinkedIn's awkward PDF export and another resume you have to maintain by hand? I'm building resumeme, which turns your profile into a professional, readable PDF with proper typography, clickable links, project tiles, and a skills cloud weighted by endorsements: https://lnkd.in/evwPnqv9 Just fork the project, sign in to LinkedIn normally, and push the collected data to a project pre-configured with relevant secrets. No archaic languages or headaches. Just YAML. Choose which jobs and projects appear, adjust the theme, or generate summaries tailored to specific employers. There's even a codex integration at-current. Monthly automated refreshes / resume rebuilds, a personal resume website, and signed releases are available when you want them to prove authenticity. The coffee stains are automated, too;)",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7513843384734601217/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://lnkd.in/evwPnqv9",
+              "url": "https://lnkd.in/evwPnqv9",
+              "resolved_url": "https://github.com/astrivant/resumeme/",
+              "title": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
+            },
+            {
+              "label": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions github.com",
+              "url": "https://github.com/astrivant/resumeme",
+              "resolved_url": "https://github.com/astrivant/resumeme",
+              "title": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
+            },
+            {
+              "label": "1 reaction 1",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "351 impressions View analytics View analytics",
+              "url": "https://www.linkedin.com/analytics/post-summary/urn:li:activity:7513843384734601217/",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792137600&v=beta&t=DF-3aDh0H7S3Culgrg5UGS5h_bb-UgpI10AUJL4dVAo",
+              "alt": "",
+              "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fresumeme&urlhash=IWSk&mt=tvVGJzcEAcESJSYVruduJ_dEhH0RHQ9sn9XdPcf2OvOXC_ZP4auh6D9CQ-WugmW2hiWCT6lRrQtJX3QdFxgC8gHUfBCxc-7iq8U3nZlK3pw3QE60m0fku14cyw&isSdui=true"
+            },
+            {
+              "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
+              "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "link": "https://lnkd.in/evwPnqv9"
+            },
+            {
+              "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
+              "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "link": "https://github.com/astrivant/resumeme"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle reposted this",
+          "paragraphs": [
+            "Arun Fiddler",
+            "• 3rd+",
+            "AWS Certified Solution Architect | Sr. DevOps Engineer | Ex-Amazonian | DevOps, AWS Cloud & System Design | Infrastructure Automation | Mentor",
+            "Oct 7",
+            "🧹 Kubernetes 1.37 quietly introduced something DevOps teams are going to love. \n\nIn large Kubernetes clusters, it’s common for users to create PersistentVolumeClaims (PVCs), use them with Pods, and later delete those Pods without cleaning up the storage.\n\nAnd Kubernetes doesn't automatically delete the PVC when its associated Pod is removed — intentionally, to protect against accidental data loss.\n\nOver time, these unused PVCs can accumulate, consuming storage capacity and increasing cloud costs.\n\nSo the question for storage and DevOps teams becomes:\n\nWhich PVCs in the cluster are no longer being used by any Pod?\n\nKubernetes 1.37 introduces the \"PersistentVolumeClaimUnusedSinceTime\" feature to make this information available directly through the PVC status.\n\nOnce enabled, the PVC Protection Controller adds an \"Unused\" condition to the PVC:\n\n✅ \"Unused=False\" → A running or pending Pod references the PVC\n✅ \"Unused=True\" → No non-terminal Pod references the PVC\n\nThis makes it much easier to identify potentially orphaned storage and build cleanup automation around questions like:\n\n👉 “Which PVCs have been unused for 30+ days?”\n\nA small addition to Kubernetes, but a useful improvement for storage management, cloud cost control, and cluster operations.\n\nReference : https://lnkd.in/gvYfRSUQ\n\n#Kubernetes #K8s #AWS #DevOps #Cloud",
+            "888 reactions888",
+            "35 comments35 comments",
+            "•",
+            "69 reposts69 reposts",
+            "Comment",
+            "Send"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://www.linkedin.com/in/arunfiddler/",
+              "url": "https://www.linkedin.com/in/arunfiddler/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "🧹 Kubernetes 1.37 quietly introduced something DevOps teams are going to love. In large Kubernetes clusters, it’s common for users to create PersistentVolumeClaims (PVCs), use them with Pods, and later delete those Pods without cleaning up the storage. And Kubernetes doesn't automatically delete the PVC when its associated Pod is removed — intentionally, to protect against accidental data loss. Over time, these unused PVCs can accumulate, consuming storage capacity and increasing cloud costs. So the question for storage and DevOps teams becomes: Which PVCs in the cluster are no longer being used by any Pod? Kubernetes 1.37 introduces the \"PersistentVolumeClaimUnusedSinceTime\" feature to make this information available directly through the PVC status. Once enabled, the PVC Protection Controller adds an \"Unused\" condition to the PVC: ✅ \"Unused=False\" → A running or pending Pod references the PVC ✅ \"Unused=True\" → No non-terminal Pod references the PVC This makes it much easier to identify potentially orphaned storage and build cleanup automation around questions like: 👉 “Which PVCs have been unused for 30+ days?” A small addition to Kubernetes, but a useful improvement for storage management, cloud cost control, and cluster operations. Reference : https://lnkd.in/gvYfRSUQ #Kubernetes #K8s #AWS #DevOps #Cloud",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7513735832600674304/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://lnkd.in/gvYfRSUQ",
+              "url": "https://lnkd.in/gvYfRSUQ",
+              "resolved_url": "https://www.kubernetes.dev/resources/keps/5541/#summary",
+              "title": "Report Last Used Time On a PVC"
+            },
+            {
+              "label": "#Kubernetes",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23kubernetes&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#K8s",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23k8s&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#AWS",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23aws&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#DevOps",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23devops&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#Cloud",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23cloud&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "888 reactions 888",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D5603AQG0LU4q8m_oAg/profile-displayphoto-scale_100_100/B56Z2LrC96IUAc-/0/1776164816824?e=1793232000&v=beta&t=1eTEe3jBREjK7LRo8JmWUzVY_yD8Bmuf3ysmfGvDS7o",
+              "alt": "View Arun Fiddler’s profile",
+              "path": "data/assets/9ffe1190448d63da9e9ba9a5b854e695880e6992a444edd10ef27b85bb78ef6e.png",
+              "link": "https://www.linkedin.com/in/arunfiddler/"
+            },
+            {
+              "url": "https://www.kubernetes.dev/favicons/favicon.ico",
+              "alt": "Report Last Used Time On a PVC",
+              "path": "data/assets/feff4649268e6d53ba7599062999431ff32778f7ec2eda37ebd506febd9e851b.png",
+              "link": "https://lnkd.in/gvYfRSUQ"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle reposted this",
+          "paragraphs": [
+            "Gjorgji J.",
+            "• 3rd+",
+            "Orchestrating chaos into seamless deployments 🚀",
+            "Oct 3",
+            "Your cloud provider loves it when dev clusters run all weekend. \n\nLightsOut, my Kubernetes operator for scaling workloads down during off-hours, has come a long way since my last update. It now hibernates operator-managed resources, scales in ArgoCD sync wave order, and supports FluxCD and HPAs. Still no app code changes, no GitOps rework, and lower costs on autopilot. \n\nHow do you keep dev cluster spend in check? I'd love to hear what works for you.\n\nhttps://lnkd.in/dC3WYy39",
+            "69 reactions69",
+            "2 comments2 comments",
+            "•",
+            "1 repost1 repost",
+            "Send"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://www.linkedin.com/in/gjorgji-ts/",
+              "url": "https://www.linkedin.com/in/gjorgji-ts/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "Your cloud provider loves it when dev clusters run all weekend. LightsOut, my Kubernetes operator for scaling workloads down during off-hours, has come a long way since my last update. It now hibernates operator-managed resources, scales in ArgoCD sync wave order, and supports FluxCD and HPAs. Still no app code changes, no GitOps rework, and lower costs on autopilot. How do you keep dev cluster spend in check? I'd love to hear what works for you. https://lnkd.in/dC3WYy39",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7512671816159584257/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://lnkd.in/dC3WYy39",
+              "url": "https://lnkd.in/dC3WYy39",
+              "resolved_url": "https://github.com/gjorgji-ts/lightsout",
+              "title": "GitHub - gjorgji-ts/lightsout: LightsOut is a Kubernetes operator that automatically downscales workloads during off-hours to reduce cost and resource usage."
+            },
+            {
+              "label": "69 reactions 69",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4D03AQEdA0sNi2fE3g/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1719407797539?e=1793232000&v=beta&t=dS0GwkBqbr56Ymu9nobrolqwYHq0zG6in1nfWZ8pnFY",
+              "alt": "View Gjorgji J.’s profile",
+              "path": "data/assets/1eb5ac80509c8c581c6353faf4bef3de264c844ffc2a3f028fbad00be9ae103e.png",
+              "link": "https://www.linkedin.com/in/gjorgji-ts/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4D22AQFADnMjNVdctQ/feedshare-shrink_480/B4DaEBDKgCJUAg-/0/1791018970250?e=1793232000&v=beta&t=98VYXe5CHryEedmyWJOsSJyGH48Ulocws2-O_YR_GzA",
+              "alt": "View image",
+              "path": "data/assets/eee4e0d90ac706960e2b24a0fc8bd0d6c7547fd5e7f865abff39ad955f064b22.png",
+              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7512671816159584257/"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/85198f563f537e1c128096767ae738a1a67bcfc4973bcdeaa0e374124472a602/gjorgji-ts/lightsout",
+              "alt": "GitHub - gjorgji-ts/lightsout: LightsOut is a Kubernetes operator that automatically downscales workloads during off-hours to reduce cost and resource usage.",
+              "path": "data/assets/122db7dccf3949c77d8d34f694b17557e6d45c47d200f7bbe874f626cd8ea79a.png",
+              "link": "https://lnkd.in/dC3WYy39"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle reposted this",
+          "paragraphs": [
+            "Luiza Jarovsky, PhD",
+            "• Following",
+            "Co-founder of the AI, Tech & Privacy Academy (1,600+ participants), Author of Luiza’s Newsletter (100,000+ subscribers), Mother of 3",
+            "View my newsletter",
+            "Oct 1",
+            "Unpopular opinion: AI companies are pushing society to accept an unacceptable level of risk for a non-essential technology.",
+            "867 reactions867",
+            "100 comments100 comments",
+            "•",
+            "46 reposts46 reposts",
+            "Comment",
+            "Send"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://www.linkedin.com/in/luizajarovsky/",
+              "url": "https://www.linkedin.com/in/luizajarovsky/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "View my newsletter",
+              "url": "https://www.luizasnewsletter.com",
+              "resolved_url": "https://www.luizasnewsletter.com",
+              "title": "Luiza's Newsletter | Substack"
+            },
+            {
+              "label": "Unpopular opinion: AI companies are pushing society to accept an unacceptable level of risk for a non-essential technology.",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7512371755882319872/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "867 reactions 867",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4D03AQEvIshzRc7RBg/profile-displayphoto-scale_100_100/B4DaB7QDRvI4AY-/0/1788774202346?e=1793232000&v=beta&t=kiS89POJ02c5oL3MUc5TFpFFWq6Fqw_26sUvnFg7sio",
+              "alt": "View Luiza Jarovsky, PhD’s profile",
+              "path": "data/assets/490b6937c3592198f5b8ca0ef901dea425d4f8b37bef31e8cfdd8b13ff9a5423.png",
+              "link": "https://www.linkedin.com/in/luizajarovsky/"
+            },
+            {
+              "url": "https://substackcdn.com/image/fetch/$s_!e9aJ!,w_400,h_400,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb6a56d5a-1724-4dac-b72a-afd9e41051e9_600x600.png",
+              "alt": "Luiza's Newsletter | Substack",
+              "path": "data/assets/dd1061bbced9baa4d51aa049e25310246a82febfd5517e5aea0b204a6513d9bb.png",
+              "link": "https://www.luizasnewsletter.com"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle reposted this",
+          "paragraphs": [
+            "Jered Sutton",
+            "• Following",
+            "Bit Plumber | Open-source Advocate | AI Engineer",
+            "Oct 2",
+            "If you are annoyed by the prose your agent is writing, give the following a try in your AGENTS/CLAUDE.md.\n\n## 5. Prose\n\n- Follow the Google Developer Documentation Style Guide.\n- Use ASD-STE100-derived precision rules.\n- Apply Zinsser's four principles: clarity, simplicity, brevity, and humanity.\n\nI have found it to reduce verboseness and tighten up precision in the output of my agents. The section number is based on the 4 section CLAUDE.md attributed to Andrej Karpathy.",
+            "111 reactions111",
+            "8 comments8 comments",
+            "•",
+            "6 reposts6 reposts",
+            "Comment",
+            "Send"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://www.linkedin.com/in/jereds/",
+              "url": "https://www.linkedin.com/in/jereds/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "If you are annoyed by the prose your agent is writing, give the following a try in your AGENTS/ CLAUDE.md . ## 5. Prose - Follow the Google Developer Documentation Style Guide. - Use ASD-STE100-derived precision rules. - Apply Zinsser's four principles: clarity, simplicity, brevity, and humanity. I have found it to reduce verboseness and tighten up precision in the output of my agents. The section number is based on the 4 section CLAUDE.md attributed to Andrej Karpathy.",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7512371289068863488/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "CLAUDE.md",
+              "url": "http://CLAUDE.md",
+              "resolved_url": "https://code.claude.com/docs",
+              "title": "Overview - Claude Code Docs"
+            },
+            {
+              "label": "111 reactions 111",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/C5603AQF4aDTnHoQsyA/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1632152012847?e=1793232000&v=beta&t=Vgv6Vt1ukVEiJosoaknTTMFq75Pe8htjDTFSOwD8yyo",
+              "alt": "View Jered Sutton’s profile",
+              "path": "data/assets/48032c51cfc0b93261150ecaaaa65416cb9fab683677f15b4c4c7f320ee72165.png",
+              "link": "https://www.linkedin.com/in/jereds/"
+            },
+            {
+              "url": "https://claude-code.mintlify.app/_mintlify/api/og/v2?division=Getting+started&title=Overview&description=Claude+Code+is+an+agentic+coding+tool+that+reads+your+codebase%2C+edits+files%2C+runs+commands%2C+and+integrates+with+your+development+tools.+Available+in+your+termin&theme=03628e99c753a03aec319053&signature=a6211f7f0c07234ce7bcb0f2b0c2f91f628818e6374aecf9d861f1f986b61901",
+              "alt": "Overview - Claude Code Docs",
+              "path": "data/assets/22f0d698c056180dc03d6240102d3241f19b66dc5fcf0e64529f0255adc98f6e.png",
+              "link": "http://CLAUDE.md"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle reposted this",
+          "paragraphs": [
+            "James Busia",
+            "• 3rd+",
+            "I code for fun. I build real stuff for real people to really use.",
+            "Sep 30",
+            "Is it not obvious at this point that the plan is to get as many devs addicted to AI codegen as possible, make them completely reliant on it, make crucial infrastructure impossible to alter without it, then 10x the price?\n\nI've never been more confident in my decision to keep learning and working using my brain.",
+            "332 reactions332",
+            "85 comments85 comments",
+            "•",
+            "16 reposts16 reposts",
+            "Comment",
+            "Send"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://www.linkedin.com/in/james-iden-busia/",
+              "url": "https://www.linkedin.com/in/james-iden-busia/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "Is it not obvious at this point that the plan is to get as many devs addicted to AI codegen as possible, make them completely reliant on it, make crucial infrastructure impossible to alter without it, then 10x the price? I've never been more confident in my decision to keep learning and working using my brain.",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7512212341992837120/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "332 reactions 332",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D5603AQFZvXQXpaX-IQ/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1720633000776?e=1793232000&v=beta&t=D1fFRCwIFdiEclZWsRbfe3yTxbyMy09F_VYkq8upkjg",
+              "alt": "View James Busia’s profile",
+              "path": "data/assets/5a3e24d74bfde6bc7f8c8b4109314a55f904080690ad35da66587aac54d7ca9a.png",
+              "link": "https://www.linkedin.com/in/james-iden-busia/"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle reposted this",
+          "paragraphs": [
+            "Jeff Boggs B.A.Sc.  MBA",
+            "• 2nd",
+            "Creator of Opportunity OS (opportunity-system.com) | Software Architect and Author of AI-Native Software Engineering |  🎥 Watch how I build at AI speed",
+            "Sep 27 • Edited",
+            "When an engineer has spent 10 to 20 years mastering manual syntax, compiler quirks, and hand-rolled boilerplate, typing code by hand becomes synonymous with their value.\n\nHaving an LLM generate in five seconds what used to take an afternoon of careful keystrokes feels like personal invalidation so the reaction often morphs into pure hostility toward the tools and anyone using them.\n\nBut tedious was never the same thing as valuable. The leverage is moving up the stack to systems design and architecture, whether we like it or not.",
+            "41 reactions41",
+            "51 comments51 comments",
+            "•",
+            "2 reposts2 reposts",
+            "Comment",
+            "Send"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://www.linkedin.com/in/jeffboggs/",
+              "url": "https://www.linkedin.com/in/jeffboggs/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "When an engineer has spent 10 to 20 years mastering manual syntax, compiler quirks, and hand-rolled boilerplate, typing code by hand becomes synonymous with their value. Having an LLM generate in five seconds what used to take an afternoon of careful keystrokes feels like personal invalidation so the reaction often morphs into pure hostility toward the tools and anyone using them. But tedious was never the same thing as valuable. The leverage is moving up the stack to systems design and architecture, whether we like it or not.",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7510136983520780288/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "41 reactions 41",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D5603AQGN7hfA073Bjw/profile-displayphoto-scale_100_100/B56Z0IGmqyKAAc-/0/1773957451205?e=1793232000&v=beta&t=BLx3Pejgo7OdA6LrTsWPsgUXsMV4Ub9FrcpIK3UY1WU",
+              "alt": "View Jeff Boggs B.A.Sc.  MBA’s profile",
+              "path": "data/assets/89a02d8b922a0afa836528706dc09edcb4eb42fbc1fe67edee2b0a8b58e81f3e.png",
+              "link": "https://www.linkedin.com/in/jeffboggs/"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle",
+          "paragraphs": [
+            "• You",
+            "Lead Platform Engineer | SRE | SMB Owner | Building reliable cloud infrastructure and better developer experiences | Kubernetes, Python & Go",
+            "Sep 26 • Edited",
+            "I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for:\n\nhttps://lnkd.in/ektqstTY\n\nMost Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values.\n\nThat leaves many classes of bugs among structural complexities, unaddressed before release:\n\n- One value change can have downstream effects across multiple rendered resources.\n- Individually valid settings can fail when combined.\n- configurable fields exist only in templates and aren’t documented in values.yaml.\n- values paths are effectively dead and never change rendered output.\n- Different values within the same type constraints can still produce structurally different behavior.\n\nAnd all of these cases could pass a static 'helm lint'.\n\nhypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution.\n\nThe pipeline is roughly:\n\ncoalesce values -> pre-filter -> sort -> post-filter -> test -> validate\n\nThe tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have.\n\nI’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory.\n\nI’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself:\n\nhttps://lnkd.in/eqZRNAqJ\n\nThis example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures.",
+            "GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for HelmGitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm",
+            "github.com",
+            "Nathan Paulhus 🔐 and 1 other reactedNathan Paulhus 🔐 and 1 other",
+            "2 comments2 comments",
+            "Comment",
+            "Send",
+            "506 impressions",
+            "View analyticsView analytics"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for: https://lnkd.in/ektqstTY Most Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values. That leaves many classes of bugs among structural complexities, unaddressed before release: - One value change can have downstream effects across multiple rendered resources. - Individually valid settings can fail when combined. - configurable fields exist only in templates and aren’t documented in values.yaml. - values paths are effectively dead and never change rendered output. - Different values within the same type constraints can still produce structurally different behavior. And all of these cases could pass a static 'helm lint'. hypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution. The pipeline is roughly: coalesce values -> pre-filter -> sort -> post-filter -> test -> validate The tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have. I’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory. I’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself: https://lnkd.in/eqZRNAqJ This example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures.",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://lnkd.in/ektqstTY",
+              "url": "https://lnkd.in/ektqstTY",
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm/",
+              "title": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts"
+            },
+            {
+              "label": "https://lnkd.in/eqZRNAqJ",
+              "url": "https://lnkd.in/eqZRNAqJ",
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm/blob/main/docs/reports/bitnami.pdf",
+              "title": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm"
+            },
+            {
+              "label": "GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm github.com",
+              "url": "https://github.com/astrivant/hypothesis-helm",
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm",
+              "title": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts"
+            },
+            {
+              "label": "Nathan Paulhus 🔐 and 1 other reacted Nathan Paulhus 🔐 and 1 other",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "506 impressions View analytics View analytics",
+              "url": "https://www.linkedin.com/analytics/post-summary/urn:li:activity:7509589632158928896/",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_160/B4EaCMSldGHAAU-/0/1789060078327?e=1792137600&v=beta&t=dqJRuqTcZCW7WfCxWx3qa6b53EtM-XNzcAXVKJbAmys",
+              "alt": "",
+              "path": "data/assets/a2f2a90b36104f27fb75986d9bd2be07a318b0eee6bf3e136effeb97681cf0f8.png",
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fhypothesis-helm&urlhash=J6A4&mt=jUo3gfGfkzsgU4Ww7_Kva-ig7RcQ6Mv4wnPC0orGrFKb6401zAu_98vhjEn4eKcEQMC5oCaW2UIf2k4WInAcJFCxx_r8fRFa1kPki7X27NRrU7MkH6i4QXipjw&isSdui=true"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
+              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "link": "https://lnkd.in/ektqstTY"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm",
+              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "link": "https://lnkd.in/eqZRNAqJ"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
+              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "link": "https://github.com/astrivant/hypothesis-helm"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Emma Doyle reposted this",
+          "paragraphs": [
+            "Aniket Maithani",
+            "• Following",
+            "Chief Technology Officer @ M37Labs | Building AI and Data Intelligence Platforms",
+            "Sep 17",
+            "Kafka just quietly fixed one of its oldest limitations.\nAnd I’m not sure enough Python teams have noticed yet.\nWith Kafka 4.2, Share Groups (KIP-932) became production-ready.\nThat sounds like another Kafka feature until you realize what it changes:\nYou are no longer stuck with “one partition, one consumer” for parallel processing.\nWith Share Groups, multiple workers can pull work from the same partition.\nEach message gets locked, processed, and acknowledged independently.\nNo awkward rebalance callbacks.\nNo manual offset juggling.\nNo creating hundreds of partitions just because you might need more workers later.\n\nThe architecture change is much more interesting.\n1. Worker count is no longer tied to partition count\nPreviously, if you wanted 200 consumers working in parallel, you probably needed something close to 200 partitions.\nNow you can scale workers independently.\n2. One slow message doesn’t have to block everything behind it\nFor job-processing workloads, this is huge.\nA slow API call or poison message doesn’t need to hold up an entire partition.\n3. Retries become much cleaner\nRELEASE puts the message back for redelivery.\ndelivery_count() tells you how many attempts have happened.\nREJECT lets you stop retrying.\nA lot of retry plumbing that teams build themselves can move back into Kafka.\n4. This could remove an entire piece of infrastructure\nI’ve seen architectures running:\nKafka for events\nRabbitMQ/SQS for jobs\ncustom retry logic\nanother monitoring surface\nIf RabbitMQ or SQS is sitting next to Kafka only because you needed queue-style worker semantics, that second system may no longer be necessary.\nOf course, there’s a trade-off.\nYou lose ordering guarantees inside the Share Group.\nSo if strict ordering matters, classic consumer groups still make sense.\nAlso worth knowing:\nThe Java client is GA, while Python's ShareConsumer is still Preview.\nAnd if you’re experimenting on a small dev cluster with fewer than three brokers, check your Share Coordinator state-topic replication settings. Otherwise you may spend an embarrassing amount of time wondering why your consumer is doing absolqeutely nothing.\nAsk me how I know. 🙂\nKafka is starting to look a lot less like “an event log that people keep forcing into a queue” and a lot more like a system that can comfortably do both.\n#ApacheKafka #Kafka #Python #DistributedSystems #BackendEngineering #SoftwareArchitecture #EventDrivenArchitecture #DataEngineering",
+            "274 reactions274",
+            "12 comments12 comments",
+            "•",
+            "21 reposts21 reposts",
+            "Comment",
+            "Send"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/in/emmeowzing/",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "https://www.linkedin.com/in/aniketmaithani/",
+              "url": "https://www.linkedin.com/in/aniketmaithani/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "Kafka just quietly fixed one of its oldest limitations. And I’m not sure enough Python teams have noticed yet. With Kafka 4.2, Share Groups (KIP-932) became production-ready. That sounds like another Kafka feature until you realize what it changes: You are no longer stuck with “one partition, one consumer” for parallel processing. With Share Groups, multiple workers can pull work from the same partition. Each message gets locked, processed, and acknowledged independently. No awkward rebalance callbacks. No manual offset juggling. No creating hundreds of partitions just because you might need more workers later. The architecture change is much more interesting. 1. Worker count is no longer tied to partition count Previously, if you wanted 200 consumers working in parallel, you probably needed something close to 200 partitions. Now you can scale workers independently. 2. One slow message doesn’t have to block everything behind it For job-processing workloads, this is huge. A slow API call or poison message doesn’t need to hold up an entire partition. 3. Retries become much cleaner RELEASE puts the message back for redelivery. delivery_count() tells you how many attempts have happened. REJECT lets you stop retrying. A lot of retry plumbing that teams build themselves can move back into Kafka. 4. This could remove an entire piece of infrastructure I’ve seen architectures running: Kafka for events RabbitMQ/SQS for jobs custom retry logic another monitoring surface If RabbitMQ or SQS is sitting next to Kafka only because you needed queue-style worker semantics, that second system may no longer be necessary. Of course, there’s a trade-off. You lose ordering guarantees inside the Share Group. So if strict ordering matters, classic consumer groups still make sense. Also worth knowing: The Java client is GA, while Python's ShareConsumer is still Preview. And if you’re experimenting on a small dev cluster with fewer than three brokers, check your Share Coordinator state-topic replication settings. Otherwise you may spend an embarrassing amount of time wondering why your consumer is doing absolqeutely nothing. Ask me how I know. 🙂 Kafka is starting to look a lot less like “an event log that people keep forcing into a queue” and a lot more like a system that can comfortably do both. #ApacheKafka #Kafka #Python #DistributedSystems #BackendEngineering #SoftwareArchitecture #EventDrivenArchitecture #DataEngineering",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7507647094044835840/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#ApacheKafka",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23apachekafka&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#Kafka",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23kafka&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#Python",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23python&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#DistributedSystems",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23distributedsystems&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#BackendEngineering",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23backendengineering&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#SoftwareArchitecture",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23softwarearchitecture&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#EventDrivenArchitecture",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23eventdrivenarchitecture&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "#DataEngineering",
+              "url": "https://www.linkedin.com/search/results/all/?keywords=%23dataengineering&origin=HASH_TAG_FROM_FEED",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "274 reactions 274",
+              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
+              "alt": "View Emma Doyle’s profile",
+              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D5603AQFonO3j0dPYWA/profile-displayphoto-scale_100_100/B56ZvNHz7.K0Ac-/0/1768672945358?e=1793232000&v=beta&t=-OSOmEYIav3QG4JQ6sEZKWOQGTs_r_v8SQhIhAgcEVI",
+              "alt": "View Aniket Maithani’s profile",
+              "path": "data/assets/2c36f2b2293e86b1da7552cf790cf60af1349acd7b3fa10537cc03c22393ebad.png",
+              "link": "https://www.linkedin.com/in/aniketmaithani/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D5622AQHN3tan6A99XQ/feedshare-shrink_480/B56aCvaOecKcAg-/0/1789649283222?e=1793232000&v=beta&t=M4czkrbnE-la9cIB0T5USeOIdECQThoQoHWKNyPib_A",
+              "alt": "View image",
+              "path": "data/assets/3bd73a2eb170a503c1311b05b2c834a1d194b7cc226c49b9eb454f124cf320ec.png",
+              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7507647094044835840/"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        }
+      ]
+    },
     {
       "key": "experience",
       "title": "Experience",
@@ -689,824 +1708,6 @@
               "alt": "Thumbnail for Radio Galaxy 3C 210",
               "path": "data/assets/d5d3ff4b7f726a4cf4a9079ea9b82843e8d9220386a7e24162356bc384f0fca7.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/776655142/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        }
-      ]
-    },
-    {
-      "key": "activity",
-      "title": "Activity",
-      "entries": [
-        {
-          "title": "Emma Doyle reposted this",
-          "paragraphs": [
-            "Yinheng Li",
-            "• Following",
-            "Research LLM Agent @ Microsoft",
-            "Oct 6",
-            "Excited to share our new paper: LLM-as-Jev! We show how to easily turn any LLM into a Jev-style decision model. While the community has explored similar ideas, our approach proves very competitive, and we provide a detailed quantitative comparison alongside a practical guide on when off-the-shelf LLMs are enough vs. when and how to fine-tune them.\nhttps://lnkd.in/gbjVQCSE",
-            "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune ThemLLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
-            "arxiv.org",
-            "1,071 reactions1,071",
-            "18 comments18 comments",
-            "•",
-            "53 reposts53 reposts",
-            "Comment",
-            "Send"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://www.linkedin.com/in/yinhengli/",
-              "url": "https://www.linkedin.com/in/yinhengli/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "Excited to share our new paper: LLM-as-Jev! We show how to easily turn any LLM into a Jev-style decision model. While the community has explored similar ideas, our approach proves very competitive, and we provide a detailed quantitative comparison alongside a practical guide on when off-the-shelf LLMs are enough vs. when and how to fine-tune them. https://lnkd.in/gbjVQCSE",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7514174715368816640/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://lnkd.in/gbjVQCSE",
-              "url": "https://lnkd.in/gbjVQCSE",
-              "resolved_url": "https://arxiv.org/abs/2610.02076v2",
-              "title": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them"
-            },
-            {
-              "label": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them arxiv.org",
-              "url": "https://arxiv.org/abs/2610.02076v2",
-              "resolved_url": "https://arxiv.org/abs/2610.02076v2",
-              "title": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them"
-            },
-            {
-              "label": "1,071 reactions 1,071",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/C4E03AQESfgI2DatI7A/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1660620479185?e=1793232000&v=beta&t=hnwBw36yTYHIoW1CdgoexzcwXlUhFxiw5FPGb2Yi9P4",
-              "alt": "View Yinheng Li’s profile",
-              "path": "data/assets/60714a2f8fd45bc5122168d953d96b3b04bde3246bd284aa958a956ab85d6a50.png",
-              "link": "https://www.linkedin.com/in/yinhengli/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQGlDoUwxR8YAw/articleshare-shrink_160/B56aESRwitHIAU-/0/1791308007903?e=1792134000&v=beta&t=HHHFaVrs8RM4WQeRNOyuoQbJXlSRrZup8N6B5Q6BUW0",
-              "alt": "",
-              "path": "data/assets/c247c919baf02ca8aa21c6384e8d1ffdd0a635ca8f6c2edd07a82c30f15913f4.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Farxiv%2Eorg%2Fabs%2F2610%2E02076v2&urlhash=R-27&mt=c6e8-wcCOaKYli2SXVKf9d9Dwb9SAvviisOA7dNdhrRqKDDCLjaULG6AL-ecy78MmlA9ZHq43z3ChZeImhJCj8PPRojP3fLp8DvP4eHJ8SRC1bKPJ-aG9rha_w&isSdui=true"
-            },
-            {
-              "url": "https://arxiv.org/static/browse/0.3.4/images/arxiv-logo-fb.png",
-              "alt": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
-              "path": "data/assets/fed5d0d5f6fa2ad0269ec7e16816ce002477626a8ecbc07b0052a3ce0e9ba8d6.png",
-              "link": "https://lnkd.in/gbjVQCSE"
-            },
-            {
-              "url": "https://arxiv.org/static/browse/0.3.4/images/arxiv-logo-fb.png",
-              "alt": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
-              "path": "data/assets/fed5d0d5f6fa2ad0269ec7e16816ce002477626a8ecbc07b0052a3ce0e9ba8d6.png",
-              "link": "https://arxiv.org/abs/2610.02076v2"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle",
-          "paragraphs": [
-            "• You",
-            "Lead Platform Engineer | SRE | SMB Owner | Building reliable cloud infrastructure and better developer experiences | Kubernetes, Python & Go",
-            "Yesterday",
-            "Tired of choosing between LinkedIn's awkward PDF export and another resume you have to maintain by hand?\n\nI'm building resumeme, which turns your profile into a professional, readable PDF with proper typography, clickable links, project tiles, and a skills cloud weighted by endorsements:\n\nhttps://lnkd.in/evwPnqv9\n\nJust fork the project, sign in to LinkedIn normally, and push the collected data to a project pre-configured with relevant secrets.\n\nNo archaic languages or headaches.\n\nJust YAML.\n\nChoose which jobs and projects appear, adjust the theme, or generate summaries tailored to specific employers. There's even a codex integration at-current.\n\nMonthly automated refreshes / resume rebuilds, a personal resume website, and signed releases are available when you want them to prove authenticity.\n\nThe coffee stains are automated, too;)",
-            "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub ActionsGitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
-            "github.com",
-            "1 reaction1",
-            "1 comment1 comment",
-            "Comment",
-            "Send",
-            "346 impressions",
-            "View analyticsView analytics"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "Tired of choosing between LinkedIn's awkward PDF export and another resume you have to maintain by hand? I'm building resumeme, which turns your profile into a professional, readable PDF with proper typography, clickable links, project tiles, and a skills cloud weighted by endorsements: https://lnkd.in/evwPnqv9 Just fork the project, sign in to LinkedIn normally, and push the collected data to a project pre-configured with relevant secrets. No archaic languages or headaches. Just YAML. Choose which jobs and projects appear, adjust the theme, or generate summaries tailored to specific employers. There's even a codex integration at-current. Monthly automated refreshes / resume rebuilds, a personal resume website, and signed releases are available when you want them to prove authenticity. The coffee stains are automated, too;)",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7513843384734601217/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://lnkd.in/evwPnqv9",
-              "url": "https://lnkd.in/evwPnqv9",
-              "resolved_url": "https://github.com/astrivant/resumeme/",
-              "title": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
-            },
-            {
-              "label": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions github.com",
-              "url": "https://github.com/astrivant/resumeme",
-              "resolved_url": "https://github.com/astrivant/resumeme",
-              "title": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
-            },
-            {
-              "label": "1 reaction 1",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "346 impressions View analytics View analytics",
-              "url": "https://www.linkedin.com/analytics/post-summary/urn:li:activity:7513843384734601217/",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792134000&v=beta&t=6XOZk6AZcUVlhKD9Zi3ESwpYvseTUfqgJg0Sh86ZszU",
-              "alt": "",
-              "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fresumeme&urlhash=IWSk&mt=SzlL0BdDAoGFNRiS_6-Ae04XdQniKFNESk5Ol5-Tlm96n3DSuKG1XeiORtlq8efXUYXzp9o-hqSUosT8-NPHrapQKaYN1cjFQ-w87H9Pa79DAOLFNtH0vF_3UA&isSdui=true"
-            },
-            {
-              "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
-              "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
-              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
-              "link": "https://lnkd.in/evwPnqv9"
-            },
-            {
-              "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
-              "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
-              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
-              "link": "https://github.com/astrivant/resumeme"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle reposted this",
-          "paragraphs": [
-            "Arun Fiddler",
-            "• 3rd+",
-            "AWS Certified Solution Architect | Sr. DevOps Engineer | Ex-Amazonian | DevOps, AWS Cloud & System Design | Infrastructure Automation | Mentor",
-            "Oct 7",
-            "🧹 Kubernetes 1.37 quietly introduced something DevOps teams are going to love. \n\nIn large Kubernetes clusters, it’s common for users to create PersistentVolumeClaims (PVCs), use them with Pods, and later delete those Pods without cleaning up the storage.\n\nAnd Kubernetes doesn't automatically delete the PVC when its associated Pod is removed — intentionally, to protect against accidental data loss.\n\nOver time, these unused PVCs can accumulate, consuming storage capacity and increasing cloud costs.\n\nSo the question for storage and DevOps teams becomes:\n\nWhich PVCs in the cluster are no longer being used by any Pod?\n\nKubernetes 1.37 introduces the \"PersistentVolumeClaimUnusedSinceTime\" feature to make this information available directly through the PVC status.\n\nOnce enabled, the PVC Protection Controller adds an \"Unused\" condition to the PVC:\n\n✅ \"Unused=False\" → A running or pending Pod references the PVC\n✅ \"Unused=True\" → No non-terminal Pod references the PVC\n\nThis makes it much easier to identify potentially orphaned storage and build cleanup automation around questions like:\n\n👉 “Which PVCs have been unused for 30+ days?”\n\nA small addition to Kubernetes, but a useful improvement for storage management, cloud cost control, and cluster operations.\n\nReference : https://lnkd.in/gvYfRSUQ\n\n#Kubernetes #K8s #AWS #DevOps #Cloud",
-            "888 reactions888",
-            "35 comments35 comments",
-            "•",
-            "69 reposts69 reposts",
-            "Comment",
-            "Send"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://www.linkedin.com/in/arunfiddler/",
-              "url": "https://www.linkedin.com/in/arunfiddler/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "🧹 Kubernetes 1.37 quietly introduced something DevOps teams are going to love. In large Kubernetes clusters, it’s common for users to create PersistentVolumeClaims (PVCs), use them with Pods, and later delete those Pods without cleaning up the storage. And Kubernetes doesn't automatically delete the PVC when its associated Pod is removed — intentionally, to protect against accidental data loss. Over time, these unused PVCs can accumulate, consuming storage capacity and increasing cloud costs. So the question for storage and DevOps teams becomes: Which PVCs in the cluster are no longer being used by any Pod? Kubernetes 1.37 introduces the \"PersistentVolumeClaimUnusedSinceTime\" feature to make this information available directly through the PVC status. Once enabled, the PVC Protection Controller adds an \"Unused\" condition to the PVC: ✅ \"Unused=False\" → A running or pending Pod references the PVC ✅ \"Unused=True\" → No non-terminal Pod references the PVC This makes it much easier to identify potentially orphaned storage and build cleanup automation around questions like: 👉 “Which PVCs have been unused for 30+ days?” A small addition to Kubernetes, but a useful improvement for storage management, cloud cost control, and cluster operations. Reference : https://lnkd.in/gvYfRSUQ #Kubernetes #K8s #AWS #DevOps #Cloud",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7513735832600674304/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://lnkd.in/gvYfRSUQ",
-              "url": "https://lnkd.in/gvYfRSUQ",
-              "resolved_url": "https://www.kubernetes.dev/resources/keps/5541/#summary",
-              "title": "Report Last Used Time On a PVC"
-            },
-            {
-              "label": "#Kubernetes",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23kubernetes&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#K8s",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23k8s&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#AWS",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23aws&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#DevOps",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23devops&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#Cloud",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23cloud&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "888 reactions 888",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D5603AQG0LU4q8m_oAg/profile-displayphoto-scale_100_100/B56Z2LrC96IUAc-/0/1776164816824?e=1793232000&v=beta&t=1eTEe3jBREjK7LRo8JmWUzVY_yD8Bmuf3ysmfGvDS7o",
-              "alt": "View Arun Fiddler’s profile",
-              "path": "data/assets/9ffe1190448d63da9e9ba9a5b854e695880e6992a444edd10ef27b85bb78ef6e.png",
-              "link": "https://www.linkedin.com/in/arunfiddler/"
-            },
-            {
-              "url": "https://www.kubernetes.dev/favicons/favicon.ico",
-              "alt": "Report Last Used Time On a PVC",
-              "path": "data/assets/feff4649268e6d53ba7599062999431ff32778f7ec2eda37ebd506febd9e851b.png",
-              "link": "https://lnkd.in/gvYfRSUQ"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle reposted this",
-          "paragraphs": [
-            "Gjorgji J.",
-            "• 3rd+",
-            "Orchestrating chaos into seamless deployments 🚀",
-            "Oct 3",
-            "Your cloud provider loves it when dev clusters run all weekend. \n\nLightsOut, my Kubernetes operator for scaling workloads down during off-hours, has come a long way since my last update. It now hibernates operator-managed resources, scales in ArgoCD sync wave order, and supports FluxCD and HPAs. Still no app code changes, no GitOps rework, and lower costs on autopilot. \n\nHow do you keep dev cluster spend in check? I'd love to hear what works for you.\n\nhttps://lnkd.in/dC3WYy39",
-            "69 reactions69",
-            "2 comments2 comments",
-            "•",
-            "1 repost1 repost",
-            "Send"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://www.linkedin.com/in/gjorgji-ts/",
-              "url": "https://www.linkedin.com/in/gjorgji-ts/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "Your cloud provider loves it when dev clusters run all weekend. LightsOut, my Kubernetes operator for scaling workloads down during off-hours, has come a long way since my last update. It now hibernates operator-managed resources, scales in ArgoCD sync wave order, and supports FluxCD and HPAs. Still no app code changes, no GitOps rework, and lower costs on autopilot. How do you keep dev cluster spend in check? I'd love to hear what works for you. https://lnkd.in/dC3WYy39",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7512671816159584257/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://lnkd.in/dC3WYy39",
-              "url": "https://lnkd.in/dC3WYy39",
-              "resolved_url": "https://github.com/gjorgji-ts/lightsout",
-              "title": "GitHub - gjorgji-ts/lightsout: LightsOut is a Kubernetes operator that automatically downscales workloads during off-hours to reduce cost and resource usage."
-            },
-            {
-              "label": "69 reactions 69",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4D03AQEdA0sNi2fE3g/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1719407797539?e=1793232000&v=beta&t=dS0GwkBqbr56Ymu9nobrolqwYHq0zG6in1nfWZ8pnFY",
-              "alt": "View Gjorgji J.’s profile",
-              "path": "data/assets/1eb5ac80509c8c581c6353faf4bef3de264c844ffc2a3f028fbad00be9ae103e.png",
-              "link": "https://www.linkedin.com/in/gjorgji-ts/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4D22AQFADnMjNVdctQ/feedshare-shrink_480/B4DaEBDKgCJUAg-/0/1791018970250?e=1793232000&v=beta&t=98VYXe5CHryEedmyWJOsSJyGH48Ulocws2-O_YR_GzA",
-              "alt": "View image",
-              "path": "data/assets/eee4e0d90ac706960e2b24a0fc8bd0d6c7547fd5e7f865abff39ad955f064b22.png",
-              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7512671816159584257/"
-            },
-            {
-              "url": "https://opengraph.githubassets.com/85198f563f537e1c128096767ae738a1a67bcfc4973bcdeaa0e374124472a602/gjorgji-ts/lightsout",
-              "alt": "GitHub - gjorgji-ts/lightsout: LightsOut is a Kubernetes operator that automatically downscales workloads during off-hours to reduce cost and resource usage.",
-              "path": "data/assets/122db7dccf3949c77d8d34f694b17557e6d45c47d200f7bbe874f626cd8ea79a.png",
-              "link": "https://lnkd.in/dC3WYy39"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle reposted this",
-          "paragraphs": [
-            "Luiza Jarovsky, PhD",
-            "• Following",
-            "Co-founder of the AI, Tech & Privacy Academy (1,600+ participants), Author of Luiza’s Newsletter (100,000+ subscribers), Mother of 3",
-            "View my newsletter",
-            "Oct 1",
-            "Unpopular opinion: AI companies are pushing society to accept an unacceptable level of risk for a non-essential technology.",
-            "866 reactions866",
-            "100 comments100 comments",
-            "•",
-            "46 reposts46 reposts",
-            "Comment",
-            "Send"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://www.linkedin.com/in/luizajarovsky/",
-              "url": "https://www.linkedin.com/in/luizajarovsky/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "View my newsletter",
-              "url": "https://www.luizasnewsletter.com",
-              "resolved_url": "https://www.luizasnewsletter.com",
-              "title": "Luiza's Newsletter | Substack"
-            },
-            {
-              "label": "Unpopular opinion: AI companies are pushing society to accept an unacceptable level of risk for a non-essential technology.",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7512371755882319872/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "866 reactions 866",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4D03AQEvIshzRc7RBg/profile-displayphoto-scale_100_100/B4DaB7QDRvI4AY-/0/1788774202346?e=1793232000&v=beta&t=kiS89POJ02c5oL3MUc5TFpFFWq6Fqw_26sUvnFg7sio",
-              "alt": "View Luiza Jarovsky, PhD’s profile",
-              "path": "data/assets/490b6937c3592198f5b8ca0ef901dea425d4f8b37bef31e8cfdd8b13ff9a5423.png",
-              "link": "https://www.linkedin.com/in/luizajarovsky/"
-            },
-            {
-              "url": "https://substackcdn.com/image/fetch/$s_!e9aJ!,w_400,h_400,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb6a56d5a-1724-4dac-b72a-afd9e41051e9_600x600.png",
-              "alt": "Luiza's Newsletter | Substack",
-              "path": "data/assets/dd1061bbced9baa4d51aa049e25310246a82febfd5517e5aea0b204a6513d9bb.png",
-              "link": "https://www.luizasnewsletter.com"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle reposted this",
-          "paragraphs": [
-            "Jered Sutton",
-            "• Following",
-            "Bit Plumber | Open-source Advocate | AI Engineer",
-            "Oct 2",
-            "If you are annoyed by the prose your agent is writing, give the following a try in your AGENTS/CLAUDE.md.\n\n## 5. Prose\n\n- Follow the Google Developer Documentation Style Guide.\n- Use ASD-STE100-derived precision rules.\n- Apply Zinsser's four principles: clarity, simplicity, brevity, and humanity.\n\nI have found it to reduce verboseness and tighten up precision in the output of my agents. The section number is based on the 4 section CLAUDE.md attributed to Andrej Karpathy.",
-            "111 reactions111",
-            "8 comments8 comments",
-            "•",
-            "6 reposts6 reposts",
-            "Comment",
-            "Send"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://www.linkedin.com/in/jereds/",
-              "url": "https://www.linkedin.com/in/jereds/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "If you are annoyed by the prose your agent is writing, give the following a try in your AGENTS/ CLAUDE.md . ## 5. Prose - Follow the Google Developer Documentation Style Guide. - Use ASD-STE100-derived precision rules. - Apply Zinsser's four principles: clarity, simplicity, brevity, and humanity. I have found it to reduce verboseness and tighten up precision in the output of my agents. The section number is based on the 4 section CLAUDE.md attributed to Andrej Karpathy.",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7512371289068863488/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "CLAUDE.md",
-              "url": "http://CLAUDE.md",
-              "resolved_url": "https://code.claude.com/docs",
-              "title": "Overview - Claude Code Docs"
-            },
-            {
-              "label": "111 reactions 111",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/C5603AQF4aDTnHoQsyA/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1632152012847?e=1793232000&v=beta&t=Vgv6Vt1ukVEiJosoaknTTMFq75Pe8htjDTFSOwD8yyo",
-              "alt": "View Jered Sutton’s profile",
-              "path": "data/assets/48032c51cfc0b93261150ecaaaa65416cb9fab683677f15b4c4c7f320ee72165.png",
-              "link": "https://www.linkedin.com/in/jereds/"
-            },
-            {
-              "url": "https://claude-code.mintlify.app/_mintlify/api/og/v2?division=Getting+started&title=Overview&description=Claude+Code+is+an+agentic+coding+tool+that+reads+your+codebase%2C+edits+files%2C+runs+commands%2C+and+integrates+with+your+development+tools.+Available+in+your+termin&theme=03628e99c753a03aec319053&signature=a6211f7f0c07234ce7bcb0f2b0c2f91f628818e6374aecf9d861f1f986b61901",
-              "alt": "Overview - Claude Code Docs",
-              "path": "data/assets/22f0d698c056180dc03d6240102d3241f19b66dc5fcf0e64529f0255adc98f6e.png",
-              "link": "http://CLAUDE.md"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle reposted this",
-          "paragraphs": [
-            "James Busia",
-            "• 3rd+",
-            "I code for fun. I build real stuff for real people to really use.",
-            "Sep 30",
-            "Is it not obvious at this point that the plan is to get as many devs addicted to AI codegen as possible, make them completely reliant on it, make crucial infrastructure impossible to alter without it, then 10x the price?\n\nI've never been more confident in my decision to keep learning and working using my brain.",
-            "332 reactions332",
-            "85 comments85 comments",
-            "•",
-            "16 reposts16 reposts",
-            "Comment",
-            "Send"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://www.linkedin.com/in/james-iden-busia/",
-              "url": "https://www.linkedin.com/in/james-iden-busia/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "Is it not obvious at this point that the plan is to get as many devs addicted to AI codegen as possible, make them completely reliant on it, make crucial infrastructure impossible to alter without it, then 10x the price? I've never been more confident in my decision to keep learning and working using my brain.",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7512212341992837120/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "332 reactions 332",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D5603AQFZvXQXpaX-IQ/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1720633000776?e=1793232000&v=beta&t=D1fFRCwIFdiEclZWsRbfe3yTxbyMy09F_VYkq8upkjg",
-              "alt": "View James Busia’s profile",
-              "path": "data/assets/5a3e24d74bfde6bc7f8c8b4109314a55f904080690ad35da66587aac54d7ca9a.png",
-              "link": "https://www.linkedin.com/in/james-iden-busia/"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle reposted this",
-          "paragraphs": [
-            "Jeff Boggs B.A.Sc.  MBA",
-            "• 2nd",
-            "Creator of Opportunity OS (opportunity-system.com) | Software Architect and Author of AI-Native Software Engineering |  🎥 Watch how I build at AI speed",
-            "Sep 27 • Edited",
-            "When an engineer has spent 10 to 20 years mastering manual syntax, compiler quirks, and hand-rolled boilerplate, typing code by hand becomes synonymous with their value.\n\nHaving an LLM generate in five seconds what used to take an afternoon of careful keystrokes feels like personal invalidation so the reaction often morphs into pure hostility toward the tools and anyone using them.\n\nBut tedious was never the same thing as valuable. The leverage is moving up the stack to systems design and architecture, whether we like it or not.",
-            "41 reactions41",
-            "51 comments51 comments",
-            "•",
-            "2 reposts2 reposts",
-            "Comment",
-            "Send"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://www.linkedin.com/in/jeffboggs/",
-              "url": "https://www.linkedin.com/in/jeffboggs/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "When an engineer has spent 10 to 20 years mastering manual syntax, compiler quirks, and hand-rolled boilerplate, typing code by hand becomes synonymous with their value. Having an LLM generate in five seconds what used to take an afternoon of careful keystrokes feels like personal invalidation so the reaction often morphs into pure hostility toward the tools and anyone using them. But tedious was never the same thing as valuable. The leverage is moving up the stack to systems design and architecture, whether we like it or not.",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7510136983520780288/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "41 reactions 41",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D5603AQGN7hfA073Bjw/profile-displayphoto-scale_100_100/B56Z0IGmqyKAAc-/0/1773957451205?e=1793232000&v=beta&t=BLx3Pejgo7OdA6LrTsWPsgUXsMV4Ub9FrcpIK3UY1WU",
-              "alt": "View Jeff Boggs B.A.Sc.  MBA’s profile",
-              "path": "data/assets/89a02d8b922a0afa836528706dc09edcb4eb42fbc1fe67edee2b0a8b58e81f3e.png",
-              "link": "https://www.linkedin.com/in/jeffboggs/"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle",
-          "paragraphs": [
-            "• You",
-            "Lead Platform Engineer | SRE | SMB Owner | Building reliable cloud infrastructure and better developer experiences | Kubernetes, Python & Go",
-            "Sep 26 • Edited",
-            "I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for:\n\nhttps://lnkd.in/ektqstTY\n\nMost Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values.\n\nThat leaves many classes of bugs among structural complexities, unaddressed before release:\n\n- One value change can have downstream effects across multiple rendered resources.\n- Individually valid settings can fail when combined.\n- configurable fields exist only in templates and aren’t documented in values.yaml.\n- values paths are effectively dead and never change rendered output.\n- Different values within the same type constraints can still produce structurally different behavior.\n\nAnd all of these cases could pass a static 'helm lint'.\n\nhypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution.\n\nThe pipeline is roughly:\n\ncoalesce values -> pre-filter -> sort -> post-filter -> test -> validate\n\nThe tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have.\n\nI’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory.\n\nI’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself:\n\nhttps://lnkd.in/eqZRNAqJ\n\nThis example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures.",
-            "GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for HelmGitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm",
-            "github.com",
-            "Nathan Paulhus 🔐 and 1 other reactedNathan Paulhus 🔐 and 1 other",
-            "2 comments2 comments",
-            "Comment",
-            "Send",
-            "506 impressions",
-            "View analyticsView analytics"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for: https://lnkd.in/ektqstTY Most Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values. That leaves many classes of bugs among structural complexities, unaddressed before release: - One value change can have downstream effects across multiple rendered resources. - Individually valid settings can fail when combined. - configurable fields exist only in templates and aren’t documented in values.yaml. - values paths are effectively dead and never change rendered output. - Different values within the same type constraints can still produce structurally different behavior. And all of these cases could pass a static 'helm lint'. hypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution. The pipeline is roughly: coalesce values -> pre-filter -> sort -> post-filter -> test -> validate The tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have. I’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory. I’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself: https://lnkd.in/eqZRNAqJ This example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures.",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://lnkd.in/ektqstTY",
-              "url": "https://lnkd.in/ektqstTY",
-              "resolved_url": "https://github.com/astrivant/hypothesis-helm/",
-              "title": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts"
-            },
-            {
-              "label": "https://lnkd.in/eqZRNAqJ",
-              "url": "https://lnkd.in/eqZRNAqJ",
-              "resolved_url": "https://github.com/astrivant/hypothesis-helm/blob/main/docs/reports/bitnami.pdf",
-              "title": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm"
-            },
-            {
-              "label": "GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm github.com",
-              "url": "https://github.com/astrivant/hypothesis-helm",
-              "resolved_url": "https://github.com/astrivant/hypothesis-helm",
-              "title": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts"
-            },
-            {
-              "label": "Nathan Paulhus 🔐 and 1 other reacted Nathan Paulhus 🔐 and 1 other",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "506 impressions View analytics View analytics",
-              "url": "https://www.linkedin.com/analytics/post-summary/urn:li:activity:7509589632158928896/",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_160/B4EaCMSldGHAAU-/0/1789060078327?e=1792134000&v=beta&t=t5E_-twqlT8xJBJwjZiEeioddiVG4NqR5TSb88XIXog",
-              "alt": "",
-              "path": "data/assets/a2f2a90b36104f27fb75986d9bd2be07a318b0eee6bf3e136effeb97681cf0f8.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fhypothesis-helm&urlhash=J6A4&mt=thHLhNqdZf9pEmtt0EXQja1Bt4kLHW1uTj94D4S9aP8eGPl4SkrSjtmPKhXoW1hou4TyB0EJvWFBYcKKlZLsR6WiN8tNPNYfNIgkIVgmaE0M6nKQmpLjAHMA-w&isSdui=true"
-            },
-            {
-              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
-              "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
-              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
-              "link": "https://lnkd.in/ektqstTY"
-            },
-            {
-              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
-              "alt": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm",
-              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
-              "link": "https://lnkd.in/eqZRNAqJ"
-            },
-            {
-              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
-              "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
-              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
-              "link": "https://github.com/astrivant/hypothesis-helm"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Emma Doyle reposted this",
-          "paragraphs": [
-            "Aniket Maithani",
-            "• Following",
-            "Chief Technology Officer @ M37Labs | Building AI and Data Intelligence Platforms",
-            "Sep 17",
-            "Kafka just quietly fixed one of its oldest limitations.\nAnd I’m not sure enough Python teams have noticed yet.\nWith Kafka 4.2, Share Groups (KIP-932) became production-ready.\nThat sounds like another Kafka feature until you realize what it changes:\nYou are no longer stuck with “one partition, one consumer” for parallel processing.\nWith Share Groups, multiple workers can pull work from the same partition.\nEach message gets locked, processed, and acknowledged independently.\nNo awkward rebalance callbacks.\nNo manual offset juggling.\nNo creating hundreds of partitions just because you might need more workers later.\n\nThe architecture change is much more interesting.\n1. Worker count is no longer tied to partition count\nPreviously, if you wanted 200 consumers working in parallel, you probably needed something close to 200 partitions.\nNow you can scale workers independently.\n2. One slow message doesn’t have to block everything behind it\nFor job-processing workloads, this is huge.\nA slow API call or poison message doesn’t need to hold up an entire partition.\n3. Retries become much cleaner\nRELEASE puts the message back for redelivery.\ndelivery_count() tells you how many attempts have happened.\nREJECT lets you stop retrying.\nA lot of retry plumbing that teams build themselves can move back into Kafka.\n4. This could remove an entire piece of infrastructure\nI’ve seen architectures running:\nKafka for events\nRabbitMQ/SQS for jobs\ncustom retry logic\nanother monitoring surface\nIf RabbitMQ or SQS is sitting next to Kafka only because you needed queue-style worker semantics, that second system may no longer be necessary.\nOf course, there’s a trade-off.\nYou lose ordering guarantees inside the Share Group.\nSo if strict ordering matters, classic consumer groups still make sense.\nAlso worth knowing:\nThe Java client is GA, while Python's ShareConsumer is still Preview.\nAnd if you’re experimenting on a small dev cluster with fewer than three brokers, check your Share Coordinator state-topic replication settings. Otherwise you may spend an embarrassing amount of time wondering why your consumer is doing absolqeutely nothing.\nAsk me how I know. 🙂\nKafka is starting to look a lot less like “an event log that people keep forcing into a queue” and a lot more like a system that can comfortably do both.\n#ApacheKafka #Kafka #Python #DistributedSystems #BackendEngineering #SoftwareArchitecture #EventDrivenArchitecture #DataEngineering",
-            "274 reactions274",
-            "12 comments12 comments",
-            "•",
-            "21 reposts21 reposts",
-            "Comment",
-            "Send"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/in/emmeowzing/",
-              "url": "https://www.linkedin.com/in/emmeowzing/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "https://www.linkedin.com/in/aniketmaithani/",
-              "url": "https://www.linkedin.com/in/aniketmaithani/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "Kafka just quietly fixed one of its oldest limitations. And I’m not sure enough Python teams have noticed yet. With Kafka 4.2, Share Groups (KIP-932) became production-ready. That sounds like another Kafka feature until you realize what it changes: You are no longer stuck with “one partition, one consumer” for parallel processing. With Share Groups, multiple workers can pull work from the same partition. Each message gets locked, processed, and acknowledged independently. No awkward rebalance callbacks. No manual offset juggling. No creating hundreds of partitions just because you might need more workers later. The architecture change is much more interesting. 1. Worker count is no longer tied to partition count Previously, if you wanted 200 consumers working in parallel, you probably needed something close to 200 partitions. Now you can scale workers independently. 2. One slow message doesn’t have to block everything behind it For job-processing workloads, this is huge. A slow API call or poison message doesn’t need to hold up an entire partition. 3. Retries become much cleaner RELEASE puts the message back for redelivery. delivery_count() tells you how many attempts have happened. REJECT lets you stop retrying. A lot of retry plumbing that teams build themselves can move back into Kafka. 4. This could remove an entire piece of infrastructure I’ve seen architectures running: Kafka for events RabbitMQ/SQS for jobs custom retry logic another monitoring surface If RabbitMQ or SQS is sitting next to Kafka only because you needed queue-style worker semantics, that second system may no longer be necessary. Of course, there’s a trade-off. You lose ordering guarantees inside the Share Group. So if strict ordering matters, classic consumer groups still make sense. Also worth knowing: The Java client is GA, while Python's ShareConsumer is still Preview. And if you’re experimenting on a small dev cluster with fewer than three brokers, check your Share Coordinator state-topic replication settings. Otherwise you may spend an embarrassing amount of time wondering why your consumer is doing absolqeutely nothing. Ask me how I know. 🙂 Kafka is starting to look a lot less like “an event log that people keep forcing into a queue” and a lot more like a system that can comfortably do both. #ApacheKafka #Kafka #Python #DistributedSystems #BackendEngineering #SoftwareArchitecture #EventDrivenArchitecture #DataEngineering",
-              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7507647094044835840/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#ApacheKafka",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23apachekafka&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#Kafka",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23kafka&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#Python",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23python&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#DistributedSystems",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23distributedsystems&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#BackendEngineering",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23backendengineering&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#SoftwareArchitecture",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23softwarearchitecture&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#EventDrivenArchitecture",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23eventdrivenarchitecture&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "#DataEngineering",
-              "url": "https://www.linkedin.com/search/results/all/?keywords=%23dataengineering&origin=HASH_TAG_FROM_FEED",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "274 reactions 274",
-              "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
-              "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D5603AQFonO3j0dPYWA/profile-displayphoto-scale_100_100/B56ZvNHz7.K0Ac-/0/1768672945358?e=1793232000&v=beta&t=-OSOmEYIav3QG4JQ6sEZKWOQGTs_r_v8SQhIhAgcEVI",
-              "alt": "View Aniket Maithani’s profile",
-              "path": "data/assets/2c36f2b2293e86b1da7552cf790cf60af1349acd7b3fa10537cc03c22393ebad.png",
-              "link": "https://www.linkedin.com/in/aniketmaithani/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D5622AQHN3tan6A99XQ/feedshare-shrink_480/B56aCvaOecKcAg-/0/1789649283222?e=1793232000&v=beta&t=M4czkrbnE-la9cIB0T5USeOIdECQThoQoHWKNyPib_A",
-              "alt": "View image",
-              "path": "data/assets/3bd73a2eb170a503c1311b05b2c834a1d194b7cc226c49b9eb454f124cf320ec.png",
-              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7507647094044835840/"
             }
           ],
           "skills": [],
@@ -3313,7 +3514,7 @@
           "paragraphs": [
             "· 3rd",
             "Co-founder of the AI, Tech & Privacy Academy (1,600+ participants), Author of Luiza’s Newsletter (100,000+ subscribers), Mother of 3",
-            "144,546 followers"
+            "144,547 followers"
           ],
           "links": [],
           "images": [
@@ -3517,7 +3718,7 @@
         {
           "title": "Companies: Y Combinator, CompanyY Combinator",
           "paragraphs": [
-            "1,833,656 followers"
+            "1,833,659 followers"
           ],
           "links": [],
           "images": [
@@ -3602,7 +3803,7 @@
         {
           "title": "Companies: DataHub, CompanyDataHub",
           "paragraphs": [
-            "17,215 followers"
+            "17,218 followers"
           ],
           "links": [],
           "images": [
@@ -3619,7 +3820,7 @@
         {
           "title": "Companies: Ramp, CompanyRamp",
           "paragraphs": [
-            "363,794 followers"
+            "363,808 followers"
           ],
           "links": [],
           "images": [
@@ -3772,7 +3973,7 @@
         {
           "title": "Companies: General Atomics Aeronautical Systems, CompanyGeneral Atomics Aeronautical Systems",
           "paragraphs": [
-            "162,680 followers"
+            "162,681 followers"
           ],
           "links": [],
           "images": [
@@ -3823,7 +4024,7 @@
         {
           "title": "Companies: Payload, CompanyPayload",
           "paragraphs": [
-            "30,896 followers"
+            "30,897 followers"
           ],
           "links": [],
           "images": [
@@ -3874,7 +4075,7 @@
         {
           "title": "Companies: PagerDuty, CompanyPagerDuty",
           "paragraphs": [
-            "67,991 followers"
+            "67,992 followers"
           ],
           "links": [],
           "images": [
@@ -3891,7 +4092,7 @@
         {
           "title": "Companies: Chainguard, CompanyChainguard",
           "paragraphs": [
-            "69,438 followers"
+            "69,440 followers"
           ],
           "links": [],
           "images": [
@@ -3942,7 +4143,7 @@
         {
           "title": "Companies: Gopuff, CompanyGopuff",
           "paragraphs": [
-            "200,772 followers"
+            "200,776 followers"
           ],
           "links": [],
           "images": [
@@ -3993,7 +4194,7 @@
         {
           "title": "Companies: Trane, CompanyTrane",
           "paragraphs": [
-            "372,173 followers"
+            "372,178 followers"
           ],
           "links": [],
           "images": [
@@ -4265,7 +4466,7 @@
         {
           "title": "Companies: Cypress HCM, CompanyCypress HCM",
           "paragraphs": [
-            "936,390 followers"
+            "936,391 followers"
           ],
           "links": [],
           "images": [
@@ -4282,7 +4483,7 @@
         {
           "title": "Companies: Anduril Industries, CompanyAnduril Industries",
           "paragraphs": [
-            "659,635 followers"
+            "659,660 followers"
           ],
           "links": [],
           "images": [
@@ -4333,7 +4534,7 @@
         {
           "title": "Companies: Kube Architect, CompanyKube Architect",
           "paragraphs": [
-            "182,709 followers"
+            "182,710 followers"
           ],
           "links": [],
           "images": [
@@ -4350,7 +4551,7 @@
         {
           "title": "Companies: Whatnot, CompanyWhatnot",
           "paragraphs": [
-            "132,479 followers"
+            "132,480 followers"
           ],
           "links": [],
           "images": [
@@ -4367,7 +4568,7 @@
         {
           "title": "Companies: Datadog, CompanyDatadog",
           "paragraphs": [
-            "593,404 followers"
+            "593,419 followers"
           ],
           "links": [],
           "images": [
@@ -4384,7 +4585,7 @@
         {
           "title": "Companies: Google Cloud, CompanyGoogle Cloud",
           "paragraphs": [
-            "3,463,403 followers"
+            "3,463,435 followers"
           ],
           "links": [],
           "images": [
@@ -4401,7 +4602,7 @@
         {
           "title": "Companies: Stack Overflow, CompanyStack Overflow",
           "paragraphs": [
-            "1,603,908 followers"
+            "1,603,911 followers"
           ],
           "links": [],
           "images": [
@@ -4469,7 +4670,7 @@
         {
           "title": "Companies: Plaid, CompanyPlaid",
           "paragraphs": [
-            "265,383 followers"
+            "265,388 followers"
           ],
           "links": [],
           "images": [
@@ -4503,7 +4704,7 @@
         {
           "title": "Companies: Grafana Labs, CompanyGrafana Labs",
           "paragraphs": [
-            "311,501 followers"
+            "311,507 followers"
           ],
           "links": [],
           "images": [
@@ -4554,7 +4755,7 @@
         {
           "title": "Companies: Isovalent, CompanyIsovalent",
           "paragraphs": [
-            "22,278 followers"
+            "22,279 followers"
           ],
           "links": [],
           "images": [
@@ -4673,7 +4874,7 @@
         {
           "title": "Companies: Cloud Computing, CompanyCloud Computing",
           "paragraphs": [
-            "338,808 followers"
+            "338,807 followers"
           ],
           "links": [],
           "images": [
@@ -4690,7 +4891,7 @@
         {
           "title": "Companies: Technical Support, CompanyTechnical Support",
           "paragraphs": [
-            "917,652 followers"
+            "917,654 followers"
           ],
           "links": [],
           "images": [
@@ -4707,7 +4908,7 @@
         {
           "title": "Companies: Miro, CompanyMiro",
           "paragraphs": [
-            "498,972 followers"
+            "498,975 followers"
           ],
           "links": [],
           "images": [
@@ -4724,7 +4925,7 @@
         {
           "title": "Companies: Zscaler, CompanyZscaler",
           "paragraphs": [
-            "543,161 followers"
+            "543,169 followers"
           ],
           "links": [],
           "images": [
@@ -4758,7 +4959,7 @@
         {
           "title": "Companies: LinkedIn, CompanyLinkedIn",
           "paragraphs": [
-            "34,480,099 followers"
+            "34,480,296 followers"
           ],
           "links": [],
           "images": [
@@ -4792,7 +4993,7 @@
         {
           "title": "Companies: Harness, CompanyHarness",
           "paragraphs": [
-            "150,431 followers"
+            "150,432 followers"
           ],
           "links": [],
           "images": [
@@ -4877,7 +5078,7 @@
         {
           "title": "Companies: DevOps Bulletin, CompanyDevOps Bulletin",
           "paragraphs": [
-            "17,540 followers"
+            "17,541 followers"
           ],
           "links": [],
           "images": [
@@ -4894,7 +5095,7 @@
         {
           "title": "Companies: Spotify, CompanySpotify",
           "paragraphs": [
-            "4,764,218 followers"
+            "4,764,275 followers"
           ],
           "links": [],
           "images": [
@@ -4911,7 +5112,7 @@
         {
           "title": "Companies: Eversource Energy, CompanyEversource Energy",
           "paragraphs": [
-            "91,455 followers"
+            "91,457 followers"
           ],
           "links": [],
           "images": [
@@ -4962,7 +5163,7 @@
         {
           "title": "Companies: GLG, CompanyGLG",
           "paragraphs": [
-            "503,133 followers"
+            "503,141 followers"
           ],
           "links": [],
           "images": [
@@ -5030,7 +5231,7 @@
         {
           "title": "Companies: Prefect, CompanyPrefect",
           "paragraphs": [
-            "31,022 followers"
+            "31,023 followers"
           ],
           "links": [],
           "images": [
@@ -5149,7 +5350,7 @@
         {
           "title": "Companies: Veriff, CompanyVeriff",
           "paragraphs": [
-            "50,831 followers"
+            "50,832 followers"
           ],
           "links": [],
           "images": [
@@ -5183,7 +5384,7 @@
         {
           "title": "Companies: Argo Project, CompanyArgo Project",
           "paragraphs": [
-            "43,239 followers"
+            "43,243 followers"
           ],
           "links": [],
           "images": [
@@ -5251,7 +5452,7 @@
         {
           "title": "Companies: Skylight, CompanySkylight",
           "paragraphs": [
-            "26,086 followers"
+            "26,088 followers"
           ],
           "links": [],
           "images": [
@@ -5268,7 +5469,7 @@
         {
           "title": "Companies: Rocket Lab, CompanyRocket Lab",
           "paragraphs": [
-            "385,081 followers"
+            "385,083 followers"
           ],
           "links": [],
           "images": [
@@ -5353,7 +5554,7 @@
         {
           "title": "Companies: GitHub, CompanyGitHub",
           "paragraphs": [
-            "6,720,209 followers"
+            "6,720,303 followers"
           ],
           "links": [],
           "images": [
@@ -5404,7 +5605,7 @@
         {
           "title": "Companies: Coinbase, CompanyCoinbase",
           "paragraphs": [
-            "1,497,932 followers"
+            "1,497,944 followers"
           ],
           "links": [],
           "images": [
@@ -5421,7 +5622,7 @@
         {
           "title": "Companies: Circle, CompanyCircle",
           "paragraphs": [
-            "238,605 followers"
+            "238,606 followers"
           ],
           "links": [],
           "images": [
@@ -5438,7 +5639,7 @@
         {
           "title": "Companies: Cloudflare, CompanyCloudflare",
           "paragraphs": [
-            "1,192,845 followers"
+            "1,192,847 followers"
           ],
           "links": [],
           "images": [
@@ -5455,7 +5656,7 @@
         {
           "title": "Companies: Rafay, CompanyRafay",
           "paragraphs": [
-            "19,483 followers"
+            "19,485 followers"
           ],
           "links": [],
           "images": [
@@ -5472,7 +5673,7 @@
         {
           "title": "Companies: Planet, CompanyPlanet",
           "paragraphs": [
-            "171,347 followers"
+            "171,351 followers"
           ],
           "links": [],
           "images": [
@@ -5489,7 +5690,7 @@
         {
           "title": "Companies: Boom Supersonic, CompanyBoom Supersonic",
           "paragraphs": [
-            "254,633 followers"
+            "254,634 followers"
           ],
           "links": [],
           "images": [
@@ -5523,7 +5724,7 @@
         {
           "title": "Companies: Boeing, CompanyBoeing",
           "paragraphs": [
-            "4,229,278 followers"
+            "4,229,311 followers"
           ],
           "links": [],
           "images": [
@@ -5540,7 +5741,7 @@
         {
           "title": "Companies: GitLab, CompanyGitLab",
           "paragraphs": [
-            "1,190,284 followers"
+            "1,190,299 followers"
           ],
           "links": [],
           "images": [
@@ -5557,7 +5758,7 @@
         {
           "title": "Companies: Docker, Inc, CompanyDocker, Inc",
           "paragraphs": [
-            "840,694 followers"
+            "840,696 followers"
           ],
           "links": [],
           "images": [
@@ -5574,7 +5775,7 @@
         {
           "title": "Companies: HashiCorp, CompanyHashiCorp",
           "paragraphs": [
-            "328,783 followers"
+            "328,787 followers"
           ],
           "links": [],
           "images": [
@@ -5591,7 +5792,7 @@
         {
           "title": "Companies: The Linux Foundation, CompanyThe Linux Foundation",
           "paragraphs": [
-            "422,242 followers"
+            "422,250 followers"
           ],
           "links": [],
           "images": [
@@ -5608,7 +5809,7 @@
         {
           "title": "Companies: Cloud Native Computing Foundation (CNCF), CompanyCloud Native Computing Foundation (CNCF)",
           "paragraphs": [
-            "180,135 followers"
+            "180,140 followers"
           ],
           "links": [],
           "images": [
@@ -5625,7 +5826,7 @@
         {
           "title": "Companies: Relativity Space, CompanyRelativity Space",
           "paragraphs": [
-            "239,588 followers"
+            "239,589 followers"
           ],
           "links": [],
           "images": [
@@ -5693,7 +5894,7 @@
         {
           "title": "Companies: Rapid7, CompanyRapid7",
           "paragraphs": [
-            "228,553 followers"
+            "228,556 followers"
           ],
           "links": [],
           "images": [
@@ -5710,7 +5911,7 @@
         {
           "title": "Companies: Fidelity Investments, CompanyFidelity Investments",
           "paragraphs": [
-            "1,448,076 followers"
+            "1,448,089 followers"
           ],
           "links": [],
           "images": [
@@ -5727,7 +5928,7 @@
         {
           "title": "Companies: Anaconda, CompanyAnaconda",
           "paragraphs": [
-            "106,880 followers"
+            "106,881 followers"
           ],
           "links": [],
           "images": [
@@ -5744,7 +5945,7 @@
         {
           "title": "Companies: Python Software Foundation, CompanyPython Software Foundation",
           "paragraphs": [
-            "160,672 followers"
+            "160,674 followers"
           ],
           "links": [],
           "images": [
@@ -5761,7 +5962,7 @@
         {
           "title": "Companies: Red Hat, CompanyRed Hat",
           "paragraphs": [
-            "1,588,664 followers"
+            "1,588,674 followers"
           ],
           "links": [],
           "images": [
@@ -5778,7 +5979,7 @@
         {
           "title": "Companies: DebtBook, CompanyDebtBook",
           "paragraphs": [
-            "5,676 followers"
+            "5,677 followers"
           ],
           "links": [],
           "images": [
@@ -5795,7 +5996,7 @@
         {
           "title": "Companies: Weave, CompanyWeave",
           "paragraphs": [
-            "55,479 followers"
+            "55,482 followers"
           ],
           "links": [],
           "images": [
@@ -5812,7 +6013,7 @@
         {
           "title": "Companies: Amazon Web Services (AWS), CompanyAmazon Web Services (AWS)",
           "paragraphs": [
-            "11,155,472 followers"
+            "11,155,568 followers"
           ],
           "links": [],
           "images": [
@@ -5846,7 +6047,7 @@
         {
           "title": "Groups: Business in Japan, GroupBusiness in Japan",
           "paragraphs": [
-            "99,233 members"
+            "99,234 members"
           ],
           "links": [],
           "images": [
@@ -5863,7 +6064,7 @@
         {
           "title": "Groups: Cloud Computing, SaaS, Data Centre & Virtualization, GroupCloud Computing, SaaS, Data Centre & Virtualization",
           "paragraphs": [
-            "1,247,886 members"
+            "1,247,888 members"
           ],
           "links": [],
           "images": [
@@ -6102,7 +6303,7 @@
         {
           "title": "Schools: Y Combinator, SchoolY Combinator",
           "paragraphs": [
-            "1,833,656 followers"
+            "1,833,659 followers"
           ],
           "links": [],
           "images": [
@@ -6139,7 +6340,7 @@
     }
   ],
   "warnings": [],
-  "captured_at": "2026-10-09T06:59:55.354014+00:00",
+  "captured_at": "2026-10-09T07:35:23.603694+00:00",
   "schema_version": 1,
   "headline": ""
 }
