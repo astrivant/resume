@@ -46,649 +46,199 @@
   ],
   "sections": [
     {
-      "key": "experience",
-      "title": "Experience",
+      "key": "about",
+      "title": "About",
       "entries": [
         {
-          "title": "Small Business Owner",
+          "title": "I'm a platform engineer with a background in site reliability, security, and infrastructure operations. I build Kubernetes platforms, delivery pipelines, and automation that improve reliability and make developers' day-to-day work easier.\n\nMy experience spans Python, Go, Linux, Kubernetes, Terraform, Helm, AWS, and GCP. Earlier roles in SRE, security, and technical support shaped how I approach engineering: plan ahead, make systems easier to troubleshoot, and turn recurring operational headaches into maintainable, automation-focused tooling. I also build open-source projects focused on Kubernetes automation, Helm testing, and developer workflows.\n\nI'm looking to stay hands-on, guide technical direction, and help teams build infrastructure they can confidently operate and evolve.\n\nresume signature: SHA256:02767699f2dd0e097b0684fea09aece52298e4a107fc0e2f01be55c53ed367f2\nreleases: https://github.com/astrivant/resumeme/releases",
+          "paragraphs": [],
+          "links": [
+            {
+              "label": "https://github.com/astrivant/resumeme/releases",
+              "url": "https://github.com/astrivant/resumeme/releases",
+              "resolved_url": "https://github.com/astrivant/resumeme/releases",
+              "title": "Releases · astrivant/resumeme"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
+              "alt": "Releases · astrivant/resumeme",
+              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "link": "https://github.com/astrivant/resumeme/releases"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        }
+      ]
+    },
+    {
+      "key": "featured",
+      "title": "Featured",
+      "entries": [
+        {
+          "title": "Post",
           "paragraphs": [
-            "Astrivant · Self-employed",
-            "Aug 2026 - Present · 3 mos",
-            "Atlanta, Georgia, United States · On-site",
-            "Astrivant is an LLC to offset development and production cloud hosting costs for a platform (app.astrivant.com) that aggregates, solutions, and automates the job application process for everyday end-users. From social media data collection and resume generation, to one-click AI-powered job applies en masse.\n\nI'm also demoing novel infrastructure and tooling approaches along the way, developing much of it myself, including benchmarking, user experience testing (when the platform is live), and autonomous workflows.",
-            "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
+            "Tired of choosing between LinkedIn's awkward PDF export and another resume you have to maintain by hand?\n\nI'm building resumeme, which turns your profile into a professional, readable PDF with proper typography, clickable links, project tiles, and a skills cloud weighted by endorsements:\n\nhttps://lnkd.in/evwPnqv9\n\nJust fork the project, sign in to LinkedIn normally, and push the collected data to a project pre-configured with relevant secrets.\n\nNo archaic languages or headaches.\n\nJust YAML.\n\nChoose which jobs and projects appear, adjust the theme, or generate summaries tailored to specific employers. There's even a codex integration at-current.\n\nMonthly automated refreshes / resume rebuilds, a personal resume website, and signed releases are available when you want them to prove authenticity.\n\nThe coffee stains are automated, too;)",
+            "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+            "github.com",
+            "1, number of reactions1",
+            "1 comment"
           ],
           "links": [
             {
-              "label": "https://www.linkedin.com/company/146494938/",
-              "url": "https://www.linkedin.com/company/146494938/",
+              "label": "Post Tired of choosing between LinkedIn's awkward PDF export and another resume you have to maintain by hand? I'm building resumeme, which turns your profile into a professional, readable PDF with proper typography, clickable links, project tiles, and a skills cloud weighted by endorsements: https://lnkd.in/evwPnqv9 Just fork the project, sign in to LinkedIn normally, and push the collected data to a project pre-configured with relevant secrets. No archaic languages or headaches. Just YAML. Choose which jobs and projects appear, adjust the theme, or generate summaries tailored to specific employers. There's even a codex integration at-current. Monthly automated refreshes / resume rebuilds, a personal resume website, and signed releases are available when you want them to prove authenticity. The coffee stains are automated, too;) GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions github.com 1, number of reactions 1 1 comment",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7513843384734601217/",
               "resolved_url": "",
               "title": ""
             },
             {
-              "label": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
-              "url": "https://github.com/astrivant/resumeme",
-              "resolved_url": "https://github.com/astrivant/resumeme",
+              "label": "https://lnkd.in/evwPnqv9",
+              "url": "https://lnkd.in/evwPnqv9",
+              "resolved_url": "https://github.com/astrivant/resumeme/",
               "title": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
             }
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
-              "alt": "Astrivant logo",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
-              "link": "https://www.linkedin.com/company/146494938/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792170000&v=beta&t=BLSFVK5s1AQ5qmxR0EyfmXQpNiJNiu77O-aiVkX6kpk",
-              "alt": "Thumbnail for GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792173600&v=beta&t=a-bzWhS_uO7SST3-Lydk5GAze0rK_PFSqc82UqVofbE",
+              "alt": "",
               "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
-              "link": "https://github.com/astrivant/resumeme"
-            }
-          ],
-          "skills": [
-            {
-              "name": "Distributed Systems",
-              "endorsements": 0
+              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7513843384734601217/"
             },
             {
-              "name": "High Performance Computing (HPC)",
-              "endorsements": 0
-            }
-          ],
-          "positions": []
-        },
-        {
-          "title": "Small Business Owner",
-          "paragraphs": [
-            "Tiger Lily Plants LLC. · Self-employed",
-            "Nov 2025 - Present · 1 yr",
-            "Atlanta, Georgia, United States · On-site",
-            "I sell orchids, begonias and carnivorous plants from both my personal collection and wholesalers to exotic plant enthusiasts.",
-            "Tiger Lily Plants LLC. | Website",
-            "Primary website for Tiger Lily Plants LLC.",
-            "TigerLilyPlants - Etsy",
-            "The Etsy store where I manage my listings.",
-            "Tiger Lily",
-            "The GitHub organization where I manage the store's blog and primary website as well as code for terrariums."
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/company/111622183/",
-              "url": "https://www.linkedin.com/company/111622183/",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
-              "alt": "Tiger Lily Plants LLC. logo",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
-              "link": "https://www.linkedin.com/company/111622183/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E2DAQHSeywKLg-Yug/profile-treasury-image-shrink_160_160/B4EZxatnLwGYAo-/0/1771048432843?e=1792170000&v=beta&t=CiFT6X-rDGHGH-kU3ZyAnHpqHp-rlObm7qth380KU8s",
-              "alt": "Thumbnail for Tiger Lily Plants LLC. | Website",
-              "path": "data/assets/9937e3771298695cc15a144e32d1869d906fb5ac3cfeb7ca10d7e15222cd4c2f.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E2DAQFygld7obypGg/profile-treasury-image-shrink_160_160/B4EZxat2ZsKsAk-/0/1771048495090?e=1792170000&v=beta&t=xljI3RpS-uQjQI_ZM_76a4WthaEV9CLT7cn5ndeYxL4",
-              "alt": "Thumbnail for TigerLilyPlants - Etsy",
-              "path": "data/assets/af434336ce1211e35f4f3e25a4ef022289bcc693d6dc80051b7d9c9af2bb97d5.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEr9v7a8qo_3A/articleshare-shrink_160/B4EZvUtBAuHEAk-/0/1772461800633?e=1792170000&v=beta&t=9JiLwXaKWfMimm0OSUwa2YWRtDhJzcwLEoVU6bZ0E8o",
-              "alt": "Thumbnail for Tiger Lily",
-              "path": "data/assets/25826bc6f4919b5c83b8c919eb1506103b3151fbf9baeca2f4de980f9883ec7d.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
-            }
-          ],
-          "skills": [
-            {
-              "name": "Terrariums",
-              "endorsements": 0
-            },
-            {
-              "name": "Customer Service",
-              "endorsements": 0
-            }
-          ],
-          "positions": []
-        },
-        {
-          "title": "Lead Platform Engineer",
-          "paragraphs": [
-            "SBE Vision, Inc. · Full-time",
-            "Sep 2024 - Sep 2026 · 2 yrs 1 mo",
-            "Wakefield, Massachusetts, United States · Remote",
-            "- Led platform engineering initiatives in support of SBE Vision’s infrastructure across cloud and on-premise environments (prior to- and post-cloud migration).\n- Migrated company to cloud infrastructure in GCP / GKE.\n- Built and supported ephemeral developer environments to curtail cloud cost.\n- Introduced a CI job that traversed deeply-nested Helm dependency trees in a monorepo for MR-based builds based on code change.\n- Delivered a fault-tolerant and load tested CI cluster upgrade to improve reliability, scalability, and developer productivity.\n- Transitioned secrets management to ESO.\n- Delivered a Helm chart / rendered Kubernetes manifest -> Docker compose compiler to reduce time-to-delivery on PoC environments at customer sites, ensuring artifact support / generation and time cost / burden on the team stayed to a minimum.\n- Led and mentored engineers by overseeing project execution, providing technical reviews, \ncoordinating platform work, guiding implementation decisions, and supporting team skill set growth.\n- Strengthened platform reliability / QoS, automation, and DevOps practices across infrastructure, CI/CD, and developer experience.",
-            "GitHub - astrivant/composer: Lossily compile rendered Helm manifests to Docker compose files"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/company/75395048/",
-              "url": "https://www.linkedin.com/company/75395048/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "GitHub - astrivant/composer: Lossily compile rendered Helm manifests to Docker compose files",
-              "url": "https://github.com/astrivant/composer",
-              "resolved_url": "https://github.com/astrivant/composer",
-              "title": "GitHub - astrivant/composer: Get a Docker Compose file for free in your project from Helm charts"
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
-              "alt": "SBE Vision, Inc. logo",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
-              "link": "https://www.linkedin.com/company/75395048/"
-            },
-            {
-              "url": "https://opengraph.githubassets.com/5a365b57ced0999287acef47a5c5561325cafed984fa53f3d16e2bf2bb02ed85/astrivant/composer",
-              "alt": "GitHub - astrivant/composer: Get a Docker Compose file for free in your project from Helm charts",
-              "path": "data/assets/a18418a2f4cda2236315962dc4e64bdb2c2e4a1e7635ad9e02ff63abc3763ec0.png",
-              "link": "https://github.com/astrivant/composer"
-            }
-          ],
-          "skills": [
-            {
-              "name": "Google Cloud Platform (GCP)",
-              "endorsements": 0
-            },
-            {
-              "name": "Compilers",
-              "endorsements": 0
-            }
-          ],
-          "positions": []
-        },
-        {
-          "title": "Site Reliability Engineer (Security)",
-          "paragraphs": [
-            "Klaviyo · Full-time",
-            "Feb 2024 - Sep 2024 · 8 mos",
-            "Boston, Massachusetts, United States · Hybrid",
-            "LinkedIn helped me get this job helped me get this job",
-            "Technologies:\n\n- Python, Go\n- Puppet\n- Hashicorp products, such as Terraform, Vault\n- AWS (IAM, EC2)"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/company/2908815/",
-              "url": "https://www.linkedin.com/company/2908815/",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQH_2nYAgUCL5A/company-logo_100_100/B4EZ4ok3z.H8AI-/0/1778797215230/klaviyo_logo?e=1793232000&v=beta&t=TTI0mZ5lY8LKF8zWIoOeKSE2ckqmrQj1UbI5bBhfn2U",
-              "alt": "Klaviyo logo",
-              "path": "data/assets/c4e9c6ac58b16b59511507bb1fb6d4ca02a3244bf5c107994dc1c4b8d4bbd943.png",
-              "link": "https://www.linkedin.com/company/2908815/"
+              "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
+              "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "link": "https://lnkd.in/evwPnqv9"
             }
           ],
           "skills": [],
           "positions": []
         },
         {
-          "title": "Founder",
+          "title": "Post",
           "paragraphs": [
-            "PremiScale · Self-employed",
-            "Dec 2022 - Sep 2024 · 1 yr 10 mos",
-            "Boston, Massachusetts, United States · Hybrid",
-            "PremiScale, Inc. supports projects that scale, accelerate or optimize development and deployment on private or hybrid cloud infrastructure.\n\nAll projects from this corporation have been cloned into Astrivant, LLC.",
-            "GitHub - premiscale/premiscale: The PremiScale autoscaler controller for Kubernetes",
-            "The PremiScale autoscaling controller for Kubernetes",
-            "GitHub - premiscale/pass-operator: A kubernetes operator that syncs and decrypts secrets from pass git repositories",
-            "A Kubernetes secrets operator based on the kopf framework for Python."
+            "I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for:\n\nhttps://lnkd.in/ektqstTY\n\nMost Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values.\n\nThat leaves many classes of bugs among structural complexities, unaddressed before release:\n\n- One value change can have downstream effects across multiple rendered resources.\n- Individually valid settings can fail when combined.\n- configurable fields exist only in templates and aren’t documented in values.yaml.\n- values paths are effectively dead and never change rendered output.\n- Different values within the same type constraints can still produce structurally different behavior.\n\nAnd all of these cases could pass a static 'helm lint'.\n\nhypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution.\n\nThe pipeline is roughly:\n\ncoalesce values -> pre-filter -> sort -> post-filter -> test -> validate\n\nThe tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have.\n\nI’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory.\n\nI’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself:\n\nhttps://lnkd.in/eqZRNAqJ\n\nThis example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures.",
+            "GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm",
+            "github.com",
+            "2, number of reactions2",
+            "2 comments"
           ],
           "links": [
             {
-              "label": "https://www.linkedin.com/company/91593723/",
-              "url": "https://www.linkedin.com/company/91593723/",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH6BGDx5BE8GQ/company-logo_100_100/company-logo_100_100/0/1672415765992/premiscale_logo?e=1793232000&v=beta&t=W9m2dTaNhCgq9FRYLbHc0d1iyatlzptriwKxp-rYpRs",
-              "alt": "PremiScale logo",
-              "path": "data/assets/771a5386e699dbf41ae350416ecbe6d093814e7e2ded75518257a6f35bb5f037.png",
-              "link": "https://www.linkedin.com/company/91593723/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH6PslF9M_yvA/articleshare-shrink_160/articleshare-shrink_160/0/1765935747957?e=1792170000&v=beta&t=6s-3fmCSURDm7xWfBfTMSCytpGQrx1BMV7XMKOEZvUw",
-              "alt": "Thumbnail for GitHub - premiscale/premiscale: The PremiScale autoscaler controller for Kubernetes",
-              "path": "data/assets/a2b43eaf1258499ce7235c7b8fe8880f94138e82ea07027df94164904cadd39f.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2410566952/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQEVGwYKyLaQ3Q/articleshare-shrink_160/B56ZpUriPrJkAk-/0/1762357290221?e=1792170000&v=beta&t=HJm2hKmZ1HkvQfJwFeRe2US7bPK7_9UuhcsQO7LWWgQ",
-              "alt": "Thumbnail for GitHub - premiscale/pass-operator: A kubernetes operator that syncs and decrypts secrets from pass git repositories",
-              "path": "data/assets/3dee12b8de204b9af870356e96828f24eb974b69beac53637cd9f33afe8ba8b5.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2410566952/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
-            }
-          ],
-          "skills": [
-            {
-              "name": "Business Ownership",
-              "endorsements": 0
-            },
-            {
-              "name": "Lean Startup",
-              "endorsements": 0
-            }
-          ],
-          "positions": []
-        },
-        {
-          "title": "DevOps Engineer",
-          "paragraphs": [
-            "SBE Vision, Inc. · Full-time",
-            "Aug 2022 - Feb 2024 · 1 yr 7 mos",
-            "Wakefield, Massachusetts, United States · Hybrid",
-            "SBE Vision develops an ontology based hub-and-spoke integration platform for interoperability between digital engineering tools.\n\nResponsibilities\n\n- Assisting customers and troubleshooting while deploying SBE Vision's microservice architecture solution to on-premise or cloud environments\n- Writing internal technical documentation outlining processes, procedures and standards\n- Assisted with disaster recovery in the event of on-premise power outages and hardware or software faults\n- Deployed and maintained operations services\n- Introduce new security, solutions and customs while practicing DevOps\n\nProjects\n\n- Introduced, maintained and automated an on-premise datacenter based on Rancher / RKE1 to reduce cloud costs and unify cluster access\n- Introduced a scalable Kubernetes-based GitLab runners solution\n- Centralized and templatized Helm charts in a monorepo with supporting GitLab CI trigger framework\n- Introduced an IaC solution in Terraform and GitLab CI for managing infrastructure in all public clouds\n\nTechnologies\n\n- Helm chart authoring\n- Kubernetes (on-premise Rancher RKE1, GKE / EKS / {E,G,A}CR)\n- GitLab CI / static runner / kubernetes runner deployment and administration\n- Ansible\n- Linux KVM virtualization / automation\n- Terraform\n- Sonatype Nexus\n- Git hook authoring\n- Rancher deployment and administration\n- ZFS\n- TLS certificates",
-            "pre-commit hook that lints Gitlab CI configurations"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/company/75395048/",
-              "url": "https://www.linkedin.com/company/75395048/",
+              "label": "Post I built a plugin for Helm charts that uses graph-based structural filtering and Python's Hypothesis testing framework to explore input configuration spaces (values.yaml) efficiently, to find the bugs you never thought to test for: https://lnkd.in/ektqstTY Most Helm testing validates static configurations and doesn’t exercise the full space of configurable paths or combinations of values. That leaves many classes of bugs among structural complexities, unaddressed before release: - One value change can have downstream effects across multiple rendered resources. - Individually valid settings can fail when combined. - configurable fields exist only in templates and aren’t documented in values.yaml. - values paths are effectively dead and never change rendered output. - Different values within the same type constraints can still produce structurally different behavior. And all of these cases could pass a static 'helm lint'. hypothesis-helm attempts to expand automated testing toward the full configuration surface of a chart while filtering redundant cases prior to execution. The pipeline is roughly: coalesce values -> pre-filter -> sort -> post-filter -> test -> validate The tested and rendered manifests that pass hypothesis testing can then be passed through  kubesec or any other tool you already have. I’ve tried my hand at benchmarking the approach against synthetic charts with varying structures and error distributions, which you can see in the studies/-directory. I’ve also tested it against public data, including Bitnami. See the report the tool generates for yourself: https://lnkd.in/eqZRNAqJ This example includes a lot of diagrams that give us a sense of input value sensitivity in the rendered space, as well as charts' structures. GitHub - astrivant/hypothesis-helm: Hypothesis testing plugin for Helm github.com 2, number of reactions 2 2 comments",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/",
               "resolved_url": "",
               "title": ""
             },
             {
-              "label": "pre-commit hook that lints Gitlab CI configurations",
-              "url": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook",
-              "resolved_url": "https://github.com/emmeowzing/gitlabci-lint-pre-commit-hook",
-              "title": "GitHub - emmeowzing/gitlabci-lint-pre-commit-hook: A pre-commit hook that lints Gitlab CI configurations"
+              "label": "https://lnkd.in/ektqstTY",
+              "url": "https://lnkd.in/ektqstTY",
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm/",
+              "title": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts"
+            },
+            {
+              "label": "https://lnkd.in/eqZRNAqJ",
+              "url": "https://lnkd.in/eqZRNAqJ",
+              "resolved_url": "https://github.com/astrivant/hypothesis-helm/blob/main/docs/reports/bitnami.pdf",
+              "title": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm"
             }
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
-              "alt": "SBE Vision, Inc. logo",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
-              "link": "https://www.linkedin.com/company/75395048/"
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_480/B4EaCMSldGHAAY-/0/1789060078326?e=1792173600&v=beta&t=iHoM1PW-PixkD8yOxduX6fW9Y4Xz9SdUcZ_5skOPWT0",
+              "alt": "",
+              "path": "data/assets/72ae39716a7955f5365b9db5f9f8aac4e377fd64d2408660f2a25c4339c787d6.png",
+              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSiomweF5JSw/articleshare-shrink_160/articleshare-shrink_160/0/1773215972279?e=1792170000&v=beta&t=P9DvEw4f4FEz2G0kcsT3AWffrJeOd6KhLtQx4q0ec-E",
-              "alt": "Thumbnail for pre-commit hook that lints Gitlab CI configurations",
-              "path": "data/assets/0ef4b900dd83df4fbb18d0c723b0f1626b29b513677798975e052fec3c2f3b54.png",
-              "link": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook"
-            }
-          ],
-          "skills": [
-            {
-              "name": "Distributed Systems",
-              "endorsements": 0
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
+              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "link": "https://lnkd.in/ektqstTY"
             },
             {
-              "name": "Google Kubernetes Engine (GKE)",
-              "endorsements": 0
-            }
-          ],
-          "positions": []
-        },
-        {
-          "title": "DevOps Engineer",
-          "paragraphs": [
-            "HqO · Full-time",
-            "Aug 2021 - Jul 2022 · 1 yr",
-            "Boston, Massachusetts, United States · Hybrid",
-            "HqO creates workplace experience technology that transforms how people connect with each other and the places they work.\n\nResponsibilities\n\n- Writing technical documentation for engineers outlining procedures, solutions to problems, and onboarding.\n\nTechnologies\n\n- CircleCI / Orb authoring\n- GitHub Actions\n- Argo CD\n- Kubernetes / EKS\n- Helm chart authoring / Helm chart-testing (ct)\n- Spot.io\n- Infracost\n- Loft.sh / DevSpace\n- Terraform / Vault / Hashicorp Cloud\n- Artifactory\n- Git pre-commit hooks authoring",
-            "CLI helper to filter inputs by .gitignore-like conf files in CI",
-            "CircleCI config validate pre-commit hook for use with dynamic-continuation",
-            "CircleCI orb pack and validate pre-commit hook"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/company/11386524/",
-              "url": "https://www.linkedin.com/company/11386524/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "CLI helper to filter inputs by .gitignore-like conf files in CI",
-              "url": "https://github.com/bjd2385/wildmatch",
-              "resolved_url": "https://github.com/emmeowzing/wildmatch",
-              "title": "GitHub - emmeowzing/wildmatch: A CLI helper to filter inputs by .gitignore-like conf files"
-            },
-            {
-              "label": "CircleCI config validate pre-commit hook for use with dynamic-continuation",
-              "url": "https://github.com/bjd2385/circleci-config-pre-commit-hook",
-              "resolved_url": "https://github.com/emmeowzing/circleci-config-pre-commit-hook",
-              "title": "GitHub - emmeowzing/circleci-config-pre-commit-hook: CircleCI config validate pre-commit hook for use with dynamic-continuation"
-            },
-            {
-              "label": "CircleCI orb pack and validate pre-commit hook",
-              "url": "https://github.com/bjd2385/circleci-orb-pre-commit-hook",
-              "resolved_url": "https://github.com/emmeowzing/circleci-orb-pre-commit-hook",
-              "title": "GitHub - emmeowzing/circleci-orb-pre-commit-hook: CircleCI orb pack and validate pre-commit hook"
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHGGvtpxtKl2g/company-logo_100_100/company-logo_100_100/0/1636022953216/hqo_logo?e=1793232000&v=beta&t=GAqyzqRK3C2Lb-mTQKy3xvcv7TT8qiPaLq_f4YKvOOg",
-              "alt": "HqO logo",
-              "path": "data/assets/0f9aa87666ca79d0b0b9ee8f7c16ac61f4122082ada5fa58dd5ba10c6bc349de.png",
-              "link": "https://www.linkedin.com/company/11386524/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGqwqt-wFH1UA/articleshare-shrink_160/articleshare-shrink_160/0/1765461579014?e=1792170000&v=beta&t=k--OOLH381ynaRqAG1fRR-9omO6kOkFmzlVCPe7fcEg",
-              "alt": "Thumbnail for CLI helper to filter inputs by .gitignore-like conf files in CI",
-              "path": "data/assets/5ddb44f3fc4370d9af1c695753ed20bfb2f4d01f3dbdadb30d301aab470385bf.png",
-              "link": "https://github.com/bjd2385/wildmatch"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEIUoSqlP6jow/articleshare-shrink_160/articleshare-shrink_160/0/1766712018037?e=1792170000&v=beta&t=o7vAM0ahaLvtJWlWs9BRlfRlelsrRvwkxLjjQi2oS2M",
-              "alt": "Thumbnail for CircleCI config validate pre-commit hook for use with dynamic-continuation",
-              "path": "data/assets/e7f50b82ed86db068fed8a03c0dcf3e5d82e0a0894bb126828d132e8bc35d817.png",
-              "link": "https://github.com/bjd2385/circleci-config-pre-commit-hook"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQG8HAM3m4pPqA/articleshare-shrink_160/articleshare-shrink_160/0/1770670989074?e=1792170000&v=beta&t=eijxmYRg18rpUMYB5NCRJ63klLNgMRlTm2ATjuzh1uw",
-              "alt": "Thumbnail for CircleCI orb pack and validate pre-commit hook",
-              "path": "data/assets/b65de48bc956a7f1d29054e86e570027f0b89fd3094811fe0cb1b5bbed277904.png",
-              "link": "https://github.com/bjd2385/circleci-orb-pre-commit-hook"
-            }
-          ],
-          "skills": [
-            {
-              "name": "Distributed Systems",
-              "endorsements": 0
-            },
-            {
-              "name": "CircleCI",
-              "endorsements": 0
-            }
-          ],
-          "positions": []
-        },
-        {
-          "title": "Threat Stack, Inc",
-          "paragraphs": [
-            "Full-time · 2 yrs",
-            "Boston, Massachusetts, United States",
-            "Tooling Solutions Engineer",
-            "Apr 2021 - Jul 2021 · 4 mos",
-            "Remote",
-            "Threat Stack is the leader in cloud security & compliance for infrastructure and applications, helping companies securely leverage the business benefits of the cloud with proactive risk identification and real-time threat detection across cloud workloads.\n\nProjects\n\n- Wrote a Python package and containerized Flask API to assist and support internal teams in platform rule modifications and versioning\n- Continued to maintain log and diagnostics collection scripts in Bash and PowerShell for troubleshooting Linux- and Windows-based agent installations",
-            "A CLI tool for Threat Stack ruleset manipulation via API",
-            "Support Engineer",
-            "Aug 2019 - Apr 2021 · 1 yr 9 mos",
-            "On-site",
-            "Responsibilities\n\n- Debug and reproduce reported issues with agent deployments on Kubernetes (GKE, EKS, ECS, & ECR), Docker, Windows Server and all major Linux distributions in GCP and AWS\n- Document procedures and projects for other team members to reference in Confluence and GitLab\n- Work cross-departmentally with Sales, Engineering, and Product to maintain customer relations and relay customer feedback\n- Escalate software defects in SalesForce and Jira to product development and engineering team\n\nProjects\n\n- Maintainer of a log collecting package written in Bash for the Linux Agent and Support Engineering teams\n- Built and maintained infrastructure monitoring projects with Python and Terraform in AWS EC2 and Lambda"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/company/3068295/",
-              "url": "https://www.linkedin.com/company/3068295/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "A CLI tool for Threat Stack ruleset manipulation via API",
-              "url": "https://github.com/bjd2385/threatstack-rule-manager",
-              "resolved_url": "https://github.com/emmeowzing/threatstack-rule-manager",
-              "title": "GitHub - emmeowzing/threatstack-rule-manager: A tool for working with Threat Stack rules"
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH8ArNfftI-yg/company-logo_100_100/company-logo_100_100/0/1647357720328/threat_stack_inc_logo?e=1793232000&v=beta&t=Gs6Dm1h7Pr0o01wd0KqaeW6qFv469F73WLzJUWRA5O8",
-              "alt": "Threat Stack, Inc logo",
-              "path": "data/assets/21e9c20fcc87a314736b9fec801cfd632cbfaf80d704d4fc1fc72ec31af86dc8.png",
-              "link": "https://www.linkedin.com/company/3068295/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSFjsioNzzrw/articleshare-shrink_160/articleshare-shrink_160/0/1765836048051?e=1792170000&v=beta&t=pMW1Dn-cWcZOJHeV9SxH76XZV1yThgyFvFmNQnm39Yg",
-              "alt": "Thumbnail for A CLI tool for Threat Stack ruleset manipulation via API",
-              "path": "data/assets/231b933165198c763d2d173b8de109b6d1563c2e67d2a93f046075dd82207ba4.png",
-              "link": "https://github.com/bjd2385/threatstack-rule-manager"
-            }
-          ],
-          "skills": [],
-          "positions": [
-            {
-              "title": "Tooling Solutions Engineer",
-              "paragraphs": [
-                "Apr 2021 - Jul 2021 · 4 mos",
-                "Remote",
-                "Threat Stack is the leader in cloud security & compliance for infrastructure and applications, helping companies securely leverage the business benefits of the cloud with proactive risk identification and real-time threat detection across cloud workloads.\n\nProjects\n\n- Wrote a Python package and containerized Flask API to assist and support internal teams in platform rule modifications and versioning\n- Continued to maintain log and diagnostics collection scripts in Bash and PowerShell for troubleshooting Linux- and Windows-based agent installations",
-                "A CLI tool for Threat Stack ruleset manipulation via API"
-              ],
-              "links": [
-                {
-                  "label": "A CLI tool for Threat Stack ruleset manipulation via API",
-                  "url": "https://github.com/bjd2385/threatstack-rule-manager",
-                  "resolved_url": "https://github.com/emmeowzing/threatstack-rule-manager",
-                  "title": "GitHub - emmeowzing/threatstack-rule-manager: A tool for working with Threat Stack rules"
-                }
-              ],
-              "images": [
-                {
-                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSFjsioNzzrw/articleshare-shrink_160/articleshare-shrink_160/0/1765836048051?e=1792170000&v=beta&t=pMW1Dn-cWcZOJHeV9SxH76XZV1yThgyFvFmNQnm39Yg",
-                  "alt": "Thumbnail for A CLI tool for Threat Stack ruleset manipulation via API",
-                  "path": "data/assets/231b933165198c763d2d173b8de109b6d1563c2e67d2a93f046075dd82207ba4.png",
-                  "link": "https://github.com/bjd2385/threatstack-rule-manager"
-                }
-              ],
-              "skills": [],
-              "positions": []
-            },
-            {
-              "title": "Support Engineer",
-              "paragraphs": [
-                "Aug 2019 - Apr 2021 · 1 yr 9 mos",
-                "On-site",
-                "Responsibilities\n\n- Debug and reproduce reported issues with agent deployments on Kubernetes (GKE, EKS, ECS, & ECR), Docker, Windows Server and all major Linux distributions in GCP and AWS\n- Document procedures and projects for other team members to reference in Confluence and GitLab\n- Work cross-departmentally with Sales, Engineering, and Product to maintain customer relations and relay customer feedback\n- Escalate software defects in SalesForce and Jira to product development and engineering team\n\nProjects\n\n- Maintainer of a log collecting package written in Bash for the Linux Agent and Support Engineering teams\n- Built and maintained infrastructure monitoring projects with Python and Terraform in AWS EC2 and Lambda"
-              ],
-              "links": [],
-              "images": [],
-              "skills": [],
-              "positions": []
-            }
-          ]
-        },
-        {
-          "title": "Datto, Inc.",
-          "paragraphs": [
-            "Full-time · 1 yr 2 mos",
-            "Rochester, New York Metropolitan Area · On-site",
-            "Technical Support Specialist, Blue Tier",
-            "May 2019 - Aug 2019 · 4 mos",
-            "Responsibilities\n\n- Build strong relationships to a dedicated set of Datto’s highest revenue-generating partners and MSPs\n- Virtualize on-prem infrastructure in cloud-based disaster recovery tests",
-            "Technical Support Specialist, Tier 1",
-            "Jul 2018 - May 2019 · 11 mos",
-            "Projects\n\n- Wrote and maintained a support script for use on field appliances that produced a timeline of volumes' utilization across ZFS snapshots in backups.\n\nResponsibilities\n\n- Administer the virtualization of Windows Server and major Linux distributions in KVM\n- Troubleshoot the backup process of all major operating systems in MS Hyper-V and VMware\n- Samba / SMB, NFS and iSCSI configuration in Windows Server and Linux\n- Remotely assist in the maintenance of ZFS on Linux (ZoL)-based storage appliances at customer sites\n- Assist in the maintenance of thousands of private ZoL-based secondary-replication backup cloud servers\n- Networking fundamentals, including DNS, DHCP, VLANs, and firewall configuration",
-            "A fast (experimental) RX algorithm implementation in Python 3.9+",
-            "Parse backed-up volumes' utilization across ZFS snapshots"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/company/1477873/",
-              "url": "https://www.linkedin.com/company/1477873/",
-              "resolved_url": "",
-              "title": ""
-            },
-            {
-              "label": "A fast (experimental) RX algorithm implementation in Python 3.9+",
-              "url": "https://github.com/bjd2385/rx_algorithm",
-              "resolved_url": "https://github.com/emmeowzing/rx_algorithm",
-              "title": "GitHub - emmeowzing/rx_algorithm: A fast (experimental) RX algorithm implementation in Python 3.9+"
-            },
-            {
-              "label": "Parse backed-up volumes' utilization across ZFS snapshots",
-              "url": "https://github.com/bjd2385/datto",
-              "resolved_url": "https://github.com/emmeowzing/datto",
-              "title": "GitHub - emmeowzing/datto: Datto volume info script"
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/C560BAQE_CYue3wizWw/company-logo_100_100/company-logo_100_100/0/1656351956106/datto_inc_logo?e=1793232000&v=beta&t=zGp428v7yLMT7YRCx5FjWEbeuV6lQd0gQWybj8OiipU",
-              "alt": "Datto, Inc. logo",
-              "path": "data/assets/3435132fa21c9d02f36e731a55a1234b7aabe9c5d372165f74d4296c8f2bae3a.png",
-              "link": "https://www.linkedin.com/company/1477873/"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEFlmQIo8flsA/articleshare-shrink_160/articleshare-shrink_160/0/1765482592593?e=1792170000&v=beta&t=RWpo0BWqcDlBZqRtpXHCABZRVgbPG2wn99249fLEE3c",
-              "alt": "Thumbnail for A fast (experimental) RX algorithm implementation in Python 3.9+",
-              "path": "data/assets/c0f6ea8182b1bc1cb7fee7c14ff6b73eff682d8e1d8be287a6b8384cc5ae7bd8.png",
-              "link": "https://github.com/bjd2385/rx_algorithm"
-            },
-            {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHJYd3i7-prBQ/articleshare-shrink_160/articleshare-shrink_160/0/1767070948324?e=1792170000&v=beta&t=VXfYKzSEh1escSCHitEjcLwRxpuS2fAu15v7HzOsVI8",
-              "alt": "Thumbnail for Parse backed-up volumes' utilization across ZFS snapshots",
-              "path": "data/assets/c07f715a0c010ff740764ae8298dfd4e7c7e83405fdb967b01aade2c717d21a9.png",
-              "link": "https://github.com/bjd2385/datto"
-            }
-          ],
-          "skills": [],
-          "positions": [
-            {
-              "title": "Technical Support Specialist, Blue Tier",
-              "paragraphs": [
-                "May 2019 - Aug 2019 · 4 mos",
-                "Responsibilities\n\n- Build strong relationships to a dedicated set of Datto’s highest revenue-generating partners and MSPs\n- Virtualize on-prem infrastructure in cloud-based disaster recovery tests"
-              ],
-              "links": [],
-              "images": [],
-              "skills": [],
-              "positions": []
-            },
-            {
-              "title": "Technical Support Specialist, Tier 1",
-              "paragraphs": [
-                "Jul 2018 - May 2019 · 11 mos",
-                "Projects\n\n- Wrote and maintained a support script for use on field appliances that produced a timeline of volumes' utilization across ZFS snapshots in backups.\n\nResponsibilities\n\n- Administer the virtualization of Windows Server and major Linux distributions in KVM\n- Troubleshoot the backup process of all major operating systems in MS Hyper-V and VMware\n- Samba / SMB, NFS and iSCSI configuration in Windows Server and Linux\n- Remotely assist in the maintenance of ZFS on Linux (ZoL)-based storage appliances at customer sites\n- Assist in the maintenance of thousands of private ZoL-based secondary-replication backup cloud servers\n- Networking fundamentals, including DNS, DHCP, VLANs, and firewall configuration",
-                "A fast (experimental) RX algorithm implementation in Python 3.9+",
-                "Parse backed-up volumes' utilization across ZFS snapshots"
-              ],
-              "links": [
-                {
-                  "label": "A fast (experimental) RX algorithm implementation in Python 3.9+",
-                  "url": "https://github.com/bjd2385/rx_algorithm",
-                  "resolved_url": "https://github.com/emmeowzing/rx_algorithm",
-                  "title": "GitHub - emmeowzing/rx_algorithm: A fast (experimental) RX algorithm implementation in Python 3.9+"
-                },
-                {
-                  "label": "Parse backed-up volumes' utilization across ZFS snapshots",
-                  "url": "https://github.com/bjd2385/datto",
-                  "resolved_url": "https://github.com/emmeowzing/datto",
-                  "title": "GitHub - emmeowzing/datto: Datto volume info script"
-                }
-              ],
-              "images": [
-                {
-                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEFlmQIo8flsA/articleshare-shrink_160/articleshare-shrink_160/0/1765482592593?e=1792170000&v=beta&t=RWpo0BWqcDlBZqRtpXHCABZRVgbPG2wn99249fLEE3c",
-                  "alt": "Thumbnail for A fast (experimental) RX algorithm implementation in Python 3.9+",
-                  "path": "data/assets/c0f6ea8182b1bc1cb7fee7c14ff6b73eff682d8e1d8be287a6b8384cc5ae7bd8.png",
-                  "link": "https://github.com/bjd2385/rx_algorithm"
-                },
-                {
-                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHJYd3i7-prBQ/articleshare-shrink_160/articleshare-shrink_160/0/1767070948324?e=1792170000&v=beta&t=VXfYKzSEh1escSCHitEjcLwRxpuS2fAu15v7HzOsVI8",
-                  "alt": "Thumbnail for Parse backed-up volumes' utilization across ZFS snapshots",
-                  "path": "data/assets/c07f715a0c010ff740764ae8298dfd4e7c7e83405fdb967b01aade2c717d21a9.png",
-                  "link": "https://github.com/bjd2385/datto"
-                }
-              ],
-              "skills": [],
-              "positions": []
-            }
-          ]
-        },
-        {
-          "title": "Evaluation Technician",
-          "paragraphs": [
-            "Baxter International Inc. · Full-time",
-            "Aug 2017 - Jul 2018 · 1 yr",
-            "Medina, New York, United States · On-site",
-            "- Evaluate and schedule appropriate repair and rework plans on Spectrum V6 and V8 IV pumps in the Service Department\n- Ensure documentation and operating procedures comply with FDA regulations\n- Escalate appliances of suspected adulteration to QA Engineers\n- Assist in maintaining the Service center database as a superuser"
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/company/2371/",
-              "url": "https://www.linkedin.com/company/2371/",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D560BAQHdNB4ekluoIw/company-logo_100_100/B56Zi.rLWuHQAY-/0/1755545647131/baxter_healthcare_logo?e=1793232000&v=beta&t=_FuBw2xJ0f9vsH29yC3lONkTT1YwiOc8otOHX9lT4qk",
-              "alt": "Baxter International Inc. logo",
-              "path": "data/assets/b55a39927919894efbc83ad8c07ada9004c7f0ed7cc9b87c4ff25df05fc888cb.png",
-              "link": "https://www.linkedin.com/company/2371/"
+              "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
+              "alt": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm",
+              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "link": "https://lnkd.in/eqZRNAqJ"
             }
           ],
           "skills": [],
           "positions": []
         },
         {
-          "title": "Line Lead",
+          "title": "Post",
           "paragraphs": [
-            "Saint-Gobain Adfors · Full-time",
-            "Jan 2017 - Aug 2017 · 8 mos",
-            "Albion, New York, United States · On-site",
-            "- Led the production fiberglass converting and reduction process\n- Set production records by optimizing machine downtime and workflow\n- Used basic mathematical abilities to calculate materials, hourly rates and other relevant details\n- Made sure that products were produced on time and of good quality"
+            "What if a microservice could change how it works, not just how many replicas it runs?\n\nI've been working on Polyad, a Kubernetes operator and Python SDK exploring a different approach to fault-tolerant microservices: applications that participate in their own adaptation as demand, dependencies, and available resources change.\n\nThe idea is to give developers a way to write microservices and pipelines by defining both the capabilities and its permitted responses to pressure. I'm hoping this opens the door to strategies of running production near or at-scale, while remaining adaptive and responsive to sudden impulses of traffic.\n\nFor example, a service might use high-throughput batch workers when resources are available, switch to a lower-memory implementation when constrained, or share compatible work with an authorized peer. Those transitions need to account for readiness, backpressure, and draining work already accepted in a safe manner.\n\nPolyad coordinates this at two levels:\n\nWithin a service: SDK strategies support changes to concurrency, worker profiles, admission, and peer connections.\n\nAcross the application: Graphs and nested \"PolyGraphs\" describe workloads and their relationships, allowing coordinated changes to topology, routing, and capacity within administrator-defined constraints.\n\nThis complements infrastructure scaling. KEDA can add replicas; optional VPA integration lets application code understand configured resource bounds and observe and react to current Linux cgroup allocations. \n\nThe application can then adjust how it uses that capacity.\n\nThere's a graph-theory component, too: Cheeger bounds help constrain structural bottlenecks. But a well-connected graph is not an SLA guarantee. We also need to measure whether work completes on time, delivers the required capability, and meets the agreed quality level. A service that remains reachable while producing unacceptable results hasn't necessarily remained useful.\n\nI'm exploring these interactions through local, process-based studies before spinning up cloud-based validation: comparing fixed and adaptive systems under controlled load, resource changes, and disruptions, with plots of latency, backlog, service-level attainment (SLA) that's computable at runtime, and adaptation behavior.\n\nThe intent is to make adaptation an explicit, testable part of the application contract and engineering process, not just a cascade of infrastructure reactions and PagerDuty pings after something fails.\n\nCode and architecture (WIP):\n\nhttps://lnkd.in/edjues52\n\nPython SDK:\n\nhttps://lnkd.in/ep4n-NpJ\n\nWorker adaptation study, with graphs:\n\nhttps://lnkd.in/enpeacGx\n\nService composition adaptation study, with graphs:\n\nhttps://lnkd.in/ew2XgdAX",
+            "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand.",
+            "github.com",
+            "11, number of reactions11"
           ],
           "links": [
             {
-              "label": "https://www.linkedin.com/company/2282551/",
-              "url": "https://www.linkedin.com/company/2282551/",
+              "label": "Post What if a microservice could change how it works, not just how many replicas it runs? I've been working on Polyad, a Kubernetes operator and Python SDK exploring a different approach to fault-tolerant microservices: applications that participate in their own adaptation as demand, dependencies, and available resources change. The idea is to give developers a way to write microservices and pipelines by defining both the capabilities and its permitted responses to pressure. I'm hoping this opens the door to strategies of running production near or at-scale, while remaining adaptive and responsive to sudden impulses of traffic. For example, a service might use high-throughput batch workers when resources are available, switch to a lower-memory implementation when constrained, or share compatible work with an authorized peer. Those transitions need to account for readiness, backpressure, and draining work already accepted in a safe manner. Polyad coordinates this at two levels: Within a service: SDK strategies support changes to concurrency, worker profiles, admission, and peer connections. Across the application: Graphs and nested \"PolyGraphs\" describe workloads and their relationships, allowing coordinated changes to topology, routing, and capacity within administrator-defined constraints. This complements infrastructure scaling. KEDA can add replicas; optional VPA integration lets application code understand configured resource bounds and observe and react to current Linux cgroup allocations. The application can then adjust how it uses that capacity. There's a graph-theory component, too: Cheeger bounds help constrain structural bottlenecks. But a well-connected graph is not an SLA guarantee. We also need to measure whether work completes on time, delivers the required capability, and meets the agreed quality level. A service that remains reachable while producing unacceptable results hasn't necessarily remained useful. I'm exploring these interactions through local, process-based studies before spinning up cloud-based validation: comparing fixed and adaptive systems under controlled load, resource changes, and disruptions, with plots of latency, backlog, service-level attainment (SLA) that's computable at runtime, and adaptation behavior. The intent is to make adaptation an explicit, testable part of the application contract and engineering process, not just a cascade of infrastructure reactions and PagerDuty pings after something fails. Code and architecture (WIP): https://lnkd.in/edjues52 Python SDK: https://lnkd.in/ep4n-NpJ Worker adaptation study, with graphs: https://lnkd.in/enpeacGx Service composition adaptation study, with graphs: https://lnkd.in/ew2XgdAX GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand. github.com 11, number of reactions 11",
+              "url": "https://www.linkedin.com/feed/update/urn:li:activity:7507271032412704768/",
               "resolved_url": "",
               "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEcZ2FNTBw6A/company-logo_100_100/company-logo_100_100/0/1706803356023/saint_gobain_adfors_logo?e=1793232000&v=beta&t=cpFPrUyYJUVTdSHRx8Rro4W7hWNWFl1oanNDXHfNjm8",
-              "alt": "Saint-Gobain Adfors logo",
-              "path": "data/assets/2bf170089880a0803b59d33bc89ad261a2e3cbd69b0737e4f79574854a473109.png",
-              "link": "https://www.linkedin.com/company/2282551/"
-            }
-          ],
-          "skills": [],
-          "positions": []
-        },
-        {
-          "title": "Undergraduate Researcher",
-          "paragraphs": [
-            "Rochester Institute of Technology · Part-time",
-            "Sep 2013 - Dec 2014 · 1 yr 4 mos",
-            "Rochester, New York, United States · Remote",
-            "- Created journal quality overlays of HST and VLA FITS data with Python and Interactive Data Language (IDL)\n- Cooperated with others in team-based environment to identify correlations between wavelengths from data analysis",
-            "Radio Galaxy 3C 210",
-            "An example plot."
-          ],
-          "links": [
-            {
-              "label": "https://www.linkedin.com/school/165762/",
-              "url": "https://www.linkedin.com/school/165762/",
-              "resolved_url": "",
-              "title": ""
-            }
-          ],
-          "images": [
-            {
-              "url": "https://media.licdn.com/dms/image/v2/C4E0BAQGnICZxLlhERw/company-logo_100_100/company-logo_100_100/0/1630565170020/rochester_institute_of_technology_logo?e=1793232000&v=beta&t=Kl5t4LU4QnxRbVpROIqS5MvAFtpU4RqLU1XSWwMlzNE",
-              "alt": "Rochester Institute of Technology logo",
-              "path": "data/assets/bd9496f624c9f44e56be85b0db42793849a64ea3dc215b500c3c4b121e03518e.png",
-              "link": "https://www.linkedin.com/school/165762/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/v2/C4E2DAQEG-etA3nIrpQ/profile-treasury-image-shrink_160_160/profile-treasury-image-shrink_160_160/0/1596565249872?e=1792170000&v=beta&t=rYPeOSJumGCbqlJgli_S17OYnQaMbCqlqaau36doGDM",
-              "alt": "Thumbnail for Radio Galaxy 3C 210",
-              "path": "data/assets/d5d3ff4b7f726a4cf4a9079ea9b82843e8d9220386a7e24162356bc384f0fca7.png",
-              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/776655142/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
+              "label": "https://lnkd.in/edjues52",
+              "url": "https://lnkd.in/edjues52",
+              "resolved_url": "https://github.com/astrivant/polyad",
+              "title": "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand."
+            },
+            {
+              "label": "https://lnkd.in/ep4n-NpJ",
+              "url": "https://lnkd.in/ep4n-NpJ",
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/pkg/polyad-sdk",
+              "title": "polyad/pkg/polyad-sdk at main · astrivant/polyad"
+            },
+            {
+              "label": "https://lnkd.in/enpeacGx",
+              "url": "https://lnkd.in/enpeacGx",
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/studies/soul",
+              "title": "polyad/studies/soul at main · astrivant/polyad"
+            },
+            {
+              "label": "https://lnkd.in/ew2XgdAX",
+              "url": "https://lnkd.in/ew2XgdAX",
+              "resolved_url": "https://github.com/astrivant/polyad/tree/main/studies/nature",
+              "title": "polyad/studies/nature at main · astrivant/polyad"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGdP5KIxcpY2g/articleshare-shrink_480/B4EaDGvuAtHQAU-/0/1790040794209?e=1792173600&v=beta&t=IvpjajhWA6qr5LR0Rm8JtEUn4fm1EKDnUNvfDC6gXtI",
+              "alt": "",
+              "path": "data/assets/b8d75c5eb2a66a9f43e840f2bc5972afc656afb04b32aeb9cd644e1b4c503307.png",
+              "link": "https://www.linkedin.com/feed/update/urn:li:activity:7507271032412704768/"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand.",
+              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "link": "https://lnkd.in/edjues52"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/pkg/polyad-sdk at main · astrivant/polyad",
+              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "link": "https://lnkd.in/ep4n-NpJ"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/studies/soul at main · astrivant/polyad",
+              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "link": "https://lnkd.in/enpeacGx"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
+              "alt": "polyad/studies/nature at main · astrivant/polyad",
+              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "link": "https://lnkd.in/ew2XgdAX"
             }
           ],
           "skills": [],
@@ -710,7 +260,7 @@
             "Excited to share our new paper: LLM-as-Jev! We show how to easily turn any LLM into a Jev-style decision model. While the community has explored similar ideas, our approach proves very competitive, and we provide a detailed quantitative comparison alongside a practical guide on when off-the-shelf LLMs are enough vs. when and how to fine-tune them.\nhttps://lnkd.in/gbjVQCSE",
             "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune ThemLLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
             "arxiv.org",
-            "1,184 reactions1,184",
+            "1,190 reactions1,190",
             "21 comments21 comments",
             "•",
             "58 reposts58 reposts",
@@ -749,7 +299,7 @@
               "title": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them"
             },
             {
-              "label": "1,184 reactions 1,184",
+              "label": "1,190 reactions 1,190",
               "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
               "resolved_url": "",
               "title": ""
@@ -769,10 +319,10 @@
               "link": "https://www.linkedin.com/in/yinhengli/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQGlDoUwxR8YAw/articleshare-shrink_160/B56aESRwitHIAU-/0/1791308007903?e=1792170000&v=beta&t=XfXBUVNPcLYNTXXWXFJXjOIL8rLiweyJGdAc28oF9BQ",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQGlDoUwxR8YAw/articleshare-shrink_160/B56aESRwitHIAU-/0/1791308007903?e=1792173600&v=beta&t=Q69lsPjf6tqXj93qYo_U5GQUPMTXcBH_eG_b3IvsFbQ",
               "alt": "",
               "path": "data/assets/c247c919baf02ca8aa21c6384e8d1ffdd0a635ca8f6c2edd07a82c30f15913f4.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Farxiv%2Eorg%2Fabs%2F2610%2E02076v2&urlhash=R-27&mt=BYO22Yvv6qK8CC0KSPPSRePSlVfdfum5EKV-0FGwovcrN8khNW0LI9aMU8iTujPZdqiC3tJ1w4VCAIn8DVX1FAfx4ad5CU4zHOKn5zTU_mKrE5yaYYuy0U89Xg&isSdui=true"
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Farxiv%2Eorg%2Fabs%2F2610%2E02076v2&urlhash=R-27&mt=rCZ1VrIeCF2TNF__GhgZIBSbapm95NlUpCpQRdt1K9K5KyOQo9FlqeBX8MLiHwfSQ3MREJvSleVVQupoTpvyBJQgBph79V7AyCQrYKtN8JHJ45NAPaRfsEtIbw&isSdui=true"
             },
             {
               "url": "https://arxiv.org/static/browse/0.3.4/images/arxiv-logo-fb.png",
@@ -803,7 +353,7 @@
             "1 comment1 comment",
             "Comment",
             "Send",
-            "398 impressions",
+            "409 impressions",
             "View analyticsView analytics"
           ],
           "links": [
@@ -838,7 +388,7 @@
               "title": ""
             },
             {
-              "label": "398 impressions View analytics View analytics",
+              "label": "409 impressions View analytics View analytics",
               "url": "https://www.linkedin.com/analytics/post-summary/urn:li:activity:7513843384734601217/",
               "resolved_url": "",
               "title": ""
@@ -852,10 +402,10 @@
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792170000&v=beta&t=BLSFVK5s1AQ5qmxR0EyfmXQpNiJNiu77O-aiVkX6kpk",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792173600&v=beta&t=a-bzWhS_uO7SST3-Lydk5GAze0rK_PFSqc82UqVofbE",
               "alt": "",
               "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fresumeme&urlhash=IWSk&mt=FaUvN8n9yVXX-10e5wXpjFAKPO2nFMsNqW6XU7LM37wQgTIFJWd6PF6iiFNTEbeZ924djAVaFmFhl5DF03dfVQ4wQ2a8j3YD1qQn54_yWLR_snRk4HpeLv49eQ&isSdui=true"
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fresumeme&urlhash=IWSk&mt=uivqyB51G_tmKXRdcPLU2h9jNnx6hSRHxkNEMBlcs31vi4lxN4GEUipN8QXdWkRvr3qqrKkXuoGQ2yfJLuTQv_UI4XC8EEh-FIVGOR7MGvJUuUNVjsQuiHacMA&isSdui=true"
             },
             {
               "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
@@ -881,7 +431,7 @@
             "AWS Certified Solution Architect | Sr. DevOps Engineer | Ex-Amazonian | DevOps, AWS Cloud & System Design | Infrastructure Automation | Mentor",
             "Oct 7",
             "🧹 Kubernetes 1.37 quietly introduced something DevOps teams are going to love. \n\nIn large Kubernetes clusters, it’s common for users to create PersistentVolumeClaims (PVCs), use them with Pods, and later delete those Pods without cleaning up the storage.\n\nAnd Kubernetes doesn't automatically delete the PVC when its associated Pod is removed — intentionally, to protect against accidental data loss.\n\nOver time, these unused PVCs can accumulate, consuming storage capacity and increasing cloud costs.\n\nSo the question for storage and DevOps teams becomes:\n\nWhich PVCs in the cluster are no longer being used by any Pod?\n\nKubernetes 1.37 introduces the \"PersistentVolumeClaimUnusedSinceTime\" feature to make this information available directly through the PVC status.\n\nOnce enabled, the PVC Protection Controller adds an \"Unused\" condition to the PVC:\n\n✅ \"Unused=False\" → A running or pending Pod references the PVC\n✅ \"Unused=True\" → No non-terminal Pod references the PVC\n\nThis makes it much easier to identify potentially orphaned storage and build cleanup automation around questions like:\n\n👉 “Which PVCs have been unused for 30+ days?”\n\nA small addition to Kubernetes, but a useful improvement for storage management, cloud cost control, and cluster operations.\n\nReference : https://lnkd.in/gvYfRSUQ\n\n#Kubernetes #K8s #AWS #DevOps #Cloud",
-            "942 reactions942",
+            "950 reactions950",
             "37 comments37 comments",
             "•",
             "71 reposts71 reposts",
@@ -944,7 +494,7 @@
               "title": ""
             },
             {
-              "label": "942 reactions 942",
+              "label": "950 reactions 950",
               "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
               "resolved_url": "",
               "title": ""
@@ -1057,7 +607,7 @@
             "View my newsletter",
             "Oct 1",
             "Unpopular opinion: AI companies are pushing society to accept an unacceptable level of risk for a non-essential technology.",
-            "887 reactions887",
+            "888 reactions888",
             "101 comments101 comments",
             "•",
             "47 reposts47 reposts",
@@ -1090,7 +640,7 @@
               "title": ""
             },
             {
-              "label": "887 reactions 887",
+              "label": "888 reactions 888",
               "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
               "resolved_url": "",
               "title": ""
@@ -1373,10 +923,10 @@
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_160/B4EaCMSldGHAAU-/0/1789060078327?e=1792170000&v=beta&t=islt1ykM-_sRcEKM0z79JNM7w2SI1RlguGpOLC1VXEQ",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_160/B4EaCMSldGHAAU-/0/1789060078327?e=1792173600&v=beta&t=yV12yXTC2A1KnDOll3uex7s6VSUePu-fX1AG-tNh65E",
               "alt": "",
               "path": "data/assets/a2f2a90b36104f27fb75986d9bd2be07a318b0eee6bf3e136effeb97681cf0f8.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fhypothesis-helm&urlhash=J6A4&mt=vGyfFntW1U0T0t-ll5Jt3fxRHTkZ5ewXPsTO3v7ZZTV4IjP9Wh0P0PnteLwUXwaGLno1Dm5c7yPfGqfbLJeOEUy0gDaL3A33_M-cGwtHGvDTJYl02Bp1TvZhAA&isSdui=true"
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fhypothesis-helm&urlhash=J6A4&mt=DiTz21Zpw4RBYJxvOD8cARIfpV071p5uitbh88HJ9QhOqiNRighKvbZGG0iBNW4DlGAiShEkvzR8uQhu-IoKO5Snr6NVKXs-u4fazzMTvdX_jxQSYsgCF-Zi1w&isSdui=true"
             },
             {
               "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
@@ -1515,6 +1065,657 @@
       ]
     },
     {
+      "key": "experience",
+      "title": "Experience",
+      "entries": [
+        {
+          "title": "Small Business Owner",
+          "paragraphs": [
+            "Astrivant · Self-employed",
+            "Aug 2026 - Present · 3 mos",
+            "Atlanta, Georgia, United States · On-site",
+            "Astrivant is an LLC to offset development and production cloud hosting costs for a platform (app.astrivant.com) that aggregates, solutions, and automates the job application process for everyday end-users. From social media data collection and resume generation, to one-click AI-powered job applies en masse.\n\nI'm also demoing novel infrastructure and tooling approaches along the way, developing much of it myself, including benchmarking, user experience testing (when the platform is live), and autonomous workflows.",
+            "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/146494938/",
+              "url": "https://www.linkedin.com/company/146494938/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+              "url": "https://github.com/astrivant/resumeme",
+              "resolved_url": "https://github.com/astrivant/resumeme",
+              "title": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
+              "alt": "Astrivant logo",
+              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "link": "https://www.linkedin.com/company/146494938/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792173600&v=beta&t=a-bzWhS_uO7SST3-Lydk5GAze0rK_PFSqc82UqVofbE",
+              "alt": "Thumbnail for GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
+              "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
+              "link": "https://github.com/astrivant/resumeme"
+            }
+          ],
+          "skills": [
+            {
+              "name": "Distributed Systems",
+              "endorsements": 0
+            },
+            {
+              "name": "High Performance Computing (HPC)",
+              "endorsements": 0
+            }
+          ],
+          "positions": []
+        },
+        {
+          "title": "Small Business Owner",
+          "paragraphs": [
+            "Tiger Lily Plants LLC. · Self-employed",
+            "Nov 2025 - Present · 1 yr",
+            "Atlanta, Georgia, United States · On-site",
+            "I sell orchids, begonias and carnivorous plants from both my personal collection and wholesalers to exotic plant enthusiasts.",
+            "Tiger Lily Plants LLC. | Website",
+            "Primary website for Tiger Lily Plants LLC.",
+            "TigerLilyPlants - Etsy",
+            "The Etsy store where I manage my listings.",
+            "Tiger Lily",
+            "The GitHub organization where I manage the store's blog and primary website as well as code for terrariums."
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/111622183/",
+              "url": "https://www.linkedin.com/company/111622183/",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
+              "alt": "Tiger Lily Plants LLC. logo",
+              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "link": "https://www.linkedin.com/company/111622183/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E2DAQHSeywKLg-Yug/profile-treasury-image-shrink_160_160/B4EZxatnLwGYAo-/0/1771048432843?e=1792173600&v=beta&t=oz7avM25knCfj3ZBZLRf3femgje69c4AL6U3GBaHOCk",
+              "alt": "Thumbnail for Tiger Lily Plants LLC. | Website",
+              "path": "data/assets/9937e3771298695cc15a144e32d1869d906fb5ac3cfeb7ca10d7e15222cd4c2f.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E2DAQFygld7obypGg/profile-treasury-image-shrink_160_160/B4EZxat2ZsKsAk-/0/1771048495090?e=1792173600&v=beta&t=0ceMlP8pdhYsjC4oqQGGGdNUyZ75NQdi_iACObb-4FQ",
+              "alt": "Thumbnail for TigerLilyPlants - Etsy",
+              "path": "data/assets/af434336ce1211e35f4f3e25a4ef022289bcc693d6dc80051b7d9c9af2bb97d5.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEr9v7a8qo_3A/articleshare-shrink_160/B4EZvUtBAuHEAk-/0/1772461800633?e=1792173600&v=beta&t=gyi0cHKi606TQYRWd6fPm6msnnFOpNioMp8OO5tSPgc",
+              "alt": "Thumbnail for Tiger Lily",
+              "path": "data/assets/25826bc6f4919b5c83b8c919eb1506103b3151fbf9baeca2f4de980f9883ec7d.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
+            }
+          ],
+          "skills": [
+            {
+              "name": "Terrariums",
+              "endorsements": 0
+            },
+            {
+              "name": "Customer Service",
+              "endorsements": 0
+            }
+          ],
+          "positions": []
+        },
+        {
+          "title": "Lead Platform Engineer",
+          "paragraphs": [
+            "SBE Vision, Inc. · Full-time",
+            "Sep 2024 - Sep 2026 · 2 yrs 1 mo",
+            "Wakefield, Massachusetts, United States · Remote",
+            "- Led platform engineering initiatives in support of SBE Vision’s infrastructure across cloud and on-premise environments (prior to- and post-cloud migration).\n- Migrated company to cloud infrastructure in GCP / GKE.\n- Built and supported ephemeral developer environments to curtail cloud cost.\n- Introduced a CI job that traversed deeply-nested Helm dependency trees in a monorepo for MR-based builds based on code change.\n- Delivered a fault-tolerant and load tested CI cluster upgrade to improve reliability, scalability, and developer productivity.\n- Transitioned secrets management to ESO.\n- Delivered a Helm chart / rendered Kubernetes manifest -> Docker compose compiler to reduce time-to-delivery on PoC environments at customer sites, ensuring artifact support / generation and time cost / burden on the team stayed to a minimum.\n- Led and mentored engineers by overseeing project execution, providing technical reviews, \ncoordinating platform work, guiding implementation decisions, and supporting team skill set growth.\n- Strengthened platform reliability / QoS, automation, and DevOps practices across infrastructure, CI/CD, and developer experience.",
+            "GitHub - astrivant/composer: Lossily compile rendered Helm manifests to Docker compose files"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/75395048/",
+              "url": "https://www.linkedin.com/company/75395048/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "GitHub - astrivant/composer: Lossily compile rendered Helm manifests to Docker compose files",
+              "url": "https://github.com/astrivant/composer",
+              "resolved_url": "https://github.com/astrivant/composer",
+              "title": "GitHub - astrivant/composer: Get a Docker Compose file for free in your project from Helm charts"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
+              "alt": "SBE Vision, Inc. logo",
+              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "link": "https://www.linkedin.com/company/75395048/"
+            },
+            {
+              "url": "https://opengraph.githubassets.com/5a365b57ced0999287acef47a5c5561325cafed984fa53f3d16e2bf2bb02ed85/astrivant/composer",
+              "alt": "GitHub - astrivant/composer: Get a Docker Compose file for free in your project from Helm charts",
+              "path": "data/assets/a18418a2f4cda2236315962dc4e64bdb2c2e4a1e7635ad9e02ff63abc3763ec0.png",
+              "link": "https://github.com/astrivant/composer"
+            }
+          ],
+          "skills": [
+            {
+              "name": "Google Cloud Platform (GCP)",
+              "endorsements": 0
+            },
+            {
+              "name": "Compilers",
+              "endorsements": 0
+            }
+          ],
+          "positions": []
+        },
+        {
+          "title": "Site Reliability Engineer (Security)",
+          "paragraphs": [
+            "Klaviyo · Full-time",
+            "Feb 2024 - Sep 2024 · 8 mos",
+            "Boston, Massachusetts, United States · Hybrid",
+            "LinkedIn helped me get this job helped me get this job",
+            "Technologies:\n\n- Python, Go\n- Puppet\n- Hashicorp products, such as Terraform, Vault\n- AWS (IAM, EC2)"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/2908815/",
+              "url": "https://www.linkedin.com/company/2908815/",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQH_2nYAgUCL5A/company-logo_100_100/B4EZ4ok3z.H8AI-/0/1778797215230/klaviyo_logo?e=1793232000&v=beta&t=TTI0mZ5lY8LKF8zWIoOeKSE2ckqmrQj1UbI5bBhfn2U",
+              "alt": "Klaviyo logo",
+              "path": "data/assets/c4e9c6ac58b16b59511507bb1fb6d4ca02a3244bf5c107994dc1c4b8d4bbd943.png",
+              "link": "https://www.linkedin.com/company/2908815/"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Founder",
+          "paragraphs": [
+            "PremiScale · Self-employed",
+            "Dec 2022 - Sep 2024 · 1 yr 10 mos",
+            "Boston, Massachusetts, United States · Hybrid",
+            "PremiScale, Inc. supports projects that scale, accelerate or optimize development and deployment on private or hybrid cloud infrastructure.\n\nAll projects from this corporation have been cloned into Astrivant, LLC.",
+            "GitHub - premiscale/premiscale: The PremiScale autoscaler controller for Kubernetes",
+            "The PremiScale autoscaling controller for Kubernetes",
+            "GitHub - premiscale/pass-operator: A kubernetes operator that syncs and decrypts secrets from pass git repositories",
+            "A Kubernetes secrets operator based on the kopf framework for Python."
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/91593723/",
+              "url": "https://www.linkedin.com/company/91593723/",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH6BGDx5BE8GQ/company-logo_100_100/company-logo_100_100/0/1672415765992/premiscale_logo?e=1793232000&v=beta&t=W9m2dTaNhCgq9FRYLbHc0d1iyatlzptriwKxp-rYpRs",
+              "alt": "PremiScale logo",
+              "path": "data/assets/771a5386e699dbf41ae350416ecbe6d093814e7e2ded75518257a6f35bb5f037.png",
+              "link": "https://www.linkedin.com/company/91593723/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH6PslF9M_yvA/articleshare-shrink_160/articleshare-shrink_160/0/1765935747957?e=1792173600&v=beta&t=6H-sLNQzBa25W0p-8O9A4u8BrDopuhQx5RJDrPsxI2Q",
+              "alt": "Thumbnail for GitHub - premiscale/premiscale: The PremiScale autoscaler controller for Kubernetes",
+              "path": "data/assets/a2b43eaf1258499ce7235c7b8fe8880f94138e82ea07027df94164904cadd39f.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2410566952/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQEVGwYKyLaQ3Q/articleshare-shrink_160/B56ZpUriPrJkAk-/0/1762357290221?e=1792173600&v=beta&t=b7G2QaHroIshSt7H9i4eHeOSBFnqWqgkvA2ighefj2Q",
+              "alt": "Thumbnail for GitHub - premiscale/pass-operator: A kubernetes operator that syncs and decrypts secrets from pass git repositories",
+              "path": "data/assets/3dee12b8de204b9af870356e96828f24eb974b69beac53637cd9f33afe8ba8b5.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2410566952/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
+            }
+          ],
+          "skills": [
+            {
+              "name": "Business Ownership",
+              "endorsements": 0
+            },
+            {
+              "name": "Lean Startup",
+              "endorsements": 0
+            }
+          ],
+          "positions": []
+        },
+        {
+          "title": "DevOps Engineer",
+          "paragraphs": [
+            "SBE Vision, Inc. · Full-time",
+            "Aug 2022 - Feb 2024 · 1 yr 7 mos",
+            "Wakefield, Massachusetts, United States · Hybrid",
+            "SBE Vision develops an ontology based hub-and-spoke integration platform for interoperability between digital engineering tools.\n\nResponsibilities\n\n- Assisting customers and troubleshooting while deploying SBE Vision's microservice architecture solution to on-premise or cloud environments\n- Writing internal technical documentation outlining processes, procedures and standards\n- Assisted with disaster recovery in the event of on-premise power outages and hardware or software faults\n- Deployed and maintained operations services\n- Introduce new security, solutions and customs while practicing DevOps\n\nProjects\n\n- Introduced, maintained and automated an on-premise datacenter based on Rancher / RKE1 to reduce cloud costs and unify cluster access\n- Introduced a scalable Kubernetes-based GitLab runners solution\n- Centralized and templatized Helm charts in a monorepo with supporting GitLab CI trigger framework\n- Introduced an IaC solution in Terraform and GitLab CI for managing infrastructure in all public clouds\n\nTechnologies\n\n- Helm chart authoring\n- Kubernetes (on-premise Rancher RKE1, GKE / EKS / {E,G,A}CR)\n- GitLab CI / static runner / kubernetes runner deployment and administration\n- Ansible\n- Linux KVM virtualization / automation\n- Terraform\n- Sonatype Nexus\n- Git hook authoring\n- Rancher deployment and administration\n- ZFS\n- TLS certificates",
+            "pre-commit hook that lints Gitlab CI configurations"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/75395048/",
+              "url": "https://www.linkedin.com/company/75395048/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "pre-commit hook that lints Gitlab CI configurations",
+              "url": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook",
+              "resolved_url": "https://github.com/emmeowzing/gitlabci-lint-pre-commit-hook",
+              "title": "GitHub - emmeowzing/gitlabci-lint-pre-commit-hook: A pre-commit hook that lints Gitlab CI configurations"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
+              "alt": "SBE Vision, Inc. logo",
+              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "link": "https://www.linkedin.com/company/75395048/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSiomweF5JSw/articleshare-shrink_160/articleshare-shrink_160/0/1773215972279?e=1792173600&v=beta&t=30v8gsTLDf7Z9blbipv6x1caivNgYdlWyZscggSABRs",
+              "alt": "Thumbnail for pre-commit hook that lints Gitlab CI configurations",
+              "path": "data/assets/0ef4b900dd83df4fbb18d0c723b0f1626b29b513677798975e052fec3c2f3b54.png",
+              "link": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook"
+            }
+          ],
+          "skills": [
+            {
+              "name": "Distributed Systems",
+              "endorsements": 0
+            },
+            {
+              "name": "Google Kubernetes Engine (GKE)",
+              "endorsements": 0
+            }
+          ],
+          "positions": []
+        },
+        {
+          "title": "DevOps Engineer",
+          "paragraphs": [
+            "HqO · Full-time",
+            "Aug 2021 - Jul 2022 · 1 yr",
+            "Boston, Massachusetts, United States · Hybrid",
+            "HqO creates workplace experience technology that transforms how people connect with each other and the places they work.\n\nResponsibilities\n\n- Writing technical documentation for engineers outlining procedures, solutions to problems, and onboarding.\n\nTechnologies\n\n- CircleCI / Orb authoring\n- GitHub Actions\n- Argo CD\n- Kubernetes / EKS\n- Helm chart authoring / Helm chart-testing (ct)\n- Spot.io\n- Infracost\n- Loft.sh / DevSpace\n- Terraform / Vault / Hashicorp Cloud\n- Artifactory\n- Git pre-commit hooks authoring",
+            "CLI helper to filter inputs by .gitignore-like conf files in CI",
+            "CircleCI config validate pre-commit hook for use with dynamic-continuation",
+            "CircleCI orb pack and validate pre-commit hook"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/11386524/",
+              "url": "https://www.linkedin.com/company/11386524/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "CLI helper to filter inputs by .gitignore-like conf files in CI",
+              "url": "https://github.com/bjd2385/wildmatch",
+              "resolved_url": "https://github.com/emmeowzing/wildmatch",
+              "title": "GitHub - emmeowzing/wildmatch: A CLI helper to filter inputs by .gitignore-like conf files"
+            },
+            {
+              "label": "CircleCI config validate pre-commit hook for use with dynamic-continuation",
+              "url": "https://github.com/bjd2385/circleci-config-pre-commit-hook",
+              "resolved_url": "https://github.com/emmeowzing/circleci-config-pre-commit-hook",
+              "title": "GitHub - emmeowzing/circleci-config-pre-commit-hook: CircleCI config validate pre-commit hook for use with dynamic-continuation"
+            },
+            {
+              "label": "CircleCI orb pack and validate pre-commit hook",
+              "url": "https://github.com/bjd2385/circleci-orb-pre-commit-hook",
+              "resolved_url": "https://github.com/emmeowzing/circleci-orb-pre-commit-hook",
+              "title": "GitHub - emmeowzing/circleci-orb-pre-commit-hook: CircleCI orb pack and validate pre-commit hook"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHGGvtpxtKl2g/company-logo_100_100/company-logo_100_100/0/1636022953216/hqo_logo?e=1793232000&v=beta&t=GAqyzqRK3C2Lb-mTQKy3xvcv7TT8qiPaLq_f4YKvOOg",
+              "alt": "HqO logo",
+              "path": "data/assets/0f9aa87666ca79d0b0b9ee8f7c16ac61f4122082ada5fa58dd5ba10c6bc349de.png",
+              "link": "https://www.linkedin.com/company/11386524/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGqwqt-wFH1UA/articleshare-shrink_160/articleshare-shrink_160/0/1765461579014?e=1792173600&v=beta&t=l-32cvlI0niLh81sUIdSkqE0k9925FfVmmZG9Q-G5xU",
+              "alt": "Thumbnail for CLI helper to filter inputs by .gitignore-like conf files in CI",
+              "path": "data/assets/5ddb44f3fc4370d9af1c695753ed20bfb2f4d01f3dbdadb30d301aab470385bf.png",
+              "link": "https://github.com/bjd2385/wildmatch"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEIUoSqlP6jow/articleshare-shrink_160/articleshare-shrink_160/0/1766712018037?e=1792173600&v=beta&t=Ss9bEyYcuQQRocEytbYx_H0Xs3WDHpPFu-Sw-tMJJI0",
+              "alt": "Thumbnail for CircleCI config validate pre-commit hook for use with dynamic-continuation",
+              "path": "data/assets/e7f50b82ed86db068fed8a03c0dcf3e5d82e0a0894bb126828d132e8bc35d817.png",
+              "link": "https://github.com/bjd2385/circleci-config-pre-commit-hook"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQG8HAM3m4pPqA/articleshare-shrink_160/articleshare-shrink_160/0/1770670989074?e=1792173600&v=beta&t=OdoVlRAzYMtHwNS_8blMDLluKl2W-yJ7YgeuZRWw6Vk",
+              "alt": "Thumbnail for CircleCI orb pack and validate pre-commit hook",
+              "path": "data/assets/b65de48bc956a7f1d29054e86e570027f0b89fd3094811fe0cb1b5bbed277904.png",
+              "link": "https://github.com/bjd2385/circleci-orb-pre-commit-hook"
+            }
+          ],
+          "skills": [
+            {
+              "name": "Distributed Systems",
+              "endorsements": 0
+            },
+            {
+              "name": "CircleCI",
+              "endorsements": 0
+            }
+          ],
+          "positions": []
+        },
+        {
+          "title": "Threat Stack, Inc",
+          "paragraphs": [
+            "Full-time · 2 yrs",
+            "Boston, Massachusetts, United States",
+            "Tooling Solutions Engineer",
+            "Apr 2021 - Jul 2021 · 4 mos",
+            "Remote",
+            "Threat Stack is the leader in cloud security & compliance for infrastructure and applications, helping companies securely leverage the business benefits of the cloud with proactive risk identification and real-time threat detection across cloud workloads.\n\nProjects\n\n- Wrote a Python package and containerized Flask API to assist and support internal teams in platform rule modifications and versioning\n- Continued to maintain log and diagnostics collection scripts in Bash and PowerShell for troubleshooting Linux- and Windows-based agent installations",
+            "A CLI tool for Threat Stack ruleset manipulation via API",
+            "Support Engineer",
+            "Aug 2019 - Apr 2021 · 1 yr 9 mos",
+            "On-site",
+            "Responsibilities\n\n- Debug and reproduce reported issues with agent deployments on Kubernetes (GKE, EKS, ECS, & ECR), Docker, Windows Server and all major Linux distributions in GCP and AWS\n- Document procedures and projects for other team members to reference in Confluence and GitLab\n- Work cross-departmentally with Sales, Engineering, and Product to maintain customer relations and relay customer feedback\n- Escalate software defects in SalesForce and Jira to product development and engineering team\n\nProjects\n\n- Maintainer of a log collecting package written in Bash for the Linux Agent and Support Engineering teams\n- Built and maintained infrastructure monitoring projects with Python and Terraform in AWS EC2 and Lambda"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/3068295/",
+              "url": "https://www.linkedin.com/company/3068295/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "A CLI tool for Threat Stack ruleset manipulation via API",
+              "url": "https://github.com/bjd2385/threatstack-rule-manager",
+              "resolved_url": "https://github.com/emmeowzing/threatstack-rule-manager",
+              "title": "GitHub - emmeowzing/threatstack-rule-manager: A tool for working with Threat Stack rules"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH8ArNfftI-yg/company-logo_100_100/company-logo_100_100/0/1647357720328/threat_stack_inc_logo?e=1793232000&v=beta&t=Gs6Dm1h7Pr0o01wd0KqaeW6qFv469F73WLzJUWRA5O8",
+              "alt": "Threat Stack, Inc logo",
+              "path": "data/assets/21e9c20fcc87a314736b9fec801cfd632cbfaf80d704d4fc1fc72ec31af86dc8.png",
+              "link": "https://www.linkedin.com/company/3068295/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSFjsioNzzrw/articleshare-shrink_160/articleshare-shrink_160/0/1765836048051?e=1792173600&v=beta&t=bQcvOyzsWTT9iBSqijgOCSYQcLocDim6pVSgMpibmfU",
+              "alt": "Thumbnail for A CLI tool for Threat Stack ruleset manipulation via API",
+              "path": "data/assets/231b933165198c763d2d173b8de109b6d1563c2e67d2a93f046075dd82207ba4.png",
+              "link": "https://github.com/bjd2385/threatstack-rule-manager"
+            }
+          ],
+          "skills": [],
+          "positions": [
+            {
+              "title": "Tooling Solutions Engineer",
+              "paragraphs": [
+                "Apr 2021 - Jul 2021 · 4 mos",
+                "Remote",
+                "Threat Stack is the leader in cloud security & compliance for infrastructure and applications, helping companies securely leverage the business benefits of the cloud with proactive risk identification and real-time threat detection across cloud workloads.\n\nProjects\n\n- Wrote a Python package and containerized Flask API to assist and support internal teams in platform rule modifications and versioning\n- Continued to maintain log and diagnostics collection scripts in Bash and PowerShell for troubleshooting Linux- and Windows-based agent installations",
+                "A CLI tool for Threat Stack ruleset manipulation via API"
+              ],
+              "links": [
+                {
+                  "label": "A CLI tool for Threat Stack ruleset manipulation via API",
+                  "url": "https://github.com/bjd2385/threatstack-rule-manager",
+                  "resolved_url": "https://github.com/emmeowzing/threatstack-rule-manager",
+                  "title": "GitHub - emmeowzing/threatstack-rule-manager: A tool for working with Threat Stack rules"
+                }
+              ],
+              "images": [
+                {
+                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSFjsioNzzrw/articleshare-shrink_160/articleshare-shrink_160/0/1765836048051?e=1792173600&v=beta&t=bQcvOyzsWTT9iBSqijgOCSYQcLocDim6pVSgMpibmfU",
+                  "alt": "Thumbnail for A CLI tool for Threat Stack ruleset manipulation via API",
+                  "path": "data/assets/231b933165198c763d2d173b8de109b6d1563c2e67d2a93f046075dd82207ba4.png",
+                  "link": "https://github.com/bjd2385/threatstack-rule-manager"
+                }
+              ],
+              "skills": [],
+              "positions": []
+            },
+            {
+              "title": "Support Engineer",
+              "paragraphs": [
+                "Aug 2019 - Apr 2021 · 1 yr 9 mos",
+                "On-site",
+                "Responsibilities\n\n- Debug and reproduce reported issues with agent deployments on Kubernetes (GKE, EKS, ECS, & ECR), Docker, Windows Server and all major Linux distributions in GCP and AWS\n- Document procedures and projects for other team members to reference in Confluence and GitLab\n- Work cross-departmentally with Sales, Engineering, and Product to maintain customer relations and relay customer feedback\n- Escalate software defects in SalesForce and Jira to product development and engineering team\n\nProjects\n\n- Maintainer of a log collecting package written in Bash for the Linux Agent and Support Engineering teams\n- Built and maintained infrastructure monitoring projects with Python and Terraform in AWS EC2 and Lambda"
+              ],
+              "links": [],
+              "images": [],
+              "skills": [],
+              "positions": []
+            }
+          ]
+        },
+        {
+          "title": "Datto, Inc.",
+          "paragraphs": [
+            "Full-time · 1 yr 2 mos",
+            "Rochester, New York Metropolitan Area · On-site",
+            "Technical Support Specialist, Blue Tier",
+            "May 2019 - Aug 2019 · 4 mos",
+            "Responsibilities\n\n- Build strong relationships to a dedicated set of Datto’s highest revenue-generating partners and MSPs\n- Virtualize on-prem infrastructure in cloud-based disaster recovery tests",
+            "Technical Support Specialist, Tier 1",
+            "Jul 2018 - May 2019 · 11 mos",
+            "Projects\n\n- Wrote and maintained a support script for use on field appliances that produced a timeline of volumes' utilization across ZFS snapshots in backups.\n\nResponsibilities\n\n- Administer the virtualization of Windows Server and major Linux distributions in KVM\n- Troubleshoot the backup process of all major operating systems in MS Hyper-V and VMware\n- Samba / SMB, NFS and iSCSI configuration in Windows Server and Linux\n- Remotely assist in the maintenance of ZFS on Linux (ZoL)-based storage appliances at customer sites\n- Assist in the maintenance of thousands of private ZoL-based secondary-replication backup cloud servers\n- Networking fundamentals, including DNS, DHCP, VLANs, and firewall configuration",
+            "A fast (experimental) RX algorithm implementation in Python 3.9+",
+            "Parse backed-up volumes' utilization across ZFS snapshots"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/1477873/",
+              "url": "https://www.linkedin.com/company/1477873/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "A fast (experimental) RX algorithm implementation in Python 3.9+",
+              "url": "https://github.com/bjd2385/rx_algorithm",
+              "resolved_url": "https://github.com/emmeowzing/rx_algorithm",
+              "title": "GitHub - emmeowzing/rx_algorithm: A fast (experimental) RX algorithm implementation in Python 3.9+"
+            },
+            {
+              "label": "Parse backed-up volumes' utilization across ZFS snapshots",
+              "url": "https://github.com/bjd2385/datto",
+              "resolved_url": "https://github.com/emmeowzing/datto",
+              "title": "GitHub - emmeowzing/datto: Datto volume info script"
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/C560BAQE_CYue3wizWw/company-logo_100_100/company-logo_100_100/0/1656351956106/datto_inc_logo?e=1793232000&v=beta&t=zGp428v7yLMT7YRCx5FjWEbeuV6lQd0gQWybj8OiipU",
+              "alt": "Datto, Inc. logo",
+              "path": "data/assets/3435132fa21c9d02f36e731a55a1234b7aabe9c5d372165f74d4296c8f2bae3a.png",
+              "link": "https://www.linkedin.com/company/1477873/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEFlmQIo8flsA/articleshare-shrink_160/articleshare-shrink_160/0/1765482592593?e=1792173600&v=beta&t=Xhfy2a0Ge8iCpo7kowbA1aspAgS4hz3QbzC6IcuIzlc",
+              "alt": "Thumbnail for A fast (experimental) RX algorithm implementation in Python 3.9+",
+              "path": "data/assets/c0f6ea8182b1bc1cb7fee7c14ff6b73eff682d8e1d8be287a6b8384cc5ae7bd8.png",
+              "link": "https://github.com/bjd2385/rx_algorithm"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHJYd3i7-prBQ/articleshare-shrink_160/articleshare-shrink_160/0/1767070948324?e=1792173600&v=beta&t=OpHnjfUlAaY-OHeGJbE9tdwnyaQxVB4HQz1ts8OB3Q0",
+              "alt": "Thumbnail for Parse backed-up volumes' utilization across ZFS snapshots",
+              "path": "data/assets/c07f715a0c010ff740764ae8298dfd4e7c7e83405fdb967b01aade2c717d21a9.png",
+              "link": "https://github.com/bjd2385/datto"
+            }
+          ],
+          "skills": [],
+          "positions": [
+            {
+              "title": "Technical Support Specialist, Blue Tier",
+              "paragraphs": [
+                "May 2019 - Aug 2019 · 4 mos",
+                "Responsibilities\n\n- Build strong relationships to a dedicated set of Datto’s highest revenue-generating partners and MSPs\n- Virtualize on-prem infrastructure in cloud-based disaster recovery tests"
+              ],
+              "links": [],
+              "images": [],
+              "skills": [],
+              "positions": []
+            },
+            {
+              "title": "Technical Support Specialist, Tier 1",
+              "paragraphs": [
+                "Jul 2018 - May 2019 · 11 mos",
+                "Projects\n\n- Wrote and maintained a support script for use on field appliances that produced a timeline of volumes' utilization across ZFS snapshots in backups.\n\nResponsibilities\n\n- Administer the virtualization of Windows Server and major Linux distributions in KVM\n- Troubleshoot the backup process of all major operating systems in MS Hyper-V and VMware\n- Samba / SMB, NFS and iSCSI configuration in Windows Server and Linux\n- Remotely assist in the maintenance of ZFS on Linux (ZoL)-based storage appliances at customer sites\n- Assist in the maintenance of thousands of private ZoL-based secondary-replication backup cloud servers\n- Networking fundamentals, including DNS, DHCP, VLANs, and firewall configuration",
+                "A fast (experimental) RX algorithm implementation in Python 3.9+",
+                "Parse backed-up volumes' utilization across ZFS snapshots"
+              ],
+              "links": [
+                {
+                  "label": "A fast (experimental) RX algorithm implementation in Python 3.9+",
+                  "url": "https://github.com/bjd2385/rx_algorithm",
+                  "resolved_url": "https://github.com/emmeowzing/rx_algorithm",
+                  "title": "GitHub - emmeowzing/rx_algorithm: A fast (experimental) RX algorithm implementation in Python 3.9+"
+                },
+                {
+                  "label": "Parse backed-up volumes' utilization across ZFS snapshots",
+                  "url": "https://github.com/bjd2385/datto",
+                  "resolved_url": "https://github.com/emmeowzing/datto",
+                  "title": "GitHub - emmeowzing/datto: Datto volume info script"
+                }
+              ],
+              "images": [
+                {
+                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEFlmQIo8flsA/articleshare-shrink_160/articleshare-shrink_160/0/1765482592593?e=1792173600&v=beta&t=Xhfy2a0Ge8iCpo7kowbA1aspAgS4hz3QbzC6IcuIzlc",
+                  "alt": "Thumbnail for A fast (experimental) RX algorithm implementation in Python 3.9+",
+                  "path": "data/assets/c0f6ea8182b1bc1cb7fee7c14ff6b73eff682d8e1d8be287a6b8384cc5ae7bd8.png",
+                  "link": "https://github.com/bjd2385/rx_algorithm"
+                },
+                {
+                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHJYd3i7-prBQ/articleshare-shrink_160/articleshare-shrink_160/0/1767070948324?e=1792173600&v=beta&t=OpHnjfUlAaY-OHeGJbE9tdwnyaQxVB4HQz1ts8OB3Q0",
+                  "alt": "Thumbnail for Parse backed-up volumes' utilization across ZFS snapshots",
+                  "path": "data/assets/c07f715a0c010ff740764ae8298dfd4e7c7e83405fdb967b01aade2c717d21a9.png",
+                  "link": "https://github.com/bjd2385/datto"
+                }
+              ],
+              "skills": [],
+              "positions": []
+            }
+          ]
+        },
+        {
+          "title": "Evaluation Technician",
+          "paragraphs": [
+            "Baxter International Inc. · Full-time",
+            "Aug 2017 - Jul 2018 · 1 yr",
+            "Medina, New York, United States · On-site",
+            "- Evaluate and schedule appropriate repair and rework plans on Spectrum V6 and V8 IV pumps in the Service Department\n- Ensure documentation and operating procedures comply with FDA regulations\n- Escalate appliances of suspected adulteration to QA Engineers\n- Assist in maintaining the Service center database as a superuser"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/2371/",
+              "url": "https://www.linkedin.com/company/2371/",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D560BAQHdNB4ekluoIw/company-logo_100_100/B56Zi.rLWuHQAY-/0/1755545647131/baxter_healthcare_logo?e=1793232000&v=beta&t=_FuBw2xJ0f9vsH29yC3lONkTT1YwiOc8otOHX9lT4qk",
+              "alt": "Baxter International Inc. logo",
+              "path": "data/assets/b55a39927919894efbc83ad8c07ada9004c7f0ed7cc9b87c4ff25df05fc888cb.png",
+              "link": "https://www.linkedin.com/company/2371/"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Line Lead",
+          "paragraphs": [
+            "Saint-Gobain Adfors · Full-time",
+            "Jan 2017 - Aug 2017 · 8 mos",
+            "Albion, New York, United States · On-site",
+            "- Led the production fiberglass converting and reduction process\n- Set production records by optimizing machine downtime and workflow\n- Used basic mathematical abilities to calculate materials, hourly rates and other relevant details\n- Made sure that products were produced on time and of good quality"
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/company/2282551/",
+              "url": "https://www.linkedin.com/company/2282551/",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEcZ2FNTBw6A/company-logo_100_100/company-logo_100_100/0/1706803356023/saint_gobain_adfors_logo?e=1793232000&v=beta&t=cpFPrUyYJUVTdSHRx8Rro4W7hWNWFl1oanNDXHfNjm8",
+              "alt": "Saint-Gobain Adfors logo",
+              "path": "data/assets/2bf170089880a0803b59d33bc89ad261a2e3cbd69b0737e4f79574854a473109.png",
+              "link": "https://www.linkedin.com/company/2282551/"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        },
+        {
+          "title": "Undergraduate Researcher",
+          "paragraphs": [
+            "Rochester Institute of Technology · Part-time",
+            "Sep 2013 - Dec 2014 · 1 yr 4 mos",
+            "Rochester, New York, United States · Remote",
+            "- Created journal quality overlays of HST and VLA FITS data with Python and Interactive Data Language (IDL)\n- Cooperated with others in team-based environment to identify correlations between wavelengths from data analysis",
+            "Radio Galaxy 3C 210",
+            "An example plot."
+          ],
+          "links": [
+            {
+              "label": "https://www.linkedin.com/school/165762/",
+              "url": "https://www.linkedin.com/school/165762/",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [
+            {
+              "url": "https://media.licdn.com/dms/image/v2/C4E0BAQGnICZxLlhERw/company-logo_100_100/company-logo_100_100/0/1630565170020/rochester_institute_of_technology_logo?e=1793232000&v=beta&t=Kl5t4LU4QnxRbVpROIqS5MvAFtpU4RqLU1XSWwMlzNE",
+              "alt": "Rochester Institute of Technology logo",
+              "path": "data/assets/bd9496f624c9f44e56be85b0db42793849a64ea3dc215b500c3c4b121e03518e.png",
+              "link": "https://www.linkedin.com/school/165762/"
+            },
+            {
+              "url": "https://media.licdn.com/dms/image/v2/C4E2DAQEG-etA3nIrpQ/profile-treasury-image-shrink_160_160/profile-treasury-image-shrink_160_160/0/1596565249872?e=1792173600&v=beta&t=dD4Zo6TxfOzHz1NHXhzr_hck7sJj8CaZKmxNDtWDSbI",
+              "alt": "Thumbnail for Radio Galaxy 3C 210",
+              "path": "data/assets/d5d3ff4b7f726a4cf4a9079ea9b82843e8d9220386a7e24162356bc384f0fca7.png",
+              "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/776655142/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
+            }
+          ],
+          "skills": [],
+          "positions": []
+        }
+      ]
+    },
+    {
       "key": "education",
       "title": "Education",
       "entries": [
@@ -1590,7 +1791,7 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_480/B4EaEaJW36HYAU-/0/1791440023748?e=1792170000&v=beta&t=DBHHqBke52oohwkPtZDBTG12WuC3rnxjVr_PYLszlko",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_480/B4EaEaJW36HYAU-/0/1791440023748?e=1792173600&v=beta&t=StqlCiPPlE5FIbxkE0ORleTt4xCHuSIXdd1f7s2iAIU",
               "alt": "",
               "path": "data/assets/e602e679540ba8662e80b4171091651265ae94a3d3bbc2959f103abf32696e48.png",
               "link": "https://github.com/astrivant/resumeme"
@@ -1622,7 +1823,7 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGdP5KIxcpY2g/articleshare-shrink_480/B4EaDGvuAtHQAU-/0/1790040794209?e=1792170000&v=beta&t=Ne74B2aw5IPmvAUmzGXetj-gvdzXYQe6wBFDwQqB3r8",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGdP5KIxcpY2g/articleshare-shrink_480/B4EaDGvuAtHQAU-/0/1790040794209?e=1792173600&v=beta&t=IvpjajhWA6qr5LR0Rm8JtEUn4fm1EKDnUNvfDC6gXtI",
               "alt": "",
               "path": "data/assets/b8d75c5eb2a66a9f43e840f2bc5972afc656afb04b32aeb9cd644e1b4c503307.png",
               "link": "https://github.com/astrivant/polyad"
@@ -1659,7 +1860,7 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_480/B4EaCMSldGHAAY-/0/1789060078326?e=1792170000&v=beta&t=e3Dlt1gMGOm2KCMijj60UTXPxkZKEz_BCb3keuNuNlg",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_480/B4EaCMSldGHAAY-/0/1789060078326?e=1792173600&v=beta&t=iHoM1PW-PixkD8yOxduX6fW9Y4Xz9SdUcZ_5skOPWT0",
               "alt": "",
               "path": "data/assets/72ae39716a7955f5365b9db5f9f8aac4e377fd64d2408660f2a25c4339c787d6.png",
               "link": "https://github.com/astrivant/hypothesis-helm"
@@ -1711,7 +1912,7 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHQ7jcx3B1mKQ/articleshare-shrink_480/B4EZ8f_59aIsAU-/0/1782948274549?e=1792170000&v=beta&t=4TL86EOJdY4l_M3YFXzyDBT3cr39AM0wHCaxVAinhMk",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHQ7jcx3B1mKQ/articleshare-shrink_480/B4EZ8f_59aIsAU-/0/1782948274549?e=1792173600&v=beta&t=OUjvQHTIkz3SzpnuYFZbVhSC0QPagI8d9I4IAE135EE",
               "alt": "",
               "path": "data/assets/7b1046980e9fdb07136f96bf435000a530d7a4716d2d839f6fb15bfc6670e924.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/1782948303592/single-media-viewer/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
@@ -1745,7 +1946,7 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/D562DAQHYgHRN3XmUig/profile-treasury-image-shrink_480_480/B56ZpUreDDJ8AM-/0/1762357273112?e=1792170000&v=beta&t=-kU-AanyX7oUS2rzLEnW533q6qBaih46wW4itr8PNPc",
+              "url": "https://media.licdn.com/dms/image/v2/D562DAQHYgHRN3XmUig/profile-treasury-image-shrink_480_480/B56ZpUreDDJ8AM-/0/1762357273112?e=1792173600&v=beta&t=gEBQJ4B43BXWrDqyHfPKt8X_5oeSyiHeO7WkWG-ORy4",
               "alt": "",
               "path": "data/assets/567ec75177e2da2df234b1c4dcf27237c1c399b4d662a035e248381d3d52158d.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/1762357305602/single-media-viewer/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
@@ -3313,7 +3514,7 @@
           "paragraphs": [
             "· 3rd",
             "Co-founder of the AI, Tech & Privacy Academy (1,600+ participants), Author of Luiza’s Newsletter (100,000+ subscribers), Mother of 3",
-            "144,592 followers"
+            "144,595 followers"
           ],
           "links": [],
           "images": [
@@ -3415,7 +3616,7 @@
         {
           "title": "Companies: Observable Space, CompanyObservable Space",
           "paragraphs": [
-            "4,486 followers"
+            "4,487 followers"
           ],
           "links": [],
           "images": [
@@ -3432,7 +3633,7 @@
         {
           "title": "Companies: LeadDev, CompanyLeadDev",
           "paragraphs": [
-            "16,692 followers"
+            "16,691 followers"
           ],
           "links": [],
           "images": [
@@ -3517,7 +3718,7 @@
         {
           "title": "Companies: Y Combinator, CompanyY Combinator",
           "paragraphs": [
-            "1,833,873 followers"
+            "1,833,897 followers"
           ],
           "links": [],
           "images": [
@@ -3619,7 +3820,7 @@
         {
           "title": "Companies: Ramp, CompanyRamp",
           "paragraphs": [
-            "363,967 followers"
+            "363,984 followers"
           ],
           "links": [],
           "images": [
@@ -3636,7 +3837,7 @@
         {
           "title": "Companies: Pylon, CompanyPylon",
           "paragraphs": [
-            "38,966 followers"
+            "38,967 followers"
           ],
           "links": [],
           "images": [
@@ -3755,7 +3956,7 @@
         {
           "title": "Companies: VictoriaMetrics, CompanyVictoriaMetrics",
           "paragraphs": [
-            "9,764 followers"
+            "9,766 followers"
           ],
           "links": [],
           "images": [
@@ -3772,7 +3973,7 @@
         {
           "title": "Companies: General Atomics Aeronautical Systems, CompanyGeneral Atomics Aeronautical Systems",
           "paragraphs": [
-            "162,700 followers"
+            "162,702 followers"
           ],
           "links": [],
           "images": [
@@ -3789,7 +3990,7 @@
         {
           "title": "Companies: Starfish Space, CompanyStarfish Space",
           "paragraphs": [
-            "20,245 followers"
+            "20,246 followers"
           ],
           "links": [],
           "images": [
@@ -3806,7 +4007,7 @@
         {
           "title": "Companies: Sierra Space, CompanySierra Space",
           "paragraphs": [
-            "151,820 followers"
+            "151,824 followers"
           ],
           "links": [],
           "images": [
@@ -3823,7 +4024,7 @@
         {
           "title": "Companies: Payload, CompanyPayload",
           "paragraphs": [
-            "30,901 followers"
+            "30,903 followers"
           ],
           "links": [],
           "images": [
@@ -3874,7 +4075,7 @@
         {
           "title": "Companies: PagerDuty, CompanyPagerDuty",
           "paragraphs": [
-            "67,990 followers"
+            "67,989 followers"
           ],
           "links": [],
           "images": [
@@ -3891,7 +4092,7 @@
         {
           "title": "Companies: Chainguard, CompanyChainguard",
           "paragraphs": [
-            "69,464 followers"
+            "69,465 followers"
           ],
           "links": [],
           "images": [
@@ -3925,7 +4126,7 @@
         {
           "title": "Companies: Cloudsmith, CompanyCloudsmith",
           "paragraphs": [
-            "15,457 followers"
+            "15,458 followers"
           ],
           "links": [],
           "images": [
@@ -3942,7 +4143,7 @@
         {
           "title": "Companies: Gopuff, CompanyGopuff",
           "paragraphs": [
-            "200,847 followers"
+            "200,859 followers"
           ],
           "links": [],
           "images": [
@@ -3976,7 +4177,7 @@
         {
           "title": "Companies: StripMallGuy, CompanyStripMallGuy",
           "paragraphs": [
-            "106,182 followers"
+            "106,184 followers"
           ],
           "links": [],
           "images": [
@@ -3993,7 +4194,7 @@
         {
           "title": "Companies: Trane, CompanyTrane",
           "paragraphs": [
-            "372,209 followers"
+            "372,212 followers"
           ],
           "links": [],
           "images": [
@@ -4027,7 +4228,7 @@
         {
           "title": "Companies: Astrolab, CompanyAstrolab",
           "paragraphs": [
-            "37,298 followers"
+            "37,302 followers"
           ],
           "links": [],
           "images": [
@@ -4214,7 +4415,7 @@
         {
           "title": "Companies: ALMA Observatory, CompanyALMA Observatory",
           "paragraphs": [
-            "65,519 followers"
+            "65,520 followers"
           ],
           "links": [],
           "images": [
@@ -4265,7 +4466,7 @@
         {
           "title": "Companies: Cypress HCM, CompanyCypress HCM",
           "paragraphs": [
-            "936,468 followers"
+            "936,477 followers"
           ],
           "links": [],
           "images": [
@@ -4282,7 +4483,7 @@
         {
           "title": "Companies: Anduril Industries, CompanyAnduril Industries",
           "paragraphs": [
-            "660,065 followers"
+            "660,110 followers"
           ],
           "links": [],
           "images": [
@@ -4316,7 +4517,7 @@
         {
           "title": "Companies: Entro Security, CompanyEntro Security",
           "paragraphs": [
-            "9,970 followers"
+            "9,971 followers"
           ],
           "links": [],
           "images": [
@@ -4350,7 +4551,7 @@
         {
           "title": "Companies: Whatnot, CompanyWhatnot",
           "paragraphs": [
-            "132,537 followers"
+            "132,539 followers"
           ],
           "links": [],
           "images": [
@@ -4367,7 +4568,7 @@
         {
           "title": "Companies: Datadog, CompanyDatadog",
           "paragraphs": [
-            "593,572 followers"
+            "593,598 followers"
           ],
           "links": [],
           "images": [
@@ -4384,7 +4585,7 @@
         {
           "title": "Companies: Google Cloud, CompanyGoogle Cloud",
           "paragraphs": [
-            "3,463,899 followers"
+            "3,463,947 followers"
           ],
           "links": [],
           "images": [
@@ -4401,7 +4602,7 @@
         {
           "title": "Companies: Stack Overflow, CompanyStack Overflow",
           "paragraphs": [
-            "1,603,902 followers"
+            "1,603,908 followers"
           ],
           "links": [],
           "images": [
@@ -4469,7 +4670,7 @@
         {
           "title": "Companies: Plaid, CompanyPlaid",
           "paragraphs": [
-            "265,397 followers"
+            "265,403 followers"
           ],
           "links": [],
           "images": [
@@ -4503,7 +4704,7 @@
         {
           "title": "Companies: Grafana Labs, CompanyGrafana Labs",
           "paragraphs": [
-            "311,608 followers"
+            "311,611 followers"
           ],
           "links": [],
           "images": [
@@ -4571,7 +4772,7 @@
         {
           "title": "Companies: vCluster, CompanyvCluster",
           "paragraphs": [
-            "30,190 followers"
+            "30,192 followers"
           ],
           "links": [],
           "images": [
@@ -4656,7 +4857,7 @@
         {
           "title": "Companies: Database Engineering, CompanyDatabase Engineering",
           "paragraphs": [
-            "1,194,670 followers"
+            "1,194,669 followers"
           ],
           "links": [],
           "images": [
@@ -4690,7 +4891,7 @@
         {
           "title": "Companies: Technical Support, CompanyTechnical Support",
           "paragraphs": [
-            "917,636 followers"
+            "917,634 followers"
           ],
           "links": [],
           "images": [
@@ -4707,7 +4908,7 @@
         {
           "title": "Companies: Miro, CompanyMiro",
           "paragraphs": [
-            "498,980 followers"
+            "498,983 followers"
           ],
           "links": [],
           "images": [
@@ -4724,7 +4925,7 @@
         {
           "title": "Companies: Zscaler, CompanyZscaler",
           "paragraphs": [
-            "543,396 followers"
+            "543,414 followers"
           ],
           "links": [],
           "images": [
@@ -4758,7 +4959,7 @@
         {
           "title": "Companies: LinkedIn, CompanyLinkedIn",
           "paragraphs": [
-            "34,482,498 followers"
+            "34,482,806 followers"
           ],
           "links": [],
           "images": [
@@ -4792,7 +4993,7 @@
         {
           "title": "Companies: Harness, CompanyHarness",
           "paragraphs": [
-            "150,459 followers"
+            "150,462 followers"
           ],
           "links": [],
           "images": [
@@ -4877,7 +5078,7 @@
         {
           "title": "Companies: DevOps Bulletin, CompanyDevOps Bulletin",
           "paragraphs": [
-            "17,549 followers"
+            "17,550 followers"
           ],
           "links": [],
           "images": [
@@ -4894,7 +5095,7 @@
         {
           "title": "Companies: Spotify, CompanySpotify",
           "paragraphs": [
-            "4,765,143 followers"
+            "4,765,217 followers"
           ],
           "links": [],
           "images": [
@@ -4962,7 +5163,7 @@
         {
           "title": "Companies: GLG, CompanyGLG",
           "paragraphs": [
-            "503,209 followers"
+            "503,214 followers"
           ],
           "links": [],
           "images": [
@@ -4979,7 +5180,7 @@
         {
           "title": "Companies: Array, CompanyArray",
           "paragraphs": [
-            "22,535 followers"
+            "22,537 followers"
           ],
           "links": [],
           "images": [
@@ -5030,7 +5231,7 @@
         {
           "title": "Companies: Prefect, CompanyPrefect",
           "paragraphs": [
-            "31,027 followers"
+            "31,028 followers"
           ],
           "links": [],
           "images": [
@@ -5183,7 +5384,7 @@
         {
           "title": "Companies: Argo Project, CompanyArgo Project",
           "paragraphs": [
-            "43,274 followers"
+            "43,277 followers"
           ],
           "links": [],
           "images": [
@@ -5251,7 +5452,7 @@
         {
           "title": "Companies: Skylight, CompanySkylight",
           "paragraphs": [
-            "26,098 followers"
+            "26,100 followers"
           ],
           "links": [],
           "images": [
@@ -5268,7 +5469,7 @@
         {
           "title": "Companies: Rocket Lab, CompanyRocket Lab",
           "paragraphs": [
-            "385,139 followers"
+            "385,150 followers"
           ],
           "links": [],
           "images": [
@@ -5353,7 +5554,7 @@
         {
           "title": "Companies: GitHub, CompanyGitHub",
           "paragraphs": [
-            "6,722,118 followers"
+            "6,722,267 followers"
           ],
           "links": [],
           "images": [
@@ -5404,7 +5605,7 @@
         {
           "title": "Companies: Coinbase, CompanyCoinbase",
           "paragraphs": [
-            "1,498,151 followers"
+            "1,498,181 followers"
           ],
           "links": [],
           "images": [
@@ -5421,7 +5622,7 @@
         {
           "title": "Companies: Circle, CompanyCircle",
           "paragraphs": [
-            "238,668 followers"
+            "238,674 followers"
           ],
           "links": [],
           "images": [
@@ -5438,7 +5639,7 @@
         {
           "title": "Companies: Cloudflare, CompanyCloudflare",
           "paragraphs": [
-            "1,192,949 followers"
+            "1,192,958 followers"
           ],
           "links": [],
           "images": [
@@ -5455,7 +5656,7 @@
         {
           "title": "Companies: Rafay, CompanyRafay",
           "paragraphs": [
-            "19,505 followers"
+            "19,507 followers"
           ],
           "links": [],
           "images": [
@@ -5472,7 +5673,7 @@
         {
           "title": "Companies: Planet, CompanyPlanet",
           "paragraphs": [
-            "171,401 followers"
+            "171,403 followers"
           ],
           "links": [],
           "images": [
@@ -5489,7 +5690,7 @@
         {
           "title": "Companies: Boom Supersonic, CompanyBoom Supersonic",
           "paragraphs": [
-            "254,655 followers"
+            "254,661 followers"
           ],
           "links": [],
           "images": [
@@ -5506,7 +5707,7 @@
         {
           "title": "Companies: Axiom Space, CompanyAxiom Space",
           "paragraphs": [
-            "180,216 followers"
+            "180,220 followers"
           ],
           "links": [],
           "images": [
@@ -5523,7 +5724,7 @@
         {
           "title": "Companies: Boeing, CompanyBoeing",
           "paragraphs": [
-            "4,229,745 followers"
+            "4,229,816 followers"
           ],
           "links": [],
           "images": [
@@ -5540,7 +5741,7 @@
         {
           "title": "Companies: GitLab, CompanyGitLab",
           "paragraphs": [
-            "1,190,501 followers"
+            "1,190,518 followers"
           ],
           "links": [],
           "images": [
@@ -5557,7 +5758,7 @@
         {
           "title": "Companies: Docker, Inc, CompanyDocker, Inc",
           "paragraphs": [
-            "840,782 followers"
+            "840,786 followers"
           ],
           "links": [],
           "images": [
@@ -5574,7 +5775,7 @@
         {
           "title": "Companies: HashiCorp, CompanyHashiCorp",
           "paragraphs": [
-            "328,774 followers"
+            "328,775 followers"
           ],
           "links": [],
           "images": [
@@ -5591,7 +5792,7 @@
         {
           "title": "Companies: The Linux Foundation, CompanyThe Linux Foundation",
           "paragraphs": [
-            "422,335 followers"
+            "422,340 followers"
           ],
           "links": [],
           "images": [
@@ -5608,7 +5809,7 @@
         {
           "title": "Companies: Cloud Native Computing Foundation (CNCF), CompanyCloud Native Computing Foundation (CNCF)",
           "paragraphs": [
-            "180,187 followers"
+            "180,190 followers"
           ],
           "links": [],
           "images": [
@@ -5625,7 +5826,7 @@
         {
           "title": "Companies: Relativity Space, CompanyRelativity Space",
           "paragraphs": [
-            "239,619 followers"
+            "239,624 followers"
           ],
           "links": [],
           "images": [
@@ -5693,7 +5894,7 @@
         {
           "title": "Companies: Rapid7, CompanyRapid7",
           "paragraphs": [
-            "228,542 followers"
+            "228,543 followers"
           ],
           "links": [],
           "images": [
@@ -5710,7 +5911,7 @@
         {
           "title": "Companies: Fidelity Investments, CompanyFidelity Investments",
           "paragraphs": [
-            "1,448,354 followers"
+            "1,448,380 followers"
           ],
           "links": [],
           "images": [
@@ -5727,7 +5928,7 @@
         {
           "title": "Companies: Anaconda, CompanyAnaconda",
           "paragraphs": [
-            "106,885 followers"
+            "106,886 followers"
           ],
           "links": [],
           "images": [
@@ -5744,7 +5945,7 @@
         {
           "title": "Companies: Python Software Foundation, CompanyPython Software Foundation",
           "paragraphs": [
-            "160,679 followers"
+            "160,680 followers"
           ],
           "links": [],
           "images": [
@@ -5761,7 +5962,7 @@
         {
           "title": "Companies: Red Hat, CompanyRed Hat",
           "paragraphs": [
-            "1,588,762 followers"
+            "1,588,765 followers"
           ],
           "links": [],
           "images": [
@@ -5778,7 +5979,7 @@
         {
           "title": "Companies: DebtBook, CompanyDebtBook",
           "paragraphs": [
-            "5,684 followers"
+            "5,686 followers"
           ],
           "links": [],
           "images": [
@@ -5795,7 +5996,7 @@
         {
           "title": "Companies: Weave, CompanyWeave",
           "paragraphs": [
-            "55,497 followers"
+            "55,498 followers"
           ],
           "links": [],
           "images": [
@@ -5812,7 +6013,7 @@
         {
           "title": "Companies: Amazon Web Services (AWS), CompanyAmazon Web Services (AWS)",
           "paragraphs": [
-            "11,156,726 followers"
+            "11,156,851 followers"
           ],
           "links": [],
           "images": [
@@ -5829,7 +6030,7 @@
         {
           "title": "Companies: NOAA: National Oceanic & Atmospheric Administration, CompanyNOAA: National Oceanic & Atmospheric Administration",
           "paragraphs": [
-            "227,130 followers"
+            "227,131 followers"
           ],
           "links": [],
           "images": [
@@ -5851,7 +6052,7 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/D4E07AQGAUN0W68Gsyw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1679464692171?e=1792170000&v=beta&t=-nR5Vel-XTQ1gXLTFhKItT5lAw0P5m4NDnwsF__Kg1Q",
+              "url": "https://media.licdn.com/dms/image/v2/D4E07AQGAUN0W68Gsyw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1679464692171?e=1792173600&v=beta&t=8s2ePj0KqNy6oEtEcpwbmCg9pJCYXZtMQ-qMZVS9hFk",
               "alt": "",
               "path": "data/assets/27c8de0ae42d16a19a60b2bae94037a0dc87f609ec7d83adb7c9f959ed150024.png",
               "link": ""
@@ -5863,12 +6064,12 @@
         {
           "title": "Groups: Cloud Computing, SaaS, Data Centre & Virtualization, GroupCloud Computing, SaaS, Data Centre & Virtualization",
           "paragraphs": [
-            "1,247,899 members"
+            "1,247,897 members"
           ],
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/C4D07AQG37VB8M0OUdA/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631366309621?e=1792170000&v=beta&t=zsclBuPK7_5A52NTz_BrjHE71elmodyktIT0JGGzYxE",
+              "url": "https://media.licdn.com/dms/image/v2/C4D07AQG37VB8M0OUdA/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631366309621?e=1792173600&v=beta&t=fur85yjBBzehP4ib5Vryz8PBgqDeJALAWoFokUXLnqs",
               "alt": "",
               "path": "data/assets/4fb378854d8edb37df7925dcf1c3ba7929545bf57137ce6419d636b812ed8790.png",
               "link": ""
@@ -5885,7 +6086,7 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/D5607AQH3d2ImPADArg/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1657802580080?e=1792170000&v=beta&t=3g5Jw6HTA__CFOLHMMgC8p9NS9p-hY-ZEV0jJNb_yGg",
+              "url": "https://media.licdn.com/dms/image/v2/D5607AQH3d2ImPADArg/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1657802580080?e=1792173600&v=beta&t=eOUDjdP2EN1XFsSszVxqdB1APGo2cLrPh0HLcQmQWlM",
               "alt": "",
               "path": "data/assets/e5e044f6ce4b5bbcddc71e8f1e56a2430c38bde04200fef8d407278b15fc6da1.png",
               "link": ""
@@ -5902,7 +6103,7 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/C4D07AQGk_pP01ZElDQ/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631005519508?e=1792170000&v=beta&t=moi2sSfafioOC0YpAp3pQ9jmqCvDjWRKyJtfhB8eeZs",
+              "url": "https://media.licdn.com/dms/image/v2/C4D07AQGk_pP01ZElDQ/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631005519508?e=1792173600&v=beta&t=tSyXnJTzjvrGTrduCQIujv0QuEm0kwkpGchz1qbvvs4",
               "alt": "",
               "path": "data/assets/6ee0bef71b162d826f18c972d04f3b9aa20b78cbfcc7c13e0f891be68fda472d.png",
               "link": ""
@@ -5919,7 +6120,7 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/C5607AQGYeBgRmXjEOw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631004506770?e=1792170000&v=beta&t=eIrTCzuoa7VwGGVOJ-3J-eQAzx5neiIGKfMGg_8UL2I",
+              "url": "https://media.licdn.com/dms/image/v2/C5607AQGYeBgRmXjEOw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631004506770?e=1792173600&v=beta&t=8gSQKF6jiwo1DmdSPnpY1YpTeNi5xm74tFe6xRIXLaA",
               "alt": "",
               "path": "data/assets/f282b867aa1fe7af60e41417aaaff08a0b6948be97dcaf6dc4994a7eb15ff5e5.png",
               "link": ""
@@ -5936,7 +6137,7 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/C4D07AQG8Vd6LWUE0Gw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631004597306?e=1792170000&v=beta&t=TuktsGluiAVylZ559Sh8DezxvlagO5KklJ58o1XQXns",
+              "url": "https://media.licdn.com/dms/image/v2/C4D07AQG8Vd6LWUE0Gw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631004597306?e=1792173600&v=beta&t=y9ZT6BsTTcXg2JqHtj_2TK7_VGUiOFX_R9Q0MW8OfU8",
               "alt": "",
               "path": "data/assets/5929c99267e29cc975edc6aa950832c38fb6718234a3739c47561d43ab593742.png",
               "link": ""
@@ -6102,7 +6303,7 @@
         {
           "title": "Schools: Y Combinator, SchoolY Combinator",
           "paragraphs": [
-            "1,833,873 followers"
+            "1,833,896 followers"
           ],
           "links": [],
           "images": [
@@ -6172,7 +6373,7 @@
     }
   ],
   "warnings": [],
-  "captured_at": "2026-10-09T16:53:06.747956+00:00",
+  "captured_at": "2026-10-09T17:35:19.119116+00:00",
   "schema_version": 1,
   "headline": ""
 }
