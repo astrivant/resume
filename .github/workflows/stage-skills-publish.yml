@@ -68,7 +68,9 @@ jobs:
               echo 'Skipping skill additions: this tag is not the latest published release.'
           fi
       - name: Publish only missing skills and verify persistence
+        id: publish_skills
         if: steps.latest.outputs.current == 'true'
+        continue-on-error: true
         env:
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
@@ -80,3 +82,15 @@ jobs:
           public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
           key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
           cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}
+
+      # The publish command reconciles only absent skills; make uncertain browser writes visible for review.
+      - name: Warn if LinkedIn skill publication was not confirmed
+        if: steps.publish_skills.outcome == 'failure'
+        run: |
+          echo "::warning title=Optional LinkedIn skill publication::LinkedIn did not confirm all skill additions. Some may have reached the profile; inspect Skills before retrying."
+          {
+            printf '%s\n' \
+              '### Warning: LinkedIn skill publication was not confirmed' \
+              '' \
+              'LinkedIn did not confirm all skill additions. Some may have reached the profile. Inspect Skills before retrying. The signed release remains available.'
+          } >> "$GITHUB_STEP_SUMMARY"

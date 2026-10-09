@@ -731,16 +731,61 @@ def test_upload_workflow_requires_verified_current_tag_and_explicit_settings() -
     download = next(step for step in steps if step.get("uses", "").startswith("actions/download-artifact@"))
     assert download["with"] == {"name": "signed-resume", "path": ".cache/publication"}
     verify = next(step for step in steps if step.get("run") == "bash scripts/release/verify.sh")
-    upload = steps[-1]
+    upload = next(step for step in steps if step.get("id") == "publish_resume")
+    warning = next(step for step in steps if step.get("name") == "Warn if LinkedIn resume upload was not confirmed")
     assert upload["uses"] == "./.github/actions/linkedin-session"
     assert upload["with"]["command"] == "publish-resume"
+    assert upload["continue-on-error"] is True
     assert set(upload["env"]) == {"LINKEDIN_USERNAME", "LINKEDIN_PASSWORD", "RESUMEME_LOG_LEVEL", "PYTHONUNBUFFERED"}
     assert upload["env"]["RESUMEME_LOG_LEVEL"] == "DEBUG"
     assert steps.index(download) < steps.index(verify) < steps.index(upload)
+    assert warning["if"] == "steps.publish_resume.outcome == 'failure'"
+    assert "::warning" in warning["run"]
+    assert "$GITHUB_STEP_SUMMARY" in warning["run"]
 
-    for step in (download, verify, upload):
+    for step in (download, verify):
         assert step["if"] == "steps.latest.outputs.current == 'true'"
         assert not step.get("continue-on-error", False)
+
+    assert upload["if"] == "steps.latest.outputs.current == 'true'"
+
+
+@pytest.mark.parametrize(
+    ("workflow_name", "job_name", "step_id", "warning_name"),
+    [
+        ("stage-ownership.yml", "ownership", "publish_ownership", "Warn if LinkedIn ownership update was not confirmed"),
+        ("stage-skills-publish.yml", "publish", "publish_skills", "Warn if LinkedIn skill publication was not confirmed"),
+    ],
+)
+def test_optional_linkedin_writes_emit_non_blocking_warnings(
+    workflow_name: str,
+    job_name: str,
+    step_id: str,
+    warning_name: str,
+) -> None:
+    """
+    Keep optional LinkedIn writes non-blocking while making uncertain outcomes visible.
+
+    Args:
+        workflow_name (str): Reusable workflow file containing a live LinkedIn write.
+        job_name (str): Job in the workflow that performs the write.
+        step_id (str): Identifier used to observe the write step outcome.
+        warning_name (str): Follow-up step that reports a write failure.
+
+    Returns:
+        None: Live profile write failures become Actions warnings rather than release failures.
+    """
+    root = REPOSITORY_ROOT
+    workflow = yaml.safe_load((root / ".github/workflows" / workflow_name).read_text())
+    steps = workflow["jobs"][job_name]["steps"]
+    write = next(step for step in steps if step.get("id") == step_id)
+    warning = next(step for step in steps if step.get("name") == warning_name)
+
+    assert write["uses"] == "./.github/actions/linkedin-session"
+    assert write["continue-on-error"] is True
+    assert warning["if"] == f"steps.{step_id}.outcome == 'failure'"
+    assert "::warning" in warning["run"]
+    assert "$GITHUB_STEP_SUMMARY" in warning["run"]
 
 
 @pytest.mark.parametrize("latest_tag", ["resume-new", "resume-old"])

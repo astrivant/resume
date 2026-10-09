@@ -521,6 +521,11 @@ def test_ci_contract_is_tag_only_and_keeps_model_and_linkedin_credentials_separa
 
     assert "publish == 'true'" in publish_caller["if"]
     assert publisher["concurrency"]["group"] == "resumeme-linkedin-ownership-${{ github.repository }}"
+    publisher_steps = publisher["steps"]
+    skill_write = next(step for step in publisher_steps if step.get("id") == "publish_skills")
+    skill_warning = next(step for step in publisher_steps if step.get("name") == "Warn if LinkedIn skill publication was not confirmed")
+    assert skill_write["continue-on-error"] is True
+    assert skill_warning["if"] == "steps.publish_skills.outcome == 'failure'"
     assert "LINKEDIN_PASSWORD" not in json.dumps(caller)
     assert "OPENAI_API_KEY" not in json.dumps(publish_caller)
     assert "LINKEDIN_PASSWORD" not in json.dumps(workflow["generate"])

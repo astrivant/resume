@@ -72,7 +72,9 @@ jobs:
 
       # The browser receives LinkedIn credentials and the public key only; the private signing key stays in the release stage.
       - name: Maintain the public ownership lines
+        id: publish_ownership
         if: steps.latest.outputs.current == 'true'
+        continue-on-error: true
         env:
           RESUMEME_LOG_LEVEL: DEBUG
           PYTHONUNBUFFERED: '1'
@@ -85,3 +87,15 @@ jobs:
           public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
           key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
           cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}
+
+      # A browser or LinkedIn confirmation failure must not invalidate the published signed release.
+      - name: Warn if LinkedIn ownership update was not confirmed
+        if: steps.publish_ownership.outcome == 'failure'
+        run: |
+          echo "::warning title=Optional LinkedIn ownership update::LinkedIn did not confirm the About update. It may have reached the profile; inspect the About section before retrying."
+          {
+            printf '%s\n' \
+              '### Warning: LinkedIn ownership update was not confirmed' \
+              '' \
+              'LinkedIn did not confirm the About update. It may have reached the profile. Inspect the About section before retrying. The signed release remains available.'
+          } >> "$GITHUB_STEP_SUMMARY"

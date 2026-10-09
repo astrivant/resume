@@ -72,7 +72,9 @@ jobs:
 
       # Upload this run's signed bytes; never rebuild or use the PDF committed in the tagged checkout.
       - name: Save the verified PDF for future LinkedIn applications
+        id: publish_resume
         if: steps.latest.outputs.current == 'true'
+        continue-on-error: true
         env:
           RESUMEME_LOG_LEVEL: DEBUG
           PYTHONUNBUFFERED: '1'
@@ -85,3 +87,15 @@ jobs:
           public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
           key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
           cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}
+
+      # LinkedIn may accept an upload without exposing it immediately in the saved-resume list.
+      - name: Warn if LinkedIn resume upload was not confirmed
+        if: steps.publish_resume.outcome == 'failure'
+        run: |
+          echo "::warning title=Optional LinkedIn resume upload::LinkedIn did not confirm the saved resume. The upload may have reached LinkedIn; check Jobs > Preferences > Resumes and application data before retrying."
+          {
+            printf '%s\n' \
+              '### Warning: LinkedIn resume upload was not confirmed' \
+              '' \
+              'LinkedIn did not confirm the saved resume. The upload may have reached LinkedIn. Check **Jobs > Preferences > Resumes and application data** before retrying. The signed release remains available.'
+          } >> "$GITHUB_STEP_SUMMARY"
