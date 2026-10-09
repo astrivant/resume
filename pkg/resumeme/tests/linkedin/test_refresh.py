@@ -374,6 +374,7 @@ def test_verification_gate_requires_requested_capture_and_successful_work(
     results: dict[str, dict[str, str | dict[str, str]]] = {
         "source": {"result": "success", "outputs": {"refresh": str(refresh).lower()}},
         "capture": {"result": capture},
+        "awareness": {"result": "skipped"},
         "summary-stage": {"result": "success"},
         "test-stage": {"result": "success"},
         "security-stage": {"result": "success"},
@@ -420,7 +421,7 @@ def test_independent_pipeline_work_has_no_profile_or_summary_barrier() -> None:
     workflows = REPOSITORY_ROOT / ".github/workflows"
     jobs = yaml.safe_load((workflows / "ci.yml").read_text())["jobs"]
     assert jobs["summary-stage"]["needs"] == jobs["skills-stage"]["needs"] == ["source", "capture"]
-    assert jobs["documents-stage"]["needs"] == jobs["resume-stage"]["needs"] == ["source", "summary-stage"]
+    assert jobs["documents-stage"]["needs"] == jobs["resume-stage"]["needs"] == ["source", "summary-stage", "awareness"]
     assert jobs["container-stage"]["needs"] == jobs["release-stage"]["needs"] == jobs["pypi-stage"]["needs"] == ["source", "verified"]
     assert jobs["container-notes-stage"]["needs"] == ["source", "container-stage", "release-stage"]
     assert jobs["skills-publish-stage"]["needs"] == ["source", "skills-stage", "release-stage"]
@@ -454,6 +455,7 @@ def test_independent_pipeline_work_has_no_profile_or_summary_barrier() -> None:
     # The public required check must account for every branch before any release or main publication can start.
     assert set(jobs["verified"]["needs"]) == {
         "source",
+        "awareness",
         "capture",
         "summary-stage",
         "test-stage",

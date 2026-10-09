@@ -305,3 +305,34 @@ def test_decision_figure_config_bundle_and_render(tmp_path: Path) -> None:
     appendix = evolve(config.appendices.awareness, include=(FigureSelector(group="life"),))
     assert selected_figures(appendix) == ("decision-influences",)
     assert selected_figures(evolve(appendix, exclude=(FigureSelector(group="life"),))) == ()
+
+
+@pytest.mark.parametrize("status,accepted", [("success", True), ("skipped", True), ("failure", False), ("cancelled", False)])
+def test_pipeline_gate_rejects_failed_awareness(status: str, accepted: bool) -> None:
+    """
+    Execute the publication gate with the optional figure input independently failing or completing.
+
+    Args:
+        status (str): Awareness job result supplied by GitHub Actions.
+        accepted (bool): Expected publication eligibility.
+
+    Returns:
+        None: Failed or cancelled validation blocks publication while other required work succeeds.
+    """
+    import os
+    import subprocess
+
+    root = Path(__file__).resolve().parents[4]
+    job = yaml.safe_load((root / ".github/workflows/ci.yml").read_text())["jobs"]["verified"]
+    results = {name: {"result": "success"} for name in job["needs"]}
+    results["awareness"] = {"result": status}
+    results["capture"] = {"result": "skipped"}
+    data = dict(results, source={"result": "success", "outputs": {"refresh": "false"}})
+    completed = subprocess.run(
+        ["bash", "-c", job["steps"][0]["run"]],
+        env=dict(os.environ, RESULTS_JSON=json.dumps(data)),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert (completed.returncode == 0) is accepted, completed.stdout + completed.stderr
