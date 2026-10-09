@@ -19,7 +19,7 @@ from selenium.webdriver.common.keys import Keys
 from resumeme.cli import main
 from resumeme.config import Capture, Config, LinkedIn, Ownership, load_config
 from resumeme.linkedin.identity import ownership_block, reconcile_about, release_destination
-from resumeme.linkedin.ownership import _about_text, _editor, _fill_about, _update_about, publish_ownership
+from resumeme.linkedin.ownership import _about_editor_open, _about_text, _editor, _fill_about, _update_about, publish_ownership
 from resumeme.signing import public_key_fingerprint
 
 if TYPE_CHECKING:
@@ -284,6 +284,26 @@ def test_rich_about_writer_separates_paragraphs_with_one_blank_row() -> None:
         call(Keys.ENTER),
         call("Second paragraph."),
     ]
+
+
+def test_follow_up_modal_does_not_count_as_open_about_editor() -> None:
+    """
+    Treat LinkedIn's post-save notifications or upsell dialogs as a completed About submission.
+
+    Returns:
+        None: Only a visible dialog containing the About field blocks persisted read-back.
+    """
+    driver, dialog, field = MagicMock(), MagicMock(), MagicMock()
+    driver.find_elements.return_value = [dialog]
+    dialog.is_displayed.return_value = True
+    dialog.find_elements.return_value = []
+
+    assert not _about_editor_open(driver)
+
+    dialog.find_elements.return_value = [field]
+    field.is_displayed.return_value = True
+
+    assert _about_editor_open(driver)
 
 
 @pytest.mark.parametrize("dry_run,current", [(True, "Personal text"), (False, "Personal text\n\n" + _BLOCK)])

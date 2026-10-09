@@ -114,6 +114,58 @@ def _upload_input(driver: WebDriver) -> WebElement | Literal[False]:
     return fields[0] if fields else False
 
 
+def _send_pdf_file(driver: WebDriver, field: WebElement, pdf: Path) -> None:
+    """
+    Select the PDF through LinkedIn's hidden file control without opening a desktop picker.
+
+    Args:
+        driver (WebDriver): Browser displaying validated application settings.
+        field (WebElement): Unique file input returned by `_upload_input`.
+        pdf (Path): Staged, content-addressed PDF.
+
+    Returns:
+        None: The file input receives the exact staged path.
+    """
+    if field.is_displayed():
+        field.send_keys(str(pdf.resolve()))
+        return
+
+    original_class = field.get_attribute("class")
+    original_style = field.get_attribute("style")
+
+    # LinkedIn hides its file input behind a label; expose a 1px control briefly for Selenium's file selection.
+    driver.execute_script(
+        """
+        const input = arguments[0];
+        input.classList.remove('hidden');
+        for (const [name, value] of Object.entries({
+          display: 'block', visibility: 'visible', position: 'fixed', left: '0', top: '0',
+          width: '1px', height: '1px', opacity: '0.01'
+        })) input.style.setProperty(name, value, 'important');
+        """,
+        field,
+    )
+
+    try:
+        field.send_keys(str(pdf.resolve()))
+    finally:
+        # Restore LinkedIn's original hidden control after the file-change event has fired.
+        driver.execute_script(
+            """
+            const input = arguments[0];
+            const className = arguments[1];
+            const style = arguments[2];
+            if (className === null) input.removeAttribute('class');
+            else input.setAttribute('class', className);
+            if (style === null) input.removeAttribute('style');
+            else input.setAttribute('style', style);
+            """,
+            field,
+            original_class,
+            original_style,
+        )
+
+
 def _settings(driver: WebDriver, config: Config) -> WebElement:
     """
     Load a fresh settings page before inspecting saved files or selecting an upload.
@@ -346,7 +398,7 @@ def _upload_resume(driver: WebDriver, config: Config, pdf: Path, *, dry_run: boo
 
     # A timed-out WebDriver call may already have sent the file. Never resubmit blindly or remove another saved resume.
     try:
-        field.send_keys(str(pdf.resolve()))
+        _send_pdf_file(driver, field, pdf)
         WebDriverWait(driver, policy.page_timeout_seconds).until(lambda page: _saved(page, pdf.name))
     except WebDriverException:
         _LOGGER.warning("Resume upload response was uncertain; checking saved resumes before reporting its outcome")

@@ -143,6 +143,22 @@ def _fill_about(driver: WebDriver, field: WebElement, text: str) -> None:
             field.send_keys(line)
 
 
+def _about_editor_open(driver: WebDriver) -> bool:
+    """
+    Detect whether LinkedIn still displays the editable About dialog.
+
+    Args:
+        driver (WebDriver): Browser displaying an About save response or follow-up modal.
+
+    Returns:
+        bool: Whether a visible dialog still contains the visible About editor.
+    """
+    return any(
+        dialog.is_displayed() and any(field.is_displayed() for field in dialog.find_elements(By.CSS_SELECTOR, _FIELDS))
+        for dialog in driver.find_elements(By.CSS_SELECTOR, _DIALOGS)
+    )
+
+
 def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     """
     Read a fresh owner-scoped About editor and its Save control.
@@ -305,7 +321,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
         save.click()
         _LOGGER.info("About submitted; verifying persisted text")
         WebDriverWait(driver, config.capture.page_timeout_seconds).until(
-            lambda page: not any(dialog.is_displayed() for dialog in page.find_elements(By.CSS_SELECTOR, _DIALOGS)),
+            lambda page: not _about_editor_open(page),
             message="About Save was submitted, but the editor did not close. Inspect the live About before retrying.",
         )
 

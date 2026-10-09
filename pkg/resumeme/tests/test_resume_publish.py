@@ -23,7 +23,7 @@ from selenium.webdriver.common.by import By
 from resumeme.cli import main
 from resumeme.config import Capture, Config, LinkedIn, LinkedInResume, load_config
 from resumeme.exceptions import BrowserError
-from resumeme.linkedin.resume import _pdf_bytes, _saved, _upload_input, _upload_resume, publish_resume
+from resumeme.linkedin.resume import _pdf_bytes, _saved, _send_pdf_file, _upload_input, _upload_resume, publish_resume
 
 if TYPE_CHECKING:
     from pytest import MonkeyPatch
@@ -272,6 +272,30 @@ def test_loading_settings_does_not_offer_an_upload_input() -> None:
     driver.find_elements.return_value = [MagicMock()]
     assert _upload_input(driver) is False
     assert driver.find_elements.call_count == 1
+
+
+def test_hidden_pdf_input_is_exposed_only_while_selecting_the_file(pdf: Path) -> None:
+    """
+    Handle LinkedIn's display-none file control while preserving its page styling afterward.
+
+    Args:
+        pdf (Path): Staged document selected by the browser.
+
+    Returns:
+        None: Selenium selects the exact file and the input's original attributes are restored.
+    """
+    driver, field = MagicMock(), MagicMock()
+    field.is_displayed.return_value = False
+    field.get_attribute.side_effect = {"class": "hidden", "style": None}.get
+
+    _send_pdf_file(driver, field, pdf)
+
+    field.send_keys.assert_called_once_with(str(pdf.resolve()))
+    assert driver.execute_script.call_count == 2
+    expose_script = driver.execute_script.call_args_list[0].args[0]
+    restore_call = driver.execute_script.call_args_list[1]
+    assert "classList.remove('hidden')" in expose_script
+    assert restore_call.args[2:] == ("hidden", None)
 
 
 def test_saved_detection_waits_for_progress_and_ignores_hidden_names() -> None:
