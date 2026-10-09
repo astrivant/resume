@@ -326,9 +326,9 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 }
 ((* endif *))
 % Declare mutable dimensions and boxes before the reusable commands that consume them.
-\newcommand{\bodytextwidthratio}{((( "%.6f"|format(style.text_wrap_width) )))}
-% First-page columns use their own width ratio; later full-width pages use bodytextwidthratio.
-\newcommand{\profilecolumntextwidthratio}{((( "%.6f"|format(style.profile_column_text_wrap_width) )))}
+\newcommand{\firstpagebodywidthratio}{((( "%.6f"|format(style.first_page_body_width) )))}
+\newcommand{\laterpagebodywidthratio}{((( "%.6f"|format(style.later_page_body_width) )))}
+\newif\ifresumemebody
 % Shared corner radii keep About and project backgrounds visually consistent.
 \newcommand{\tilecornerradius}{4pt}
 \newcommand{\tilepadding}{2mm}
@@ -404,6 +404,14 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % =============================================================================
 % Reusable commands and environments
 % =============================================================================
+% The space after 1 terminates the integer before TeX expands the following decimal.
+% Keep this selector fully expandable because it is also used as a dimension multiplier.
+% Resolve at paragraph placement, including after a frame break; sidebar fields keep their full width.
+\newcommand{\bodytextwidthratio}{%
+  \ifresumemebody
+    \ifnum\value{page}=1 \firstpagebodywidthratio\else\laterpagebodywidthratio\fi
+  \else 1\fi
+}
 ((* if has_contents *))
 % Return to the top of the first page using Hyperref's page destination.
 \newcommand{\resumemeindexfooter}{%
@@ -582,7 +590,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \ifnum\value{page}=1\clearpage\fi%
   \fi%
 }%
-\newcommand{\profileparagraph}[2][\ifnum\value{page}=1\profilecolumntextwidthratio\else\bodytextwidthratio\fi]{%
+\newcommand{\profileparagraph}[2][\bodytextwidthratio]{%
   \par
   \profilesetwidth
   \setlength{\profileparagraphwidth}{\linewidth}%
@@ -637,7 +645,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \fi
 }
 ((* else *))
-\newcommand{\profileparagraph}[2][\ifnum\value{page}=1\profilecolumntextwidthratio\else\bodytextwidthratio\fi]{%
+\newcommand{\profileparagraph}[2][\bodytextwidthratio]{%
   \par
   \ifnum\value{page}=1
     \sbox{\paragraphmeasure}{\parbox{\linewidth}{\paragraphcontent{#1}{#2}}}%
@@ -921,6 +929,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((# A header-only profile does not need a forced break or an empty body heading. #))
 ((* if body *))
 \framebreak
+\resumemebodytrue
 ((* if floating_profile *))\profilebodytrue((* endif *))
 % Body paragraphs and bullets receive their own spacing without expanding the sidebar or section headings.
 \renewcommand{\bodylinespread}{((( "%.6f"|format(style.line_height) )))}

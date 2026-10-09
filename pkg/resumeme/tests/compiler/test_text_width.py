@@ -31,22 +31,22 @@ def test_body_width_defaults_and_theme_preserve_column_settings(tmp_path: Path) 
     path.write_text(
         "linkedin: {username: example-person}\n"
         "style:\n  profile_column_side: right\n  profile_column_wrap: true\n"
-        "  theme: full\n  themes: {full: {text_wrap_width: 1, profile_column_text_wrap_width: 0.95}}\n"
+        "  theme: full\n  themes: {full: {later_page_body_width: 1, first_page_body_width: 0.95}}\n"
     )
     base = load_config(path).style
     effective = resolve_style(base)
-    assert base.text_wrap_width == 0.9
-    assert effective.text_wrap_width == 1
-    assert base.profile_column_text_wrap_width == 1
-    assert effective.profile_column_text_wrap_width == 0.95
+    assert base.later_page_body_width == 0.9
+    assert effective.later_page_body_width == 1
+    assert base.first_page_body_width == 1
+    assert effective.first_page_body_width == 0.95
     assert effective.profile_column_side == base.profile_column_side == "right"
     assert effective.profile_column_wrap is base.profile_column_wrap is True
-    assert base.text_wrap_width == 0.9
+    assert base.later_page_body_width == 0.9
 
 
 @pytest.mark.parametrize(
     ("field", "value"),
-    [(field, value) for field in ("text_wrap_width", "profile_column_text_wrap_width") for value in (0, -0.1, 1.01, 90, True, "90%", None)],
+    [(field, value) for field in ("later_page_body_width", "first_page_body_width") for value in (0, -0.1, 1.01, 90, True, "90%", None)],
 )
 @pytest.mark.parametrize("theme", [False, True])
 def test_body_width_rejects_invalid_base_and_theme_values(tmp_path: Path, field: str, value: object, theme: bool) -> None:

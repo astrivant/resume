@@ -72,6 +72,11 @@ __all__ = [
     "project_path",
 ]
 
+_STYLE_WIDTH_ALIASES = {
+    "text_wrap_width": "later_page_body_width",
+    "profile_column_text_wrap_width": "first_page_body_width",
+}
+
 
 def project_path(root: Path, value: str) -> Path:
     """
@@ -149,6 +154,43 @@ def _merge_config(base: object, override: object) -> object:
         return result
 
     return deepcopy(override)
+
+
+def _normalize_style(raw: object, *, path: str = "document.style") -> object:
+    """
+    Translate legacy width names at the YAML boundary, including sparse theme overrides.
+
+    Args:
+        raw (object): Schema-validated style mapping or inline theme.
+        path (str): Public configuration location for conflict diagnostics.
+
+    Returns:
+        object: Independent mapping using explicit first-page and later-page width names.
+
+    Raises:
+        ConfigurationError: Both spellings of one setting occur in the same mapping.
+    """
+    if not isinstance(raw, Mapping):
+        return raw
+
+    normalized = deepcopy(dict(raw))
+
+    # Normalize before merging company overrides so old names still replace inherited canonical values.
+    for legacy, canonical in _STYLE_WIDTH_ALIASES.items():
+        if legacy not in normalized:
+            continue
+
+        if canonical in normalized:
+            raise ConfigurationError(f"Use only {path}.{canonical}; do not also set {path}.{legacy}.")
+
+        normalized[canonical] = normalized.pop(legacy)
+
+    themes = normalized.get("themes")
+
+    if isinstance(themes, Mapping):
+        normalized["themes"] = {name: _normalize_style(theme, path=f"{path}.themes.{name}") for name, theme in themes.items()}
+
+    return normalized
 
 
 def _normalize_config(raw: object) -> object:
@@ -258,6 +300,9 @@ def _normalize_config(raw: object) -> object:
 
     if isinstance(grouped_automation, Mapping) and "codex" in grouped_automation:
         assign("codex", grouped_automation["codex"])
+
+    if "style" in normalized:
+        normalized["style"] = _normalize_style(normalized["style"])
 
     return normalized
 

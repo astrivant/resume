@@ -118,8 +118,8 @@ layout and legacy-path migration table are in [configuration layout](configurati
 | `automation.codex.companies` | `[]` | Company usernames and job URLs for additional tailored PDFs under `single-origin/`; see [company summaries](codex.md#single-origin-resumes) |
 | `document.style.profile_column_side` | `left` | Place the profile in a separate first-page column on the left or right |
 | `document.style.profile_column_wrap` | `false` | Allow body text beneath a right-side profile; ignored for the left-side layout |
-| `document.style.text_wrap_width` | `0.9` | Body text on later full-width pages uses this fraction of its available width; greater than 0 and at most 1 |
-| `document.style.profile_column_text_wrap_width` | `1.0` | First-page column text uses this fraction independently; `1.0` keeps the column at its full available width |
+| `document.style.later_page_body_width` | `0.9` | Body text on later full-width pages uses this fraction of its available width; greater than 0 and at most 1 |
+| `document.style.first_page_body_width` | `1.0` | First-page column text uses this fraction independently; `1.0` keeps the column at its full available width |
 | `document.style.paper` | `letter` | `letter` (8.5 x 11 inches) or `a4` |
 | `document.style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
 | `document.style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
@@ -173,9 +173,9 @@ text, contact details, contribution graph, and contents. An oversized profile
 falls back to breakable columns so long contact information remains visible.
 The wrap setting is ignored on the left. Both settings support inline theme overrides.
 
-`document.style.text_wrap_width: 0.9` keeps body paragraphs and bullets within 90% of their
+`document.style.later_page_body_width: 0.9` keeps body paragraphs and bullets within 90% of their
 available text area on later full-width pages. The separate
-`document.style.profile_column_text_wrap_width` setting controls the first-page column and
+`document.style.first_page_body_width` setting controls the first-page column and
 defaults to `1.0`, so changing the global width does not squeeze that distinct
 layout. With floating text enabled, the first-page limit expands as text clears the
 profile. Headings, logos, figures, and page margins keep their existing dimensions.

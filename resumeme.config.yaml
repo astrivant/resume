@@ -107,8 +107,8 @@ document:
   style:
     profile_column_side: right
     profile_column_wrap: false
-    text_wrap_width: 0.88
-    profile_column_text_wrap_width: 1.0
+    later_page_body_width: 0.88
+    first_page_body_width: 1.0
     line_height: 1.0
     paragraph_spacing: 3
     about_text_indent: 8

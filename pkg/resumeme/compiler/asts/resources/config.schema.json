@@ -517,6 +517,12 @@
               "profile_column_wrap": {
                 "$ref": "#/properties/style/properties/profile_column_wrap"
               },
+              "later_page_body_width": {
+                "$ref": "#/properties/style/properties/later_page_body_width"
+              },
+              "first_page_body_width": {
+                "$ref": "#/properties/style/properties/first_page_body_width"
+              },
               "text_wrap_width": {
                 "$ref": "#/properties/style/properties/text_wrap_width"
               },
@@ -582,19 +588,29 @@
           "type": "boolean",
           "default": false
         },
-        "text_wrap_width": {
-          "description": "Fraction of available body-text width on later full-width pages. First-page columns use profile_column_text_wrap_width; 1 uses the full text area.",
+        "later_page_body_width": {
+          "description": "Maximum body-text width on page 2 onward, as a fraction of the available text area after indentation. Independent of first_page_body_width; 1 uses all available width.",
           "type": "number",
           "exclusiveMinimum": 0,
           "maximum": 1,
           "default": 0.9
         },
-        "profile_column_text_wrap_width": {
-          "description": "Fraction of available first-page profile-column width. Set to 1 to leave the column at its full width.",
+        "first_page_body_width": {
+          "description": "Maximum body-text width on page 1, including About and Experience, as a fraction of their available column width after indentation. Does not resize the identity sidebar; 1 uses all available width.",
           "type": "number",
           "exclusiveMinimum": 0,
           "maximum": 1,
           "default": 1
+        },
+        "text_wrap_width": {
+          "$ref": "#/properties/style/properties/later_page_body_width",
+          "deprecated": true,
+          "description": "Legacy alias for later_page_body_width. Do not specify both names in the same mapping."
+        },
+        "profile_column_text_wrap_width": {
+          "$ref": "#/properties/style/properties/first_page_body_width",
+          "deprecated": true,
+          "description": "Legacy alias for first_page_body_width. Do not specify both names in the same mapping."
         }
       },
       "required": [],

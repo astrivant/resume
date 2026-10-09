@@ -393,8 +393,8 @@ class StyleOverrides(TypedDict, total=False):
         paper (str): A4 or letter paper name.
         profile_column_side (Literal["left", "right"]): First-page profile placement in a separate column.
         profile_column_wrap (bool): Allow body text beneath a right-side profile; False keeps separate first-page columns.
-        text_wrap_width (float): Fraction of the available body-text width, independently of profile placement.
-        profile_column_text_wrap_width (float): Fraction of first-page column width; independent of later full-width body text.
+        later_page_body_width (float): Fraction of the available body-text width, independently of profile placement.
+        first_page_body_width (float): Fraction of first-page column width; independent of later full-width body text.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
@@ -430,8 +430,8 @@ class StyleOverrides(TypedDict, total=False):
     paper: str
     profile_column_side: Literal["left", "right"]
     profile_column_wrap: bool
-    text_wrap_width: float
-    profile_column_text_wrap_width: float
+    later_page_body_width: float
+    first_page_body_width: float
     accent: str
     background: str
     about_background: str | None
@@ -473,8 +473,8 @@ class Style:
         paper (str): A4 or letter paper name.
         profile_column_side (Literal["left", "right"]): First-page profile placement in a separate column.
         profile_column_wrap (bool): Allow body text beneath a right-side profile; disabled by default and ignored on the left.
-        text_wrap_width (float): Fraction of available body-text width; 0.9 reserves the rightmost ten percent on every page.
-        profile_column_text_wrap_width (float): Fraction of first-page column width; 1.0 keeps the column at its full available width.
+        later_page_body_width (float): Fraction of available body-text width; 0.9 reserves the rightmost ten percent on every page.
+        first_page_body_width (float): Fraction of first-page column width; 1.0 keeps the column at its full available width.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
@@ -512,8 +512,8 @@ class Style:
     paper: str = "letter"
     profile_column_side: Literal["left", "right"] = "left"
     profile_column_wrap: bool = False
-    text_wrap_width: float = 0.9
-    profile_column_text_wrap_width: float = 1.0
+    later_page_body_width: float = 0.9
+    first_page_body_width: float = 1.0
     accent: str = "245135"
     background: str = "FFFFFF"
     about_background: str | None = None
