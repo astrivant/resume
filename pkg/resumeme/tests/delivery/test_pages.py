@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import runpy
 import subprocess
+from hashlib import sha256
 from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
@@ -71,16 +72,25 @@ def test_site_uses_relative_links_and_only_publishes_the_accepted_pdf(tmp_path: 
     assert document.find("a", href="https://github.com/fork-owner/my-resume/releases") is not None
     assert document.find("a", href="https://github.com/example-github") is not None
     assert document.find("a", download=True) is not None
-    assert document.find("object", data="./resume.pdf", type="application/pdf") is not None
+    pdf_url = f"./resume.pdf?sha256={sha256(original).hexdigest()}"
+    assert document.find("object", data=pdf_url, type="application/pdf") is not None
+    assert len(document.find_all("a", href=pdf_url)) == 3
 
     # Directory URLs and explicit index URLs resolve beside the PDF at either kind of Pages base URL.
     for base in ("https://resume.example.org", "https://example.github.io/project"):
         for suffix in ("", "index.html"):
-            assert urljoin(base + path + suffix, "./resume.pdf") == base + path + "resume.pdf"
+            assert urljoin(base + path + suffix, pdf_url) == base + path + pdf_url.removeprefix("./")
 
     # Repeated builds are stable, and moving to another directory removes the prior public location.
     first = index.read_bytes()
     assert build_site(profile, config, tmp_path, "fork-owner/my-resume").read_bytes() == first
+
+    # Changed PDF bytes get a different embedded URL even when the profile and page title are unchanged.
+    writer.add_blank_page(width=612, height=792)
+    writer.write(pdf)
+    changed = build_site(profile, config, tmp_path, "fork-owner/my-resume").read_text()
+    assert pdf_url not in changed
+    assert sha256(pdf.read_bytes()).hexdigest() in changed
     moved = build_site(profile, evolve(config, pages=Pages(path="/moved/")), tmp_path, "fork-owner/my-resume")
     assert moved.exists() and not index.exists()
 
@@ -185,6 +195,13 @@ def test_site_cli_previews_without_enabling_deployments_and_exports_validated_se
     monkeypatch.chdir(tmp_path)
     runpy.run_path(str(script), run_name="__main__")
     assert output.read_text() == "enabled=false\npath=/\ncustom-domain=\n"
+
+    # Enabled publication exports a digest of the accepted PDF without altering or rebuilding its bytes.
+    path.write_text("linkedin: {username: example}\npages: {enabled: true}\n")
+    output.unlink()
+    runpy.run_path(str(script), run_name="__main__")
+    digest = sha256((tmp_path / "resume.pdf").read_bytes()).hexdigest()
+    assert output.read_text() == f"enabled=true\npath=/\ncustom-domain=\npdf-sha256={digest}\n"
 
 
 @pytest.mark.parametrize(

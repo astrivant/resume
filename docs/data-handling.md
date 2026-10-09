@@ -264,6 +264,12 @@ fingerprint, source commit, and hashes. Main publication can expose employer
 targets through committed configuration and variant paths as well as PDF text.
 
 Pages serves the generic PDF and a landing page containing identity/profile links.
+Deployment uses the job's short-lived OIDC token and built-in GitHub token with
+the accepted publication commit and exact uploaded artifact ID. OIDC request
+headers and payloads are held in private temporary files, removed when the script
+exits, and never uploaded as artifacts or cached. The OIDC token is masked in
+Actions logs. Live verification downloads only the public PDF and reports its
+SHA-256, without sending authentication headers to the site.
 This project adds no visitor authentication. A custom domain or unlinked path is
 not an access control; confirm the site's actual visibility separately from the
 repository's visibility. Deleting a workflow artifact does not remove its

@@ -8,7 +8,9 @@ import logging
 import re
 import shutil
 import tempfile
+from hashlib import sha256
 from importlib.resources import files
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import quote
@@ -53,12 +55,13 @@ def build_site(profile: Profile, config: Config, root: Path, repository: str) ->
 
     # Use the accepted document verbatim, including its existing layout and footer; site generation never rebuilds it.
     pdf = project_path(root, config.output.pdf)
+    pdf_content = pdf.read_bytes()
 
-    if not pdf.read_bytes().startswith(b"%PDF-"):
+    if not pdf_content.startswith(b"%PDF-"):
         raise PublicationError("Pages requires a nonempty PDF. Build the resume before generating the site.")
 
     try:
-        if not PdfReader(pdf).pages:
+        if not PdfReader(BytesIO(pdf_content)).pages:
             raise PublicationError("Pages requires a PDF containing at least one page.")
     except PdfReadError as error:
         raise PublicationError("Pages could not read the PDF. Rebuild the resume before generating the site.") from error
@@ -74,6 +77,7 @@ def build_site(profile: Profile, config: Config, root: Path, repository: str) ->
         linkedin_url=f"https://www.linkedin.com/in/{quote(profile.username, safe='')}/",
         github_url=f"https://github.com/{quote(config.github.username, safe='')}" if config.github.username else None,
         releases_url=f"https://github.com/{repository}/releases",
+        pdf_url=f"./resume.pdf?sha256={sha256(pdf_content).hexdigest()}",
         style=style,
     )
     destination = project_path(root, ".cache/pages")
@@ -86,7 +90,7 @@ def build_site(profile: Profile, config: Config, root: Path, repository: str) ->
         index = project_path(staging, index_path)
         index.parent.mkdir(parents=True, exist_ok=True)
         index.write_text(document, encoding="utf-8")
-        shutil.copyfile(pdf, index.with_name("resume.pdf"))
+        index.with_name("resume.pdf").write_bytes(pdf_content)
 
         if destination.exists():
             shutil.rmtree(destination)

@@ -42,16 +42,16 @@
     <h1>{{ name }} - Résumé</h1>
     <p>{{ introduction }}</p>
     <nav aria-label="Résumé and profiles">
-      <a href="./resume.pdf">Open PDF</a>
-      <a class="download" href="./resume.pdf" download>Download PDF</a>
+      <a href="{{ pdf_url }}">Open PDF</a>
+      <a class="download" href="{{ pdf_url }}" download>Download PDF</a>
       <a href="{{ linkedin_url }}">LinkedIn</a>
       {% if github_url %}<a href="{{ github_url }}">GitHub</a>{% endif %}
       <a href="{{ releases_url }}">Signed releases</a>
     </nav>
   </header>
   <main aria-label="Résumé document">
-    <object data="./resume.pdf" type="application/pdf" aria-label="{{ name }}'s résumé">
-      <p class="fallback"><a href="./resume.pdf">Open or download the complete résumé (PDF).</a></p>
+    <object data="{{ pdf_url }}" type="application/pdf" aria-label="{{ name }}'s résumé">
+      <p class="fallback"><a href="{{ pdf_url }}">Open or download the complete résumé (PDF).</a></p>
     </object>
   </main>
 </body>

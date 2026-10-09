@@ -79,7 +79,7 @@ directory. Workflows and composite actions call these scripts directly.
 | [`codex/`](../scripts/ci/codex/) | Prepare summary/skill inputs and validate generated response artifacts |
 | [`resume/`](../scripts/ci/resume/) | Render, compile, stage, and restore PDFs; prepare TeXtidote inputs |
 | [`publication/`](../scripts/ci/publication/) | Commit accepted artifacts to main and update README previews and branding |
-| [`pages/`](../scripts/ci/pages/) | Read site settings, reject stale deployments, and resolve the published URL |
+| [`pages/`](../scripts/ci/pages/) | Resolve settings, deploy the accepted commit with OIDC, and verify the live PDF hash |
 | [`containers/`](../scripts/ci/containers/) | Check the built image and push its registry tags |
 
 Release signing and distribution remain in [`scripts/release/`](../scripts/release/).
@@ -187,7 +187,6 @@ actual reference. Repeated references use the same pin.
 | `actions/cache/restore`, `actions/cache/save` | `v6.1.0` | `55cc8345863c7cc4c66a329aec7e433d2d1c52a9` |
 | `actions/checkout` | `v7.0.1` | `3d3c42e5aac5ba805825da76410c181273ba90b1` |
 | `actions/configure-pages` | `v6.0.0` | `45bfe0192ca1faeb007ade9deae92b16b8254a0d` |
-| `actions/deploy-pages` | `v5.0.1` | `368f82528645a54fb793d4d04e342629a3f51346` |
 | `actions/download-artifact` | `v8.0.2` | `9000827ccba6bdab643e8b6fd33ac0654aef8333` |
 | `actions/setup-python` | `v7.0.0` | `5fda3b95a4ea91299a34e894583c3862153e4b97` |
 | `actions/setup-node` | `v7.1.0` | `949feb2413d6458794dcd2491c4babbbce0c15c1` |

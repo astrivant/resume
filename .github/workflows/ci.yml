@@ -15,6 +15,10 @@ on:
         description: Capture LinkedIn again before rebuilding main
         type: boolean
         default: false
+      pages_only:
+        description: Republish the accepted main PDF to Pages without capture or rebuilding
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -45,7 +49,9 @@ jobs:
   # Resolve once so every reusable stage consumes the same commit even if the branch advances during the run.
   source:
     name: Resolve pipeline source
-    if: github.event_name != 'schedule' || github.event.schedule != '43 6 * * 1'
+    if: >-
+      !(github.event_name == 'workflow_dispatch' && inputs.pages_only)
+      && (github.event_name != 'schedule' || github.event.schedule != '43 6 * * 1')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -396,6 +402,7 @@ jobs:
     name: CI verification
     if: >-
       always()
+      && !(github.event_name == 'workflow_dispatch' && inputs.pages_only)
       && !(github.event_name == 'schedule'
       && github.event.schedule == '43 6 * * 1')
     needs:
@@ -526,6 +533,22 @@ jobs:
       id-token: write
     with:
       sha: ${{ needs.deploy-stage.outputs.published-sha }}
+
+  # Recover a served site independently of capture/build work, within this same pipeline.
+  pages-recovery-stage:
+    name: Republish accepted resume website
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      && inputs.pages_only
+      && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/stage-pages.yml
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    with:
+      sha: ${{ github.sha }}
 
   # A verified tag also places its signed PDF and fresh capture on main after release publication.
   tag-publish-stage:

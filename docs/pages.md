@@ -112,6 +112,21 @@ commit directly to the Pages stage; it does not depend on a second workflow
 being triggered by the bot commit. Queued deployments check that `main` still
 names that accepted commit before proceeding. Superseded runs skip the older site.
 
+Pages build versions use the accepted publication commit, not the triggering source
+SHA. Branch and tag runs may share a source SHA but produce different PDFs; using
+that SHA for both can leave the old deployment visible despite a successful job.
+The upload action's exact artifact ID is submitted through the
+[Pages deployment API](https://docs.github.com/en/rest/pages/pages#create-a-github-pages-deployment)
+with the job's normal OIDC credentials. This avoids the
+[upstream build-version collision](https://github.com/actions/deploy-pages/issues/383)
+without modifying GitHub's environment or ref authorization rules.
+
+After deployment, the job downloads the public PDF and compares its SHA-256 with
+the accepted document. Propagation checks use bounded retries; a mismatch fails
+the job instead of reporting a successful refresh. Embedded/open/download links
+include the PDF hash to avoid reusing a browser's cached copy when its bytes change.
+GitHub's cache headers still apply to already-open pages and cached HTML.
+
 Pull requests and other branches do not deploy the site. The site's **Signed releases**
 link leads to release verification artifacts. Pages does not publish raw profile
 JSON, browser state, or the employer-specific PDFs under `single-origin/`.
@@ -130,7 +145,14 @@ gh run rerun RUN_ID --job FAILED_PAGES_JOB_ID
 ```
 
 For other errors, fix the indicated setting and rerun the failed job, or trigger
-a new main run if `main` has advanced. Setting `publishing.pages.enabled: false` stops
+a Pages-only recovery on the latest main if it has advanced:
+
+```bash
+gh workflow run ci.yml --ref main -f pages_only=true
+```
+
+This mode uses the existing pipeline and accepted PDF/profile. It skips LinkedIn
+capture, PDF compilation, and release publication. Setting `publishing.pages.enabled: false` stops
 updates; unpublishing an already-live site is a separate operation in GitHub
 Pages settings.
 
