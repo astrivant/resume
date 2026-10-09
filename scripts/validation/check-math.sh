@@ -19,4 +19,4 @@ fi
 
 node --test "$package_dir/check.test.mjs"
 node "$package_dir/check.mjs"
-bash scripts/tooling/project-python.sh -m doctest docs/capture-scheduling.md
+bash scripts/tooling/project-python.sh -m doctest docs/capture-scheduling.md studies/capture-convergence/README.md

@@ -71,11 +71,11 @@ positional arguments:
     render              Generate tex/resume.tex from the saved profile
     build               Render LaTeX and compile resume.pdf with Docker or the
                         bundled container toolchain
-    capture-plan        Authenticate once and plan six profile-section capture
+    capture-plan        Authenticate once and plan profile-section capture
                         shards
-    capture-shard       Collect the profile sections assigned to one of six
+    capture-shard       Collect the profile sections assigned to one of the planned
                         workers
-    aggregate           Validate and combine all six capture shards into the
+    aggregate           Validate and combine all planned capture shards into the
                         profile snapshot
     config              Validate local configuration without a captured
                         profile
@@ -189,11 +189,11 @@ options:
 ### CI capture fan-out and fan-in
 
 The Actions workflow uses `capture-plan` to authenticate with the configured
-browser and write an overview plus weighted section routes. Six jobs run
-`capture-shard --index 1` through `capture-shard --index 6` against independent
+browser and write an overview plus weighted section routes. The plan selects a
+bounded worker count from `capture.sharding`. Jobs run `capture-shard --index N` against independent
 restored copies of that browser's encrypted session. They upload one result each
 and never save back to the shared cache. `aggregate` is the fan-in: it requires
-all six outputs to match the plan exactly before writing the accepted profile.
+all planned outputs to match the plan exactly before writing the accepted profile.
 Firefox and Chrome use distinct cache namespaces; a refresh uses only
 `capture.browser`. See [pipeline concurrency](automation.md#pipeline-concurrency)
 for the workflow topology and its relation to Polyad CI, and the [sharding
@@ -235,8 +235,8 @@ usage: resumeme capture-shard [-h] --index INDEX [--count COUNT] [--plan PLAN]
 
 options:
   -h, --help       show this help message and exit
-  --index INDEX    One-based shard number from 1 through 6
-  --count COUNT    Total shard count, fixed at six
+  --index INDEX    One-based shard number from the plan
+  --count COUNT    Total shard count; defaults to the frozen plan
   --plan PLAN      Bootstrap plan path
   --output OUTPUT  Shard output path; defaults to shard-N.json in the shard
                    directory
@@ -247,7 +247,7 @@ options:
 
 ### resumeme aggregate
 
-Combine the six shard JSON files with their capture plan and save a profile only
+Combine the planned shard JSON files with their capture plan and save a profile only
 after validating every shard's index, browser, capture identity, and route
 ownership.
 

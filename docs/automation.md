@@ -2,7 +2,7 @@
 
 The pipeline refreshes LinkedIn on the first day of every month at **06:17 UTC**
 (`17 6 1 * *`). It authenticates with the configured browser, captures the profile
-overview and route plan, and collects assigned sections using six parallel workers.
+overview and route plan, and collects assigned sections using a bounded parallel worker matrix.
 The aggregator verifies complete section ownership before images and project
 previews are downloaded, validation and PDF generation run, and the complete
 snapshot, referenced assets, and PDF are committed to `main` together. The
@@ -67,7 +67,7 @@ shards, lint/type/schema checks, Trivy, README review, browser E2E, and package 
 container builds all become eligible alongside any required LinkedIn capture.
 Runner availability determines when eligible jobs actually start.
 
-Capture is a fan-out/fan-in subgraph: bootstrap creates a weighted plan, six
+Capture is a fan-out/fan-in subgraph: bootstrap creates a weighted plan and bounded worker count,
 independent browser jobs collect sections, and aggregation joins their outputs
 only after every shard succeeds and matches the plan. Aggregation validates the
 fresh snapshot and schema contracts before exporting the accepted profile.
@@ -92,13 +92,19 @@ Dependency edges use GitHub's [`needs` semantics](https://docs.github.com/en/act
 The first run uses the original size-weighted LPT assignment. Later runs use
 **history-based adaptive scheduling**: encrypted traversal timings feed a bounded
 PID runtime predictor, and move/swap local search reduces shard-load variance.
-Previous assignments, a migration budget, and improvement thresholds limit churn.
+Previous assignments, a two-to-six migration budget based on predicted dispersion,
+and improvement thresholds limit churn. Large initial imbalances receive more
+migration capacity; near balance the budget returns to two and changes must save
+meaningful predicted time. `capture.sharding` can resize the matrix after a
+completed-run cooldown when predicted time/cost savings justify it. The
+[convergence study](../studies/capture-convergence/README.md) compares this policy
+with fixed limits, an outer PID supervisor, and online gradient descent.
 Persistent bottlenecks can be refined from sections to independently selectable
 detail tabs, one additional section per run.
 
 See [capture scheduling](capture-scheduling.md) for the objective, controller
 constants, cold-start behavior, progressive unit catalog, and cross-tag feedback
-storage. Fan-in still requires all six worker outputs and complete unit coverage
+storage. Fan-in still requires all planned worker outputs and complete unit coverage
 before replacing the accepted profile.
 
 ```mermaid
@@ -113,18 +119,8 @@ flowchart TD
     refresh -->|Yes| bootstrap[Refresh bootstrap]
     history[Previous accepted capture timings] -. decrypt compatible feedback .-> bootstrap
     bootstrap --> plan[Overview and weighted section plan]
-    plan --> shard1[Shard 1]
-    plan --> shard2[Shard 2]
-    plan --> shard3[Shard 3]
-    plan --> shard4[Shard 4]
-    plan --> shard5[Shard 5]
-    plan --> shard6[Shard 6]
-    shard1 --> aggregate[Fan-in: validate and aggregate]
-    shard2 --> aggregate
-    shard3 --> aggregate
-    shard4 --> aggregate
-    shard5 --> aggregate
-    shard6 --> aggregate
+    plan --> matrix[Bounded matrix: initially 6, default 2-8]
+    matrix --> aggregate[Fan-in: validate every planned worker]
     stored --> profile[Selected complete profile]
     aggregate --> profile
     aggregate --> feedback[Encrypt new timings and PID state]
@@ -154,7 +150,7 @@ flowchart TD
 
 This is the same pipeline shape used by [Polyad's CI workflow](https://github.com/astrivant/polyad/blob/main/.github/workflows/ci.yml):
 resolve one source revision, fan out independent work, and fan in at the required
-verification point. In resumeme, the six section workers form the fan-out and the
+verification point. In resumeme, the planned section workers form the fan-out and the
 strict profile aggregator is their fan-in. GitHub Actions artifacts carry the
 plan and results between jobs; every job checks out the same resolved source SHA.
 
@@ -217,7 +213,7 @@ gh secret set LINKEDIN_PASSWORD
   the entire Cosign PEM, including its header, footer, and newlines; the password
   is required only for encrypted keys.
 - `RESUMEME_CACHE_PRIVATE_KEY`, `RESUMEME_CACHE_PUBLIC_KEY`, and `RESUMEME_CACHE_KEY_PASSWORD`:
-  required for tag and scheduled/manual-refresh captures, which fan out to six
+  required for tag and scheduled/manual-refresh captures, which fan out to the planned
   browser workers. The [setup script](linkedin-session-cache.md#setup) generates
   the dedicated PEM pair and uploads all three secrets. Firefox and Chrome use
   distinct encrypted cache namespaces. Local interactive capture does not need
@@ -255,8 +251,8 @@ Firefox as the default. The capture step sets `RESUMEME_LOG_LEVEL=DEBUG` and
 `PYTHONUNBUFFERED=1` so browser progress and sanitized request diagnostics stream
 to the Actions log. See [logging](CLI.md#logging) for the output format and redaction limits.
 The bootstrap job alone receives LinkedIn login secrets and writes the selected
-browser's encrypted cache. Each of the six workers restores that cache read-only;
-all six can run concurrently without racing cache updates. The session wrapper
+browser's encrypted cache. Each planned worker restores that cache read-only;
+all planned workers can run concurrently without racing cache updates. The session wrapper
 places browser state and raw browser diagnostics in a temporary directory. The
 capture plan and shard results are short-lived workflow artifacts, while the
 accepted snapshot and referenced media are shared with downstream jobs. These
@@ -266,7 +262,7 @@ and [cleanup limits](data-handling.md#encrypted-browser-sessions-in-ci).
 
 Every LinkedIn browser command in CI gets up to four complete attempts, with a
 fresh temporary browser session for each retry. This covers capture planning,
-all six section workers, and the enabled About, skills, and resume publishers.
+all planned section workers, and the enabled About, skills, and resume publishers.
 Each command also retains its operation-level retries. HTTP responses surfaced
 to Requests honor a 429 response's `Retry-After` value, capped by
 `capture.retry_max_backoff_seconds`. Selenium failures use the configured

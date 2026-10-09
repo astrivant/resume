@@ -18,6 +18,7 @@ from resumeme.linkedin.credentials import profile_username
 
 __all__ = [
     "Capture",
+    "CaptureSharding",
     "Codex",
     "CodexSkills",
     "CompanyTarget",
@@ -248,6 +249,26 @@ class Codex:
 
 
 @frozen
+class CaptureSharding:
+    """
+    Bound automatic worker-count changes independently of unit migration and runtime prediction.
+
+    Attributes:
+        enabled (bool): Resize between complete captures when predicted savings justify the change.
+        initial (int): Cold-start worker count, also the fixed count when disabled.
+        minimum (int): Lowest permitted worker count.
+        maximum (int): Highest permitted worker count.
+        cooldown_runs (int): Completed captures required between count changes.
+    """
+
+    enabled: bool = True
+    initial: int = 6
+    minimum: int = 2
+    maximum: int = 8
+    cooldown_runs: int = 3
+
+
+@frozen
 class Capture:
     """
     Bound page loading, pagination, preview downloads, and transient retries.
@@ -262,6 +283,7 @@ class Capture:
         retry_max_backoff_seconds (int): Maximum exponential retry delay.
         browser (Literal["firefox", "chrome"]): Selenium browser used for capture and live About updates.
         app_approval_timeout_seconds (int): Maximum wait for mobile-app sign-in approval; code-entry MFA still fails immediately.
+        sharding (CaptureSharding): Worker-count bounds and cooldown for timing-based capacity decisions.
     """
 
     page_timeout_seconds: int = 30
@@ -273,6 +295,7 @@ class Capture:
     retry_max_backoff_seconds: int = 300
     browser: Literal["firefox", "chrome"] = "firefox"
     app_approval_timeout_seconds: int = 900
+    sharding: CaptureSharding = field(factory=CaptureSharding)
 
 
 @frozen

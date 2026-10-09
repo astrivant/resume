@@ -24,6 +24,7 @@ from resumeme.exceptions import BrowserElementError, BrowserError, BrowserTimeou
 from resumeme.linkedin.browser import auth as browser_auth
 from resumeme.linkedin.browser import runtime as browser_runtime
 from resumeme.linkedin.browser import scripts as browser_scripts
+from resumeme.linkedin.capture.capacity import resize_capture_plan
 from resumeme.linkedin.capture.refinement import refine_capture_plan
 from resumeme.linkedin.capture.shards import CaptureRoute, CaptureShard, assign_routes, make_capture_plan
 from resumeme.linkedin.capture.timings import apply_timings, read_timings
@@ -633,7 +634,12 @@ def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False, 
                 )
             )
 
-        plan = make_capture_plan(evolve(profile, captured_at=datetime.now(UTC).isoformat()), config.capture.browser, routes)
+        plan = make_capture_plan(
+            evolve(profile, captured_at=datetime.now(UTC).isoformat()),
+            config.capture.browser,
+            routes,
+            shard_count=config.capture.sharding.initial,
+        )
 
         if timings_path is not None:
 
@@ -658,6 +664,7 @@ def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False, 
                 plan, read_timings(timings_path), lambda route: retry_selenium(partial(discover, route), config.capture)
             )
             plan = apply_timings(plan, timings_path)
+            plan = resize_capture_plan(plan, read_timings(timings_path), config.capture.sharding)
 
     return plan
 
@@ -677,7 +684,7 @@ def capture_profile_shard(
     Args:
         config (Config): Profile and browser settings.
         root (Path): Configuration directory for temporary browser state.
-        plan (CapturePlan): Validated six-worker plan from the bootstrap job.
+        plan (CapturePlan): Validated worker plan from the bootstrap job.
         shard_index (int): One-based matrix worker index.
         shard_count (int): Matrix size, which must match the plan.
         headless (bool): Use environment credentials without opening a desktop window.
@@ -695,11 +702,11 @@ def capture_profile_shard(
     assignments = assign_routes(plan)
 
     if shard_count != plan.shard_count or shard_index not in assignments:
-        raise ValueError("Capture shard index and count must match the six-worker plan.")
+        raise ValueError("Capture shard index and count must match the frozen worker plan.")
 
     routes = assignments[shard_index]
 
-    # Empty shards still publish an explicit result, allowing aggregation to prove all six workers completed.
+    # Empty shards still publish an explicit result, allowing aggregation to prove all planned workers completed.
     if not routes:
         return CaptureShard(plan.capture_id, plan.browser, shard_index, shard_count, [])
 

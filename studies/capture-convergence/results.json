@@ -1,0 +1,283 @@
+{
+  "matplotlib": "3.11.2",
+  "results": [
+    {
+      "median_final_cv": 0.00534,
+      "median_peak_seconds_sum": 5729.862,
+      "median_target_run": 4.0,
+      "median_total_migrations": 19.0,
+      "policy": "fixed_two",
+      "reached": 12,
+      "scenario": "cold",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.10042,
+      "median_peak_seconds_sum": 5812.488,
+      "median_target_run": 2.0,
+      "median_total_migrations": 8.0,
+      "policy": "adaptive",
+      "reached": 12,
+      "scenario": "cold",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.00412,
+      "median_peak_seconds_sum": 5411.458,
+      "median_target_run": 2.0,
+      "median_total_migrations": 20.0,
+      "policy": "fixed_six",
+      "reached": 12,
+      "scenario": "cold",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.10042,
+      "median_peak_seconds_sum": 5818.097,
+      "median_target_run": 2.0,
+      "median_total_migrations": 8.0,
+      "policy": "outer_pid",
+      "reached": 12,
+      "scenario": "cold",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.10042,
+      "median_peak_seconds_sum": 5812.488,
+      "median_target_run": 2.0,
+      "median_total_migrations": 8.0,
+      "policy": "gradient",
+      "reached": 12,
+      "scenario": "cold",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.06354,
+      "median_peak_seconds_sum": 4596.59,
+      "median_target_run": 1.0,
+      "median_total_migrations": 43.0,
+      "policy": "fixed_two",
+      "reached": 12,
+      "scenario": "jitter",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.0562,
+      "median_peak_seconds_sum": 4598.24,
+      "median_target_run": 1.0,
+      "median_total_migrations": 13.5,
+      "policy": "adaptive",
+      "reached": 12,
+      "scenario": "jitter",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.05805,
+      "median_peak_seconds_sum": 4634.288,
+      "median_target_run": 1.0,
+      "median_total_migrations": 129.0,
+      "policy": "fixed_six",
+      "reached": 12,
+      "scenario": "jitter",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.0562,
+      "median_peak_seconds_sum": 4598.24,
+      "median_target_run": 1.0,
+      "median_total_migrations": 13.5,
+      "policy": "outer_pid",
+      "reached": 12,
+      "scenario": "jitter",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.04862,
+      "median_peak_seconds_sum": 4577.016,
+      "median_target_run": 1.0,
+      "median_total_migrations": 10.5,
+      "policy": "gradient",
+      "reached": 12,
+      "scenario": "jitter",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.01462,
+      "median_peak_seconds_sum": 7000.0,
+      "median_target_run": 13.0,
+      "median_total_migrations": 17.0,
+      "policy": "fixed_two",
+      "reached": 12,
+      "scenario": "step",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.04564,
+      "median_peak_seconds_sum": 7265.0,
+      "median_target_run": 13.0,
+      "median_total_migrations": 11.0,
+      "policy": "adaptive",
+      "reached": 12,
+      "scenario": "step",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.01501,
+      "median_peak_seconds_sum": 6900.0,
+      "median_target_run": 12.0,
+      "median_total_migrations": 32.0,
+      "policy": "fixed_six",
+      "reached": 12,
+      "scenario": "step",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.04564,
+      "median_peak_seconds_sum": 7265.0,
+      "median_target_run": 13.0,
+      "median_total_migrations": 11.0,
+      "policy": "outer_pid",
+      "reached": 12,
+      "scenario": "step",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.05273,
+      "median_peak_seconds_sum": 7265.0,
+      "median_target_run": 13.0,
+      "median_total_migrations": 10.5,
+      "policy": "gradient",
+      "reached": 12,
+      "scenario": "step",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.04874,
+      "median_peak_seconds_sum": 4750.31,
+      "median_target_run": 1.0,
+      "median_total_migrations": 43.0,
+      "policy": "fixed_two",
+      "reached": 12,
+      "scenario": "spike",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.06177,
+      "median_peak_seconds_sum": 4733.965,
+      "median_target_run": 1.0,
+      "median_total_migrations": 15.0,
+      "policy": "adaptive",
+      "reached": 12,
+      "scenario": "spike",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.05533,
+      "median_peak_seconds_sum": 4739.65,
+      "median_target_run": 1.0,
+      "median_total_migrations": 128.0,
+      "policy": "fixed_six",
+      "reached": 12,
+      "scenario": "spike",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.06177,
+      "median_peak_seconds_sum": 4733.965,
+      "median_target_run": 1.0,
+      "median_total_migrations": 15.0,
+      "policy": "outer_pid",
+      "reached": 12,
+      "scenario": "spike",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 0.06275,
+      "median_peak_seconds_sum": 4741.217,
+      "median_target_run": 1.0,
+      "median_total_migrations": 11.0,
+      "policy": "gradient",
+      "reached": 12,
+      "scenario": "spike",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 1.59208,
+      "median_peak_seconds_sum": 22800.0,
+      "median_target_run": null,
+      "median_total_migrations": 0.0,
+      "policy": "fixed_two",
+      "reached": 0,
+      "scenario": "indivisible",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 1.59208,
+      "median_peak_seconds_sum": 22800.0,
+      "median_target_run": null,
+      "median_total_migrations": 0.0,
+      "policy": "adaptive",
+      "reached": 0,
+      "scenario": "indivisible",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 1.59208,
+      "median_peak_seconds_sum": 22800.0,
+      "median_target_run": null,
+      "median_total_migrations": 0.0,
+      "policy": "fixed_six",
+      "reached": 0,
+      "scenario": "indivisible",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 1.59208,
+      "median_peak_seconds_sum": 22800.0,
+      "median_target_run": null,
+      "median_total_migrations": 0.0,
+      "policy": "outer_pid",
+      "reached": 0,
+      "scenario": "indivisible",
+      "trials": 12
+    },
+    {
+      "median_final_cv": 1.59208,
+      "median_peak_seconds_sum": 22800.0,
+      "median_target_run": null,
+      "median_total_migrations": 0.0,
+      "policy": "gradient",
+      "reached": 0,
+      "scenario": "indivisible",
+      "trials": 12
+    }
+  ],
+  "runs": 24,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "shards": 6,
+  "source_sha256": {
+    "pkg/resumeme/config/models.py": "8aa6e1e118a7b81bd114a78653d96a60865480b67a61b974ecd904a39ab61cf8",
+    "pkg/resumeme/linkedin/capture/capacity.py": "f25b5311ad2d9f05f967ee585275f3ca4ac16ea53b9886f3fbef7ae38b24aa95",
+    "pkg/resumeme/linkedin/capture/feedback.py": "4b4c1549c133f166546c238d840962befe7988a1b150b8d172a5a7f2a6f42810",
+    "pkg/resumeme/linkedin/capture/scheduling.py": "0f4d380a7b91fc26715f8b21d359d6b05aaa9fe41b534442a230fd5d7c174bdf",
+    "pkg/resumeme/linkedin/capture/shards.py": "03cf508610c5f1ce2ebf5794d703d180eb03f1acfe7bc5c63dd6692523ac62fd",
+    "scripts/studies/capture_convergence/__main__.py": "1cadbe1f78e723fa67dded240afe5f9ca2b6089c14e115779a7ddd5aae328bde",
+    "scripts/studies/capture_convergence/report.py": "a51101e19a220140bbd65c8e0bc4dac40164213f357f7cee26cbc60c179881cf",
+    "scripts/studies/capture_convergence/resizing.py": "94256a1306e5a201833d981c1c51e351f4b310942cfa64c4a33278789af2ff00",
+    "scripts/studies/capture_convergence/simulation.py": "9f5811f06d6f22a6545937c8d7d614f225d882b5c6ba3e2858f93671215a3c8a"
+  },
+  "units": 36
+}

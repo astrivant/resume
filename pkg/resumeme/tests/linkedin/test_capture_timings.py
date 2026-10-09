@@ -20,7 +20,7 @@ from resumeme.config import Config, LinkedIn
 from resumeme.linkedin.capture.feedback import TimingFeedback, update_feedback
 from resumeme.linkedin.capture.profile import capture_profile_shard
 from resumeme.linkedin.capture.refinement import refine_capture_plan
-from resumeme.linkedin.capture.scheduling import balance_variance
+from resumeme.linkedin.capture.scheduling import balance_variance, migration_budget
 from resumeme.linkedin.capture.shards import (
     CaptureRoute,
     CaptureShard,
@@ -141,13 +141,14 @@ def test_new_routes_use_seconds_calibrated_from_known_weights(tmp_path: Path) ->
 
 
 @settings(max_examples=50, deadline=None)
-@given(st.lists(st.integers(min_value=1, max_value=500), min_size=1, max_size=25))
-def test_variance_descent_preserves_work_and_never_worsens_loads(values: list[int]) -> None:
+@given(st.lists(st.integers(min_value=1, max_value=500), min_size=1, max_size=36), st.sampled_from([None, 1, 2, 6, 12]))
+def test_variance_descent_preserves_work_and_never_worsens_loads(values: list[int], budget: int | None) -> None:
     """
     Protect the objective and ownership invariants for arbitrary section workloads.
 
     Args:
         values (list[int]): Synthetic positive traversal durations.
+        budget (int | None): Fixed experimental budget, or production adaptive selection.
 
     Returns:
         None: Local search conserves work and mean, reduces variance, and never increases the slowest shard.
@@ -156,16 +157,81 @@ def test_variance_descent_preserves_work_and_never_worsens_loads(values: list[in
     buckets = {index: routes[index - 1 :: 6] for index in range(1, 7)}
     costs = {route.key: float(value) for route, value in zip(routes, values, strict=True)}
     before = [sum(costs[route.key] for route in assigned) for assigned in buckets.values()]
-    result = balance_variance(buckets, costs)
+    result = balance_variance(buckets, costs, max_migrations=budget)
     after = [sum(costs[route.key] for route in assigned) for assigned in result.values()]
     assert sorted(route.key for assigned in result.values() for route in assigned) == sorted(costs)
     assert fmean(before) == fmean(after)
     assert pvariance(after) <= pvariance(before)
     assert max(after) <= max(before)
-    assert result == balance_variance(buckets, costs)
+    assert result == balance_variance(buckets, costs, max_migrations=budget)
     assert buckets == {index: routes[index - 1 :: 6] for index in range(1, 7)}
     before_owner = {route.unit_key: index for index, assigned in buckets.items() for route in assigned}
-    assert sum(before_owner[route.unit_key] != index for index, assigned in result.items() for route in assigned) <= 2
+    allowed = migration_budget(before) if budget is None else budget
+    assert sum(before_owner[route.unit_key] != index for index, assigned in result.items() for route in assigned) <= allowed
+
+
+@pytest.mark.parametrize("loads", [[], [0.0] * 6, [100.0] * 6, [110.0, 90.0, 100.0, 100.0, 100.0, 100.0]])
+def test_migration_budget_stays_conservative_near_balance(loads: list[float]) -> None:
+    """
+    Keep the existing two-migration allowance for empty, balanced, and mildly noisy plans.
+
+    Args:
+        loads (list[float]): Predicted shard loads within the dispersion target.
+
+    Returns:
+        None: Small errors cannot activate the startup acceleration.
+    """
+    assert migration_budget(loads) == 2
+
+
+@given(st.lists(st.integers(min_value=0, max_value=1000), min_size=1, max_size=6), st.integers(min_value=1, max_value=100))
+def test_migration_budget_is_bounded_and_scale_invariant(loads: list[int], scale: int) -> None:
+    """
+    Preserve scheduling decisions when seconds are uniformly rescaled.
+
+    Args:
+        loads (list[int]): Nonnegative synthetic shard durations.
+        scale (int): Positive multiplier for every worker duration.
+
+    Returns:
+        None: Dispersion yields the same two-to-six migration budget regardless of workload scale.
+    """
+    assert 2 <= migration_budget(loads) <= 6
+    assert migration_budget(loads) == migration_budget([load * scale for load in loads])
+
+
+def test_large_initial_imbalance_moves_more_work_without_relaxing_acceptance() -> None:
+    """
+    Correct an uneven initial placement faster, then stop moving an exactly balanced assignment.
+
+    Returns:
+        None: Six safe moves outperform two moves while maintaining deterministic ownership and immutability.
+    """
+    routes = [CaptureRoute(str(index), "Synthetic", "", "detail") for index in range(18)]
+    buckets = {index: routes.copy() if index == 1 else [] for index in range(1, 7)}
+    costs = {route.unit_key: 10.0 for route in routes}
+    fast = balance_variance(buckets, costs)
+    slow = balance_variance(buckets, costs, max_migrations=2)
+    assert sum(len(assigned) for index, assigned in fast.items() if index != 1) == 6
+    assert max(map(len, fast.values())) < max(map(len, slow.values()))
+    balanced = {index: routes[index - 1 :: 6] for index in range(1, 7)}
+    assert balance_variance(balanced, costs) == balanced
+    assert buckets[1] == routes
+
+
+@pytest.mark.parametrize("value", [-1.0, float("inf"), float("nan")])
+def test_invalid_loads_cannot_select_a_migration_budget(value: float) -> None:
+    """
+    Reject invalid costs before they influence feedback policy.
+
+    Args:
+        value (float): Negative or nonfinite shard load.
+
+    Returns:
+        None: Malformed costs raise an actionable validation error.
+    """
+    with pytest.raises(ValueError, match="finite, nonnegative"):
+        migration_budget([value])
 
 
 def test_pid_limits_outliers_and_ignores_jitter() -> None:
@@ -295,19 +361,23 @@ def test_tab_unit_identity_ignores_counts_and_fanin_rejects_missing_units() -> N
 
 def test_local_search_improves_lpt_variance() -> None:
     """
-    Exercise a measured workload where ordinary greedy LPT leaves an avoidable variance gap.
+    Preserve the search's ability to improve LPT, while production stops polishing an already balanced placement.
 
     Returns:
-        None: Route swaps improve the greedy schedule while keeping total work constant.
+        None: Unrestricted polishing improves variance; the production target guard avoids this low-value reassignment.
     """
     values = [41, 47, 28, 23, 50, 4, 14, 51, 3, 38, 24, 43, 12, 40, 14]
     routes = [
         CaptureRoute(str(i), str(i), f"https://www.linkedin.com/in/person/details/{i}/", "detail", value) for i, value in enumerate(values)
     ]
     cold = make_capture_plan(Profile("person", "Person"), "firefox", routes)
-    learned = evolve(cold, routes=[evolve(route, estimated_seconds=float(route.weight)) for route in routes])
+    learned = evolve(cold, routes=[evolve(route, estimated_seconds=0.01 * route.weight) for route in routes])
     before = [sum(route.weight for route in assigned) for assigned in assign_routes(cold).values()]
-    after = [sum(route.weight for route in assigned) for assigned in assign_routes(learned).values()]
+    assert {index: [route.key for route in assigned] for index, assigned in assign_routes(learned).items()} == {
+        index: [route.key for route in assigned] for index, assigned in assign_routes(cold).items()
+    }
+    polished = balance_variance(assign_routes(cold), {route.unit_key: float(route.weight) for route in routes}, limit_churn=False)
+    after = [sum(route.weight for route in assigned) for assigned in polished.values()]
     assert pvariance(after) < pvariance(before)
 
 

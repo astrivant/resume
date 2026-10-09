@@ -23,7 +23,7 @@ class TimingFeedback:
         estimate (float): Predicted seconds for the next run.
         error (float): Last observed minus predicted duration, in seconds.
         integral (float): Bounded accumulated error in seconds over normalized unit run intervals.
-        shard (int): Last accepted worker assignment, from one through six.
+        shard (int): Last accepted worker assignment, within the previous plan.
     """
 
     estimate: float

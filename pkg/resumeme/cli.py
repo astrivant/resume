@@ -113,7 +113,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "--companies", action="store_true", help="Also acquire configured employer/job context and prepare each prompt"
             )
 
-    capture_plan = commands.add_parser("capture-plan", help="Authenticate once and plan six profile-section capture shards")
+    capture_plan = commands.add_parser("capture-plan", help="Authenticate once and plan profile-section capture shards")
     capture_plan.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
     capture_plan.add_argument("--output", type=Path, default=Path(".cache/capture/plan.json"), help="Capture plan output path")
     capture_plan.add_argument(
@@ -123,14 +123,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Previous traversal timings; missing data uses size weights",
     )
 
-    capture_shard = commands.add_parser("capture-shard", help="Collect the profile sections assigned to one of six workers")
-    capture_shard.add_argument("--index", type=int, required=True, help="One-based shard number from 1 through 6")
-    capture_shard.add_argument("--count", type=int, default=6, help="Total shard count, fixed at six")
+    capture_shard = commands.add_parser("capture-shard", help="Collect the profile sections assigned to one of the planned workers")
+    capture_shard.add_argument("--index", type=int, required=True, help="One-based shard number from the plan")
+    capture_shard.add_argument("--count", type=int, help="Total shard count; defaults to the frozen plan")
     capture_shard.add_argument("--plan", type=Path, default=Path(".cache/capture/plan.json"), help="Bootstrap plan path")
     capture_shard.add_argument("--output", type=Path, help="Shard output path; defaults to shard-N.json in the shard directory")
     capture_shard.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
 
-    aggregate = commands.add_parser("aggregate", help="Validate and combine all six capture shards into the profile snapshot")
+    aggregate = commands.add_parser("aggregate", help="Validate and combine all planned capture shards into the profile snapshot")
     aggregate.add_argument("--plan", type=Path, default=Path(".cache/capture/plan.json"), help="Bootstrap plan path")
     aggregate.add_argument("--shards", type=Path, default=Path(".cache/capture/shards"), help="Directory containing shard-N.json outputs")
     aggregate.add_argument(
@@ -237,7 +237,7 @@ def _run(args: argparse.Namespace) -> int:
 
             path = project_path(root, str(args.output))
             save_capture_plan(plan, path)
-            print(f"Saved six-shard capture plan: {path}")
+            print(f"Saved {plan.shard_count}-shard capture plan: {path}")
             return 0
 
         if args.command == "capture-shard":
@@ -247,7 +247,7 @@ def _run(args: argparse.Namespace) -> int:
                 root,
                 plan,
                 args.index,
-                args.count,
+                args.count if args.count is not None else plan.shard_count,
                 headless=args.headless,
             )
             output_path = project_path(
@@ -259,7 +259,7 @@ def _run(args: argparse.Namespace) -> int:
                 "Saved profile capture shard",
                 extra={"file.path": str(output_path), "capture.shard": args.index, "profile.sections": len(shard.sections)},
             )
-            print(f"Saved capture shard {args.index}/{args.count}: {output_path}")
+            print(f"Saved capture shard {args.index}/{plan.shard_count}: {output_path}")
             return 0
 
         if args.command == "aggregate":

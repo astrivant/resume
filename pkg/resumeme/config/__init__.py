@@ -7,6 +7,7 @@ from __future__ import annotations
 from resumeme.config.loading import company_config, load_config, project_path
 from resumeme.config.models import (
     Capture,
+    CaptureSharding,
     Codex,
     CodexSkills,
     CompanyTarget,
@@ -32,6 +33,7 @@ from resumeme.config.models import (
 
 __all__ = [
     "Capture",
+    "CaptureSharding",
     "Codex",
     "CodexSkills",
     "CompanyTarget",

@@ -14,6 +14,7 @@ import cattrs
 from attrs import evolve, field, frozen
 
 from resumeme.linkedin.capture.feedback import TimingFeedback, update_feedback
+from resumeme.linkedin.capture.limits import DEFAULT_SHARDS, MAX_SHARDS, MIN_SHARDS
 from resumeme.linkedin.capture.shards import aggregate_capture, assign_routes
 
 if TYPE_CHECKING:
@@ -37,6 +38,9 @@ class CaptureTimings:
         route_seconds (dict[str, float]): Durations keyed by route kind and canonical section key.
         version (int): Timing format version, independent of package releases.
         feedback (dict[str, TimingFeedback]): PID state and assignment for each completed unit.
+        shard_count (int): Worker count used for the accepted capture.
+        resize_age (int): Completed captures since a count change.
+        worker_overhead_seconds (float | None): Median measured browser lifetime minus traversal, absent for legacy captures.
     """
 
     username: str
@@ -44,6 +48,9 @@ class CaptureTimings:
     route_seconds: dict[str, float]
     version: int = 1
     feedback: dict[str, TimingFeedback] = field(factory=dict)
+    shard_count: int = DEFAULT_SHARDS
+    resize_age: int = 0
+    worker_overhead_seconds: float | None = None
 
 
 def decode_timings(data: bytes) -> CaptureTimings:
@@ -65,6 +72,12 @@ def decode_timings(data: bytes) -> CaptureTimings:
         timings.version != 1
         or not timings.username
         or timings.browser not in {"firefox", "chrome"}
+        or not MIN_SHARDS <= timings.shard_count <= MAX_SHARDS
+        or not 0 <= timings.resize_age <= 1000000
+        or (
+            timings.worker_overhead_seconds is not None
+            and (not math.isfinite(timings.worker_overhead_seconds) or timings.worker_overhead_seconds < 0)
+        )
         or any(
             key.partition(":")[0] not in {"detail", "inline", "contact"}
             or not key.partition(":")[2]
@@ -78,7 +91,7 @@ def decode_timings(data: bytes) -> CaptureTimings:
     if timings.feedback and (
         timings.feedback.keys() != timings.route_seconds.keys()
         or any(
-            not 1 <= item.shard <= 6
+            not 1 <= item.shard <= timings.shard_count
             or item.estimate <= 0
             or not all(math.isfinite(value) for value in (item.estimate, item.error, item.integral))
             for item in timings.feedback.values()
@@ -139,6 +152,7 @@ def apply_timings(plan: CapturePlan, path: Path) -> CapturePlan:
     feedback: dict[str, TimingFeedback] = {}
 
     if timings is not None and timings.username.casefold() == plan.profile.username.casefold() and timings.browser == plan.browser:
+        plan = evolve(plan, shard_count=timings.shard_count, resize_age=timings.resize_age)
         known = {
             route.unit_key: timings.route_seconds[f"{route.kind}:{route.unit_key}"]
             for route in plan.routes
@@ -196,7 +210,7 @@ def learn_timings(plan: CapturePlan, shards: list[CaptureShard]) -> CaptureTimin
 
     Args:
         plan (CapturePlan): Immutable plan shared by all workers.
-        shards (list[CaptureShard]): All six completed worker outputs.
+        shards (list[CaptureShard]): All planned completed worker outputs.
 
     Returns:
         CaptureTimings | None: Latest route durations, or None for legacy outputs without measurements.
@@ -239,6 +253,11 @@ def learn_timings(plan: CapturePlan, shards: list[CaptureShard]) -> CaptureTimin
         },
     )
 
+    overheads = [
+        max(0.0, shard.elapsed_seconds - sum(shard.route_seconds.values()))
+        for shard in shards
+        if shard.elapsed_seconds is not None and shard.route_seconds
+    ]
     return CaptureTimings(
         plan.profile.username,
         plan.browser,
@@ -248,6 +267,9 @@ def learn_timings(plan: CapturePlan, shards: list[CaptureShard]) -> CaptureTimin
             for index, routes in assignments.items()
             for route in routes
         },
+        shard_count=plan.shard_count,
+        resize_age=min(1000000, plan.resize_age + 1),
+        worker_overhead_seconds=median(overheads) if overheads else None,
     )
 
 

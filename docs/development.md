@@ -428,7 +428,9 @@ Ordinary code blocks and inline code remain examples, not math input.
 
 The same hook runs the [capture scheduling](capture-scheduling.md) worked examples
 as Python doctests, including exact fractional variance calculations and actual
-PID updates. Syntax validity is not a proof of a mathematical claim. Keep the
+PID updates. The [capture-convergence study](../studies/capture-convergence/README.md)
+adds paired simulations, capacity/cost plots, and executable budget and gradient examples.
+Syntax validity is not a proof of a mathematical claim. Keep the
 definitions, derivations, worked examples, and relevant property tests aligned.
 Leave a blank line before closing a `pycon` fence so doctest does not treat that
 fence as expected output.

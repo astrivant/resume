@@ -84,6 +84,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["pkg/resumeme/tests"]
+pythonpath = ["."]
 
 # Share CPU-based worker selection between local runs and CI; use -n 0 when debugging a single process.
 addopts = "-p resumeme.tests.sharding -ra -n auto -m 'not browser_e2e'"

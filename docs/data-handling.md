@@ -220,9 +220,9 @@ repository's own retention setting, not the artifact-specific values.
 
 | Artifact | When and why | Content | Requested days |
 | --- | --- | --- | --- |
-| `resumeme-capture-plan` | Refreshed tag or main capture; coordinate six workers | Overview profile content and LinkedIn section route URLs. No browser state or login credentials. | 1 |
+| `resumeme-capture-plan` | Refreshed tag or main capture; coordinate the planned worker matrix | Overview profile content, LinkedIn section route URLs, worker count, and optional frozen placement. No browser state or login credentials. | 1 |
 | `resumeme-capture-shard-*` | Refreshed tag or main capture; one artifact from each worker | Collected LinkedIn profile sections or tab units assigned to that shard, traversal durations, and total worker time. No browser state or login credentials. | 1 |
-| `resumeme-capture-timings-v1-*` | Complete, validated capture | Encrypted profile identifier, unit IDs, traversal durations, previous assignments, and bounded PID state. Uses the dedicated cache keys; no prose, URLs, or browser credentials. Only the latest matching artifact is consumed. | 90 |
+| `resumeme-capture-timings-v1-*` | Complete, validated capture | Encrypted profile identifier, unit IDs, traversal durations, previous assignments, bounded PID state, worker count, resize cooldown age, and median browser overhead. Uses the dedicated cache keys; no prose, URLs, or browser credentials. Only the latest matching artifact is consumed. | 90 |
 | `resumeme-profile` | Tag, monthly, or requested main refresh; share one capture with downstream jobs | Full accepted snapshot and every referenced downloaded image, including fields hidden in the PDF. No browser-profile directory. | 1 |
 | `resumeme-summary-inputs` | Enabled summary generation on main or tags; feed the matrix | `.cache/codex/` prompts, schemas, and company/job evidence, including configured writing context. | 7 |
 | `resumeme-summary-result-*` | Each successful matrix item | Validated generated JSON and employer evidence for that item. | 7 |

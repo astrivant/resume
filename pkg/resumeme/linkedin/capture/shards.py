@@ -16,6 +16,7 @@ from attrs import evolve, field, frozen
 
 from resumeme.compiler.asts.profile import Profile, Section
 from resumeme.linkedin.capture.feedback import TimingFeedback
+from resumeme.linkedin.capture.limits import DEFAULT_SHARDS, MAX_SHARDS, MIN_SHARDS
 from resumeme.linkedin.capture.scheduling import balance_variance
 
 if TYPE_CHECKING:
@@ -37,7 +38,6 @@ __all__ = [
 
 BrowserName = Literal["firefox", "chrome"]
 RouteKind = Literal["detail", "inline", "contact"]
-_SHARD_COUNT = 6
 _TAB_COUNT = re.compile(r"\s*\(\s*\d[\d,\s]*\s*\)\s*$")
 _converter = cattrs.Converter(forbid_extra_keys=True)
 
@@ -52,7 +52,7 @@ class CaptureRoute:
         title (str): LinkedIn heading used for navigation and diagnostics.
         url (str): Owner-scoped LinkedIn route to collect.
         kind (RouteKind): Detail page, inline tabs, or contact overlay.
-        weight (int): Estimated section size used to balance six workers.
+        weight (int): Estimated section size used to balance workers.
         estimated_seconds (float | None): Frozen traversal estimate from a previous complete capture.
         tab (str | None): Independently selectable detail tab, absent for a whole section.
         feedback (TimingFeedback | None): Bounded controller state and previous worker assignment.
@@ -94,6 +94,8 @@ class CapturePlan:
         shard_count (int): Required number of capture workers.
         profile (Profile): Profile overview and preview sections collected once.
         routes (list[CaptureRoute]): Detail sections to distribute across workers.
+        resize_age (int): Completed captures since the last worker-count change.
+        placements (dict[str, int]): Optional exact assignment frozen during resizing, retaining original predictor state.
     """
 
     capture_id: str
@@ -101,6 +103,8 @@ class CapturePlan:
     shard_count: int
     profile: Profile
     routes: list[CaptureRoute]
+    resize_age: int = 0
+    placements: dict[str, int] = field(factory=dict)
 
 
 @frozen
@@ -127,17 +131,20 @@ class CaptureShard:
     elapsed_seconds: float | None = None
 
 
-def make_capture_plan(profile: Profile, browser: BrowserName, routes: Iterable[CaptureRoute]) -> CapturePlan:
+def make_capture_plan(
+    profile: Profile, browser: BrowserName, routes: Iterable[CaptureRoute], *, shard_count: int = DEFAULT_SHARDS
+) -> CapturePlan:
     """
-    Create a six-worker plan after validating owner-scoped, unique routes.
+    Create a bounded worker plan after validating owner-scoped, unique routes.
 
     Args:
         profile (Profile): Authenticated profile overview.
         browser (BrowserName): Selected browser engine.
         routes (Iterable[CaptureRoute]): Detail routes discovered on the profile page.
+        shard_count (int): Initial number of workers, six when omitted.
 
     Returns:
-        CapturePlan: Plan shared by the bootstrap job and all six workers.
+        CapturePlan: Plan shared by the bootstrap job and all planned workers.
 
     Raises:
         ValueError: A route is duplicated, unsafe, or incompatible with the profile owner.
@@ -145,7 +152,7 @@ def make_capture_plan(profile: Profile, browser: BrowserName, routes: Iterable[C
     plan = CapturePlan(
         capture_id=uuid.uuid4().hex,
         browser=browser,
-        shard_count=_SHARD_COUNT,
+        shard_count=shard_count,
         profile=profile,
         routes=list(routes),
     )
@@ -158,12 +165,19 @@ def assign_routes(plan: CapturePlan) -> dict[int, list[CaptureRoute]]:
     Initialize with LPT, then reduce predicted load variance when measured history is available.
 
     Args:
-        plan (CapturePlan): Validated six-worker capture plan.
+        plan (CapturePlan): Validated capture plan.
 
     Returns:
         dict[int, list[CaptureRoute]]: One-based shard numbers mapped to ordered routes.
     """
     buckets: dict[int, list[CaptureRoute]] = {index: [] for index in range(1, plan.shard_count + 1)}
+
+    # A capacity decision freezes its evaluated placement; workers must not rerun a second optimization against that decision.
+    if plan.placements:
+        for route in plan.routes:
+            buckets[plan.placements[route.unit_key]].append(route)
+
+        return buckets
     loads = {index: 0.0 for index in buckets}
     order = {route.unit_key: index for index, route in enumerate(plan.routes)}
     costs = {
@@ -172,14 +186,15 @@ def assign_routes(plan: CapturePlan) -> dict[int, list[CaptureRoute]]:
 
     # Keep accepted assignments as the starting point, avoiding a fresh global shuffle every run.
     for route in plan.routes:
-        if route.feedback is not None:
+        if route.feedback is not None and route.feedback.shard in buckets:
             buckets[route.feedback.shard].append(route)
             loads[route.feedback.shard] += costs[route.unit_key]
 
     # LPT assigns the longest estimated work to the least-loaded worker; cold starts retain the original size weights.
     # Reference: R. L. Graham, Bounds on Multiprocessing Timing Anomalies (1969), https://doi.org/10.1137/0117039.
     for route in sorted(
-        (route for route in plan.routes if route.feedback is None), key=lambda item: (-costs[item.unit_key], item.unit_key)
+        (route for route in plan.routes if route.feedback is None or route.feedback.shard not in buckets),
+        key=lambda item: (-costs[item.unit_key], item.unit_key),
     ):
         shard = min(loads, key=lambda index: (loads[index], index))
         buckets[shard].append(route)
@@ -337,8 +352,13 @@ def _validate_plan(plan: CapturePlan) -> None:
     Raises:
         ValueError: A plan field or route violates the capture contract.
     """
-    if not plan.capture_id or plan.browser not in {"firefox", "chrome"} or plan.shard_count != _SHARD_COUNT:
-        raise ValueError("Capture plan must identify a supported browser and exactly six shards.")
+    if (
+        not plan.capture_id
+        or plan.browser not in {"firefox", "chrome"}
+        or not MIN_SHARDS <= plan.shard_count <= MAX_SHARDS
+        or not 0 <= plan.resize_age <= 1000000
+    ):
+        raise ValueError("Capture plan must identify a supported browser, one through twelve shards, and a nonnegative resize age.")
 
     if not plan.profile.username or not plan.profile.name:
         raise ValueError("Capture plan must contain an identified profile overview.")
@@ -367,7 +387,7 @@ def _validate_plan(plan: CapturePlan) -> None:
             raise ValueError(f"Capture route {route.key!r} is duplicated, invalid, or outside the configured LinkedIn profile.")
 
         if route.feedback is not None and (
-            not 1 <= route.feedback.shard <= _SHARD_COUNT
+            not MIN_SHARDS <= route.feedback.shard <= MAX_SHARDS
             or route.feedback.estimate != route.estimated_seconds
             or not all(math.isfinite(value) for value in (route.feedback.estimate, route.feedback.error, route.feedback.integral))
         ):
@@ -377,6 +397,11 @@ def _validate_plan(plan: CapturePlan) -> None:
 
     if any(route.tab is not None and route.key in route_keys for route in plan.routes):
         raise ValueError("A capture plan cannot include both a whole section and its tab units.")
+
+    if plan.placements and (
+        plan.placements.keys() != route_keys or any(not 1 <= worker <= plan.shard_count for worker in plan.placements.values())
+    ):
+        raise ValueError("Frozen placements must assign every route exactly once to an active worker.")
 
 
 def _validate_shard(shard: CaptureShard, plan: CapturePlan) -> None:
@@ -432,7 +457,7 @@ def _validate_shard_shape(shard: CaptureShard) -> None:
     if (
         not shard.capture_id
         or shard.browser not in {"firefox", "chrome"}
-        or shard.shard_count != _SHARD_COUNT
+        or not MIN_SHARDS <= shard.shard_count <= MAX_SHARDS
         or not 1 <= shard.shard_index <= shard.shard_count
         or not all(keys)
         or len(keys) != len(set(keys))

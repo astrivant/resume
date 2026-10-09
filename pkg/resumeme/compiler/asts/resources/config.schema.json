@@ -191,6 +191,18 @@
     "capture": {
       "type": "object",
       "properties": {
+        "sharding": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Adaptive worker count from complete traversal timings; disabled uses the initial count.",
+          "properties": {
+            "enabled": {"type": "boolean", "default": true},
+            "initial": {"type": "integer", "minimum": 1, "maximum": 12, "default": 6},
+            "minimum": {"type": "integer", "minimum": 1, "maximum": 12, "default": 2},
+            "maximum": {"type": "integer", "minimum": 1, "maximum": 12, "default": 8},
+            "cooldown_runs": {"type": "integer", "minimum": 1, "maximum": 20, "default": 3}
+          }
+        },
         "browser": {
           "type": "string",
           "enum": ["firefox", "chrome"],

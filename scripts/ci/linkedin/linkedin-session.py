@@ -308,8 +308,8 @@ def run() -> int:
         except (KeyError, ValueError) as error:
             raise SessionCacheError("capture-shard requires numeric SESSION_SHARD_INDEX and SESSION_SHARD_COUNT inputs.") from error
 
-        if not 1 <= shard_index <= shard_count or shard_count != 6:
-            raise SessionCacheError("capture-shard requires a one-based shard index and a shard count of exactly six.")
+        if not 1 <= shard_index <= shard_count or not 1 <= shard_count <= 12:
+            raise SessionCacheError("capture-shard requires a one-based shard index and a shard count between one and twelve.")
 
         shard_output = os.environ.get("SESSION_SHARD_OUTPUT", "").strip() or f".cache/capture/shards/shard-{shard_index}.json"
         commands[args.command] = [

@@ -16,6 +16,7 @@ its own directory. Status distinguishes proposals from measured results.
 | Study | Question | Status |
 | --- | --- | --- |
 | [Automated job applications](automated-job-applications/README.md) | Can supported application forms reuse profile facts, tailored PDFs, and approved answers reliably? | Design study; no application trials performed |
+| [Capture convergence](capture-convergence/README.md) | Can feedback rebalance six capture shards faster without excessive reassignment under noise? | Reproducible synthetic comparisons; adaptive migration budget implemented, live speedup unmeasured |
 
 ## Evidence and publication
 

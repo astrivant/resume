@@ -1,6 +1,6 @@
 # Capture scheduling
 
-The six capture workers use **history-based adaptive scheduling**: one complete
+Capture workers use **history-based adaptive scheduling**: one complete
 capture measures work, and later runs use that feedback to rebalance it. This is
 the same broad pattern as [timing-based test splitting](https://circleci.com/docs/guides/optimize/parallelism-faster-jobs/).
 The planner combines a bounded PID runtime predictor with discrete local search
@@ -11,6 +11,8 @@ on the variance of predicted shard loads.
 - [Pipeline and artifact flow](#pipeline-and-artifact-flow)
 - [Objective](#objective)
 - [First run and feedback](#first-run-and-feedback)
+- [Adaptive migration budget](#adaptive-migration-budget)
+- [Adaptive worker count](#adaptive-worker-count)
 - [Bounded PID feedback](#bounded-pid-feedback)
 - [Progressive granularity](#progressive-granularity)
 - [Cross-run storage](#cross-run-storage)
@@ -27,7 +29,7 @@ must succeed; they cannot silently fall back to an older profile.
 | Stage | Inputs and responsibility | Output and failure behavior |
 | --- | --- | --- |
 | Bootstrap | Restore compatible encrypted timing feedback and the configured browser's encrypted session; authenticate and discover the current overview/routes. | One immutable plan with capture ID, unit ownership, cost predictions, and controller state. Missing feedback starts cold; missing profile data fails capture. |
-| Six parallel workers | Restore independent copies of that browser session and execute only assigned units. | One shard artifact each, including empty workers, with captured sections/tab units and measured durations. Workers never update the shared session cache. |
+| Parallel workers | Restore independent copies of that browser session and execute only assigned units. | One shard artifact per planned worker, including empty workers, with captured sections/tab units and measured durations. Workers never update the shared session cache. |
 | Fan-in | Validate capture ID, browser, worker indices, and exact unit coverage; merge tabs, preserve source order, cache media, and validate the fresh profile. | Accepted profile artifact. No incomplete worker output trains the next run or replaces the accepted profile. |
 | Feedback publication | Update runtime estimates and bounded controller state from the accepted capture, then encrypt it. | A timing artifact for a later run. It becomes usable after successful capture even if a downstream PDF or release stage later fails. |
 | Build and publish | Consume that run's accepted profile, optional summaries, and immutable source revision. | Validation gates publication; tags sign/release the fresh PDF. PDF, main-branch, and Pages publication follow their existing gates. |
@@ -38,9 +40,9 @@ for build, test, release, and publication branches.
 
 ## Objective
 
-Let `m = 6`, let `c_j` be unit `j`'s predicted traversal time in seconds, and let
+Let `m` be the planned worker count (initially six), let `c_j` be unit `j`'s predicted traversal time in seconds, and let
 `S_i` be the units assigned to shard `i`. Every unit belongs to exactly one shard.
-Empty shards have load zero. These are population statistics over all six shards:
+Empty shards have load zero. These are population statistics over all planned shards:
 
 ```math
 L_i = \sum_{j\in S_i} c_j,\qquad
@@ -87,7 +89,9 @@ This is a [multi-way number partitioning](https://research.google/pubs/optimal-m
 problem with a variance objective. We use bounded move/swap local search rather
 than claim a globally optimal partition. Each accepted change reduces predicted
 standard deviation by more than 5% and cannot increase the slowest predicted
-shard. At most two units migrate per run; a swap counts as two migrations.
+shard. A dispersion-dependent budget permits two to six unit migrations per run;
+a swap counts as two migrations. This changes future ownership, without moving
+an active browser or copying unfinished traversal state between live workers.
 
 ## First run and feedback
 
@@ -104,7 +108,7 @@ session checks, and cleanup are reported separately in total worker duration.
 GitHub queue time and dependency installation are outside the scheduler's cost
 model. A failed worker attempt does not supply partial training data.
 
-After all six results pass aggregation and profile validation, the latest
+After all planned results pass aggregation and profile validation, the latest
 measurements replace local `.cache/capture/timings.json`. Established units retain
 their previous shard as the starting assignment. New units go to the least-loaded
 worker. Local search then makes only worthwhile, bounded changes. The resulting
@@ -114,6 +118,81 @@ fan-in compute exactly the same assignment even if another run completes.
 Aggregation logs predicted and observed seconds per shard, prediction error,
 mean, population standard deviation, and maximum traversal time. These are
 measurements and predictions, not a guarantee of equal wall-clock completion.
+
+## Adaptive migration budget
+
+The runtime predictor and assignment budget solve different problems. New units
+start with their first observed duration, while an established prediction can
+change by at most 25% per run. Raising predictor gains cannot bypass a hard
+two-migration cap. Large initial imbalance now gets up to six migrations, with
+the allowance returning to two near the 15% dispersion target:
+
+```math
+c=\begin{cases}\sigma/\mu,&\mu>0,\\0,&\mu=0,\end{cases}\qquad
+a=\min\left(1,\max\left(0,\frac{c-0.15}{0.60-0.15}\right)\right),\qquad
+B=2+\lceil4a\rceil.
+```
+
+The budget is frozen from the starting loads for that planning pass. It is an
+upper limit, not a migration quota. The same strict improvement, makespan,
+deterministic tie-breaking, and work-conservation rules still apply. Near balance,
+the previous two-migration limit remains. At CV of 60% or above, six are allowed.
+Within the 15% CV target, an exchange must also save at least 3% of the predicted
+makespan and at least two seconds. This prevents variance-only polishing from
+causing constant reassignment under small timing fluctuations. No ML dependency
+is required.
+
+This is a bounded proportional scheduling rule for a discrete migration budget.
+The PID estimator's gains, deadband, anti-windup, and slew limits are unchanged.
+See the [convergence study](../studies/capture-convergence/README.md) for paired
+simulations comparing fixed limits, this adaptive rule, an outer PID budget,
+and projected online gradient descent. Synthetic results justify the default;
+they do not establish a live pipeline speedup or global convergence guarantee.
+
+## Adaptive worker count
+
+`capture.sharding` controls the matrix size independently of the migration budget:
+
+```yaml
+capture:
+  sharding:
+    enabled: true
+    initial: 6
+    minimum: 2
+    maximum: 8
+    cooldown_runs: 3
+```
+
+Disable it to keep `initial` workers. All counts must be between one and twelve,
+with `minimum <= initial <= maximum`. Bootstrap exports the selected count and
+indices from the validated plan; CI builds its matrix from those outputs, and
+fan-in still requires every planned worker and every unit exactly once. Local
+`capture-shard --count` defaults to the count in that plan. Ordinary `capture`
+continues to use one local browser.
+
+After three completed captures, evaluate adjacent counts. Cost estimates include
+median observed browser lifetime minus traversal time, learned from nonempty
+workers. Missing overhead measurements keep the current count. Feasible candidate
+assignments are computed with LPT and the same bounded local search, respecting
+indivisible units; predicted time is never approximated as total work divided by
+worker count. Scale out by one only when time savings are at least 10% and 15
+seconds, with at most 25% more total browser-seconds. Scale in by one only when it
+saves at least 10% of browser-seconds while increasing predicted time by at most
+5%. Each change restarts the completed-capture cooldown.
+
+These are per-change limits. Several allowed scale-ins can cumulatively increase
+latency by more than 5%. Browser-seconds are a proxy, not GitHub's billed runner
+time: queueing, installation, shared rate limits, and contention are outside the
+model. An indivisible bottleneck receives no additional workers merely to reduce
+CV. Lowering CV by reducing the count is not itself sufficient justification.
+
+A resize may reassign more than six units; the normal migration limit applies
+within a fixed matrix size. The accepted resize freezes its exact placement into
+the plan without clearing PID history. Count, cooldown age, and measured overhead
+join the existing encrypted timing artifact. Old local timing documents default
+to six workers and no overhead measurement. The added configuration changes the
+CI feedback scope hash, so the first run after upgrading starts fresh. Explicitly
+tightening configured bounds takes effect immediately, ahead of the cooldown.
 
 ## Bounded PID feedback
 
@@ -170,7 +249,7 @@ For established units this guarantees a positive, bounded next estimate:
 0.75p_t\le p_{t+1}\le1.25p_t.
 ```
 
-Assignment hysteresis and the two-migration budget are separate from this
+Assignment hysteresis and the adaptive migration budget are separate from this
 controller. If the previous assignments remain balanced, updated predictions
 need not move any work.
 
@@ -286,7 +365,7 @@ each expression with KaTeX in strict mode. It covers inline dollar math, display
 math, and GitHub `math` fences while ignoring ordinary code examples. It also
 rejects unclosed display/fenced blocks and executes the examples above. CI runs
 the same hook in its existing checks job. Property tests separately cover work
-conservation, nonincreasing variance/makespan, and migration limits.
+conservation, nonincreasing variance/makespan, and adaptive migration limits.
 
 Syntax validation cannot prove arbitrary mathematical claims. Review changes to
 definitions and derivations, and update executable examples and property tests

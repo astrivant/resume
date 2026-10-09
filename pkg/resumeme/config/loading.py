@@ -378,6 +378,12 @@ def _parse_config(raw: object, path: Path, *, validate_companies: bool) -> Confi
     converter.register_structure_hook_func(lambda target_type: target_type is object, _override_value)
     config = converter.structure(raw, Config)
 
+    # Count bounds remain meaningful when values are supplied through partial company overrides too.
+    sharding = config.capture.sharding
+
+    if not sharding.minimum <= sharding.initial <= sharding.maximum:
+        raise ConfigurationError("capture.sharding requires minimum <= initial <= maximum.")
+
     # A publish opt-in must have a corresponding proposal producer.
     if config.codex.skills.publish and not config.codex.skills.enabled:
         raise ConfigurationError("automation.codex.skills.publish requires automation.codex.skills.enabled.")

@@ -6,6 +6,13 @@ logging:
 
 # Browser and network behavior used while acquiring and enriching a profile.
 capture:
+  # Start with six workers; resize by one only when measured time/cost savings justify it.
+  sharding:
+    enabled: true
+    initial: 6
+    minimum: 2
+    maximum: 8
+    cooldown_runs: 3
   browser: firefox
   page_timeout_seconds: 30
   app_approval_timeout_seconds: 900
