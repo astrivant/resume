@@ -118,8 +118,8 @@ layout and legacy-path migration table are in [configuration layout](configurati
 | `automation.codex.companies` | `[]` | Company usernames and job URLs for additional tailored PDFs under `single-origin/`; see [company summaries](codex.md#single-origin-resumes) |
 | `document.style.profile_column_side` | `left` | Place the profile in a separate first-page column on the left or right |
 | `document.style.profile_column_wrap` | `false` | Allow body text beneath a right-side profile; ignored for the left-side layout |
-| `document.style.later_page_body_width` | `0.9` | Body text on later full-width pages uses this fraction of its available width; greater than 0 and at most 1 |
-| `document.style.first_page_body_width` | `1.0` | First-page column text uses this fraction independently; `1.0` keeps the column at its full available width |
+| `document.style.first_page_body_width` | `1.0` | About, Experience, and other body text on page 1: fraction of available column width after indentation; the identity sidebar is independent |
+| `document.style.later_page_body_width` | `0.9` | Body paragraphs and bullets on page 2 onward: fraction of available width after indentation |
 | `document.style.paper` | `letter` | `letter` (8.5 x 11 inches) or `a4` |
 | `document.style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
 | `document.style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
@@ -173,14 +173,24 @@ text, contact details, contribution graph, and contents. An oversized profile
 falls back to breakable columns so long contact information remains visible.
 The wrap setting is ignored on the left. Both settings support inline theme overrides.
 
-`document.style.later_page_body_width: 0.9` keeps body paragraphs and bullets within 90% of their
-available text area on later full-width pages. The separate
-`document.style.first_page_body_width` setting controls the first-page column and
-defaults to `1.0`, so changing the global width does not squeeze that distinct
-layout. With floating text enabled, the first-page limit expands as text clears the
-profile. Headings, logos, figures, and page margins keep their existing dimensions.
+The two body-width settings have explicit page scopes:
+
+```yaml
+document:
+  style:
+    first_page_body_width: 1.0   # Page 1: fill the body column, including About and Experience.
+    later_page_body_width: 0.88 # Page 2 onward: leave 12% of the available body width unused.
+```
+
+Both values are fractions greater than `0` and at most `1`. Width is measured
+after paragraph or bullet indentation, independently of which side holds the
+profile. With floating text enabled, the first-page limit expands as text clears
+the profile. Headings, logos, figures, the identity sidebar, and page margins keep their existing dimensions.
 These are maximum line widths, not minimum line-fill or justification rules;
 paragraph endings may still be short. Inline themes can override either value.
+Legacy `text_wrap_width` maps to `later_page_body_width`, and
+`profile_column_text_wrap_width` maps to `first_page_body_width`. Use one name per
+setting in each base style, theme, or company override; duplicate aliases fail validation.
 
 ### Section visibility, order, and tiles
 

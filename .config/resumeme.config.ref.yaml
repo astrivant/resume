@@ -88,8 +88,9 @@ document:
   style:
     profile_column_side: left
     profile_column_wrap: false
-    later_page_body_width: 0.9
+    # Fractions of the available body width, after indentation; the identity sidebar is independent.
     first_page_body_width: 1.0
+    later_page_body_width: 0.9
     paper: letter
     accent: '245135'
     background: FFFFFF

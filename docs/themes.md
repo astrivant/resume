@@ -60,8 +60,9 @@ Body typography and About panels also accept theme overrides: `line_height`
 is a baseline multiplier (`1` to `2`), `paragraph_spacing` is measured in points
 (`0` to `24`), and `about_background` is a six-digit hex color or `null` for
 unshaded text. For example, `about_background: 'F0F4F7'` uses a pale gray-blue
-panel with the shared project tile corners. The panel follows `later_page_body_width`
-with 3 mm padding around the body text; the About heading stays outside it.
+panel with the shared project tile corners. The panel follows `first_page_body_width`
+on page 1 and `later_page_body_width` thereafter, with 3 mm padding around the body
+text; the About heading stays outside it.
 See [document layout](README.md#document-layout).
 
 ## Company names

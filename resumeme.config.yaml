@@ -107,8 +107,9 @@ document:
   style:
     profile_column_side: right
     profile_column_wrap: false
-    later_page_body_width: 0.88
-    first_page_body_width: 1.0
+    # Fractions of available body width: page 1's column and page 2 onward, independently.
+    first_page_body_width: 0.98
+    later_page_body_width: 0.85
     line_height: 1.0
     paragraph_spacing: 3
     about_text_indent: 8

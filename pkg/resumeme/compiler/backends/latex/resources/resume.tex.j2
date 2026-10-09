@@ -346,7 +346,6 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % Paragraph-scoped overrides keep headings and figures independent of the body line limit.
 \newcommand{\currenttextwidthratio}{1}
 \colorlet{roleconnector}{ink!18}
-\newsavebox{\roleframemeasure}
 \newsavebox{\portraitmeasure}
 \newlength{\portraitdiameter}
 \newsavebox{\paragraphmeasure}
@@ -362,7 +361,6 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newlength{\contributionradius}
 \newlength{\contributionappendixwidth}
 ((* endif *))
-((* if floating_profile *))
 \newif\ifprofileprogression
 \newcounter{profileparagraphid}
 \newcount\profilerailpage
@@ -381,7 +379,6 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newsavebox{\profileidentitybox}
 \newlength{\profilecolumnheight}
 \newlength{\profilebelowheight}
-((* endif *))
 % =============================================================================
 % Document metadata and global typesetting settings
 % =============================================================================
@@ -441,34 +438,13 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \fill[ink!55] (-3mm-0.3pt,0.5ex) circle[radius=0.9mm];
   }%
 }
-((* if floating_profile *))
 \newcommand{\roletitle}[2][\normalsize]{\profileparagraph[1]{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}}\nopagebreak}
-((* else *))
-\newcommand{\roletitle}[2][\normalsize]{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}\par\nopagebreak}
-((* endif *))
 % Give each body section heading ten percent more room above and below its content.
 \newcommand{\sectiontitle}[1]{%
   \par\addvspace{\sectionheadingbefore}%
   {\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{\sectionheadingafter}%
 }
-% The rule is painted before the role contents, whose vertices interrupt it with a clear gap.
-% It continues on subsequent pages without boxing the whole history or repeating title vertices.
-\newcommand{\roleframe}[2][100]{%
-  \sbox{\roleframemeasure}{#2}%
-  \hspace{3mm}{\color{roleconnector}\vrule width0.6pt}%
-  %
-  % Blend the leading cap against the page: 70% opacity means 30% transparency.
-  % The first vertex's canvas halo conceals the join half a line below the frame's top.
-  \ifnum#1<100\relax
-    \tikz[overlay]{%
-      \fill[roleconnector!#1!canvas] (-0.6pt,\ht\roleframemeasure)
-        rectangle (0pt,\ht\roleframemeasure-0.5\baselineskip);
-    }%
-  \fi%
-  \hspace{3mm}\usebox{\roleframemeasure}%
-}
-((* if floating_profile *))
-% Keep role paragraphs in the main text flow so each can widen when it clears the profile block.
+% Keep role paragraphs in the main text flow so each can adopt the destination page's width.
 % Paint the continuous rail behind the text, rather than boxing an entire role at its initial width.
 \newcommand{\drawprofilerail}[4]{%
   \begin{tikzpicture}[remember picture,overlay]
@@ -484,19 +460,6 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \def\profilerailopacity{#1}%
   \profilerailpage=0
 }{\par}
-((* else *))
-\newenvironment{roleprogression}[1][100]{%
-  % Framed centers continuation pieces by default; keep the bar at the left when the next flow frame is wider.
-  \let\centerline\leftline
-  \def\FrameCommand{\roleframe[#1]}%
-  %
-  % Only the first piece owns the leading cap; page continuations keep the ordinary rail color.
-  \let\FirstFrameCommand\FrameCommand
-  \def\MidFrameCommand{\roleframe}%
-  \def\LastFrameCommand{\roleframe}%
-  \MakeFramed{\advance\hsize-\width\FrameRestore}%
-}{\endMakeFramed}
-((* endif *))
 % Scale to cover the circle without stretching, then clip only the portrait in the PDF.
 % Original captured images stay untouched, and logos retain their rectangular outlines.
 \newcommand{\portraitphoto}[2][36.4mm]{%
@@ -525,7 +488,6 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     #2\par
   \endgroup
 }
-((* if floating_profile *))
 \newcommand{\profilesetwidth}{%
   \ifprofilewrapping\ifinner\else%
     \setlength{\linewidth}{\typeblockwidth}%
@@ -601,6 +563,8 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\typeblockheight
       \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax>\dimexpr\pagegoal-\pagetotal\relax
         \framebreak
+        % Flowfram resumes in horizontal mode; start a fresh paragraph so its hook places the new page's rail anchor.
+        \par
         \setlength{\profileparagraphwidth}{\linewidth}%
         \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
         \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{\paragraphcontent{#1}{#2}}}%
@@ -644,21 +608,6 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \paragraphcontent{#1}{#2}%
   \fi
 }
-((* else *))
-\newcommand{\profileparagraph}[2][\bodytextwidthratio]{%
-  \par
-  \ifnum\value{page}=1
-    \sbox{\paragraphmeasure}{\parbox{\linewidth}{\paragraphcontent{#1}{#2}}}%
-    % Include leading baseline space; underestimating it can overflow before framebreak and flush a second, nearly empty page.
-    \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\textheight
-      \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax>\dimexpr\pagegoal-\pagetotal\relax
-        \framebreak
-      \fi
-    \fi
-  \fi
-  \paragraphcontent{#1}{#2}%
-}
-((* endif *))
 % Plain LinkedIn labels such as Projects introduce subsections, rather than continuing the preceding bullet.
 % Give them subordinate emphasis and keep room for the first line of their following content.
 \newcommand{\profilesubheading}[1]{%

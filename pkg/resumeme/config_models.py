@@ -393,8 +393,8 @@ class StyleOverrides(TypedDict, total=False):
         paper (str): A4 or letter paper name.
         profile_column_side (Literal["left", "right"]): First-page profile placement in a separate column.
         profile_column_wrap (bool): Allow body text beneath a right-side profile; False keeps separate first-page columns.
-        later_page_body_width (float): Fraction of the available body-text width, independently of profile placement.
-        first_page_body_width (float): Fraction of first-page column width; independent of later full-width body text.
+        later_page_body_width (float): Maximum fraction of available body width on page 2 onward, after indentation.
+        first_page_body_width (float): Maximum fraction of available body width on page 1; does not resize the identity sidebar.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
@@ -473,8 +473,8 @@ class Style:
         paper (str): A4 or letter paper name.
         profile_column_side (Literal["left", "right"]): First-page profile placement in a separate column.
         profile_column_wrap (bool): Allow body text beneath a right-side profile; disabled by default and ignored on the left.
-        later_page_body_width (float): Fraction of available body-text width; 0.9 reserves the rightmost ten percent on every page.
-        first_page_body_width (float): Fraction of first-page column width; 1.0 keeps the column at its full available width.
+        later_page_body_width (float): Maximum fraction of available body width on page 2 onward, after indentation.
+        first_page_body_width (float): Maximum fraction of available body width on page 1; does not resize the identity sidebar.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.

@@ -182,6 +182,76 @@ def check_about_panels(root: Path) -> None:
         print(f"{name}: all paragraphs and links preserved across pages; line and paragraph spacing verified")
 
 
+def check_body_widths(root: Path) -> None:
+    """
+    Verify independent page-scoped line widths in compiled About prose and a job spanning multiple pages.
+
+    Args:
+        root (Path): Scratch directory for synthetic TeX and PDFs.
+
+    Returns:
+        None: Changing either width affects only its page scope, with all prose and bullet tokens retained.
+
+    Raises:
+        AssertionError: A page inherits the other width, a role retains stale column wrapping, or text is lost.
+    """
+    about = [f"about{index:03d}" for index in range(90)]
+    role = [f"role{index:03d}" for index in range(900)]
+    about_paragraphs = [" ".join(about[index : index + 30]) for index in range(0, len(about), 30)]
+    role_paragraphs = ["- " + " ".join(role[index : index + 30]) for index in range(0, len(role), 30)]
+    profile = Profile(
+        "layout-check",
+        "Layout Check",
+        # Keep a floating sidebar beside both sections so the fixture also covers its narrowing exclusion.
+        headline="Profile sidebar context " * 25,
+        sections=[
+            Section("about", "About", [Entry(paragraphs=about_paragraphs)]),
+            Section("experience", "Experience", [Entry("Engineer", ["Example Company", *role_paragraphs])]),
+        ],
+    )
+
+    for side, wrap in (("left", False), ("right", False), ("right", True)):
+        widths: dict[str, tuple[int, int, int]] = {}
+
+        # Each variant changes only one setting; compare line capacities rather than template implementation strings.
+        for variant, first, later in (("full", 1.0, 1.0), ("first", 0.7, 1.0), ("later", 1.0, 0.7)):
+            name = f"width-{side}-{wrap}-{variant}"
+            config = Config(
+                LinkedIn(profile.username),
+                style=Style(
+                    profile_column_side="left" if side == "left" else "right",
+                    profile_column_wrap=wrap,
+                    first_page_body_width=first,
+                    later_page_body_width=later,
+                    show_headline=True,
+                ),
+                output=Output(tex=f"{name}/resume.tex", pdf=f"{name}/resume.pdf"),
+            )
+            pdf = compile_pdf(render_profile(profile, config, root), config, root)
+            pages = [page.extract_text() for page in PdfReader(pdf).pages]
+            text = " ".join(pages)
+            assert re.findall(r"about\d{3}", text) == about, f"{name}: About text lost, duplicated, or reordered"
+            assert re.findall(r"role\d{3}", text) == role, f"{name}: role text lost, duplicated, or reordered"
+
+            # The opening line checks first-page behavior, and the widest later line excludes short paragraph endings.
+            about_lines = [line for line in pages[0].splitlines() if "about" in line]
+            role_lines = [line for line in pages[0].splitlines() if "role" in line]
+            later_lines = [line for page in pages[1:] for line in page.splitlines() if "role" in line]
+            assert about_lines and role_lines and later_lines, f"{name}: fixture failed to cover both sections and page scopes"
+            widths[variant] = (
+                len(re.findall(r"about\d{3}", about_lines[0])),
+                len(re.findall(r"role\d{3}", role_lines[0])),
+                max(len(re.findall(r"role\d{3}", line)) for line in later_lines),
+            )
+
+        assert widths["full"][:2] == widths["later"][:2], f"{side}/{wrap}: later-page width leaked into page 1"
+        assert widths["full"][2] == widths["first"][2], f"{side}/{wrap}: first-page width persisted on later pages"
+        assert widths["first"][0] < widths["full"][0], f"{side}/{wrap}: About ignored first-page width"
+        assert widths["first"][1] < widths["full"][1], f"{side}/{wrap}: Experience ignored first-page width"
+        assert widths["later"][2] < widths["full"][2], f"{side}/{wrap}: Experience ignored later-page width"
+        print(f"{side}/{wrap}: independent first/later widths verified in About and a continuing Experience role", flush=True)
+
+
 def main() -> None:
     """
     Compile bounded layout fixtures using the selected installed PDF backend.
@@ -208,6 +278,7 @@ def main() -> None:
     # Both previews use one uninterrupted paragraph, so moving it wholesale below the profile cannot pass.
     with tempfile.TemporaryDirectory(prefix="profile-layout-", dir=Path.cwd()) as directory:
         root = Path(directory)
+        check_body_widths(root)
         check_about_panels(root)
         Image.new("RGB", (200, 200), "#dddddd").save(root / "portrait.png")
         Image.new("RGB", (600, 150), "#eeeeee").save(root / "cover.png")

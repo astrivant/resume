@@ -11,7 +11,8 @@ import yaml
 from jsonschema import ValidationError
 
 from resumeme.compiler.passes.themes import resolve_style
-from resumeme.config import load_config
+from resumeme.config import CompanyTarget, company_config, load_config
+from resumeme.exceptions import ConfigurationError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 
 def test_body_width_defaults_and_theme_preserve_column_settings(tmp_path: Path) -> None:
     """
-    Keep the global and first-page column width controls independent under theme selection.
+    Keep the later-page and first-page body widths independent under theme selection.
 
     Args:
         tmp_path (Path): Isolated configuration directory.
@@ -68,4 +69,63 @@ def test_body_width_rejects_invalid_base_and_theme_values(tmp_path: Path, field:
     path.write_text(yaml.safe_dump({"linkedin": {"username": "example-person"}, "style": style}))
 
     with pytest.raises(ValidationError):
+        load_config(path)
+
+
+@pytest.mark.parametrize("grouped", [False, True])
+def test_legacy_width_names_normalize_before_themes_and_company_merges(tmp_path: Path, grouped: bool) -> None:
+    """
+    Preserve old base, theme, and per-company values through the input migration.
+
+    Args:
+        tmp_path (Path): Isolated configuration directory.
+        grouped (bool): Whether the style uses the grouped public path.
+
+    Returns:
+        None: Aliases resolve to canonical fields before inherited values are merged.
+    """
+    style = {"text_wrap_width": 0.88, "profile_column_text_wrap_width": 1.0}
+    raw = {"linkedin": {"username": "example-person"}, **({"document": {"style": style}} if grouped else {"style": style})}
+    path = tmp_path / "config.yaml"
+    path.write_text(yaml.safe_dump(raw))
+    config = load_config(path)
+    assert config.style.first_page_body_width == 1.0
+    assert config.style.later_page_body_width == 0.88
+
+    # The same spelling may replace a canonical inherited value in a separate override mapping.
+    override = {
+        "text_wrap_width": 0.65,
+        "theme": "narrow",
+        "themes": {"narrow": {"profile_column_text_wrap_width": 0.8}},
+    }
+    target = CompanyTarget("example-company", "https://www.linkedin.com/jobs/view/123/", overrides={"document": {"style": override}})
+    resolved = resolve_style(company_config(config, target, root=tmp_path).style)
+    assert (resolved.first_page_body_width, resolved.later_page_body_width) == (0.8, 0.65)
+    assert (config.style.first_page_body_width, config.style.later_page_body_width) == (1.0, 0.88)
+
+
+@pytest.mark.parametrize(
+    ("legacy", "canonical"),
+    [("text_wrap_width", "later_page_body_width"), ("profile_column_text_wrap_width", "first_page_body_width")],
+)
+@pytest.mark.parametrize("theme", [False, True])
+def test_width_aliases_reject_ambiguous_values(tmp_path: Path, legacy: str, canonical: str, theme: bool) -> None:
+    """
+    Reject two names for the same setting even when their supplied values are equal.
+
+    Args:
+        tmp_path (Path): Isolated configuration directory.
+        legacy (str): Former field name.
+        canonical (str): Current field name for the same setting.
+        theme (bool): Whether the duplicate belongs to a named theme.
+
+    Returns:
+        None: Validation names the canonical replacement without selecting a winner.
+    """
+    values = {legacy: 1.0, canonical: 1.0}
+    style = {"themes": {"custom": values}} if theme else values
+    path = tmp_path / "config.yaml"
+    path.write_text(yaml.safe_dump({"profile": {"linkedin": {"username": "example-person"}}, "document": {"style": style}}))
+
+    with pytest.raises(ConfigurationError, match=canonical):
         load_config(path)
