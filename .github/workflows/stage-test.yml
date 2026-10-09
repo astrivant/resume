@@ -62,7 +62,7 @@ jobs:
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           cat "$RUNNER_TEMP/trivy-results/summary.md" >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always() && steps.prepare.outputs.available == 'true'
         with:
           name: trivy-scan-report
@@ -133,7 +133,7 @@ jobs:
       - run: bash scripts/ci/test.sh tests --shard-index "$TEST_SHARD_INDEX" --shard-count "$TEST_SHARD_COUNT" -n 4
 
       # Unique filenames retain every shard's raw coverage, including diagnostics from failed tests.
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: python-coverage-${{ matrix.shard }}
@@ -165,7 +165,7 @@ jobs:
           poetry run coverage combine --keep .cache/coverage/shards
           poetry run coverage report
           poetry run coverage xml -o .cache/coverage/coverage.xml
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: python-coverage
           path: .cache/coverage/coverage.xml
