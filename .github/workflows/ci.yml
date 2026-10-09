@@ -217,7 +217,7 @@ jobs:
           path: .cache/refresh/
           include-hidden-files: true
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 1
   summary-stage:
     name: Summarize
     needs: [source, capture]

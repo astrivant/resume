@@ -5,8 +5,10 @@ The pipeline refreshes LinkedIn on the first day of every month at **06:17 UTC**
 overview and route plan, and collects assigned sections using six parallel workers.
 The aggregator verifies complete section ownership before images and project
 previews are downloaded, validation and PDF generation run, and the complete
-snapshot, referenced assets, and PDF are committed to `main` together. Ordinary
-branch pushes rebuild the saved inputs. Neither path creates a release.
+snapshot, referenced assets, and PDF are committed to `main` together. The
+configured profile path is replaced in place; resumeme does not create dated
+profile archives. Ordinary branch pushes rebuild the saved inputs. Neither path
+creates a release.
 
 Every tag push also performs a headless LinkedIn capture before validation and
 compilation. Capture authenticates once with the configured browser, saves an
@@ -15,8 +17,11 @@ parallel workers restore independent copies of that browser-specific session and
 collect assigned sections without login credentials or shared-cache writes. The
 aggregator rejects missing, duplicate, misrouted, or cross-browser shard results
 before accepting a complete snapshot. The release signs the fresh PDF built in
-that same workflow run, not the PDF committed at the tag. Tags do not commit
-their capture or PDF to `main` or deploy Pages.
+that same workflow run, not the PDF committed at the tag. After release
+verification, the publication stage restores that run's fresh capture artifact,
+then commits its snapshot, referenced media, and signed PDF to the latest `main`
+tree. It preserves newer source files and replaces only generated publication
+outputs. Pages deploys the accepted commit, including the signed PDF.
 
 Enable `pages.enabled` to also update a [GitHub Pages website](pages.md) after
 that commit is accepted. The optional stage serves `index.html` and the same PDF
@@ -36,7 +41,9 @@ The logo is README branding; it does not add stains to the résumé PDF.
 
 Before enabling refreshes, review [sensitive data handling](data-handling.md).
 The full capture can contain contact fields and sections excluded from the PDF.
-It crosses jobs as an ordinary artifact and is committed on a main refresh.
+It crosses jobs as an ordinary artifact retained for one day and is committed
+at the configured snapshot path on a successful refresh. Git history follows
+the repository owner's normal retention policy.
 Encrypted session reuse protects the browser archive, not those publications.
 
 OpenSSF Scorecard runs as a reusable stage within the same pipeline on default-branch

@@ -199,7 +199,7 @@ repository's own retention setting, not the artifact-specific values.
 | --- | --- | --- | --- |
 | `resumeme-capture-plan` | Refreshed tag or main capture; coordinate six workers | Overview profile content and LinkedIn section route URLs. No browser state or login credentials. | 1 |
 | `resumeme-capture-shard-*` | Refreshed tag or main capture; one artifact from each worker | Collected LinkedIn profile sections assigned to that shard. No browser state or login credentials. | 1 |
-| `resumeme-profile` | Tag, monthly, or requested main refresh; share one capture with downstream jobs | Full accepted snapshot and every referenced downloaded image, including fields hidden in the PDF. No browser-profile directory. | 7 |
+| `resumeme-profile` | Tag, monthly, or requested main refresh; share one capture with downstream jobs | Full accepted snapshot and every referenced downloaded image, including fields hidden in the PDF. No browser-profile directory. | 1 |
 | `resumeme-summary-inputs` | Enabled summary generation on main or tags; feed the matrix | `.cache/codex/` prompts, schemas, and company/job evidence, including configured writing context. | 7 |
 | `resumeme-summary-result-*` | Each successful matrix item | Validated generated JSON and employer evidence for that item. | 7 |
 | `resumeme-summary` | Collect matrix results for document review and PDF builds | Combined validated summary JSON and employer snapshots, not the input prompts. | 14 |
@@ -213,11 +213,14 @@ repository's own retention setting, not the artifact-specific values.
 | `python-coverage-*` | Each test partition, including failed tests | Raw coverage databases with relative source paths and executed line numbers; used to combine all partitions. | 14 |
 | `python-coverage`, `textidote-reports` | Combined successful test partitions/document checks | Source-path coverage and document reports; reports can include excerpts of checked prose. | 14 |
 
-On main publication, the bot stages the PDF, generated employer PDFs, enabled
-README/preview files, and branding changes. A refresh also stages the full
-accepted profile and its referenced images. Neither disabled display sections
-nor AI prompt filtering restrict that snapshot commit. Git history, existing
-assets, earlier variants, forks, and downloaded artifacts can retain older data;
+Each successful refresh replaces the configured profile snapshot and its
+referenced image paths in place. Resumeme does not create dated profile archives.
+The one-day `resumeme-profile` artifact shares that latest capture between jobs;
+it is not encrypted. On main publication, the bot stages the PDF, generated
+employer PDFs, enabled README/preview files, and branding changes. A refresh also
+stages the full accepted profile and its referenced images. Neither disabled
+display sections nor AI prompt filtering restrict that snapshot commit. Existing
+Git history, prior artifacts, forks, and downloaded copies can retain older data;
 removing a reference is not a repository-wide purge. Ordinary branch builds and
 PR checks can upload artifacts containing already-committed personal data without
 receiving any login secret.

@@ -12,7 +12,7 @@ on:
         required: false
     outputs:
       published-sha:
-        description: Main commit containing this tag's signed resume, empty when superseded
+        description: Main commit containing this tag's signed resume and fresh capture
         value: ${{ jobs.publish.outputs.sha }}
 permissions:
   contents: write
@@ -57,6 +57,8 @@ jobs:
           cosign-release: v3.1.3
       - name: Verify the release payload before committing it
         run: bash scripts/release/verify.sh
+      - name: Restore this run's fresh LinkedIn capture
+        run: poetry run python scripts/ci/profile-artifact.py restore
       - name: Stage the matching captured profile and media
         run: poetry run python scripts/ci/profile-artifact.py stage
       - name: Prepare a README preview from the signed PDF
@@ -64,21 +66,24 @@ jobs:
           RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
         run: poetry run python scripts/ci/readme-artifact.py stage
       - name: Restore the README and refresh project branding
+        id: readme
         env:
           RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
           SOURCE_SHA: ${{ inputs.sha }}
         run: |
           readme_mode="$(poetry run python scripts/ci/readme-artifact.py restore)"
+          echo "mode=$readme_mode" >>"$GITHUB_OUTPUT"
           if [[ "$readme_mode" == project ]]; then
               read -r brew_date <.cache/publication/brew-date.txt
               poetry run python scripts/ci/refresh-logo.py --seed "$SOURCE_SHA" --brew-date "$brew_date"
               git add -- docs/assets/branding/resumeme-logo.png docs/assets/branding/brew-date.svg README.md
           fi
-      - name: Commit signed files only when main still points at this tag source
+      - name: Commit signed files and fresh capture on the latest main
         id: publish
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ inputs.sha }}
           RELEASE_TAG: ${{ github.ref_name }}
           RESUME_PUBLISH_USES_TOKEN: ${{ secrets.RESUME_PUBLISH_TOKEN != '' }}
+          README_MODE: ${{ steps.readme.outputs.mode }}
         run: bash scripts/release/commit-main.sh

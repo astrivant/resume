@@ -568,7 +568,7 @@ def test_signed_release_uses_only_the_existing_selected_tag(tmp_path: Path, matc
 @pytest.mark.parametrize("main_advanced", [False, True])
 def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path: Path, latest_release: bool, main_advanced: bool) -> None:
     """
-    Commit this tag's verified release files only while main still names the tag source.
+    Apply this tag's verified release files to the latest main without replacing newer source.
 
     Args:
         tmp_path (Path): Isolated checkout, bare remote, signed payload, and fake GitHub CLI.
@@ -576,7 +576,7 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
         main_advanced (bool): Whether another source commit replaced the tagged commit on main.
 
     Returns:
-        None: The exact signed files publish once, retries are idempotent, and stale releases leave main untouched.
+        None: The fresh profile publishes once, newer source survives, and stale releases leave main untouched.
     """
     root = tmp_path / "checkout"
     remote = tmp_path / "remote.git"
@@ -589,6 +589,7 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
     _git(root, "config", "commit.gpgsign", "false")
     _git(root, "remote", "add", "origin", str(remote))
     (root / "resumeme.config.yaml").write_text("linkedin: {username: example}\n", encoding="utf-8")
+    (root / "README.md").write_text("tag source README\n", encoding="utf-8")
     (root / "data").mkdir()
     (root / "data/profile.json").write_text('{"name": "Example"}\n', encoding="utf-8")
     _git(root, "add", ".")
@@ -600,7 +601,9 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
 
     if main_advanced:
         (root / "newer-source.txt").write_text("newer branch content\n", encoding="utf-8")
+        (root / "README.md").write_text("newer main README\n", encoding="utf-8")
         _git(root, "add", "newer-source.txt")
+        _git(root, "add", "README.md")
         _git(root, "commit", "-m", "newer source")
         _git(root, "push", "origin", "HEAD:main")
         _git(root, "checkout", "--detach", source)
@@ -627,6 +630,8 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
     # Model the validated profile-stage input that the workflow stages before publishing the signed files.
     (root / "data/profile.json").write_text('{"name": "Captured Example"}\n', encoding="utf-8")
     _git(root, "add", "data/profile.json")
+    (root / "README.md").write_text("tag resume preview\n", encoding="utf-8")
+    _git(root, "add", "README.md")
     release_scripts = root / "scripts/release"
     release_scripts.mkdir(parents=True)
     shutil.copyfile(REPOSITORY_ROOT / "scripts/release/commit-main.sh", release_scripts / "commit-main.sh")
@@ -654,6 +659,7 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
         GH_TOKEN="fixture-token",
         GITHUB_OUTPUT=str(output),
         RESUME_PUBLISH_USES_TOKEN="false",
+        README_MODE="project",
         RETRY_BACKOFF_SECONDS="0",
     )
 
@@ -671,20 +677,27 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
     assert result.returncode == 0, result.stdout + result.stderr
     published = _git(remote, "rev-parse", "main")
 
-    if not latest_release or main_advanced:
+    if not latest_release:
         assert published != source if main_advanced else published == source
         assert not output.exists()
         return
 
     assert published != source
+    if main_advanced:
+        assert _git(remote, "show", "main:newer-source.txt") == "newer branch content"
+
     assert _git(remote, "show", "main:resume.pdf") == "release artifact resume.pdf"
     assert _git(remote, "show", "main:data/profile.json") == '{"name": "Captured Example"}'
+    assert _git(remote, "show", "main:README.md") == ("newer main README" if main_advanced else "tag resume preview")
     assert _git(remote, "show", "main:key-fingerprint.txt") == "release artifact key-fingerprint.txt"
     assert "Resumeme-Signed-Release: resume-selected" in _git(remote, "log", "-1", "--format=%B", "main")
     assert output.read_text(encoding="utf-8") == f"published-sha={published}\n"
-    assert _git(remote, "diff-tree", "--no-commit-id", "--name-only", "-r", published).splitlines() == sorted(
-        [*filenames, "data/profile.json"]
-    )
+    changed_paths = [*filenames, "data/profile.json"]
+
+    if not main_advanced:
+        changed_paths.append("README.md")
+
+    assert _git(remote, "diff-tree", "--no-commit-id", "--name-only", "-r", published).splitlines() == sorted(changed_paths)
 
     # A lost workflow response followed by retry must resolve to the same signed commit.
     _git(root, "reset", "--hard", source)
@@ -722,7 +735,8 @@ def test_tag_pipeline_publishes_verified_release_files_and_refreshes_pages() -> 
     commit = next(index for index, step in enumerate(steps) if step.get("run") == "bash scripts/release/commit-main.sh")
     assert signed["with"]["path"] == ".cache/publication/"
     assert captured["with"]["path"] == ".cache/refresh/"
-    assert steps.index(signed) < verify < stage_profile < stage_readme < restore_readme < commit
+    restore_profile = next(index for index, step in enumerate(steps) if "profile-artifact.py restore" in step.get("run", ""))
+    assert steps.index(signed) < verify < restore_profile < stage_profile < stage_readme < restore_readme < commit
     assert job["concurrency"]["group"] == "resumeme-pdf-main"
 
 
