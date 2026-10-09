@@ -257,6 +257,24 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     assert build_upload["with"]["path"] == ".cache/publication/"
 
 
+def test_tag_runs_share_a_workflow_level_concurrency_lane() -> None:
+    """
+    Hold each tag pipeline until the previous tag pipeline has completed.
+
+    Returns:
+        None: All tag refs resolve to one workflow concurrency group while PR cancellation remains enabled.
+    """
+    pipeline = yaml.safe_load((REPOSITORY_ROOT / ".github/workflows/ci.yml").read_text())
+    concurrency = pipeline["concurrency"]
+    group = " ".join(concurrency["group"].split())
+
+    assert group == (
+        "${{ startsWith(github.ref, 'refs/tags/') && 'resumeme-tag-pipeline' "
+        "|| format('resumeme-{0}-{1}', github.event_name, github.event.pull_request.number || github.ref) }}"
+    )
+    assert concurrency["cancel-in-progress"] == "${{ github.event_name == 'pull_request' }}"
+
+
 @pytest.mark.parametrize(
     ("refresh", "capture", "build", "accepted"),
     [
