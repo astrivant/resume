@@ -11,6 +11,7 @@ import pytest
 import yaml
 from jsonschema import ValidationError
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
 
 from resumeme.config import Capture, Config, LinkedIn, LinkedInResume, load_config
 from resumeme.exceptions import BrowserError
@@ -136,6 +137,35 @@ def test_exact_recruiter_control_avoids_neighboring_preferences(hidden: bool) ->
     driver.find_elements.side_effect = [[other, recruiter], [label], [label]]
     assert _recruiter_control(driver) == (recruiter, label if hidden else recruiter)
     other.click.assert_not_called()
+
+
+def test_artdeco_switch_uses_visible_wrapper_when_input_is_hidden() -> None:
+    """
+    Click LinkedIn's visible switch wrapper instead of its zero-size accessibility label.
+
+    Returns:
+        None: The hidden state input remains the source of truth and its visible wrapper is the click target.
+    """
+    driver = MagicMock()
+    other = MagicMock(accessible_name="Allow LinkedIn to save your resumes and answers")
+    other.get_attribute.return_value = "save-resumes"
+    recruiter = MagicMock(accessible_name="Allow recruiters to view your resumes")
+    recruiter.get_attribute.side_effect = lambda name: {
+        "id": "share-resume-toggle",
+        "data-artdeco-toggle-button": "true",
+    }.get(name)
+    recruiter.is_displayed.return_value = False
+    label = MagicMock(text="Allow recruiters to view your resumes")
+    label.get_attribute.return_value = "share-resume-toggle"
+    toggle = MagicMock()
+    toggle.get_attribute.return_value = "artdeco-toggle artdeco-toggle--32dp"
+    toggle.is_displayed.return_value = True
+    recruiter.find_element.return_value = toggle
+    driver.find_elements.side_effect = [[other, recruiter], [], [label]]
+
+    assert _recruiter_control(driver) == (recruiter, toggle)
+    recruiter.find_element.assert_called_once_with(By.XPATH, "..")
+    label.click.assert_not_called()
 
 
 def test_ambiguous_controls_fail_closed() -> None:

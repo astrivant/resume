@@ -261,6 +261,12 @@ def _recruiter_control(driver: WebDriver) -> tuple[WebElement, WebElement] | Lit
 
         if control.is_displayed():
             matches.append((control, control))
+        elif control.get_attribute("data-artdeco-toggle-button") == "true":
+            # LinkedIn hides its switch input and gives the associated accessibility label a zero-size box.
+            toggle = control.find_element(By.XPATH, "..")
+
+            if "artdeco-toggle" in (toggle.get_attribute("class") or "").split() and toggle.is_displayed():
+                matches.append((control, toggle))
         elif len(labels) == 1:
             # Native checkboxes may be visually hidden behind their associated clickable label.
             matches.append((control, labels[0]))
