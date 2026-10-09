@@ -61,4 +61,4 @@ jobs:
           REFRESH_PROFILE: ${{ inputs.refresh }}
           RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
           RESUMEME_PUBLISH_USES_TOKEN: ${{ secrets.RESUME_PUBLISH_TOKEN != '' }}
-        run: bash scripts/ci/publish.sh
+        run: bash scripts/ci/publication/publish.sh

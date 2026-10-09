@@ -10,8 +10,8 @@ import pytest
 from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
-from resumeme.compiler.passes.project_descriptions import partition_descriptions
-from resumeme.compiler.passes.projects import consolidate_projects
+from resumeme.compiler.passes.projects.consolidation import consolidate_projects
+from resumeme.compiler.passes.projects.descriptions import partition_descriptions
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
 

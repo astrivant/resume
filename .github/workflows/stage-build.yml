@@ -40,7 +40,7 @@ jobs:
           cache-from: type=gha,scope=resumeme-container-amd64
           cache-to: type=gha,mode=max,scope=resumeme-container-amd64
       - name: Compile a synthetic resume in the installed container
-        run: bash scripts/ci/check-container.sh
+        run: bash scripts/ci/containers/check-container.sh
 
       # Archive the tested image rather than asking deploy to rebuild from potentially changed external dependencies.
       - name: Save the tested image for tag publication

@@ -85,7 +85,7 @@ jobs:
         id: prepare
         if: always()
         run: |
-          python3 scripts/ci/trivy-report.py prepare \
+          python3 scripts/ci/checks/trivy-report.py prepare \
             --input "$RUNNER_TEMP/trivy-results/raw.json" \
             --report-output "$RUNNER_TEMP/trivy-results/trivy-report.json" \
             --summary-output "$RUNNER_TEMP/trivy-results/summary.md" \

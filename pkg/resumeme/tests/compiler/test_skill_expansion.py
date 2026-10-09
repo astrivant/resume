@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from resumeme.compiler.asts.profile import Entry, Link, Profile, Section, Skill
-from resumeme.compiler.asts.skills import skill_labels
+from resumeme.compiler.asts.skills.parsing import skill_labels
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.skills import expand_skill_summaries
 from resumeme.compiler.pipeline import render_profile

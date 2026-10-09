@@ -37,7 +37,7 @@ def test_pdf_artifact_carries_utc_build_date_across_midnight(tmp_path: Path, mon
     Returns:
         None: The transferred date matches the PDF's completion timestamp and its bytes remain intact.
     """
-    script = REPOSITORY_ROOT / "scripts/ci/stage-pdf.py"
+    script = REPOSITORY_ROOT / "scripts/ci/resume/stage-pdf.py"
     (tmp_path / "resumeme.config.yaml").write_text("linkedin: {username: example}\noutput: {pdf: documents/cv.pdf}\n")
     pdf = tmp_path / "documents/cv.pdf"
     pdf.parent.mkdir()
@@ -86,7 +86,7 @@ def test_unsigned_main_build_removes_signatures_for_the_replaced_pdf(tmp_path: P
     artifact.parent.mkdir(parents=True)
     artifact.write_bytes(b"%PDF-1.7\nnew unsigned build")
     monkeypatch.chdir(tmp_path)
-    runpy.run_path(str(REPOSITORY_ROOT / "scripts/ci/restore-pdf.py"))
+    runpy.run_path(str(REPOSITORY_ROOT / "scripts/ci/resume/restore-pdf.py"))
 
     staged = _git(tmp_path, "diff", "--cached", "--name-status").splitlines()
     assert staged == sorted([*(f"D\t{name}" for name in release_files), "M\tresume.pdf"], key=lambda item: item.split("\t")[1])
@@ -128,7 +128,7 @@ def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, ma
         GITHUB_STEP_SUMMARY=str(tmp_path / "summary"),
     )
     result = subprocess.run(
-        ["bash", "scripts/ci/publish-container.sh"],
+        ["bash", "scripts/ci/containers/publish-container.sh"],
         cwd=REPOSITORY_ROOT,
         env=environment,
         capture_output=True,
@@ -181,7 +181,7 @@ def test_dockerhub_publication_is_upstream_tag_only() -> None:
         "password": "${{ secrets.DOCKER_HUB_TOKEN_EMMEOWZING }}",
     }
     assert any(step.get("with", {}).get("name") == "resumeme-container" for step in hub["steps"])
-    publisher = next(step for step in hub["steps"] if step.get("run") == "bash scripts/ci/publish-container.sh")
+    publisher = next(step for step in hub["steps"] if step.get("run") == "bash scripts/ci/containers/publish-container.sh")
     assert publisher["env"]["SOURCE_SHA"] == "${{ inputs.sha }}"
     assert not any(step.get("uses", "").startswith("docker/build-push-action@") for step in hub["steps"])
 
@@ -200,7 +200,7 @@ def test_dockerhub_publication_is_upstream_tag_only() -> None:
             stage["jobs"][registry]["outputs"]["tags"] == "${{ steps.publish.outcome == 'success' && steps.metadata.outputs.tags || '' }}"
         )
         push = next(step for step in stage["jobs"][registry]["steps"] if step.get("id") == "publish")
-        assert push["run"] == "bash scripts/ci/publish-container.sh"
+        assert push["run"] == "bash scripts/ci/containers/publish-container.sh"
         assert f"needs.container-stage.outputs.{output}" in notes_caller["with"]["image-tags"]
         assert f"needs.container-stage.outputs.{output} != ''" in notes_caller["if"]
 
@@ -255,11 +255,11 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
     project = REPOSITORY_ROOT
 
     for relative in [
-        "scripts/ci/publish.sh",
-        "scripts/ci/restore-pdf.py",
-        "scripts/ci/readme-artifact.py",
-        "scripts/ci/profile-artifact.py",
-        "scripts/ci/refresh-logo.py",
+        "scripts/ci/publication/publish.sh",
+        "scripts/ci/resume/restore-pdf.py",
+        "scripts/ci/publication/readme-artifact.py",
+        "scripts/ci/linkedin/profile-artifact.py",
+        "scripts/ci/publication/refresh-logo.py",
         "scripts/tooling/retry.sh",
         "docs/assets/branding/linkedin-base.png",
         "docs/assets/branding/coffee-ring.png",
@@ -330,7 +330,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
         GITHUB_REPOSITORY="example/my-cv",
         RETRY_BACKOFF_SECONDS="0",
     )
-    subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
+    subprocess.run(["bash", "scripts/ci/publication/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
     published = _git(remote, "rev-parse", "main")
     assert published != source
     message = _git(remote, "log", "-1", "--format=%B", "main")
@@ -385,7 +385,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
         image.write_bytes(b"captured image")
 
     output.write_text("", encoding="utf-8")
-    subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
+    subprocess.run(["bash", "scripts/ci/publication/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
     assert _git(remote, "rev-parse", "main") == expected_head
     assert output.read_text() == ("" if advanced else f"published-sha={published}\n")
     assert logo.read_bytes() == published_logo
@@ -395,7 +395,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
         _git(root, "checkout", "--detach", published)
         environment["SOURCE_SHA"] = published
         output.write_text("", encoding="utf-8")
-        subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
+        subprocess.run(["bash", "scripts/ci/publication/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
         assert _git(remote, "rev-parse", "main") == published
         assert output.read_text() == f"published-sha={published}\n"
         assert logo.read_bytes() == published_logo
@@ -409,7 +409,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
             (bundle / "pdf.sha256").write_text(hashlib.sha256(artifact.read_bytes()).hexdigest())
             Image.new("RGB", (20, 30), "green").save(bundle / "resume-preview.png")
 
-        subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
+        subprocess.run(["bash", "scripts/ci/publication/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
         assert _git(remote, "rev-parse", "main") != published
         assert logo.read_bytes() != published_logo
 

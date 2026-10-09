@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError
-from resumeme.linkedin.browser import _navigate
+from resumeme.linkedin.browser.runtime import _navigate
 from resumeme.linkedin.retrying import retry_selenium
 
 if TYPE_CHECKING:

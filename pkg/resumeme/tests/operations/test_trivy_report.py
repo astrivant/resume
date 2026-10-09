@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-TRIVY_REPORT_SCRIPT = REPOSITORY_ROOT / "scripts/ci/trivy-report.py"
+TRIVY_REPORT_SCRIPT = REPOSITORY_ROOT / "scripts/ci/checks/trivy-report.py"
 
 
 def test_prepare_redacts_secret_values_and_retains_vulnerability_details(tmp_path: Path) -> None:

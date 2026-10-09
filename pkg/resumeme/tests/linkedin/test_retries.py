@@ -14,7 +14,7 @@ from urllib3.response import HTTPResponse
 
 from resumeme.config import Capture
 from resumeme.exceptions import BrowserError, BrowserTimeoutError, ResumeUploadConfirmationError
-from resumeme.linkedin.browser import _wait_for_login
+from resumeme.linkedin.capture.profile import _wait_for_login
 from resumeme.linkedin.media import _ExponentialRetry
 from resumeme.linkedin.retrying import is_retryable_linkedin_error, retry, retry_selenium
 
@@ -209,7 +209,7 @@ def test_login_waits_for_browser_state_without_a_deadline(monkeypatch: MonkeyPat
         None: Login completes on the observed browser state after any number of polls.
     """
     waits: list[float] = []
-    monkeypatch.setattr("resumeme.linkedin.browser_auth.time.sleep", waits.append)
+    monkeypatch.setattr("resumeme.linkedin.browser.auth.time.sleep", waits.append)
     browser = MagicMock()
     browser.window_handles = ["login"]
     browser.current_url = "https://www.linkedin.com/feed/"
@@ -232,7 +232,7 @@ def test_login_waits_through_challenges_and_checks_other_tabs(monkeypatch: Monke
         None: Only the authenticated LinkedIn tab completes the wait.
     """
     sleep = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser_auth.time.sleep", sleep)
+    monkeypatch.setattr("resumeme.linkedin.browser.auth.time.sleep", sleep)
     browser = MagicMock()
     browser.window_handles = ["first", "second"]
     type(browser).current_url = PropertyMock(
@@ -259,7 +259,7 @@ def test_login_wait_is_interruptible(monkeypatch: MonkeyPatch) -> None:
     Returns:
         None: Cancellation propagates immediately to the command's cleanup handler.
     """
-    monkeypatch.setattr("resumeme.linkedin.browser_auth.time.sleep", MagicMock(side_effect=KeyboardInterrupt))
+    monkeypatch.setattr("resumeme.linkedin.browser.auth.time.sleep", MagicMock(side_effect=KeyboardInterrupt))
     browser = MagicMock()
     browser.window_handles = ["login"]
     browser.current_url = "https://www.linkedin.com/login"

@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 
 from resumeme.config import load_config, project_path
-from resumeme.github.company_artifacts import restore_companies
+from resumeme.github.companies.artifacts import restore_companies
 
 # Resolve the destination from this source commit's config, while consuming the stable cross-job artifact filename.
 config = load_config(Path("resumeme.config.yaml"))

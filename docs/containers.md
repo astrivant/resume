@@ -81,7 +81,7 @@ an interactive LinkedIn capture.
 
 ```bash
 docker build --platform linux/amd64 --target production --tag resumeme:local .
-bash scripts/ci/check-container.sh resumeme:local
+bash scripts/ci/containers/check-container.sh resumeme:local
 ```
 
 The smoke check runs without networking or a writable container filesystem. It

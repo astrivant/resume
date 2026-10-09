@@ -42,7 +42,7 @@ jobs:
         with:
           groups: main
       - id: settings
-        run: poetry run python scripts/ci/resume-settings.py
+        run: poetry run python scripts/ci/linkedin/resume-settings.py
 
       # Check GitHub's current latest release inside the serialized job, so rerunning an old tag cannot upload an obsolete release.
       - id: latest

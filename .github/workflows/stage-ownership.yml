@@ -42,7 +42,7 @@ jobs:
         with:
           groups: main
       - id: settings
-        run: poetry run python scripts/ci/ownership-settings.py
+        run: poetry run python scripts/ci/linkedin/ownership-settings.py
 
       # Check GitHub's current latest release inside the serialized job, so rerunning an old tag cannot roll back the identity.
       - id: latest

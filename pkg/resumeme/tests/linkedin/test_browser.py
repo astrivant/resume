@@ -15,8 +15,8 @@ from selenium.common.exceptions import InvalidSessionIdException, NoSuchWindowEx
 from resumeme.cli import main
 from resumeme.compiler.asts.profile import Profile
 from resumeme.config import Capture, Config, LinkedIn, load_config
-from resumeme.linkedin.browser import _browser, _detail_tabs, _login, _navigate, capture_profile
-from resumeme.linkedin.browser_runtime import _firefox
+from resumeme.linkedin.browser.runtime import _firefox
+from resumeme.linkedin.capture.profile import _browser, _detail_tabs, _login, _navigate, capture_profile
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -37,16 +37,16 @@ def test_macos_profile_survives_retries_locally(tmp_path: Path, monkeypatch: Mon
     """
 
     # Exercise the macOS launch contract on any test host without opening an application or needing a LinkedIn login.
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.sys.platform", "darwin")
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime._listen_port", lambda: 2829)
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime._wait_for_browser", lambda port: None)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.sys.platform", "darwin")
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime._listen_port", lambda: 2829)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime._wait_for_browser", lambda port: None)
     browser = MagicMock()
     factory = MagicMock(return_value=browser)
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.webbrowser.BackgroundBrowser", factory)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.webbrowser.BackgroundBrowser", factory)
     driver = MagicMock()
     driver.__enter__.return_value = driver
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.webdriver.Firefox", MagicMock(return_value=driver))
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.Service", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.webdriver.Firefox", MagicMock(return_value=driver))
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.Service", MagicMock())
 
     with _firefox(tmp_path, None) as captured:
         assert captured is driver
@@ -174,12 +174,12 @@ def test_headless_launch_uses_native_firefox_without_opening_a_window(tmp_path: 
     Returns:
         None: Selenium receives headless options and owns cleanup without opening a desktop window.
     """
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.sys.platform", "darwin")
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.sys.platform", "darwin")
     launcher = MagicMock(side_effect=AssertionError("Headless capture must not open a desktop window"))
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.webbrowser.BackgroundBrowser", launcher)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.webbrowser.BackgroundBrowser", launcher)
     factory = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.webdriver.Firefox", factory)
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.Service", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.webdriver.Firefox", factory)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.Service", MagicMock())
     state = tmp_path / "temporary-session" if managed else tmp_path / ".cache"
 
     if managed:
@@ -220,11 +220,11 @@ def test_chrome_uses_its_own_persistent_profile_and_closes_on_failure(
     driver = MagicMock()
     driver.__enter__.return_value = driver
     factory = MagicMock(return_value=driver)
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.webdriver.Chrome", factory)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.webdriver.Chrome", factory)
     firefox = MagicMock(side_effect=AssertionError("Chrome selection must not launch Firefox"))
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime._firefox", firefox)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime._firefox", firefox)
     service = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime.ChromeService", service)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime.ChromeService", service)
     state = tmp_path / "temporary-session" if managed else tmp_path / ".cache"
 
     if managed:
@@ -264,7 +264,7 @@ def test_default_browser_preserves_firefox_attachment(tmp_path: Path, monkeypatc
         None: Default settings forward the explicit port and return the Firefox driver.
     """
     firefox = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime._firefox", firefox)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime._firefox", firefox)
 
     with _browser(tmp_path, Capture(), 2829) as driver:
         assert driver is firefox.return_value.__enter__.return_value
@@ -284,7 +284,7 @@ def test_chrome_rejects_firefox_attachment_before_launch(tmp_path: Path, monkeyp
         None: Unsupported attachment fails with an actionable browser selection message.
     """
     chrome = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime._chrome", chrome)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime._chrome", chrome)
 
     with pytest.raises(ValueError, match="--connect-port is only supported with capture.browser: firefox"):
         with _browser(tmp_path, Capture(browser="chrome"), 2829):
@@ -319,12 +319,12 @@ def test_capture_uses_configured_browser_and_shared_login(
     session = MagicMock()
     driver = session.return_value.__enter__.return_value
     driver.current_url = "https://www.linkedin.com/in/example-person/"
-    monkeypatch.setattr("resumeme.linkedin.browser._browser", session)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._browser", session)
     login = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser._login", login)
-    monkeypatch.setattr("resumeme.linkedin.browser._expand", MagicMock(return_value=["<main><h1>Alex</h1></main>"]))
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._login", login)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._expand", MagicMock(return_value=["<main><h1>Alex</h1></main>"]))
     media = MagicMock(return_value=Profile("example-person", "Alex"))
-    monkeypatch.setattr("resumeme.linkedin.browser.cache_media", media)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile.cache_media", media)
     config = Config(LinkedIn("example-person"), capture=Capture(browser=browser))
     assert capture_profile(config, tmp_path).name == "Alex"
     session.assert_called_once_with(tmp_path, config.capture, None, headless=False)
@@ -380,9 +380,9 @@ def test_headless_login_submits_once_and_requires_observed_success(monkeypatch: 
     username, password, submit = MagicMock(), MagicMock(), MagicMock()
     wait = MagicMock()
     wait.until.side_effect = [(username, password, submit), submit, TimeoutException() if challenge else True]
-    monkeypatch.setattr("resumeme.linkedin.browser_auth.WebDriverWait", MagicMock(return_value=wait))
+    monkeypatch.setattr("resumeme.linkedin.browser.auth.WebDriverWait", MagicMock(return_value=wait))
     interactive = MagicMock(side_effect=AssertionError("Headless login cannot enter the interactive wait"))
-    monkeypatch.setattr("resumeme.linkedin.browser_auth._wait_for_login", interactive)
+    monkeypatch.setattr("resumeme.linkedin.browser.auth._wait_for_login", interactive)
 
     if challenge:
         with pytest.raises(ValueError, match="Unattended LinkedIn login") as error:
@@ -417,7 +417,7 @@ def test_headless_missing_credentials_leave_snapshot_untouched(
     monkeypatch.setenv("LINKEDIN_USERNAME", username)
     monkeypatch.setenv("LINKEDIN_PASSWORD", password)
     browser = MagicMock(side_effect=AssertionError("Missing secrets must fail before browser launch"))
-    monkeypatch.setattr("resumeme.linkedin.browser_runtime._firefox", browser)
+    monkeypatch.setattr("resumeme.linkedin.browser.runtime._firefox", browser)
     config = tmp_path / "resumeme.config.yaml"
     config.write_text("linkedin:\n  username: example-person\n")
     snapshot = tmp_path / "data/profile.json"

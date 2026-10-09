@@ -40,6 +40,11 @@ encryption boundary, cleanup limit, and recovery procedure. In particular:
   restrict runner access, and protect key backups. Generated backup directories
   contain both the encrypted private key and its password.
 
+Capture scheduling also reuses these dedicated keys to encrypt and authenticate
+[cross-run timing feedback](../docs/capture-scheduling.md#cross-run-storage).
+Its 90-day artifacts contain timing/controller metadata; ordinary plan and shard
+artifacts still contain plaintext profile data and timing estimates.
+
 The [session-cache guide](../docs/linkedin-session-cache.md) covers setup. The
 [disable/delete/recovery procedure](../docs/data-handling.md#disable-delete-or-respond-to-exposure)
 explains why deleting a cache or changing a display setting does not revoke an
@@ -67,7 +72,7 @@ the report and scan logs. That job checks out the default branch, not pull
 request code, and alone receives permission to write issue comments. See the
 [Trivy pipeline details](../docs/automation.md#trivy-security-scan) and its
 [scanner stage](workflows/stage-security.yml),
-[report redaction code](../scripts/ci/trivy-report.py), and
+[report redaction code](../scripts/ci/checks/trivy-report.py), and
 [pull request comment job](workflows/ci.yml).
 
 This is a source-filesystem scan, not a scan of the built container image, runner,

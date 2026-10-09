@@ -18,7 +18,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from resumeme.compiler.asts.links import safe_url
 from resumeme.compiler.constants.backend import AST_PACKAGE, CONFIG_SCHEMA
-from resumeme.config_models import (
+from resumeme.config.models import (
     Capture,
     Codex,
     CodexSkills,

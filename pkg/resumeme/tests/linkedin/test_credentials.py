@@ -13,7 +13,7 @@ from jsonschema import ValidationError
 
 from resumeme.config import LinkedIn, load_config
 from resumeme.exceptions import BrowserError, ConfigurationError
-from resumeme.linkedin.browser import capture_profile
+from resumeme.linkedin.capture.profile import capture_profile
 from resumeme.linkedin.credentials import login_credentials, profile_username
 
 if TYPE_CHECKING:
@@ -189,7 +189,7 @@ def test_public_only_credentials_fail_before_browser(tmp_path: Path, monkeypatch
     snapshot.parent.mkdir()
     snapshot.write_text("previous accepted snapshot")
     browser = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser._browser", browser)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._browser", browser)
 
     with pytest.raises(BrowserError, match="Set LINKEDIN_USERNAME to your login email or phone"):
         capture_profile(load_config(path), tmp_path, headless=True)

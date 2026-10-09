@@ -35,7 +35,7 @@ from resumeme.config import (
     load_config,
 )
 from resumeme.exceptions import ConfigurationError
-from resumeme.github.company_artifacts import restore_companies, stage_companies
+from resumeme.github.companies.artifacts import restore_companies, stage_companies
 from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
@@ -430,7 +430,7 @@ def test_ci_matrix_and_response_artifact_keep_generic_plus_all_targets(
     config = evolve(
         config, codex=evolve(config.codex, model="base-model", reasoning_effort="medium", companies=[target, config.codex.companies[1]])
     )
-    scripts = REPOSITORY_ROOT / "scripts/ci"
+    scripts = REPOSITORY_ROOT / "scripts/ci/codex"
     (tmp_path / "resumeme.config.yaml").write_text(yaml.safe_dump(asdict(config)))
     save_profile(profile, tmp_path / config.output.profile)
     output = tmp_path / "actions-output"

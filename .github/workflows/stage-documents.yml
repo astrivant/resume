@@ -46,7 +46,7 @@ jobs:
         id: documents
         env:
           USE_CODEX_SUMMARY: ${{ inputs.summary }}
-        run: bash scripts/ci/render.sh
+        run: bash scripts/ci/resume/render.sh
 
       # Run the Marketplace action's published image directly: its action.yml otherwise selects a floating latest tag.
       # https://github.com/marketplace/actions/textidote-action

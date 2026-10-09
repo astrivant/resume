@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError, BrowserWaitError
-from resumeme.linkedin import resume_settings
+from resumeme.linkedin.resume import settings as resume_settings
 from resumeme.linkedin.retrying import retry_selenium
 
 if TYPE_CHECKING:

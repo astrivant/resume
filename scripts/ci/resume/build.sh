@@ -13,7 +13,7 @@ if [[ "${USE_CODEX_SUMMARY:-false}" == true ]]; then
 fi
 
 poetry run resumeme build "${summary_args[@]}"
-poetry run python scripts/ci/stage-pdf.py
+poetry run python scripts/ci/resume/stage-pdf.py
 
 # Personal fork landing pages travel with the exact PDF that passed this build.
-poetry run python scripts/ci/readme-artifact.py stage
+poetry run python scripts/ci/publication/readme-artifact.py stage

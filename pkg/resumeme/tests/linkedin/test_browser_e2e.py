@@ -17,8 +17,8 @@ from attrs import evolve
 
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.config import Capture, Config, LinkedIn
-from resumeme.linkedin.browser import _navigate, capture_profile_shard, prepare_capture_plan
-from resumeme.linkedin.capture_shards import aggregate_capture, assign_routes
+from resumeme.linkedin.capture.profile import _navigate, capture_profile_shard, prepare_capture_plan
+from resumeme.linkedin.capture.shards import aggregate_capture, assign_routes
 from resumeme.tests.paths import TEST_FIXTURES
 
 if TYPE_CHECKING:
@@ -113,10 +113,10 @@ def test_real_browser_capture_is_validated_and_exported(tmp_path: Path, monkeypa
     monkeypatch.setenv("LINKEDIN_USERNAME", "browser-e2e@example.invalid")
     monkeypatch.setenv("LINKEDIN_PASSWORD", "fixture-only-password")
     monkeypatch.setattr(
-        "resumeme.linkedin.browser._login",
+        "resumeme.linkedin.capture.profile._login",
         lambda driver, settings, *, headless, profile_username: None,
     )
-    monkeypatch.setattr("resumeme.linkedin.browser._authenticated", lambda driver: True)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._authenticated", lambda driver: True)
     navigate = _navigate
     visited: list[str] = []
 
@@ -136,7 +136,7 @@ def test_real_browser_capture_is_validated_and_exported(tmp_path: Path, monkeypa
         visited.append(path)
         navigate(driver, f"{profile_server}{path}", settings)
 
-    monkeypatch.setattr("resumeme.linkedin.browser._navigate", fixture_navigation)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._navigate", fixture_navigation)
     monkeypatch.setenv("RESUMEME_BROWSER_STATE_DIR", str(tmp_path / "browser-state"))
     settings = Capture(browser=browser, page_timeout_seconds=10, max_scrolls=12, retry_attempts=2, retry_backoff_seconds=0)
     config = Config(LinkedIn(_USERNAME), capture=settings)

@@ -20,8 +20,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError, BrowserWaitError, ResumeUploadConfirmationError
-from resumeme.linkedin import browser_scripts, resume_settings
 from resumeme.linkedin.account import check_owner
+from resumeme.linkedin.browser import scripts as browser_scripts
+from resumeme.linkedin.resume import settings as resume_settings
 from resumeme.linkedin.retrying import retry_selenium
 
 if TYPE_CHECKING:

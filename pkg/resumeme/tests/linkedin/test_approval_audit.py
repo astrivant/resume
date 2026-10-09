@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from resumeme.linkedin.approval_audit import record_approval_context
+from resumeme.linkedin.approval.audit import record_approval_context
 
 if TYPE_CHECKING:
     from pathlib import Path

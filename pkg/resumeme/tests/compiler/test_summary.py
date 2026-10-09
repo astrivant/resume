@@ -390,7 +390,7 @@ def test_ci_preparation_requires_opt_in_trust_and_key(
     Returns:
         None: Only fully configured trusted runs produce a prompt; missing credentials fail explicitly.
     """
-    script = REPOSITORY_ROOT / "scripts/ci/prepare-summary.py"
+    script = REPOSITORY_ROOT / "scripts/ci/codex/prepare-summary.py"
     config = tmp_path / "resumeme.config.yaml"
     config.write_text(
         yaml.safe_dump(

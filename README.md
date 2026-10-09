@@ -486,7 +486,7 @@ for prerequisites, key storage, and verification.
 #### Configure encrypted session cache
 
 With OpenSSH (`ssh-keygen`), OpenSSL, and an authenticated GitHub CLI installed, run
-`bash scripts/ci/setup-session-cache.sh --repo YOUR-USERNAME/YOUR-FORK`.
+`bash scripts/ci/linkedin/setup-session-cache.sh --repo YOUR-USERNAME/YOUR-FORK`.
 
 The script generates a dedicated RSA PEM pair, saves an encrypted local backup,
 and uploads the three cache secrets to your fork. Use `--key-dir /path/to/backup`

@@ -10,4 +10,4 @@ if [[ "${USE_CODEX_SUMMARY:-false}" == true ]]; then
 fi
 
 poetry run resumeme render "${summary_args[@]}"
-poetry run python scripts/ci/prepare-textidote.py
+poetry run python scripts/ci/resume/prepare-textidote.py

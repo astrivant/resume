@@ -15,8 +15,8 @@ from selenium.webdriver.common.by import By
 
 from resumeme.config import Capture, Config, LinkedIn, LinkedInResume, load_config
 from resumeme.exceptions import BrowserError
-from resumeme.linkedin.resume import publish_resume
-from resumeme.linkedin.resume_sharing import _recruiter_control, _recruiter_sharing, _sharing_enabled
+from resumeme.linkedin.resume.publishing import publish_resume
+from resumeme.linkedin.resume.sharing import _recruiter_control, _recruiter_sharing, _sharing_enabled
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -197,7 +197,7 @@ def test_null_policy_never_reads_or_changes_the_control(monkeypatch: MonkeyPatch
         None: The default leaves the entire sharing flow untouched.
     """
     settings = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", settings)
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", settings)
     _recruiter_sharing(MagicMock(), _config(None), dry_run=False)
     settings.assert_not_called()
 
@@ -218,9 +218,9 @@ def test_satisfied_policy_and_preview_do_not_click(desired: bool, dry_run: bool,
     """
     control = MagicMock()
     control.is_enabled.return_value = not dry_run
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_sharing._recruiter_control", MagicMock(return_value=(control, control)))
-    monkeypatch.setattr("resumeme.linkedin.resume_sharing._sharing_enabled", MagicMock(return_value=not desired if dry_run else desired))
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.sharing._recruiter_control", MagicMock(return_value=(control, control)))
+    monkeypatch.setattr("resumeme.linkedin.resume.sharing._sharing_enabled", MagicMock(return_value=not desired if dry_run else desired))
     _recruiter_sharing(MagicMock(), _config(desired), dry_run=dry_run)
     control.click.assert_not_called()
 
@@ -245,10 +245,10 @@ def test_toggle_is_submitted_once_and_verified_after_reload(desired: bool, uncer
         control.click.side_effect = TimeoutException()
 
     settings = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", settings)
-    monkeypatch.setattr("resumeme.linkedin.resume_sharing._recruiter_control", MagicMock(return_value=(control, control)))
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", settings)
+    monkeypatch.setattr("resumeme.linkedin.resume.sharing._recruiter_control", MagicMock(return_value=(control, control)))
     states = [not desired] + ([] if uncertain else [desired]) + [not desired, desired]
-    monkeypatch.setattr("resumeme.linkedin.resume_sharing._sharing_enabled", MagicMock(side_effect=states))
+    monkeypatch.setattr("resumeme.linkedin.resume.sharing._sharing_enabled", MagicMock(side_effect=states))
     _recruiter_sharing(MagicMock(), _config(desired), dry_run=False)
     control.click.assert_called_once()
     assert settings.call_count == 3
@@ -265,9 +265,9 @@ def test_unpersisted_toggle_fails_without_another_click(monkeypatch: MonkeyPatch
         None: Exhausted reads explain the partial result without risking an inverted setting.
     """
     control = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_sharing._recruiter_control", MagicMock(return_value=(control, control)))
-    monkeypatch.setattr("resumeme.linkedin.resume_sharing._sharing_enabled", MagicMock(side_effect=[False, True, False, False, False]))
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.sharing._recruiter_control", MagicMock(return_value=(control, control)))
+    monkeypatch.setattr("resumeme.linkedin.resume.sharing._sharing_enabled", MagicMock(side_effect=[False, True, False, False, False]))
 
     with pytest.raises(BrowserError, match="No second toggle click"):
         _recruiter_sharing(MagicMock(), _config(True), dry_run=False)
@@ -287,9 +287,9 @@ def test_disabled_control_does_not_override_account_constraints(monkeypatch: Mon
     """
     control = MagicMock()
     control.is_enabled.return_value = False
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_sharing._recruiter_control", MagicMock(return_value=(control, control)))
-    monkeypatch.setattr("resumeme.linkedin.resume_sharing._sharing_enabled", MagicMock(return_value=False))
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.sharing._recruiter_control", MagicMock(return_value=(control, control)))
+    monkeypatch.setattr("resumeme.linkedin.resume.sharing._sharing_enabled", MagicMock(return_value=False))
 
     with pytest.raises(BrowserError, match="control is disabled"):
         _recruiter_sharing(MagicMock(), _config(True), dry_run=False)
@@ -317,11 +317,11 @@ def test_sharing_follows_successful_or_already_saved_resume(failed: bool, tmp_pa
         operations.upload.side_effect = BrowserError("Upload unconfirmed")
 
     for name in ("_browser", "_login", "_navigate", "login_credentials"):
-        monkeypatch.setattr(f"resumeme.linkedin.resume.{name}", MagicMock())
+        monkeypatch.setattr(f"resumeme.linkedin.resume.publishing.{name}", MagicMock())
 
-    monkeypatch.setattr("resumeme.linkedin.resume._pdf_bytes", MagicMock(return_value=b"verified release bytes"))
-    monkeypatch.setattr("resumeme.linkedin.resume._upload_resume", operations.upload)
-    monkeypatch.setattr("resumeme.linkedin.resume._recruiter_sharing", operations.sharing)
+    monkeypatch.setattr("resumeme.linkedin.resume.publishing._pdf_bytes", MagicMock(return_value=b"verified release bytes"))
+    monkeypatch.setattr("resumeme.linkedin.resume.publishing._upload_resume", operations.upload)
+    monkeypatch.setattr("resumeme.linkedin.resume.publishing._recruiter_sharing", operations.sharing)
 
     if failed:
         with pytest.raises(BrowserError, match="Upload unconfirmed"):

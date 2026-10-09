@@ -41,7 +41,7 @@ on PyPI and other Markdown hosts. Publication resolves the repository from
 Preview a revision locally from the repository root:
 
 ```bash
-poetry run python scripts/ci/refresh-logo.py --seed "$(git rev-parse HEAD)"
+poetry run python scripts/ci/publication/refresh-logo.py --seed "$(git rev-parse HEAD)"
 ```
 
 Use `--output .cache/branding-preview.png` to preview without replacing the README
@@ -52,7 +52,7 @@ the prior logo with the source revision when reproducing an older logo.
 To also refresh the badge and managed README block, pass the PDF's UTC build date:
 
 ```bash
-poetry run python scripts/ci/refresh-logo.py --seed "$(git rev-parse HEAD)" --brew-date 2026-10-07
+poetry run python scripts/ci/publication/refresh-logo.py --seed "$(git rev-parse HEAD)" --brew-date 2026-10-07
 ```
 
 ## Generation prompts

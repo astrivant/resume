@@ -13,7 +13,7 @@ from selenium.common.exceptions import TimeoutException
 from resumeme.compiler.asts.profile import Entry, Section
 from resumeme.config import Capture, Config, LinkedIn
 from resumeme.exceptions import BrowserElementError, ProfileError
-from resumeme.linkedin.browser import _details, _inline_section, _inline_tabs, _profile_card, _select_tab, capture_profile
+from resumeme.linkedin.capture.profile import _details, _inline_section, _inline_tabs, _profile_card, _select_tab, capture_profile
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -79,9 +79,9 @@ def test_inline_tabs_retain_every_variant(monkeypatch: MonkeyPatch, key: str, la
     title = key.title()
     stale = _card("<ul><li><h3>A much longer previous tab that must not win</h3></li></ul>", title)
     driver.page_source = stale
-    monkeypatch.setattr("resumeme.linkedin.browser._navigate", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.browser._profile_card", MagicMock(return_value=card))
-    monkeypatch.setattr("resumeme.linkedin.browser._expand", lambda driver, settings: [stale, driver.page_source])
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._navigate", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._profile_card", MagicMock(return_value=card))
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._expand", lambda driver, settings: [stale, driver.page_source])
 
     def select(driver: WebDriver, label: str, scope: Callable[[], WebElement], settings: Capture) -> None:
         """
@@ -102,7 +102,7 @@ def test_inline_tabs_retain_every_variant(monkeypatch: MonkeyPatch, key: str, la
 
     browser = driver
     select_mock = MagicMock(side_effect=select)
-    monkeypatch.setattr("resumeme.linkedin.browser._select_tab", select_mock)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._select_tab", select_mock)
     collected = _inline_tabs(driver, "alex", Section(key, title), Capture())
     assert [entry.title for entry in collected.entries] == [f"{label}: Shared name" for label in labels[:-1]]
     assert [call.args[1] for call in select_mock.call_args_list] == labels
@@ -124,13 +124,13 @@ def test_inline_tab_follows_newly_revealed_owner_route(monkeypatch: MonkeyPatch)
     wrong = _card(preview + '<a href="https://www.linkedin.com/in/someone-else/details/interests/">Show all</a>')
     url = "https://www.linkedin.com/in/alex/details/interests/?initialTabId=schools"
     revealed = _card(preview + f'<a href="{url}">Show all</a>')
-    monkeypatch.setattr("resumeme.linkedin.browser._navigate", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.browser._profile_card", MagicMock(return_value=card))
-    monkeypatch.setattr("resumeme.linkedin.browser._select_tab", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.browser._expand", MagicMock(side_effect=[[wrong], [wrong], [revealed]]))
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._navigate", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._profile_card", MagicMock(return_value=card))
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._select_tab", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._expand", MagicMock(side_effect=[[wrong], [wrong], [revealed]]))
     complete = Section("interests", "Interests", entries=[Entry(title="Complete collection")])
     details = MagicMock(return_value=complete)
-    monkeypatch.setattr("resumeme.linkedin.browser._details", details)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._details", details)
     settings = Capture()
     assert _inline_tabs(driver, "alex", Section("interests", "Interests"), settings) == complete
     details.assert_called_once_with(driver, url, "interests", "Interests", settings)
@@ -152,12 +152,14 @@ def test_unreadable_inline_tab_fails(snapshots: list[str], error: type[Exception
         _inline_section(snapshots, "interests", "Interests")
 
 
-def test_details_select_first_tab_when_initial_route_selects_last(monkeypatch: MonkeyPatch) -> None:
+@pytest.mark.parametrize("selected_tab", [None, "Companies", "Schools", "Missing"])
+def test_details_select_first_tab_when_initial_route_selects_last(monkeypatch: MonkeyPatch, selected_tab: str | None) -> None:
     """
     Read each tab under its own label when the route opens with a later tab selected.
 
     Args:
         monkeypatch (MonkeyPatch): Navigation and parsed detail-page boundary.
+        selected_tab (str | None): One independently planned tab, all tabs, or a tab that disappeared.
 
     Returns:
         None: The first tab is explicitly activated and no variant is duplicated under the wrong label.
@@ -186,17 +188,29 @@ def test_details_select_first_tab_when_initial_route_selects_last(monkeypatch: M
 
     tabs[0].click.side_effect = lambda: activate("Companies")
     tabs[1].click.side_effect = lambda: activate("Schools")
-    monkeypatch.setattr("resumeme.linkedin.browser._navigate", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._navigate", MagicMock())
     monkeypatch.setattr(
-        "resumeme.linkedin.browser._detail_pages",
+        "resumeme.linkedin.capture.profile._detail_pages",
         lambda driver, key, title, settings: Section(key, title, entries=[Entry(title=primary.text.splitlines()[-1])]),
     )
+    if selected_tab == "Missing":
+        with pytest.raises(BrowserElementError, match="planned detail tab"):
+            _details(driver, "https://www.linkedin.com/in/alex/details/interests/", "interests", "Interests", Capture(), tab=selected_tab)
+
+        return
+
     result = _details(
-        driver, "https://www.linkedin.com/in/alex/details/interests/?initialTabId=schools", "interests", "Interests", Capture()
+        driver,
+        "https://www.linkedin.com/in/alex/details/interests/?initialTabId=schools",
+        "interests",
+        "Interests",
+        Capture(),
+        tab=selected_tab,
     )
-    assert [entry.title for entry in result.entries] == ["Companies: Companies", "Schools: Schools"]
-    tabs[0].click.assert_called_once()
-    tabs[1].click.assert_called_once()
+    labels = [selected_tab] if selected_tab else ["Companies", "Schools"]
+    assert [entry.title for entry in result.entries] == [f"{label}: {label}" for label in labels]
+    assert tabs[0].click.call_count == (0 if selected_tab == "Schools" else 1)
+    assert tabs[1].click.call_count == (1 if selected_tab is None else 0)
 
 
 def test_selected_checkbox_label_is_not_toggled_off() -> None:
@@ -250,7 +264,7 @@ def test_tab_selection_waits_for_content_after_selected_marker(monkeypatch: Monk
 
     wait = MagicMock()
     wait.return_value.until.side_effect = poll
-    monkeypatch.setattr("resumeme.linkedin.browser.WebDriverWait", wait)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile.WebDriverWait", wait)
     _select_tab(driver, "Groups", lambda: card, Capture())
     wait.return_value.until.assert_called_once()
 
@@ -288,7 +302,7 @@ def test_profile_card_recovers_after_virtualized_scroll(monkeypatch: MonkeyPatch
     heading.text = "Interests"
     heading.find_element.return_value = card
     primary.find_elements.side_effect = [[], [heading]]
-    monkeypatch.setattr("resumeme.linkedin.browser._primary_content", MagicMock(return_value=primary))
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._primary_content", MagicMock(return_value=primary))
     assert _profile_card(driver, "interests", Capture()) is card
     assert driver.execute_script.call_args.args[1] == "top"
     driver.get.assert_not_called()
@@ -313,15 +327,15 @@ def test_capture_collects_hidden_tabbed_sections(tmp_path: Path, monkeypatch: Mo
     driver.current_url = "https://www.linkedin.com/in/alex/"
     link = '<a href="https://www.linkedin.com/in/alex/details/interests/">Show all</a>' if dedicated else ""
     driver.page_source = _card("<ul><li><h3>Preview</h3></li></ul>" + link)
-    monkeypatch.setattr("resumeme.linkedin.browser._browser", session)
-    monkeypatch.setattr("resumeme.linkedin.browser._login", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.browser._navigate", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.browser._expand", MagicMock(return_value=[driver.page_source]))
-    monkeypatch.setattr("resumeme.linkedin.browser.cache_media", lambda profile, config, root: profile)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._browser", session)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._login", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._navigate", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._expand", MagicMock(return_value=[driver.page_source]))
+    monkeypatch.setattr("resumeme.linkedin.capture.profile.cache_media", lambda profile, config, root: profile)
     complete = Section("interests", "Interests", entries=[Entry(title="Schools: Complete collection")])
     inline, detail = MagicMock(return_value=complete), MagicMock(return_value=complete)
-    monkeypatch.setattr("resumeme.linkedin.browser._inline_tabs", inline)
-    monkeypatch.setattr("resumeme.linkedin.browser._details", detail)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._inline_tabs", inline)
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._details", detail)
     config = Config(LinkedIn("alex"), section_order=["experience"])
     profile = capture_profile(config, tmp_path)
     assert next(section for section in profile.sections if section.key == "interests") == complete

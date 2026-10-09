@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from resumeme.config import load_config, project_path
-from resumeme.github.company_artifacts import stage_companies
+from resumeme.github.companies.artifacts import stage_companies
 
 # Decouple user-configurable output paths from the artifact name expected by signing and deploy stages.
 config = load_config(Path("resumeme.config.yaml"))

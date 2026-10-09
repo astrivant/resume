@@ -58,24 +58,24 @@ jobs:
       - name: Verify the release payload before committing it
         run: bash scripts/release/verify.sh
       - name: Restore this run's fresh LinkedIn capture
-        run: poetry run python scripts/ci/profile-artifact.py restore
+        run: poetry run python scripts/ci/linkedin/profile-artifact.py restore
       - name: Stage the matching captured profile and media
-        run: poetry run python scripts/ci/profile-artifact.py stage
+        run: poetry run python scripts/ci/linkedin/profile-artifact.py stage
       - name: Prepare a README preview from the signed PDF
         env:
           RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
-        run: poetry run python scripts/ci/readme-artifact.py stage
+        run: poetry run python scripts/ci/publication/readme-artifact.py stage
       - name: Restore the README and refresh project branding
         id: readme
         env:
           RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
           SOURCE_SHA: ${{ inputs.sha }}
         run: |
-          readme_mode="$(poetry run python scripts/ci/readme-artifact.py restore)"
+          readme_mode="$(poetry run python scripts/ci/publication/readme-artifact.py restore)"
           echo "mode=$readme_mode" >>"$GITHUB_OUTPUT"
           if [[ "$readme_mode" == project ]]; then
               read -r brew_date <.cache/publication/brew-date.txt
-              poetry run python scripts/ci/refresh-logo.py --seed "$SOURCE_SHA" --brew-date "$brew_date"
+              poetry run python scripts/ci/publication/refresh-logo.py --seed "$SOURCE_SHA" --brew-date "$brew_date"
               git add -- docs/assets/branding/resumeme-logo.png docs/assets/branding/brew-date.svg README.md
           fi
       - name: Commit signed files and fresh capture on the latest main

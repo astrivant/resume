@@ -31,7 +31,7 @@ def _transfer(root: Path, mode: str) -> subprocess.CompletedProcess[str]:
     Returns:
         subprocess.CompletedProcess[str]: Captured process outcome without registry or browser access.
     """
-    script = REPOSITORY_ROOT / "scripts/ci/profile-artifact.py"
+    script = REPOSITORY_ROOT / "scripts/ci/linkedin/profile-artifact.py"
     return subprocess.run([sys.executable, str(script), mode], cwd=root, capture_output=True, text=True, check=False)
 
 
@@ -166,7 +166,7 @@ def test_refresh_event_selection(tmp_path: Path, event: str, ref: str, requested
     """
     output = tmp_path / "output"
     result = subprocess.run(
-        ["bash", "scripts/ci/source.sh"],
+        ["bash", "scripts/ci/pipeline/source.sh"],
         cwd=REPOSITORY_ROOT,
         env=dict(
             os.environ,
@@ -291,6 +291,17 @@ def test_live_capture_uses_six_read_only_browser_scoped_workers() -> None:
         if isinstance(step.get("env"), dict)
     )
     assert any(step.get("run", "").endswith(" aggregate") for step in aggregator["steps"])
+
+    # Historical timing feedback crosses tags through authenticated artifacts rather than tag-scoped Actions caches.
+    timing_restore = next(step for step in bootstrap["steps"] if "capture-timings.py restore" in step.get("run", ""))
+    timing_seal = next(step for step in aggregator["steps"] if "capture-timings.py seal" in step.get("run", ""))
+    assert bootstrap["permissions"]["actions"] == "read"
+    assert bootstrap["steps"].index(timing_restore) < bootstrap["steps"].index(bootstrap_action)
+    validated = next(step for step in aggregator["steps"] if "scripts/validation/check-data.py" in step.get("run", ""))
+    assert aggregator["steps"].index(validated) < aggregator["steps"].index(timing_seal)
+    timing_upload = next(step for step in aggregator["steps"] if step.get("with", {}).get("path") == ".cache/capture-timings/timings.bin")
+    assert timing_upload["with"]["retention-days"] == 90
+    assert timing_upload["with"]["include-hidden-files"] is True
 
 
 def test_tag_runs_share_a_workflow_level_concurrency_lane() -> None:

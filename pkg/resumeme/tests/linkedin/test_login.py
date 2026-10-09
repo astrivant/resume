@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 
 from resumeme.config import Capture
 from resumeme.exceptions import BrowserError
-from resumeme.linkedin.browser import _authenticated, _login, _login_form
+from resumeme.linkedin.capture.profile import _authenticated, _login, _login_form
 
 if TYPE_CHECKING:
     from pytest import CaptureFixture, MonkeyPatch
@@ -85,7 +85,7 @@ def test_public_identifier_waits_for_interactive_login(monkeypatch: MonkeyPatch,
     driver, username, password, submit = _browser(monkeypatch)
     monkeypatch.setenv("LINKEDIN_USERNAME", identifier)
     interactive = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser_auth._wait_for_login", interactive)
+    monkeypatch.setattr("resumeme.linkedin.browser.auth._wait_for_login", interactive)
     _login(driver, Capture(page_timeout_seconds=0), headless=False)
     username.send_keys.assert_not_called()
     password.send_keys.assert_not_called()
@@ -653,7 +653,7 @@ def test_challenge_before_login_form_stops_retries(monkeypatch: MonkeyPatch, hea
     driver.current_url = f"https://www.linkedin.com/{state}/private-token"
     driver.find_elements.side_effect = NoSuchElementException()
     interactive, sleep = MagicMock(), MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser_auth._wait_for_login", interactive)
+    monkeypatch.setattr("resumeme.linkedin.browser.auth._wait_for_login", interactive)
     monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
 
     if headless:
@@ -690,7 +690,7 @@ def test_headless_verification_reports_external_block(monkeypatch: MonkeyPatch, 
     """
     driver, username, password, submit = _browser(monkeypatch)
     interactive, sleep = MagicMock(), MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser_auth._wait_for_login", interactive)
+    monkeypatch.setattr("resumeme.linkedin.browser.auth._wait_for_login", interactive)
     monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
 
     def block(*args: str) -> None:

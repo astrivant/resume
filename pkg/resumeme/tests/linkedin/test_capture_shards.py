@@ -11,7 +11,7 @@ from attrs import evolve
 
 from resumeme.cli import main
 from resumeme.compiler.asts.profile import Entry, Profile, Section, load_profile
-from resumeme.linkedin.capture_shards import (
+from resumeme.linkedin.capture.shards import (
     CaptureRoute,
     CaptureShard,
     aggregate_capture,
@@ -218,7 +218,10 @@ def test_aggregate_cli_writes_only_a_complete_validated_snapshot(tmp_path: Path,
 
     for index in range(1, 7):
         sections = [Section(route.key, route.title, [Entry(f"Collected {route.key}")]) for route in assign_routes(plan)[index]]
-        save_capture_shard(CaptureShard(plan.capture_id, "firefox", index, 6, sections), shard_directory / f"shard-{index}.json")
+        save_capture_shard(
+            CaptureShard(plan.capture_id, "firefox", index, 6, sections, {section.key: 12.0 for section in sections}),
+            shard_directory / f"shard-{index}.json",
+        )
 
     monkeypatch.setattr("resumeme.cli.cache_media", lambda profile, config, root: profile)
     arguments = ["--config", str(tmp_path / "resumeme.config.yaml"), "aggregate"]
@@ -226,9 +229,12 @@ def test_aggregate_cli_writes_only_a_complete_validated_snapshot(tmp_path: Path,
     assert main(arguments) == 0
     snapshot = tmp_path / "data/profile.json"
     first = snapshot.read_bytes()
+    timings = tmp_path / ".cache/capture/timings.json"
+    previous_feedback = timings.read_bytes()
     assert load_profile(snapshot, "example-person").sections[-1].entries[0].title == "Collected section-0"
 
     (shard_directory / "shard-6.json").unlink()
 
     assert main(arguments) == 2
     assert snapshot.read_bytes() == first
+    assert timings.read_bytes() == previous_feedback

@@ -46,8 +46,8 @@ from resumeme.compiler.passes.ordering import order_sections
 from resumeme.compiler.passes.ownership import without_ownership_metadata
 from resumeme.compiler.passes.privacy import without_profile_location
 from resumeme.compiler.passes.progression import experience_layout
-from resumeme.compiler.passes.project_layout import company_logos, project_layout
-from resumeme.compiler.passes.projects import consolidate_projects
+from resumeme.compiler.passes.projects.consolidation import consolidate_projects
+from resumeme.compiler.passes.projects.layout import company_logos, project_layout
 from resumeme.compiler.passes.skills import expand_skill_summaries, without_project_skill_rows
 from resumeme.compiler.passes.summary import apply_summary, summary_digest
 from resumeme.compiler.passes.themes import resolve_style

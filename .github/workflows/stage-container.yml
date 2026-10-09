@@ -66,7 +66,7 @@ jobs:
         env:
           SOURCE_SHA: ${{ inputs.sha }}
           IMAGE_TAGS: ${{ steps.metadata.outputs.tags }}
-        run: bash scripts/ci/publish-container.sh
+        run: bash scripts/ci/containers/publish-container.sh
   # Forks retain GHCR publication but never start a runner or require a token for this upstream-only destination.
   dockerhub:
     name: Push verified container to Docker Hub
@@ -109,4 +109,4 @@ jobs:
         env:
           SOURCE_SHA: ${{ inputs.sha }}
           IMAGE_TAGS: ${{ steps.metadata.outputs.tags }}
-        run: bash scripts/ci/publish-container.sh
+        run: bash scripts/ci/containers/publish-container.sh

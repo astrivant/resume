@@ -12,7 +12,7 @@ from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, Skill
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
-from resumeme.compiler.passes.project_layout import CompanyAffiliation, project_layout
+from resumeme.compiler.passes.projects.layout import CompanyAffiliation, project_layout
 from resumeme.compiler.passes.skills import without_project_skill_rows
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, Style

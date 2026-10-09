@@ -42,7 +42,7 @@ jobs:
         with:
           name: resumeme-summary
           path: .cache/codex/
-      - run: bash scripts/ci/build.sh
+      - run: bash scripts/ci/resume/build.sh
         env:
           USE_CODEX_SUMMARY: ${{ inputs.summary }}
           RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}

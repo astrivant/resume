@@ -18,7 +18,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from resumeme.exceptions import SessionCacheError
 from resumeme.linkedin.retrying import is_retryable_linkedin_exit_status
-from resumeme.linkedin.session_cache import CacheKeys, archive_profile, open_archive, restore_profile, seal_archive
+from resumeme.linkedin.session.cache import CacheKeys, archive_profile, open_archive, restore_profile, seal_archive
 from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
@@ -110,7 +110,7 @@ def test_session_cache_namespaces_are_separate_for_firefox_and_chrome(tmp_path: 
             "GITHUB_JOB": "capture-bootstrap",
         }
         result = subprocess.run(
-            [sys.executable, str(_ROOT / "scripts/ci/linkedin-session.py"), "prepare"],
+            [sys.executable, str(_ROOT / "scripts/ci/linkedin/linkedin-session.py"), "prepare"],
             cwd=checkout,
             env=environment,
             capture_output=True,
@@ -282,7 +282,7 @@ def test_job_wrapper_reuses_only_ciphertext_and_cleans_failed_runs(tmp_path: Pat
 
         before = {path: path.read_bytes() for path in (tmp_path / "ciphertext").glob("*.bin")}
         result = subprocess.run(
-            [sys.executable, str(_ROOT / "scripts/ci/linkedin-session.py"), "run"],
+            [sys.executable, str(_ROOT / "scripts/ci/linkedin/linkedin-session.py"), "run"],
             cwd=checkout,
             env=environment,
             capture_output=True,
@@ -369,7 +369,7 @@ def test_linkedin_commands_retry_only_classified_failures_with_fresh_sessions(
         environment["SESSION_SHARD_COUNT"] = "6"
 
     result = subprocess.run(
-        [sys.executable, str(_ROOT / "scripts/ci/linkedin-session.py"), "run", "--command", command_name],
+        [sys.executable, str(_ROOT / "scripts/ci/linkedin/linkedin-session.py"), "run", "--command", command_name],
         cwd=checkout,
         env=environment,
         capture_output=True,
@@ -408,7 +408,7 @@ def test_setup_script_generates_pem_and_uploads_secrets_without_printing_them(tm
     monkeypatch.setenv("FAKE_SECRET_STORE", str(secrets))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
     result = subprocess.run(
-        ["bash", str(_ROOT / "scripts/ci/setup-session-cache.sh"), "--repo", "example/resumeme"],
+        ["bash", str(_ROOT / "scripts/ci/linkedin/setup-session-cache.sh"), "--repo", "example/resumeme"],
         capture_output=True,
         text=True,
         check=False,

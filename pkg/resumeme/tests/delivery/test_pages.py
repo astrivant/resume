@@ -179,7 +179,7 @@ def test_site_cli_previews_without_enabling_deployments_and_exports_validated_se
     assert (tmp_path / ".cache/pages/index.html").exists()
 
     # Emit only schema-validated settings; no capture or Pages API is touched when disabled.
-    script = REPOSITORY_ROOT / "scripts/ci/pages-settings.py"
+    script = REPOSITORY_ROOT / "scripts/ci/pages/pages-settings.py"
     output = tmp_path / "outputs"
     monkeypatch.setenv("GITHUB_OUTPUT", str(output))
     monkeypatch.chdir(tmp_path)
@@ -209,7 +209,7 @@ def test_pages_destination_uses_github_metadata(tmp_path: Path, base: str, path:
     Returns:
         None: The environment URL targets the exact configured path, or domain mismatch blocks deployment.
     """
-    script = REPOSITORY_ROOT / "scripts/ci/pages-destination.sh"
+    script = REPOSITORY_ROOT / "scripts/ci/pages/pages-destination.sh"
     output = tmp_path / "outputs"
     environment = dict(
         os.environ,
@@ -269,6 +269,8 @@ def test_pages_deployment_guard_skips_stale_or_untrusted_runs(
         GITHUB_OUTPUT=str(output),
         RETRY_BACKOFF_SECONDS="0",
     )
-    result = subprocess.run(["bash", "scripts/ci/pages-current.sh"], cwd=root, env=environment, capture_output=True, text=True, check=False)
+    result = subprocess.run(
+        ["bash", "scripts/ci/pages/pages-current.sh"], cwd=root, env=environment, capture_output=True, text=True, check=False
+    )
     assert (result.returncode == 0) is (expected is not None)
     assert output.read_text() == f"current={expected}\n" if expected is not None else not output.exists()

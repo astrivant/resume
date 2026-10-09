@@ -15,4 +15,4 @@ runs:
     - name: Restore configured profile and referenced media
       if: inputs.refresh == 'true'
       shell: bash
-      run: poetry run python scripts/ci/profile-artifact.py restore
+      run: poetry run python scripts/ci/linkedin/profile-artifact.py restore

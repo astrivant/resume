@@ -10,11 +10,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from resumeme.exceptions import BrowserError
-from resumeme.linkedin.browser import _browser, _login, _navigate
+from resumeme.linkedin.browser.auth import _login
+from resumeme.linkedin.browser.runtime import _browser, _navigate
 from resumeme.linkedin.credentials import login_credentials
-from resumeme.linkedin.resume_library import _replace_existing_resumes
-from resumeme.linkedin.resume_sharing import _recruiter_sharing
-from resumeme.linkedin.resume_upload import _pdf_bytes, _resume_filename, _upload_resume
+from resumeme.linkedin.resume.library import _replace_existing_resumes
+from resumeme.linkedin.resume.sharing import _recruiter_sharing
+from resumeme.linkedin.resume.upload import _pdf_bytes, _resume_filename, _upload_resume
 
 if TYPE_CHECKING:
     from resumeme.config import Config

@@ -30,4 +30,24 @@ export default [
       semi: ['error', 'always'],
     },
   },
+  {
+    files: ['scripts/validation/math/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: { console: 'readonly', process: 'readonly' },
+    },
+    rules: {
+      curly: 'error',
+      eqeqeq: ['error', 'always'],
+      'no-dupe-keys': 'error',
+      'no-undef': 'error',
+      'no-unreachable': 'error',
+      'no-unused-vars': ['error', { args: 'none' }],
+      'no-var': 'error',
+      'prefer-const': 'error',
+      quotes: ['error', 'single', { avoidEscape: true }],
+      semi: ['error', 'always'],
+    },
+  },
 ];

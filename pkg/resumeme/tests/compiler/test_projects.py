@@ -11,7 +11,7 @@ from attrs import evolve
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
-from resumeme.compiler.passes.projects import consolidate_projects
+from resumeme.compiler.passes.projects.consolidation import consolidate_projects
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, Experience, JobSelector, LinkedIn
 

@@ -15,8 +15,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError
-from resumeme.linkedin import browser_scripts
-from resumeme.linkedin.browser import _browser, _login, _navigate
+from resumeme.linkedin.browser import scripts as browser_scripts
+from resumeme.linkedin.browser.auth import _login
+from resumeme.linkedin.browser.runtime import _browser, _navigate
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.identity import ownership_block, reconcile_about, release_destination
 from resumeme.linkedin.retrying import retry_selenium

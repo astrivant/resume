@@ -12,11 +12,11 @@ from attrs import evolve
 from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Link, Profile, Section, Skill
-from resumeme.compiler.asts.skills import endorsement_count
+from resumeme.compiler.asts.skills.parsing import endorsement_count
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Capture, Config, LinkedIn
-from resumeme.linkedin.browser import parse_detail_after_expansion
+from resumeme.linkedin.capture.profile import parse_detail_after_expansion
 from resumeme.visualization.skills import SkillScore, endorsement_colors, render_skill_cloud, skill_scores
 
 if TYPE_CHECKING:
@@ -150,7 +150,7 @@ def test_virtualized_skill_snapshots_keep_the_largest_endorsement_total(monkeypa
         f'<button aria-label="{count} endorsements">Endorse</button></li></main>'
         for count in [5, 1]
     ]
-    monkeypatch.setattr("resumeme.linkedin.browser._expand", MagicMock(return_value=snapshots))
+    monkeypatch.setattr("resumeme.linkedin.capture.profile._expand", MagicMock(return_value=snapshots))
     section = parse_detail_after_expansion(MagicMock(), "skills", "Skills", Capture())
     assert section.entries[0].skills == [Skill("Python", 5)]
 

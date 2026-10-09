@@ -34,18 +34,19 @@ from resumeme.exceptions import (
 )
 from resumeme.github.contributions import fetch_calendar
 from resumeme.github.pages import build_site
-from resumeme.linkedin.browser import capture_profile, capture_profile_shard, prepare_capture_plan
-from resumeme.linkedin.capture_shards import (
+from resumeme.linkedin.capture.profile import capture_profile, capture_profile_shard, prepare_capture_plan
+from resumeme.linkedin.capture.shards import (
     aggregate_capture,
     load_capture_plan,
     load_capture_shard,
     save_capture_plan,
     save_capture_shard,
 )
+from resumeme.linkedin.capture.timings import learn_timings, save_timings
 from resumeme.linkedin.identity import release_destination
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.ownership import publish_ownership
-from resumeme.linkedin.resume import publish_resume
+from resumeme.linkedin.resume.publishing import publish_resume
 from resumeme.linkedin.retrying import is_retryable_linkedin_error
 from resumeme.linkedin.skills import publish_skills
 from resumeme.telemetry import LOG_LEVELS, logging_context, set_log_level
@@ -115,6 +116,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     capture_plan = commands.add_parser("capture-plan", help="Authenticate once and plan six profile-section capture shards")
     capture_plan.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
     capture_plan.add_argument("--output", type=Path, default=Path(".cache/capture/plan.json"), help="Capture plan output path")
+    capture_plan.add_argument(
+        "--timings",
+        type=Path,
+        default=Path(".cache/capture/timings.json"),
+        help="Previous traversal timings; missing data uses size weights",
+    )
 
     capture_shard = commands.add_parser("capture-shard", help="Collect the profile sections assigned to one of six workers")
     capture_shard.add_argument("--index", type=int, required=True, help="One-based shard number from 1 through 6")
@@ -126,6 +133,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     aggregate = commands.add_parser("aggregate", help="Validate and combine all six capture shards into the profile snapshot")
     aggregate.add_argument("--plan", type=Path, default=Path(".cache/capture/plan.json"), help="Bootstrap plan path")
     aggregate.add_argument("--shards", type=Path, default=Path(".cache/capture/shards"), help="Directory containing shard-N.json outputs")
+    aggregate.add_argument(
+        "--timings-output", type=Path, default=Path(".cache/capture/timings.json"), help="Latest complete traversal timing output"
+    )
 
     configuration = commands.add_parser("config", help="Validate local configuration without a captured profile")
     config_commands = configuration.add_subparsers(dest="config_command", required=True)
@@ -220,7 +230,7 @@ def _run(args: argparse.Namespace) -> int:
 
         # Split live collection from offline aggregation so only the bootstrap and assigned workers open a browser.
         if args.command == "capture-plan":
-            plan = prepare_capture_plan(config, root, headless=args.headless)
+            plan = prepare_capture_plan(config, root, headless=args.headless, timings_path=project_path(root, str(args.timings)))
 
             if not config.style.display_location:
                 plan = evolve(plan, profile=without_profile_location(plan.profile))
@@ -267,6 +277,13 @@ def _run(args: argparse.Namespace) -> int:
                 raise ProfileError(f"Aggregated capture needs review at {diagnostic}: " + "; ".join(profile.warnings))
 
             save_profile(profile, snapshot)
+
+            # Replace the learned costs only after complete collection and profile validation succeed.
+            timings = learn_timings(plan, shards)
+
+            if timings is not None:
+                save_timings(timings, project_path(root, str(args.timings_output)))
+
             _LOGGER.info("Saved aggregated LinkedIn profile", extra={"file.path": str(snapshot), "profile.sections": len(profile.sections)})
             print(f"Saved complete profile snapshot: {snapshot}")
             return 0

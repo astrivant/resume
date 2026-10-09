@@ -4,14 +4,19 @@ Persist capture plans and validate deterministic LinkedIn section shards.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import math
+import re
 import uuid
 from typing import TYPE_CHECKING, Literal
 
 import cattrs
-from attrs import evolve, frozen
+from attrs import evolve, field, frozen
 
 from resumeme.compiler.asts.profile import Profile, Section
+from resumeme.linkedin.capture.feedback import TimingFeedback
+from resumeme.linkedin.capture.scheduling import balance_variance
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -33,6 +38,7 @@ __all__ = [
 BrowserName = Literal["firefox", "chrome"]
 RouteKind = Literal["detail", "inline", "contact"]
 _SHARD_COUNT = 6
+_TAB_COUNT = re.compile(r"\s*\(\s*\d[\d,\s]*\s*\)\s*$")
 _converter = cattrs.Converter(forbid_extra_keys=True)
 
 
@@ -42,11 +48,14 @@ class CaptureRoute:
     Describe one independently collectible profile section.
 
     Attributes:
-        key (str): Canonical profile section key, unique within the plan.
+        key (str): Canonical parent profile section key.
         title (str): LinkedIn heading used for navigation and diagnostics.
         url (str): Owner-scoped LinkedIn route to collect.
         kind (RouteKind): Detail page, inline tabs, or contact overlay.
         weight (int): Estimated section size used to balance six workers.
+        estimated_seconds (float | None): Frozen traversal estimate from a previous complete capture.
+        tab (str | None): Independently selectable detail tab, absent for a whole section.
+        feedback (TimingFeedback | None): Bounded controller state and previous worker assignment.
     """
 
     key: str
@@ -54,6 +63,24 @@ class CaptureRoute:
     url: str
     kind: RouteKind
     weight: int = 1
+    estimated_seconds: float | None = None
+    tab: str | None = None
+    feedback: TimingFeedback | None = None
+
+    @property
+    def unit_key(self) -> str:
+        """
+        Identify a traversal unit independently of worker placement and profile display order.
+
+        Returns:
+            str: Canonical section key, optionally qualified by a stable tab-label digest.
+        """
+        if self.tab is None:
+            return self.key
+
+        # Counts are presentation metadata; a new recommendation must not create a different scheduling identity.
+        label = " ".join(_TAB_COUNT.sub("", self.tab).casefold().split())
+        return f"{self.key}/tab/{hashlib.sha256(label.encode()).hexdigest()}"
 
 
 @frozen
@@ -87,6 +114,8 @@ class CaptureShard:
         shard_index (int): One-based worker index.
         shard_count (int): Total workers expected by the plan.
         sections (list[Section]): Fully collected sections owned by this worker.
+        route_seconds (dict[str, float]): Successful route traversal durations, including in-process retries.
+        elapsed_seconds (float | None): Complete worker browser lifetime, including startup, session check, and cleanup.
     """
 
     capture_id: str
@@ -94,6 +123,8 @@ class CaptureShard:
     shard_index: int
     shard_count: int
     sections: list[Section]
+    route_seconds: dict[str, float] = field(factory=dict)
+    elapsed_seconds: float | None = None
 
 
 def make_capture_plan(profile: Profile, browser: BrowserName, routes: Iterable[CaptureRoute]) -> CapturePlan:
@@ -124,7 +155,7 @@ def make_capture_plan(profile: Profile, browser: BrowserName, routes: Iterable[C
 
 def assign_routes(plan: CapturePlan) -> dict[int, list[CaptureRoute]]:
     """
-    Balance larger profile sections across workers deterministically.
+    Initialize with LPT, then reduce predicted load variance when measured history is available.
 
     Args:
         plan (CapturePlan): Validated six-worker capture plan.
@@ -133,17 +164,33 @@ def assign_routes(plan: CapturePlan) -> dict[int, list[CaptureRoute]]:
         dict[int, list[CaptureRoute]]: One-based shard numbers mapped to ordered routes.
     """
     buckets: dict[int, list[CaptureRoute]] = {index: [] for index in range(1, plan.shard_count + 1)}
-    loads = {index: 0 for index in buckets}
-    order = {route.key: index for index, route in enumerate(plan.routes)}
+    loads = {index: 0.0 for index in buckets}
+    order = {route.unit_key: index for index, route in enumerate(plan.routes)}
+    costs = {
+        route.unit_key: route.estimated_seconds if route.estimated_seconds is not None else float(route.weight) for route in plan.routes
+    }
 
-    # Greedy size balancing gives long sections separate workers while key-based ties keep assignments repeatable.
-    for route in sorted(plan.routes, key=lambda item: (-item.weight, item.key)):
+    # Keep accepted assignments as the starting point, avoiding a fresh global shuffle every run.
+    for route in plan.routes:
+        if route.feedback is not None:
+            buckets[route.feedback.shard].append(route)
+            loads[route.feedback.shard] += costs[route.unit_key]
+
+    # LPT assigns the longest estimated work to the least-loaded worker; cold starts retain the original size weights.
+    # Reference: R. L. Graham, Bounds on Multiprocessing Timing Anomalies (1969), https://doi.org/10.1137/0117039.
+    for route in sorted(
+        (route for route in plan.routes if route.feedback is None), key=lambda item: (-costs[item.unit_key], item.unit_key)
+    ):
         shard = min(loads, key=lambda index: (loads[index], index))
         buckets[shard].append(route)
-        loads[shard] += route.weight
+        loads[shard] += costs[route.unit_key]
+
+    # Refine the learned schedule, preserving the original algorithm exactly for the first capture.
+    if any(route.estimated_seconds is not None for route in plan.routes):
+        buckets = balance_variance(buckets, costs)
 
     for routes in buckets.values():
-        routes.sort(key=lambda item: order[item.key])
+        routes.sort(key=lambda item: order[item.unit_key])
 
     return buckets
 
@@ -183,7 +230,7 @@ def aggregate_capture(plan: CapturePlan, shards: Iterable[CaptureShard]) -> Prof
     collected: dict[str, Section] = {}
 
     for index, shard in by_index.items():
-        expected_keys = {route.key for route in expected[index]}
+        expected_keys = {route.unit_key for route in expected[index]}
         actual_keys = {section.key for section in shard.sections}
 
         if actual_keys != expected_keys:
@@ -194,9 +241,20 @@ def aggregate_capture(plan: CapturePlan, shards: Iterable[CaptureShard]) -> Prof
 
         collected.update((section.key, section) for section in shard.sections)
 
-    # Keep overview-only sections intact and replace a preview only with the complete result assigned to its route.
-    sections = [collected.pop(section.key, section) for section in plan.profile.sections]
-    sections.extend(collected.values())
+    # Recombine complete tab units in discovery order before replacing the parent's overview preview.
+    parents: dict[str, Section] = {}
+
+    for route in plan.routes:
+        section = collected[route.unit_key]
+
+        if route.key in parents:
+            parents[route.key] = evolve(parents[route.key], entries=[*parents[route.key].entries, *section.entries])
+        else:
+            parents[route.key] = evolve(section, key=route.key, title=route.title)
+
+    # Keep overview-only sections intact and replace a preview only with complete output.
+    sections = [parents.pop(section.key, section) for section in plan.profile.sections]
+    sections.extend(parents.values())
     return evolve(plan.profile, sections=sections)
 
 
@@ -288,18 +346,37 @@ def _validate_plan(plan: CapturePlan) -> None:
     route_keys: set[str] = set()
     prefix = f"https://www.linkedin.com/in/{plan.profile.username.casefold()}/"
 
+    # Mixing raw size weights and seconds would compare unrelated units and silently distort shard loads.
+    if any(route.estimated_seconds is not None for route in plan.routes) and any(route.estimated_seconds is None for route in plan.routes):
+        raise ValueError("Capture plan must estimate every route in seconds or use only size weights.")
+
     for route in plan.routes:
         if (
             not route.key
-            or route.key in route_keys
+            or route.unit_key in route_keys
             or not route.title
             or route.kind not in {"detail", "inline", "contact"}
             or route.weight < 1
+            or (route.estimated_seconds is not None and (not math.isfinite(route.estimated_seconds) or route.estimated_seconds <= 0))
             or not route.url.casefold().startswith(prefix)
+            or (
+                route.tab is not None
+                and (not route.tab.strip() or route.kind != "detail" or route.key not in {"recommendations", "interests"})
+            )
         ):
             raise ValueError(f"Capture route {route.key!r} is duplicated, invalid, or outside the configured LinkedIn profile.")
 
-        route_keys.add(route.key)
+        if route.feedback is not None and (
+            not 1 <= route.feedback.shard <= _SHARD_COUNT
+            or route.feedback.estimate != route.estimated_seconds
+            or not all(math.isfinite(value) for value in (route.feedback.estimate, route.feedback.error, route.feedback.integral))
+        ):
+            raise ValueError("Capture route feedback must contain finite controller state and a matching estimate.")
+
+        route_keys.add(route.unit_key)
+
+    if any(route.tab is not None and route.key in route_keys for route in plan.routes):
+        raise ValueError("A capture plan cannot include both a whole section and its tab units.")
 
 
 def _validate_shard(shard: CaptureShard, plan: CapturePlan) -> None:
@@ -341,6 +418,16 @@ def _validate_shard_shape(shard: CaptureShard) -> None:
         ValueError: The metadata is invalid or a section key appears more than once.
     """
     keys = [section.key for section in shard.sections]
+
+    if shard.elapsed_seconds is not None and (not math.isfinite(shard.elapsed_seconds) or shard.elapsed_seconds < 0):
+        raise ValueError("Capture shard elapsed time must be finite and nonnegative.")
+
+    # Legacy artifacts may omit timings; partial or nonfinite timing data must never train a later plan.
+    if shard.route_seconds and (
+        shard.route_seconds.keys() != set(keys)
+        or any(not math.isfinite(seconds) or seconds <= 0 for seconds in shard.route_seconds.values())
+    ):
+        raise ValueError("Capture shard timings must cover exactly its sections with finite positive seconds.")
 
     if (
         not shard.capture_id

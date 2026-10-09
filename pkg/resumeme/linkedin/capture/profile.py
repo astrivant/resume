@@ -5,6 +5,7 @@ Collect LinkedIn profile sections through the configured browser session.
 from __future__ import annotations
 
 import logging
+import time
 from datetime import UTC, datetime
 from functools import partial
 from typing import TYPE_CHECKING
@@ -20,8 +21,12 @@ from resumeme.compiler.asts.parsing import detail_links, merge_profile_html, par
 from resumeme.compiler.asts.profile import save_profile
 from resumeme.compiler.asts.sections import section_key
 from resumeme.exceptions import BrowserElementError, BrowserError, BrowserTimeoutError
-from resumeme.linkedin import browser_auth, browser_runtime, browser_scripts
-from resumeme.linkedin.capture_shards import CaptureRoute, CaptureShard, assign_routes, make_capture_plan
+from resumeme.linkedin.browser import auth as browser_auth
+from resumeme.linkedin.browser import runtime as browser_runtime
+from resumeme.linkedin.browser import scripts as browser_scripts
+from resumeme.linkedin.capture.refinement import refine_capture_plan
+from resumeme.linkedin.capture.shards import CaptureRoute, CaptureShard, assign_routes, make_capture_plan
+from resumeme.linkedin.capture.timings import apply_timings, read_timings
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry_selenium
@@ -36,7 +41,7 @@ if TYPE_CHECKING:
 
     from resumeme.compiler.asts.profile import Entry, Profile, Section
     from resumeme.config import Capture, Config
-    from resumeme.linkedin.capture_shards import CapturePlan
+    from resumeme.linkedin.capture.shards import CapturePlan
 
 __all__ = ["capture_profile", "capture_profile_shard", "prepare_capture_plan"]
 _LOGGER = logging.getLogger(__name__)
@@ -354,7 +359,7 @@ def _inline_tabs(driver: WebDriver, username: str, section: Section, settings: C
     return evolve(section, entries=entries)
 
 
-def _details(driver: WebDriver, url: str, key: str, title: str, settings: Capture) -> Section:
+def _details(driver: WebDriver, url: str, key: str, title: str, settings: Capture, *, tab: str | None = None) -> Section:
     """
     Follow all loaded detail pages and reject pagination that cannot be exhausted.
 
@@ -364,6 +369,7 @@ def _details(driver: WebDriver, url: str, key: str, title: str, settings: Captur
         key (str): Section identifier.
         title (str): Section title.
         settings (Capture): Page and expansion limits.
+        tab (str | None): Collect exactly this independently planned tab, or all tabs when absent.
 
     Returns:
         Section: All entries collected across detail pages.
@@ -381,6 +387,12 @@ def _details(driver: WebDriver, url: str, key: str, title: str, settings: Captur
 
     if key in {"recommendations", "interests"}:
         tabs = list(_detail_tabs(driver))
+
+    if tab is not None:
+        if tab not in tabs:
+            raise BrowserElementError("A planned detail tab is no longer present; rerun capture planning.")
+
+        tabs = [tab]
 
     if not tabs:
         return _detail_pages(driver, key, title, settings)
@@ -532,7 +544,7 @@ def _route_weight(section: Section | None, title: str) -> int:
     return max(1, len(section.entries) * 2 + text_size // 500 + 1)
 
 
-def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False) -> CapturePlan:
+def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False, timings_path: Path | None = None) -> CapturePlan:
     """
     Authenticate once and capture the profile overview plus owner-scoped section routes.
 
@@ -540,6 +552,7 @@ def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False) 
         config (Config): Profile owner and browser settings.
         root (Path): Configuration directory for browser state and diagnostics.
         headless (bool): Use environment credentials without opening a desktop window.
+        timings_path (Path | None): Previous measurements used for bounded tab discovery and adaptive scheduling.
 
     Returns:
         CapturePlan: Base profile and all detail routes assigned to six workers.
@@ -616,7 +629,33 @@ def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False) 
                 )
             )
 
-    return make_capture_plan(evolve(profile, captured_at=datetime.now(UTC).isoformat()), config.capture.browser, routes)
+        plan = make_capture_plan(evolve(profile, captured_at=datetime.now(UTC).isoformat()), config.capture.browser, routes)
+
+        if timings_path is not None:
+
+            def discover(route: CaptureRoute) -> list[str]:
+                """
+                Inspect independently selectable tabs without traversing their content.
+
+                Args:
+                    route (CaptureRoute): Known owner-scoped detail section.
+
+                Returns:
+                    list[str]: Visible labels in source order.
+                """
+                _navigate(driver, route.url, config.capture)
+                WebDriverWait(driver, config.capture.page_timeout_seconds).until(
+                    lambda page: page.find_element(By.CSS_SELECTOR, "main").text.strip().casefold().startswith(route.title.casefold())
+                )
+                return list(_detail_tabs(driver))
+
+            plan = apply_timings(plan, timings_path)
+            plan = refine_capture_plan(
+                plan, read_timings(timings_path), lambda route: retry_selenium(partial(discover, route), config.capture)
+            )
+            plan = apply_timings(plan, timings_path)
+
+    return plan
 
 
 def capture_profile_shard(
@@ -665,6 +704,8 @@ def capture_profile_shard(
         extra={"browser.name": plan.browser.title(), "capture.shard": shard_index, "capture.shard_count": shard_count},
     )
     collected: list[Section] = []
+    route_seconds: dict[str, float] = {}
+    worker_started = time.monotonic()
 
     with _browser(root, config.capture, headless=headless) as driver:
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)
@@ -680,6 +721,9 @@ def capture_profile_shard(
 
             if route.kind == "detail":
                 operation = partial(_details, driver, route.url, route.key, route.title, config.capture)
+
+                if route.tab is not None:
+                    operation = partial(_details, driver, route.url, route.key, route.title, config.capture, tab=route.tab)
             elif route.kind == "inline":
                 section = next((item for item in plan.profile.sections if item.key == route.key), None)
 
@@ -690,9 +734,23 @@ def capture_profile_shard(
             else:
                 operation = partial(_contact, driver, config.linkedin.username, config.capture)
 
-            collected.append(retry_selenium(operation, config.capture))
+            # Measure the entire traversal and its backoffs, excluding browser startup and session authentication.
+            started = time.monotonic()
+            collected.append(evolve(retry_selenium(operation, config.capture), key=route.unit_key))
+            route_seconds[route.unit_key] = max(time.monotonic() - started, 0.000001)
+            _LOGGER.info(
+                "Completed profile route",
+                extra={
+                    "profile.section": route.key,
+                    "capture.unit": route.unit_key,
+                    "capture.shard": shard_index,
+                    "capture.duration_seconds": route_seconds[route.unit_key],
+                },
+            )
 
-    return CaptureShard(plan.capture_id, plan.browser, shard_index, shard_count, collected)
+    return CaptureShard(
+        plan.capture_id, plan.browser, shard_index, shard_count, collected, route_seconds, time.monotonic() - worker_started
+    )
 
 
 def capture_profile(config: Config, root: Path, connect_port: int | None = None, *, headless: bool = False) -> Profile:

@@ -6,9 +6,9 @@ repos:
     rev: v10.10.0
     hooks:
       - id: eslint
-        name: ESLint LinkedIn browser scripts
+        name: ESLint browser and validation scripts
         args: [--config, .config/eslint.config.mjs]
-        files: '^pkg/resumeme/linkedin/scripts/.*\.js$'
+        files: '^(pkg/resumeme/linkedin/scripts/.*\.js|scripts/validation/math/.*\.mjs)$'
   - repo: local
     hooks:
       # Run the published hook command against the latest checkout, using the project's existing locked environment.
@@ -55,4 +55,10 @@ repos:
         entry: bash scripts/tooling/project-python.sh scripts/validation/check-data.py
         language: system
         pass_filenames: false
-        files: '(\.json$|\.yaml$|\.yml$|^Dockerfile$|^pkg/resumeme/(config\.py|compiler/asts/.*\.py)$)'
+        files: '(\.json$|\.yaml$|\.yml$|^Dockerfile$|^pkg/resumeme/(config/.*\.py|compiler/asts/.*\.py)$)'
+      - id: document-math
+        name: Markdown math syntax and worked examples
+        entry: bash scripts/validation/check-math.sh
+        language: system
+        pass_filenames: false
+        files: '(?i)(\.(md|markdown)$|^scripts/validation/(math/|check-math\.sh$)|^pkg/resumeme/linkedin/capture/.*\.py$|^\.pre-commit-config\.yaml$)'

@@ -18,7 +18,9 @@ from resumeme.compiler.asts.profile import load_profile
 from resumeme.config import project_path
 from resumeme.exceptions import BrowserElementError, BrowserError, BrowserWaitError
 from resumeme.linkedin.account import check_owner
-from resumeme.linkedin.browser import _browser, _details, _login, _navigate
+from resumeme.linkedin.browser.auth import _login
+from resumeme.linkedin.browser.runtime import _browser, _navigate
+from resumeme.linkedin.capture.profile import _details
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.retrying import retry_selenium
 

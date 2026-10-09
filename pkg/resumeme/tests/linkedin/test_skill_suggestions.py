@@ -547,7 +547,7 @@ def test_ci_skill_preparation_exports_reasoning(tagged: Path, monkeypatch: Monke
     Returns:
         None: Preparation exports matching action inputs without receiving or using an API key.
     """
-    script = REPOSITORY_ROOT / "scripts/ci/skills-artifact.py"
+    script = REPOSITORY_ROOT / "scripts/ci/codex/skills-artifact.py"
     (tagged / "resumeme.config.yaml").write_text(
         yaml.safe_dump(
             {
@@ -582,7 +582,7 @@ def test_ci_script_rejects_branch_events(tagged: Path, monkeypatch: MonkeyPatch)
     Returns:
         None: A manually invoked branch build cannot prepare skill generation.
     """
-    script = REPOSITORY_ROOT / "scripts/ci/skills-artifact.py"
+    script = REPOSITORY_ROOT / "scripts/ci/codex/skills-artifact.py"
     (tagged / "resumeme.config.yaml").write_text("linkedin: {username: example-person}\n")
     monkeypatch.chdir(tagged)
     monkeypatch.setattr("sys.argv", [str(script), "prepare"])

@@ -15,7 +15,7 @@ from attrs import evolve
 
 from resumeme.compiler.asts.profile import Skill
 from resumeme.compiler.asts.sections import section_key
-from resumeme.compiler.asts.skills import endorsement_count, skill_labels
+from resumeme.compiler.asts.skills.parsing import endorsement_count, skill_labels
 from resumeme.compiler.constants.skills import (
     COLLAPSED_SKILLS,
     SKILL_ASSOCIATION_PATH,

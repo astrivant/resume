@@ -13,7 +13,7 @@ from attrs import asdict, evolve
 from resumeme.compiler.asts.profile import Entry, Section
 from resumeme.compiler.asts.sections import section_key
 from resumeme.compiler.passes.progression import experience_layout
-from resumeme.compiler.passes.projects import consolidate_projects
+from resumeme.compiler.passes.projects.consolidation import consolidate_projects
 from resumeme.compiler.passes.visibility import visible_profile
 
 if TYPE_CHECKING:

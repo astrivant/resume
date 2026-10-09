@@ -13,19 +13,19 @@ test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
 
 # Commit exactly the fresh inputs that passed verification alongside the PDF produced from them.
 if [[ "${REFRESH_PROFILE:-false}" == true ]]; then
-    poetry run python scripts/ci/profile-artifact.py stage
+    poetry run python scripts/ci/linkedin/profile-artifact.py stage
 fi
 
 # Tree comparison below recognizes an identical publication from a previous attempt, including refreshed inputs.
-poetry run python scripts/ci/restore-pdf.py
-readme_mode="$(poetry run python scripts/ci/readme-artifact.py restore)"
+poetry run python scripts/ci/resume/restore-pdf.py
+readme_mode="$(poetry run python scripts/ci/publication/readme-artifact.py restore)"
 
 # A fresh coffee stain accompanies real resume changes; unchanged builds must not create logo-only bot commits.
 # Use the source revision so a retry reconstructs the exact tree of a successful earlier publication.
 if [[ "$readme_mode" == project ]] && ! git diff --cached --quiet; then
     # The build artifact owns this UTC date; a deploy retry on another day must reproduce the same branding.
     read -r brew_date <.cache/publication/brew-date.txt
-    poetry run python scripts/ci/refresh-logo.py --seed "$SOURCE_SHA" --brew-date "$brew_date"
+    poetry run python scripts/ci/publication/refresh-logo.py --seed "$SOURCE_SHA" --brew-date "$brew_date"
     git add -- docs/assets/branding/resumeme-logo.png docs/assets/branding/brew-date.svg
 
     if [[ -f README.md ]]; then

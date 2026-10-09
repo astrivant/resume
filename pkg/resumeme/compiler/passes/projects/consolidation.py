@@ -15,7 +15,7 @@ from resumeme.compiler.asts.names import company_key
 from resumeme.compiler.asts.profile import Entry, Link, Section
 from resumeme.compiler.passes.experience import regroup_positions
 from resumeme.compiler.passes.media import image_role
-from resumeme.compiler.passes.project_descriptions import partition_descriptions
+from resumeme.compiler.passes.projects.descriptions import partition_descriptions
 from resumeme.compiler.passes.selection import matches_fields
 
 if TYPE_CHECKING:

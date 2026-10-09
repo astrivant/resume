@@ -14,7 +14,7 @@ from jsonschema import ValidationError
 
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, Skill
 from resumeme.compiler.constants.links import DEFAULT_PROJECT_FILTER
-from resumeme.compiler.passes.projects import consolidate_projects
+from resumeme.compiler.passes.projects.consolidation import consolidate_projects
 from resumeme.compiler.passes.summary import summary_digest, summary_evidence
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, Projects, ProjectSelector, load_config

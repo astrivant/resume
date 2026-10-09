@@ -15,7 +15,7 @@ from resumeme.compiler.asts.dates import employment_period
 from resumeme.compiler.asts.links import merge_text_links, safe_url
 from resumeme.compiler.asts.profile import Entry, Link, Media, Profile, Section, Skill
 from resumeme.compiler.asts.sections import section_key
-from resumeme.compiler.asts.skills import endorsement_count, skill_labels
+from resumeme.compiler.asts.skills.parsing import endorsement_count, skill_labels
 from resumeme.compiler.constants.parsing import BLOCK_TAGS, PARAGRAPH_BREAK
 from resumeme.compiler.constants.parsing import IGNORED_SECTIONS as _IGNORED_SECTIONS
 from resumeme.compiler.constants.parsing import UI_TEXT as _UI_TEXT

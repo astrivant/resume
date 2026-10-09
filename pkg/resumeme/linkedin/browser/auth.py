@@ -21,7 +21,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError, BrowserWindowError
-from resumeme.linkedin.approval_audit import record_approval_context
+from resumeme.linkedin.approval.audit import record_approval_context
 from resumeme.linkedin.challenges import observe_challenge
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.retrying import is_retryable_selenium_error, retry_selenium

@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from resumeme.config import load_config
 from resumeme.exceptions import SessionCacheError
 from resumeme.linkedin.retrying import is_retryable_linkedin_exit_status, retry
-from resumeme.linkedin.session_cache import CacheKeys, archive_profile, open_archive, restore_profile, seal_archive
+from resumeme.linkedin.session.cache import CacheKeys, archive_profile, open_archive, restore_profile, seal_archive
 from resumeme.telemetry import logging_context
 
 if TYPE_CHECKING:

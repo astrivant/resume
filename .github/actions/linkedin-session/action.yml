@@ -41,7 +41,7 @@ runs:
         RESUMEME_CACHE_PUBLIC_KEY: ${{ inputs.public-key }}
         RESUMEME_CACHE_KEY_PASSWORD: ${{ inputs.key-password }}
         RESUMEME_SESSION_CACHE_DIR: ${{ inputs.cache-directory }}
-      run: poetry run python scripts/ci/linkedin-session.py prepare
+      run: poetry run python scripts/ci/linkedin/linkedin-session.py prepare
     - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       if: steps.prepare.outputs.enabled == 'true'
       with:
@@ -63,7 +63,7 @@ runs:
         RESUMEME_CACHE_PUBLIC_KEY: ${{ inputs.public-key }}
         RESUMEME_CACHE_KEY_PASSWORD: ${{ inputs.key-password }}
         RESUMEME_SESSION_CACHE_DIR: ${{ inputs.cache-directory }}
-      run: poetry run python scripts/ci/linkedin-session.py run --command "$SESSION_COMMAND"
+      run: poetry run python scripts/ci/linkedin/linkedin-session.py run --command "$SESSION_COMMAND"
     - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       if: >-
         always()
@@ -76,4 +76,4 @@ runs:
     # Also clean after cancellation, cache upload failure, or an interrupted subprocess.
     - if: always()
       shell: bash
-      run: poetry run python scripts/ci/linkedin-session.py clean
+      run: poetry run python scripts/ci/linkedin/linkedin-session.py clean

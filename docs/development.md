@@ -43,6 +43,48 @@ select `.config/eslint.config.mjs` explicitly, with file patterns relative to th
 repository root. The published pre-commit hook manifest remains at its required
 root path, `.pre-commit-hooks.yaml`.
 
+### Python packages
+
+Modules with a shared responsibility live in a subpackage rather than repeating
+a filename prefix. Imports name the implementing module; package initializers
+stay small. `resumeme.config` exposes the configuration models and loading API.
+
+| Package under `pkg/resumeme/` | Responsibility |
+| --- | --- |
+| `config/` | Typed models and validated configuration loading |
+| `linkedin/browser/` | Browser lifecycle, authentication, and JavaScript resource loading |
+| `linkedin/capture/` | Profile traversal, shard plans, aggregation, timings, and scheduling feedback |
+| `linkedin/resume/` | PDF publication, saved-resume management, uploads, and recruiter sharing |
+| `linkedin/approval/` | Sign-in approval audit context |
+| `linkedin/session/` | Encrypted browser session archives |
+| `compiler/asts/skills/` | Skill parsing and generated proposal models |
+| `compiler/passes/projects/` | Project consolidation, description separation, and tile layout |
+| `github/companies/` | Employer-specific PDF artifact transfer |
+
+Tests keep their standard `test_*.py` filenames within the existing subsystem
+directories. Standalone JavaScript resources remain in `linkedin/scripts/`.
+
+### CI scripts
+
+[`scripts/ci/`](../scripts/ci/) groups entry points by responsibility. Run them
+from the repository root; config and artifact paths are relative to that working
+directory. Workflows and composite actions call these scripts directly.
+
+| Directory | Responsibility |
+| --- | --- |
+| [`pipeline/`](../scripts/ci/pipeline/) | Select the source commit and profile-refresh mode |
+| [`checks/`](../scripts/ci/checks/) | Run lint/tests, generate coverage badges, and redact/report Trivy findings |
+| [`linkedin/`](../scripts/ci/linkedin/) | Manage encrypted sessions, capture timing feedback and profile artifacts, and publication opt-ins |
+| [`codex/`](../scripts/ci/codex/) | Prepare summary/skill inputs and validate generated response artifacts |
+| [`resume/`](../scripts/ci/resume/) | Render, compile, stage, and restore PDFs; prepare TeXtidote inputs |
+| [`publication/`](../scripts/ci/publication/) | Commit accepted artifacts to main and update README previews and branding |
+| [`pages/`](../scripts/ci/pages/) | Read site settings, reject stale deployments, and resolve the published URL |
+| [`containers/`](../scripts/ci/containers/) | Check the built image and push its registry tags |
+
+Release signing and distribution remain in [`scripts/release/`](../scripts/release/).
+Shared environment setup and retries live in [`scripts/tooling/`](../scripts/tooling/);
+local validation hooks live in [`scripts/validation/`](../scripts/validation/).
+
 ## Local commits and CI-owned files
 
 [`.gitattributes`](../.gitattributes) marks published PDFs, captured profile/media,
@@ -109,7 +151,7 @@ this inventory in the same change whenever one of those pins changes.
 | Component | Pin | Source |
 | --- | --- | --- |
 | Local and Actions Python | `3.13.12` | [`.python-version`](../.python-version), [`.tool-versions`](../.tool-versions), and `actions/setup-python` below |
-| ESLint runtime Node.js | `26.10.0` | [`.tool-versions`](../.tool-versions) and the pre-commit `node` language version |
+| ESLint and math-check Node.js | `26.10.0` | [`.tool-versions`](../.tool-versions), the pre-commit `node` language version, and the CI checks job |
 | Production image Python | `python:3.14.7-slim-bookworm`, digest `sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56` | [`Dockerfile`](../Dockerfile) |
 | Poetry | `2.5.1` | [`.tool-versions`](../.tool-versions) is read by [shared CI setup](../.github/actions/setup-poetry/action.yml); [`Dockerfile`](../Dockerfile) pins the container installation separately |
 | Poetry build backend | `poetry-core==2.5.0` | [`pyproject.toml`](../pyproject.toml) build-system requirements |
@@ -119,6 +161,7 @@ this inventory in the same change whenever one of those pins changes.
 | TeXtidote image | `gokhlayeh/textidote`, digest `sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441` | [`stage-readme.yml`](../.github/workflows/stage-readme.yml) and [`stage-documents.yml`](../.github/workflows/stage-documents.yml) |
 | Tini | Debian package `0.19.0-1+b3` | [`Dockerfile`](../Dockerfile) |
 | ESLint | `10.10.0` | [`.pre-commit-config.yaml`](../.pre-commit-config.yaml) selects [`.config/eslint.config.mjs`](../.config/eslint.config.mjs) to lint standalone Selenium JavaScript resources |
+| Markdown math parsers | KaTeX `0.19.0`, remark-math `6.0.0`, remark-parse `11.0.0`, unified `11.0.5` | [`package.json`](../scripts/validation/math/package.json) and its adjacent `package-lock.json`; development checks only |
 
 JavaScript executed in LinkedIn's browser is kept under
 [`pkg/resumeme/linkedin/scripts/`](../pkg/resumeme/linkedin/scripts/) and linted
@@ -139,6 +182,7 @@ actual reference. Repeated references use the same pin.
 | `actions/deploy-pages` | `v5.0.1` | `368f82528645a54fb793d4d04e342629a3f51346` |
 | `actions/download-artifact` | `v8.0.2` | `9000827ccba6bdab643e8b6fd33ac0654aef8333` |
 | `actions/setup-python` | `v7.0.0` | `5fda3b95a4ea91299a34e894583c3862153e4b97` |
+| `actions/setup-node` | `v7.1.0` | `949feb2413d6458794dcd2491c4babbbce0c15c1` |
 | `actions/upload-artifact` | `v7.0.2` | `cf430e030ddbb5b0abf93d22962f4752f3646cd9` |
 | `actions/upload-pages-artifact` | `v5.0.0` | `fc324d3547104276b827a68afc52ff2a11cc49c9` |
 | `docker/build-push-action` | `v7.4.0` | `c3c9e263c25d99ce0380d002d59b67737d91b0dc` |
@@ -175,7 +219,7 @@ Reproduce a CI partition locally with:
 poetry run pytest --shard-count 3 --shard-index 1 -n 4
 ```
 
-Indices are one-based. `bash scripts/ci/test.sh` still runs both pre-commit and
+Indices are one-based. `bash scripts/ci/checks/test.sh` still runs both pre-commit and
 the complete suite; use `checks` or `tests` as its first argument to run only
 that portion. Additional arguments in `tests` or `all` mode go to pytest.
 
@@ -302,7 +346,8 @@ This workflow runs independently of PDF builds and releases.
 Implementation and tests live in `pkg/resumeme/`; repository tooling lives in
 `scripts/`. `linkedin/` owns browser and network acquisition; `compiler/` owns
 parsing, typed records, transformation passes, target resources, and compilation.
-Runtime options remain in `config.py`. See the [compiler architecture](compiler.md).
+Runtime options live in `config/models.py`, with loading and validation in
+`config/loading.py`. See the [compiler architecture](compiler.md).
 See [pipeline and package ownership](README.md#pipeline-and-ownership), the
 [profile schema](profile-schema.md), and the [template interface](templates.md).
 
@@ -366,6 +411,26 @@ Firefox and the PDF toolchain are still required for capture and compilation; se
 the [runtime prerequisites](README.md#install).
 
 ## Document checks
+
+Pre-commit's `document-math` hook checks Markdown equations with
+[KaTeX strict parsing](https://katex.org/docs/options) after remark identifies
+math nodes. Prefer GitHub `math` fences for derivations; inline `$...$` and
+display `$$` blocks are also checked. It rejects malformed TeX, unsupported
+commands, and unclosed display/fenced blocks, with file/line diagnostics.
+Ordinary code blocks and inline code remain examples, not math input.
+
+The same hook runs the [capture scheduling](capture-scheduling.md) worked examples
+as Python doctests, including exact fractional variance calculations and actual
+PID updates. Syntax validity is not a proof of a mathematical claim. Keep the
+definitions, derivations, worked examples, and relevant property tests aligned.
+Leave a blank line before closing a `pycon` fence so doctest does not treat that
+fence as expected output.
+
+Run `poetry run pre-commit run document-math --all-files` locally. Node 22 or newer
+is required; local/CI tooling pins Node `26.10.0`. The wrapper installs from the
+npm lockfile with lifecycle scripts disabled, only when the manifests or Node
+runtime change. CI caches npm downloads and runs the hook in the existing checks
+job. No new workflow or production dependency is introduced.
 
 Use keyboard punctuation in prose, comments, CLI messages, and templates: `-`,
 straight quotes, `...`, and `->`. Accented words and names are welcome. Express

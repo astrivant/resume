@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 import cattrs
 from jsonschema import Draft202012Validator
 
-from resumeme.compiler.asts.skill_suggestions import SkillSuggestions, skill_suggestions_schema
+from resumeme.compiler.asts.skills.suggestions import SkillSuggestions, skill_suggestions_schema
 from resumeme.compiler.passes.context import resolve_dates
 from resumeme.compiler.passes.summary import summary_evidence
 from resumeme.config import project_path

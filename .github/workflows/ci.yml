@@ -58,7 +58,7 @@ jobs:
       - id: source
         env:
           REFRESH_PROFILE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) }}
-        run: bash scripts/ci/source.sh
+        run: bash scripts/ci/pipeline/source.sh
 
   # Source-only validation starts before live capture; no browser, profile artifact, or model output is needed.
   test-stage:
@@ -116,6 +116,9 @@ jobs:
   capture-bootstrap:
     name: Authenticate and plan LinkedIn capture
     needs: source
+    permissions:
+      contents: read
+      actions: read
     if: >-
       needs.source.outputs.refresh == 'true'
       && ((github.event_name == 'push'
@@ -134,7 +137,17 @@ jobs:
         with:
           groups: main
 
-      # Fan-out begins with one authenticated overview and a weighted section plan.
+      # History-based adaptive scheduling learns from the latest complete capture, including sibling release tags.
+      - name: Restore encrypted traversal timings
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CAPTURE_RUNNER: ${{ vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]' }}
+          RESUMEME_CACHE_PRIVATE_KEY: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+          RESUMEME_CACHE_PUBLIC_KEY: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+          RESUMEME_CACHE_KEY_PASSWORD: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
+        run: poetry run python scripts/ci/linkedin/capture-timings.py restore
+
+      # Fan-out begins with one authenticated overview and a plan frozen using historical durations or cold-start size weights.
       # LinkedIn credentials stay here; workers receive only the encrypted session-cache key.
       - name: Authenticate and build the section plan
         uses: ./.github/actions/linkedin-session
@@ -239,6 +252,9 @@ jobs:
           merge-multiple: true
       # Fan-in is strict: incomplete or mismatched shards prevent profile publication.
       - name: Validate and aggregate all six profile shards
+        env:
+          # Emit observed mean, population standard deviation, and prediction residuals without profile text.
+          RESUMEME_LOG_LEVEL: INFO
         run: poetry run resumeme --config resumeme.config.yaml aggregate
       # Fresh data retains the same schema checks without delaying source-only tests behind the browser.
       - name: Check the accepted profile and schema contracts
@@ -246,7 +262,24 @@ jobs:
           poetry run python scripts/validation/check-data.py
           poetry run resumeme --config resumeme.config.yaml validate
       - name: Export complete capture for downstream stages
-        run: poetry run python scripts/ci/profile-artifact.py export
+        run: poetry run python scripts/ci/linkedin/profile-artifact.py export
+      # Publish feedback only after complete aggregation and validation; failed workers never train the next run.
+      - name: Encrypt traversal timings for the next run
+        id: timings
+        env:
+          CAPTURE_RUNNER: ${{ vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]' }}
+          RESUMEME_CACHE_PRIVATE_KEY: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+          RESUMEME_CACHE_PUBLIC_KEY: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+          RESUMEME_CACHE_KEY_PASSWORD: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
+        run: poetry run python scripts/ci/linkedin/capture-timings.py seal
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.timings.outputs.artifact-name }}
+          path: .cache/capture-timings/timings.bin
+          include-hidden-files: true
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: resumeme-profile
@@ -311,7 +344,7 @@ jobs:
           if [[ -n "$artifact_id" ]]; then
               artifact_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts/$artifact_id"
           fi
-          python3 scripts/ci/trivy-report.py comment \
+          python3 scripts/ci/checks/trivy-report.py comment \
             --input "$RUNNER_TEMP/trivy-results/trivy-report.json" \
             --output "$RUNNER_TEMP/trivy-comment.json" \
             --artifact-url "$artifact_url" \
@@ -420,7 +453,7 @@ jobs:
           name: python-coverage
           path: .cache/coverage
       - name: Generate badge from the combined test report
-        run: python scripts/ci/coverage-badge.py
+        run: python scripts/ci/checks/coverage-badge.py
 
       # Read main inside the publication lock so an older completed run cannot replace a newer coverage result.
       - id: current

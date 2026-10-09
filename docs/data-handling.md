@@ -20,6 +20,7 @@ maintainer responsibilities.
 - [Logs and debugging](#logs-and-debugging)
 - [Disable, delete, or respond to exposure](#disable-delete-or-respond-to-exposure)
 - [Implementation references](#implementation-references)
+- [Capture scheduling feedback](#capture-scheduling-feedback)
 
 ## Before capturing or publishing
 
@@ -192,7 +193,7 @@ retried with `--key-dir`. They do not rotate keys on a timer.
 
 | Setup | Creation and retained files | Storage |
 | --- | --- | --- |
-| [Session cache](../scripts/ci/setup-session-cache.sh) | `ssh-keygen -t rsa -b 3072 -m PEM`; public PEM exported; private PEM encrypted by OpenSSL AES-256-CBC using a random password. Keeps `session.key`, `session.pub`, `session.password`. | `${XDG_DATA_HOME:-$HOME/.local/share}/resumeme/session-cache-keys/key.*/` |
+| [Session cache](../scripts/ci/linkedin/setup-session-cache.sh) | `ssh-keygen -t rsa -b 3072 -m PEM`; public PEM exported; private PEM encrypted by OpenSSL AES-256-CBC using a random password. Keeps `session.key`, `session.pub`, `session.password`. | `${XDG_DATA_HOME:-$HOME/.local/share}/resumeme/session-cache-keys/key.*/` |
 | [Release signing](../scripts/release/setup-signing.sh) | OpenSSL P-256 key imported into Cosign's encrypted key format. Keeps `cosign.key`, `cosign.pub`, `cosign.password`. | `${XDG_DATA_HOME:-$HOME/.local/share}/resumeme/signing/key.*/` |
 
 These are separate identities. The RSA key is used for cache cryptography, not
@@ -210,7 +211,7 @@ same consideration applies to a CI job receiving both key and password secrets.
 
 ## CI artifacts, commits, and public output
 
-These are ordinary artifacts, not encrypted session archives. Artifact download
+Except for the explicitly encrypted timing feedback below, these are ordinary artifacts, not encrypted session archives. Artifact download
 requires a signed-in GitHub account with repository read access, so public-repo
 artifacts are not private to maintainers. The durations below are the workflow's
 requested retention; repository/organization limits also apply. Logs have the
@@ -220,7 +221,8 @@ repository's own retention setting, not the artifact-specific values.
 | Artifact | When and why | Content | Requested days |
 | --- | --- | --- | --- |
 | `resumeme-capture-plan` | Refreshed tag or main capture; coordinate six workers | Overview profile content and LinkedIn section route URLs. No browser state or login credentials. | 1 |
-| `resumeme-capture-shard-*` | Refreshed tag or main capture; one artifact from each worker | Collected LinkedIn profile sections assigned to that shard. No browser state or login credentials. | 1 |
+| `resumeme-capture-shard-*` | Refreshed tag or main capture; one artifact from each worker | Collected LinkedIn profile sections or tab units assigned to that shard, traversal durations, and total worker time. No browser state or login credentials. | 1 |
+| `resumeme-capture-timings-v1-*` | Complete, validated capture | Encrypted profile identifier, unit IDs, traversal durations, previous assignments, and bounded PID state. Uses the dedicated cache keys; no prose, URLs, or browser credentials. Only the latest matching artifact is consumed. | 90 |
 | `resumeme-profile` | Tag, monthly, or requested main refresh; share one capture with downstream jobs | Full accepted snapshot and every referenced downloaded image, including fields hidden in the PDF. No browser-profile directory. | 1 |
 | `resumeme-summary-inputs` | Enabled summary generation on main or tags; feed the matrix | `.cache/codex/` prompts, schemas, and company/job evidence, including configured writing context. | 7 |
 | `resumeme-summary-result-*` | Each successful matrix item | Validated generated JSON and employer evidence for that item. | 7 |
@@ -423,12 +425,30 @@ fork owner. Send synthetic examples or sanitized excerpts, never working secrets
 
 ## Implementation references
 
-- [Browser capture](../pkg/resumeme/linkedin/browser.py), [CLI persistence](../pkg/resumeme/cli.py), and [public downloads](../pkg/resumeme/linkedin/media.py).
-- [Session wrapper](../scripts/ci/linkedin-session.py), [archive cryptography](../pkg/resumeme/linkedin/session_cache.py), and [session action](../.github/actions/linkedin-session/action.yml).
-- [Capture artifact allowlist](../scripts/ci/profile-artifact.py), [resume uploads](../.github/workflows/stage-resume.yml), [package/container builds](../.github/workflows/stage-build.yml), and [main publication](../scripts/ci/publish.sh).
+- [Browser capture](../pkg/resumeme/linkedin/capture/profile.py), [CLI persistence](../pkg/resumeme/cli.py), and [public downloads](../pkg/resumeme/linkedin/media.py).
+- [Session wrapper](../scripts/ci/linkedin/linkedin-session.py), [archive cryptography](../pkg/resumeme/linkedin/session/cache.py), and [session action](../.github/actions/linkedin-session/action.yml).
+- [Capture artifact allowlist](../scripts/ci/linkedin/profile-artifact.py), [resume uploads](../.github/workflows/stage-resume.yml), [package/container builds](../.github/workflows/stage-build.yml), and [main publication](../scripts/ci/publication/publish.sh).
 - [Summary evidence](../pkg/resumeme/compiler/passes/summary.py), [summary workflow](../.github/workflows/stage-summary.yml), and [skill workflow](../.github/workflows/stage-skills.yml).
 - [Logging redaction](../pkg/resumeme/telemetry.py), [release attachments](../scripts/release/publish.sh), and [Pages workflow](../.github/workflows/stage-pages.yml).
 
 Update this inventory when upload paths, credentials, cleanup, retention, or
 external integrations change. Workflow settings describe requested behavior;
 verify the actual fork and hosting settings before relying on them.
+
+## Capture scheduling feedback
+
+Local `.cache/capture/timings.json` holds the latest complete measurements and
+controller state in plaintext under the ignored cache directory. CI restores it
+only in bootstrap and writes it after validated aggregation. The separate
+`.cache/capture-timings/timings.bin` is encrypted and authenticated with the
+existing dedicated session-cache keys before upload; no plaintext timing-history
+file is selected for that artifact. Ordinary plan and shard artifacts still
+contain the selected cost estimates and measurements alongside profile data.
+
+Feedback is scoped to repository, owner, browser/capture settings, runner
+selection, and key fingerprint. Key rotation prevents reuse of older feedback.
+Logs include unit identifiers, shard assignments, timing predictions, errors,
+mean, and standard deviation, without adding profile prose or credentials.
+Older encrypted artifacts expire after their 90-day requested retention; local
+plaintext feedback is replaced after each complete capture and remains until
+removed. See [capture scheduling](capture-scheduling.md) for the algorithm.

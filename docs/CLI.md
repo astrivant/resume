@@ -198,7 +198,13 @@ Firefox and Chrome use distinct cache namespaces; a refresh uses only
 `capture.browser`. See [pipeline concurrency](automation.md#pipeline-concurrency)
 for the workflow topology and its relation to Polyad CI, and the [sharding
 algorithm](automation.md#linkedin-capture-sharding-algorithm) for route weights,
-placement, and completeness checks.
+placement, feedback, progressive refinement, and completeness checks.
+
+`capture-plan --timings PATH` reads previous complete traversal observations
+(default `.cache/capture/timings.json`). Missing or incompatible history retains
+the initial size-based algorithm. `aggregate --timings-output PATH` writes
+updated observations and bounded controller state only after accepting a complete
+profile; it replaces the previous feedback. CI encrypts this file for reuse.
 
 These commands are CI workflow interfaces. Ordinary local `resumeme capture`
 still collects the complete profile in one browser process.
@@ -214,11 +220,15 @@ resumeme aggregate --help
 
 ~~~text
 usage: resumeme capture-plan [-h] [--headless] [--output OUTPUT]
+                             [--timings TIMINGS]
 
 options:
-  -h, --help       show this help message and exit
-  --headless       Use LinkedIn login environment variables without a desktop
-  --output OUTPUT  Capture plan output path
+  -h, --help         show this help message and exit
+  --headless         Use LinkedIn login environment variables without a
+                     desktop
+  --output OUTPUT    Capture plan output path
+  --timings TIMINGS  Previous traversal timings; missing data uses size
+                     weights
 
 usage: resumeme capture-shard [-h] --index INDEX [--count COUNT] [--plan PLAN]
                               [--output OUTPUT] [--headless]
@@ -250,11 +260,14 @@ resumeme --config resumeme.config.yaml aggregate
 
 ~~~text
 usage: resumeme aggregate [-h] [--plan PLAN] [--shards SHARDS]
+                          [--timings-output TIMINGS_OUTPUT]
 
 options:
-  -h, --help       show this help message and exit
-  --plan PLAN      Bootstrap plan path
-  --shards SHARDS  Directory containing shard-N.json outputs
+  -h, --help            show this help message and exit
+  --plan PLAN           Bootstrap plan path
+  --shards SHARDS       Directory containing shard-N.json outputs
+  --timings-output TIMINGS_OUTPUT
+                        Latest complete traversal timing output
 ~~~
 
 </details>

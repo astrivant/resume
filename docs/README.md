@@ -924,7 +924,7 @@ an existing draft after a lost network response.
 | `compiler/pipeline.py`, `compiler/constants/` | Pass ordering, template bindings, shared vocabularies and target settings | Configured offline compilation |
 | `github/contributions.py`, `compiler/asts/contributions.py` | Public calendar acquisition and validated day observations | Optional GitHub graph input |
 | `visualization/` | Skill scoring and endorsement colors | Visible profile -> cloud + score manifest |
-| `config.py` | Validated runtime and presentation settings | YAML -> typed configuration |
+| `config/` | Configuration models, loading, and validation | YAML -> typed configuration |
 | `cli.py` | Pipeline commands | `capture`, `enrich`, `validate`, `render`, `build` |
 | `scripts/` | Tooling, CI, and release automation | Workflow steps and package entry points |
 

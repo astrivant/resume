@@ -89,26 +89,17 @@ Dependency edges use GitHub's [`needs` semantics](https://docs.github.com/en/act
 
 ### LinkedIn capture sharding algorithm
 
-The plan contains the overview snapshot and the owner-scoped detail routes found
-on the profile. Each route receives a deterministic weight. If an overview
-preview exists, the weight is `max(1, 2 * entry_count + text_characters // 500 + 1)`,
-where `text_characters` is the combined length of entry titles and paragraphs.
-Without a preview, the fallback is `max(1, title_length // 80 + 1)`. The contact
-route has weight `1`. These are estimates of work from profile size, not measured
-browser durations.
+The first run uses the original size-weighted LPT assignment. Later runs use
+**history-based adaptive scheduling**: encrypted traversal timings feed a bounded
+PID runtime predictor, and move/swap local search reduces shard-load variance.
+Previous assignments, a migration budget, and improvement thresholds limit churn.
+Persistent bottlenecks can be refined from sections to independently selectable
+detail tabs, one additional section per run.
 
-The planner sorts routes by descending weight, then by route key for a stable
-tie-break. For each route, it chooses the shard with the lowest accumulated
-weight; equal shard loads go to the lower shard number. Once assignment is done,
-each shard's routes are put back in their original profile order. The worker
-count is fixed at six, so profiles with fewer routes can have empty shards.
-
-Fan-in requires one result from each of the six shards, including empty ones.
-It verifies each result's capture ID, browser, shard index and count, then checks
-that its route keys exactly match the planner's assignment. Missing, duplicate,
-unexpected, or misrouted results fail aggregation without replacing the accepted
-profile. The complete overview is retained, and each collected detail section
-replaces only its matching overview preview.
+See [capture scheduling](capture-scheduling.md) for the objective, controller
+constants, cold-start behavior, progressive unit catalog, and cross-tag feedback
+storage. Fan-in still requires all six worker outputs and complete unit coverage
+before replacing the accepted profile.
 
 ```mermaid
 flowchart TD
@@ -120,6 +111,7 @@ flowchart TD
     source --> refresh{Refresh requested?}
     refresh -->|No| stored[Committed profile for ordinary builds]
     refresh -->|Yes| bootstrap[Refresh bootstrap]
+    history[Previous accepted capture timings] -. decrypt compatible feedback .-> bootstrap
     bootstrap --> plan[Overview and weighted section plan]
     plan --> shard1[Shard 1]
     plan --> shard2[Shard 2]
@@ -135,6 +127,8 @@ flowchart TD
     shard6 --> aggregate
     stored --> profile[Selected complete profile]
     aggregate --> profile
+    aggregate --> feedback[Encrypt new timings and PID state]
+    feedback -. input to a later run .-> history
     profile --> summaries[Summary matrix]
     profile --> skills[Tag skill proposals]
     summaries --> pdf[PDF and preview]

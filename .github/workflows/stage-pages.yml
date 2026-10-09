@@ -31,7 +31,7 @@ jobs:
         with:
           groups: main
       - id: settings
-        run: poetry run python scripts/ci/pages-settings.py
+        run: poetry run python scripts/ci/pages/pages-settings.py
 
       # Relative links keep the same artifact usable at a custom domain, a project site, or a configured subdirectory.
       - name: Render index.html and copy the accepted PDF
@@ -73,7 +73,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PUBLISHED_SHA: ${{ inputs.sha }}
-        run: bash scripts/ci/pages-current.sh
+        run: bash scripts/ci/pages/pages-current.sh
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
         id: pages
         if: steps.current.outputs.current == 'true'
@@ -85,7 +85,7 @@ jobs:
           PAGES_HOST: ${{ steps.pages.outputs.host }}
           EXPECTED_DOMAIN: ${{ needs.prepare.outputs.custom-domain }}
           PUBLICATION_PATH: ${{ needs.prepare.outputs.path }}
-        run: bash scripts/ci/pages-destination.sh
+        run: bash scripts/ci/pages/pages-destination.sh
       - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
         id: deployment
         if: steps.current.outputs.current == 'true'

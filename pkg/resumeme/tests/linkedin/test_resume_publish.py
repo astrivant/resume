@@ -24,15 +24,15 @@ from resumeme.cli import _retryable_failure_status, main
 from resumeme.compiler.asts.profile import Profile, save_profile
 from resumeme.config import Capture, Config, LinkedIn, LinkedInResume, load_config
 from resumeme.exceptions import BrowserError, ResumeUploadConfirmationError
-from resumeme.linkedin.resume import publish_resume
-from resumeme.linkedin.resume_library import (
+from resumeme.linkedin.resume.library import (
     _delete_saved_resume,
     _replace_existing_resumes,
     _resume_action,
     _saved_resume_names,
 )
-from resumeme.linkedin.resume_settings import _upload_input
-from resumeme.linkedin.resume_upload import (
+from resumeme.linkedin.resume.publishing import publish_resume
+from resumeme.linkedin.resume.settings import _upload_input
+from resumeme.linkedin.resume.upload import (
     _pdf_bytes,
     _resume_filename,
     _saved,
@@ -94,7 +94,7 @@ def test_config_and_ci_gate_share_explicit_opt_in(setting: bool | None, tmp_path
     Returns:
         None: Configuration and the real workflow settings script agree.
     """
-    script = REPOSITORY_ROOT / "scripts/ci/resume-settings.py"
+    script = REPOSITORY_ROOT / "scripts/ci/linkedin/resume-settings.py"
     config = tmp_path / "resumeme.config.yaml"
     config.write_text("linkedin:\n  username: example-person\n" + ("" if setting is None else f"  resume:\n    publish: {setting}\n"))
     assert load_config(config).linkedin.resume.publish is (setting is True)
@@ -139,7 +139,7 @@ def test_disabled_publisher_never_reads_pdf_or_opens_browser(tmp_path: Path, mon
         None: The explicit opt-in error precedes every publication side effect.
     """
     browser = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume._browser", browser)
+    monkeypatch.setattr("resumeme.linkedin.resume.publishing._browser", browser)
 
     with pytest.raises(BrowserError, match=r"linkedin.resume.publish: true"):
         publish_resume(Config(linkedin=LinkedIn(username="example-person")), tmp_path, tmp_path / "missing.pdf", headless=True)
@@ -173,7 +173,7 @@ def test_invalid_pdfs_fail_before_browser(kind: str, pdf: Path, monkeypatch: Mon
         pdf.write_bytes(b"<html>not a PDF</html>" if kind == "html" else b"%PDF-1.7\nbroken")
 
     browser = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume._browser", browser)
+    monkeypatch.setattr("resumeme.linkedin.resume.publishing._browser", browser)
 
     with pytest.raises(BrowserError):
         publish_resume(_config(), pdf.parent, pdf)
@@ -223,9 +223,9 @@ def test_staged_upload_preserves_exact_release_bytes(dry_run: bool, pdf: Path, m
         config = evolve(config, linkedin=evolve(config.linkedin, resume=LinkedInResume()))
 
     for name in ("_browser", "_login", "_navigate", "login_credentials"):
-        monkeypatch.setattr(f"resumeme.linkedin.resume.{name}", MagicMock())
+        monkeypatch.setattr(f"resumeme.linkedin.resume.publishing.{name}", MagicMock())
 
-    monkeypatch.setattr("resumeme.linkedin.resume._upload_resume", record_upload)
+    monkeypatch.setattr("resumeme.linkedin.resume.publishing._upload_resume", record_upload)
 
     for _ in range(2):
         assert publish_resume(config, pdf.parent, pdf, profile_name="Example Person", dry_run=dry_run) == expected
@@ -283,7 +283,7 @@ def test_replacement_runs_only_after_confirmed_upload_and_never_in_preview(
     config = _config(replace_existing=replace_existing)
 
     for name in ("_browser", "_login", "_navigate", "login_credentials"):
-        monkeypatch.setattr(f"resumeme.linkedin.resume.{name}", MagicMock())
+        monkeypatch.setattr(f"resumeme.linkedin.resume.publishing.{name}", MagicMock())
 
     def upload(_driver: object, _config: Config, _selected: Path, *, dry_run: bool) -> str:
         """
@@ -301,11 +301,11 @@ def test_replacement_runs_only_after_confirmed_upload_and_never_in_preview(
         events.append("upload")
         return pdf.name
 
-    monkeypatch.setattr("resumeme.linkedin.resume._upload_resume", MagicMock(side_effect=upload))
+    monkeypatch.setattr("resumeme.linkedin.resume.publishing._upload_resume", MagicMock(side_effect=upload))
     replacement = MagicMock(side_effect=lambda *_args: events.append("replace"))
-    monkeypatch.setattr("resumeme.linkedin.resume._replace_existing_resumes", replacement)
+    monkeypatch.setattr("resumeme.linkedin.resume.publishing._replace_existing_resumes", replacement)
     monkeypatch.setattr(
-        "resumeme.linkedin.resume._recruiter_sharing", MagicMock(side_effect=lambda *_args, **_kwargs: events.append("sharing"))
+        "resumeme.linkedin.resume.publishing._recruiter_sharing", MagicMock(side_effect=lambda *_args, **_kwargs: events.append("sharing"))
     )
 
     publish_resume(config, pdf.parent, pdf, profile_name="Example Person", dry_run=dry_run)
@@ -329,8 +329,8 @@ def test_replace_existing_resumes_preserves_new_file_and_removes_all_others(monk
     """
     saved = {"current-release.pdf", "old-one.pdf", "old-two.pdf"}
     deleted: list[str] = []
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_library._saved_resume_names", lambda _driver: set(saved))
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.library._saved_resume_names", lambda _driver: set(saved))
 
     def delete(_driver: object, _config: Config, filename: str) -> None:
         """
@@ -347,7 +347,7 @@ def test_replace_existing_resumes_preserves_new_file_and_removes_all_others(monk
         deleted.append(filename)
         saved.remove(filename)
 
-    monkeypatch.setattr("resumeme.linkedin.resume_library._delete_saved_resume", delete)
+    monkeypatch.setattr("resumeme.linkedin.resume.library._delete_saved_resume", delete)
     _replace_existing_resumes(MagicMock(), _config(), "current-release.pdf")
 
     assert saved == {"current-release.pdf"}
@@ -365,9 +365,9 @@ def test_replace_existing_fails_closed_when_new_release_is_not_visible(monkeypat
         None: A missing current release prevents all deletion attempts.
     """
     deletion = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_library._saved_resume_names", lambda _driver: {"old.pdf"})
-    monkeypatch.setattr("resumeme.linkedin.resume_library._delete_saved_resume", deletion)
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.library._saved_resume_names", lambda _driver: {"old.pdf"})
+    monkeypatch.setattr("resumeme.linkedin.resume.library._delete_saved_resume", deletion)
 
     with pytest.raises(BrowserError, match="no previous resume was deleted"):
         _replace_existing_resumes(MagicMock(), _config(), "current-release.pdf")
@@ -435,14 +435,14 @@ def test_saved_resume_delete_confirms_menu_action_and_server_removal(monkeypatch
     menu = MagicMock()
     confirmation = MagicMock()
     driver = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock(side_effect=lambda *_args: events.append("settings")))
-    monkeypatch.setattr("resumeme.linkedin.resume_library._saved_resume_names", MagicMock(side_effect=[{"old.pdf"}, set()]))
-    monkeypatch.setattr("resumeme.linkedin.resume_library._resume_action", MagicMock(return_value=(menu, True)))
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock(side_effect=lambda *_args: events.append("settings")))
+    monkeypatch.setattr("resumeme.linkedin.resume.library._saved_resume_names", MagicMock(side_effect=[{"old.pdf"}, set()]))
+    monkeypatch.setattr("resumeme.linkedin.resume.library._resume_action", MagicMock(return_value=(menu, True)))
     menu_item = MagicMock()
     menu_item.click.side_effect = lambda: events.append("delete")
-    monkeypatch.setattr("resumeme.linkedin.resume_library._delete_menu_item", MagicMock(return_value=menu_item))
+    monkeypatch.setattr("resumeme.linkedin.resume.library._delete_menu_item", MagicMock(return_value=menu_item))
     confirmation.click.side_effect = lambda: events.append("confirm")
-    monkeypatch.setattr("resumeme.linkedin.resume_library._delete_confirmation", MagicMock(return_value=confirmation))
+    monkeypatch.setattr("resumeme.linkedin.resume.library._delete_confirmation", MagicMock(return_value=confirmation))
 
     _delete_saved_resume(driver, _config(), "old.pdf")
 
@@ -577,9 +577,9 @@ def test_existing_resume_and_dry_run_never_upload(already_saved: bool, dry_run: 
         None: No file selection or button click occurs.
     """
     driver, field = MagicMock(), MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume_upload.check_owner", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock(return_value=field))
-    monkeypatch.setattr("resumeme.linkedin.resume_upload._saved", MagicMock(return_value=already_saved))
+    monkeypatch.setattr("resumeme.linkedin.resume.upload.check_owner", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock(return_value=field))
+    monkeypatch.setattr("resumeme.linkedin.resume.upload._saved", MagicMock(return_value=already_saved))
     assert _upload_resume(driver, _config(), pdf, dry_run=dry_run) == pdf.name
     field.send_keys.assert_not_called()
     driver.execute_script.assert_not_called()
@@ -604,12 +604,12 @@ def test_github_rerun_checks_the_exact_signed_pdf_before_upload(
     """
     field = MagicMock()
     saved = MagicMock(return_value=True)
-    monkeypatch.setattr("resumeme.linkedin.resume_upload.check_owner", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock(return_value=field))
-    monkeypatch.setattr("resumeme.linkedin.resume_upload._saved", saved)
+    monkeypatch.setattr("resumeme.linkedin.resume.upload.check_owner", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock(return_value=field))
+    monkeypatch.setattr("resumeme.linkedin.resume.upload._saved", saved)
     monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "2")
     monkeypatch.setenv("GITHUB_SHA", "a" * 40)
-    caplog.set_level(logging.INFO, logger="resumeme.linkedin.resume_upload")
+    caplog.set_level(logging.INFO, logger="resumeme.linkedin.resume.upload")
 
     assert _upload_resume(MagicMock(), _config(), pdf, dry_run=False) == pdf.name
 
@@ -668,10 +668,10 @@ def test_upload_is_confirmed_after_fresh_navigation(uncertain: bool, pdf: Path, 
         field.send_keys.side_effect = TimeoutException()
 
     settings = MagicMock(return_value=field)
-    monkeypatch.setattr("resumeme.linkedin.resume_upload.check_owner", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", settings)
+    monkeypatch.setattr("resumeme.linkedin.resume.upload.check_owner", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", settings)
     monkeypatch.setattr(
-        "resumeme.linkedin.resume_upload._saved", MagicMock(side_effect=[False] + ([] if uncertain else [True]) + [False, True])
+        "resumeme.linkedin.resume.upload._saved", MagicMock(side_effect=[False] + ([] if uncertain else [True]) + [False, True])
     )
     assert _upload_resume(driver, _config(), pdf, dry_run=False) == pdf.name
     field.send_keys.assert_called_once_with(str(pdf.resolve()))
@@ -690,9 +690,9 @@ def test_local_filename_without_server_persistence_fails(pdf: Path, monkeypatch:
         None: Exhausted read retries fail visibly without resubmitting the document.
     """
     field = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume_upload.check_owner", MagicMock())
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock(return_value=field))
-    monkeypatch.setattr("resumeme.linkedin.resume_upload._saved", MagicMock(side_effect=[False, True, False, False, False]))
+    monkeypatch.setattr("resumeme.linkedin.resume.upload.check_owner", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", MagicMock(return_value=field))
+    monkeypatch.setattr("resumeme.linkedin.resume.upload._saved", MagicMock(side_effect=[False, True, False, False, False]))
 
     with pytest.raises(BrowserError, match="No second upload was submitted"):
         _upload_resume(MagicMock(), _config(), pdf, dry_run=False)
@@ -712,8 +712,8 @@ def test_wrong_owner_prevents_settings_and_upload(pdf: Path, monkeypatch: Monkey
         None: Upload settings are never reached for another account.
     """
     settings = MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.resume_upload.check_owner", MagicMock(side_effect=BrowserError("Not the owner")))
-    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", settings)
+    monkeypatch.setattr("resumeme.linkedin.resume.upload.check_owner", MagicMock(side_effect=BrowserError("Not the owner")))
+    monkeypatch.setattr("resumeme.linkedin.resume.settings._settings", settings)
 
     with pytest.raises(BrowserError, match="Not the owner"):
         _upload_resume(MagicMock(), _config(), pdf, dry_run=False)
@@ -791,7 +791,7 @@ def test_upload_workflow_requires_verified_current_tag_and_explicit_settings() -
     steps = job["steps"]
     settings = next(step for step in steps if step.get("id") == "settings")
     latest = next(step for step in steps if step.get("id") == "latest")
-    assert settings["run"] == "poetry run python scripts/ci/resume-settings.py"
+    assert settings["run"] == "poetry run python scripts/ci/linkedin/resume-settings.py"
     assert latest["if"] == "steps.settings.outputs.enabled == 'true'"
     download = next(step for step in steps if step.get("uses", "").startswith("actions/download-artifact@"))
     assert download["with"] == {"name": "signed-resume", "path": ".cache/publication"}

@@ -8,7 +8,7 @@ umask 077
 # -> ret::exit_code
 usage() {
     cat <<'USAGE'
-Usage: bash scripts/ci/setup-session-cache.sh --repo OWNER/REPO [--key-dir DIRECTORY]
+Usage: bash scripts/ci/linkedin/setup-session-cache.sh --repo OWNER/REPO [--key-dir DIRECTORY]
 
 Requires ssh-keygen, OpenSSL, and an authenticated gh CLI on macOS or Linux.
 Creates a dedicated RSA-3072 PEM key pair and an encrypted local backup.

@@ -20,7 +20,7 @@ from wordcloud import WordCloud
 
 from resumeme.compiler.asts.profile import Skill
 from resumeme.compiler.asts.sections import section_key
-from resumeme.compiler.asts.skills import endorsement_count
+from resumeme.compiler.asts.skills.parsing import endorsement_count
 from resumeme.compiler.constants.backend import CLOUD_FONT, LATEX_PACKAGE
 from resumeme.exceptions import RenderingError
 

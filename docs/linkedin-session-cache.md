@@ -12,7 +12,7 @@ Install OpenSSH, OpenSSL, and the GitHub CLI on macOS or Linux. Authenticate the
 CLI with access to manage Actions secrets on your fork, then run:
 
 ```bash
-bash scripts/ci/setup-session-cache.sh --repo YOUR-USERNAME/YOUR-FORK
+bash scripts/ci/linkedin/setup-session-cache.sh --repo YOUR-USERNAME/YOUR-FORK
 ```
 
 The script generates RSA-3072 keys with `ssh-keygen -m PEM`, exports the public
@@ -147,7 +147,7 @@ export RESUMEME_SESSION_CACHE_DIR=/srv/resumeme/encrypted-sessions
 export RESUMEME_CACHE_PRIVATE_KEY="$(cat /path/to/backup/session.key)"
 export RESUMEME_CACHE_PUBLIC_KEY="$(cat /path/to/backup/session.pub)"
 export RESUMEME_CACHE_KEY_PASSWORD="$(cat /path/to/backup/session.password)"
-poetry run python scripts/ci/linkedin-session.py run --interactive
+poetry run python scripts/ci/linkedin/linkedin-session.py run --interactive
 ```
 
 This closes the browser, encrypts the accepted session, and removes temporary
