@@ -336,7 +336,7 @@
             "SBE Vision, Inc. · Full-time",
             "Sep 2024 - Sep 2026 · 2 yrs 1 mo",
             "Wakefield, Massachusetts, United States · Remote",
-            "- Led platform engineering initiatives in support of SBE Vision’s infrastructure across cloud and on-premise environments (prior to- and post-cloud migration).\n- Migrated company to cloud infrastructure in GCP / GKE.\n- Built and supported ephemeral developer environments to curtail cloud cost.\n- Introduced a CI job that traversed deeply-nested Helm dependency trees in a monorepo for MR-based builds based on code change.\n- Delivered a fault-tolerant and load tested CI cluster upgrade to improve reliability, scalability, and developer productivity.\n- Transitioned secrets management to ESO.\n- Delivered a Helm chart / rendered Kubernetes manifest -> Docker compose compiler to reduce time-to-delivery on PoC environments at customer sites, ensuring artifact support / generation and time cost / burden on the team stayed to a minimum.\n- Led and mentored engineers by overseeing project execution, providing technical reviews, \ncoordinating platform work, guiding implementation decisions, and supporting team skill set growth.\n- Strengthened platform reliability / QoS, automation, and DevOps practices across infrastructure, CI/CD, and developer experience.",
+            "- Led platform engineering initiatives in support of SBE Vision’s infrastructure across cloud and on-premise environments, before and after the cloud migration.\n- Migrated company to cloud infrastructure in GCP / GKE.\n- Built and supported ephemeral developer environments to curtail cloud cost.\n- Introduced a CI job that traversed deeply-nested Helm dependency trees in a monorepo for MR-based builds based on code change.\n- Delivered a fault-tolerant and load tested CI cluster upgrade to improve reliability, scalability, and developer productivity.\n- Transitioned secrets management to ESO.\n- Delivered a compiler that converts Helm charts and rendered Kubernetes manifests to Docker Compose for customer proof-of-concept environments, minimizing artifact-generation work and the time burden on the team.\n- Led and mentored engineers by overseeing project execution, providing technical reviews, coordinating platform work, guiding implementation decisions, and supporting team skill set growth.\n- Strengthened platform reliability / QoS, automation, and DevOps practices across infrastructure, CI/CD, and developer experience.",
             "GitHub - astrivant/composer: Lossily compile rendered Helm manifests to Docker compose files"
           ],
           "links": [
@@ -386,7 +386,7 @@
             "Feb 2024 - Sep 2024 · 8 mos",
             "Boston, Massachusetts, United States · Hybrid",
             "LinkedIn helped me get this job helped me get this job",
-            "Technologies:\n\n- Python, Go\n- Puppet\n- Hashicorp products, such as Terraform, Vault\n- AWS (IAM, EC2)"
+            "Technologies:\n\n- Python, Go\n- Puppet\n- HashiCorp products, such as Terraform, Vault\n- AWS (IAM, EC2)"
           ],
           "links": [
             {
@@ -416,7 +416,7 @@
             "PremiScale supports projects that scale, accelerate or optimize development and deployment on private or hybrid cloud infrastructure.\n\nNote: this project was on-hold for 2 years as I focused on personal growth in my broader career and starting my small plant business.",
             "GitHub - premiscale/premiscale: The PremiScale autoscaler controller for Kubernetes",
             "The PremiScale autoscaling controller for Kubernetes",
-            "GitHub - premiscale/pass-operator: A kubernetes operator that syncs and decrypts secrets from pass git repositories",
+            "GitHub - premiscale/pass-operator: A Kubernetes operator that syncs and decrypts secrets from pass git repositories",
             "A Kubernetes secrets operator based on the kopf framework for Python."
           ],
           "links": [
@@ -442,7 +442,7 @@
             },
             {
               "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQEVGwYKyLaQ3Q/articleshare-shrink_1280_800/B56ZpUriPrJkAQ-/0/1762357290222?e=1792072800&v=beta&t=lzzVsXAcO32uvhoPjjVDzu7D7UunVrRglY5KUB_-aM0",
-              "alt": "Thumbnail for GitHub - premiscale/pass-operator: A kubernetes operator that syncs and decrypts secrets from pass git repositories",
+              "alt": "Thumbnail for GitHub - premiscale/pass-operator: A Kubernetes operator that syncs and decrypts secrets from pass git repositories",
               "path": "data/assets/92d8a4b2d32c009a42143e49e92e2b2b8188384cef7a64977a168e01f596a540.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2410566952/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             }
@@ -465,8 +465,8 @@
             "SBE Vision, Inc. · Full-time",
             "Aug 2022 - Feb 2024 · 1 yr 7 mos",
             "Wakefield, Massachusetts, United States · Hybrid",
-            "SBE Vision develops an ontology based hub-and-spoke integration platform for interoperability between digital engineering tools.\n\nResponsibilities\n\n- Assisting customers and troubleshooting while deploying SBE Vision's microservice architecture solution to on-premise or cloud environments\n- Writing internal technical documentation outlining processes, procedures and standards\n- Assisted with disaster recovery in the event of on-premise power outages and hardware or software faults\n- Deployed and maintained operations services\n- Introduce new security, solutions and customs while practicing DevOps\n\nProjects\n\n- Introduced, maintained and automated an on-premise datacenter based on Rancher / RKE1 to reduce cloud costs and unify cluster access\n- Introduced a scalable Kubernetes-based GitLab runners solution\n- Centralized and templatized Helm charts in a monorepo with supporting GitLab CI trigger framework\n- Introduced an IaC solution in Terraform and GitLab CI for managing infrastructure in all public clouds\n\nTechnologies\n\n- Helm chart authoring\n- Kubernetes (on-premise Rancher RKE1, GKE / EKS / {E,G,A}CR)\n- GitLab CI / static runner / kubernetes runner deployment and administration\n- Ansible\n- Linux KVM virtualization / automation\n- Terraform\n- Sonatype Nexus\n- Git hook authoring\n- Rancher deployment and administration\n- ZFS\n- TLS certificates",
-            "pre-commit hook that lints Gitlab CI configurations"
+            "SBE Vision develops an ontology based hub-and-spoke integration platform for interoperability between digital engineering tools.\n\nResponsibilities\n\n- Assisting customers and troubleshooting while deploying SBE Vision's microservice architecture solution to on-premise or cloud environments\n- Writing internal technical documentation outlining processes, procedures and standards\n- Assisted with disaster recovery in the event of on-premise power outages and hardware or software faults\n- Deployed and maintained operations services\n- Introduce new security, solutions and customs while practicing DevOps\n\nProjects\n\n- Introduced, maintained and automated an on-premise datacenter based on Rancher / RKE1 to reduce cloud costs and unify cluster access\n- Introduced a scalable Kubernetes-based GitLab runners solution\n- Centralized and templatized Helm charts in a monorepo with supporting GitLab CI trigger framework\n- Introduced an IaC solution in Terraform and GitLab CI for managing infrastructure in all public clouds\n\nTechnologies\n\n- Helm chart authoring\n- Kubernetes (on-premise Rancher RKE1, GKE / EKS / {E,G,A}CR)\n- GitLab CI / static runner / Kubernetes runner deployment and administration\n- Ansible\n- Linux KVM virtualization / automation\n- Terraform\n- Sonatype Nexus\n- Git hook authoring\n- Rancher deployment and administration\n- ZFS\n- TLS certificates",
+            "pre-commit hook that lints GitLab CI configurations"
           ],
           "links": [
             {
@@ -476,10 +476,10 @@
               "title": ""
             },
             {
-              "label": "pre-commit hook that lints Gitlab CI configurations",
+              "label": "pre-commit hook that lints GitLab CI configurations",
               "url": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook",
               "resolved_url": "https://github.com/emmeowzing/gitlabci-lint-pre-commit-hook",
-              "title": "GitHub - emmeowzing/gitlabci-lint-pre-commit-hook: A pre-commit hook that lints Gitlab CI configurations"
+              "title": "GitHub - emmeowzing/gitlabci-lint-pre-commit-hook: A pre-commit hook that lints GitLab CI configurations"
             }
           ],
           "images": [
@@ -491,7 +491,7 @@
             },
             {
               "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSiomweF5JSw/articleshare-shrink_480/articleshare-shrink_480/0/1773215972249?e=1792072800&v=beta&t=242nSk0kru8h_iE35Z1XHlpZ9ux6PF4sy3xj1qC101U",
-              "alt": "Thumbnail for pre-commit hook that lints Gitlab CI configurations",
+              "alt": "Thumbnail for pre-commit hook that lints GitLab CI configurations",
               "path": "data/assets/2ec68037e893cd9c4cfab7c9f9d96c7b0a271d499942a9e814befb51251a9117.png",
               "link": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook"
             }
@@ -505,7 +505,7 @@
             "HqO · Full-time",
             "Aug 2021 - Jul 2022 · 1 yr",
             "Boston, Massachusetts, United States · Hybrid",
-            "HqO creates workplace experience technology that transforms how people connect with each other and the places they work.\n\nResponsibilities\n\n- Writing technical documentation for engineers outlining procedures, solutions to problems, and onboarding.\n\nTechnologies\n\n- CircleCI / Orb authoring\n- GitHub Actions\n- Argo CD\n- Kubernetes / EKS\n- Helm chart authoring / Helm chart-testing (ct)\n- Spot.io\n- Infracost\n- Loft.sh / DevSpace\n- Terraform / Vault / Hashicorp Cloud\n- Artifactory\n- Git pre-commit hooks authoring",
+            "HqO creates workplace experience technology that transforms how people connect with each other and the places they work.\n\nResponsibilities\n\n- Writing technical documentation for engineers outlining procedures, solutions to problems, and onboarding.\n\nTechnologies\n\n- CircleCI / Orb authoring\n- GitHub Actions\n- Argo CD\n- Kubernetes / EKS\n- Helm chart authoring / Helm chart-testing (ct)\n- Spot.io\n- Infracost\n- Loft.sh / DevSpace\n- Terraform / Vault / HashiCorp Cloud\n- Artifactory\n- Git pre-commit hooks authoring",
             "CLI helper to filter inputs by .gitignore-like conf files in CI",
             "CircleCI config validate pre-commit hook for use with dynamic-continuation",
             "CircleCI orb pack and validate pre-commit hook"
@@ -578,7 +578,7 @@
             "Support Engineer",
             "Aug 2019 - Apr 2021 · 1 yr 9 mos",
             "On-site",
-            "Responsibilities\n\n- Debug and reproduce reported issues with agent deployments on Kubernetes (GKE, EKS, ECS, & ECR), Docker, Windows Server and all major Linux distributions in GCP and AWS\n- Document procedures and projects for other team members to reference in Confluence and GitLab\n- Work cross-departmentally with Sales, Engineering, and Product to maintain customer relations and relay customer feedback\n- Escalate software defects in SalesForce and Jira to product development and engineering team\n\nProjects\n\n- Maintainer of a log collecting package written in Bash for the Linux Agent and Support Engineering teams\n- Built and maintained infrastructure monitoring projects with Python and Terraform in AWS EC2 and Lambda"
+            "Responsibilities\n\n- Debug and reproduce reported issues with agent deployments on Kubernetes (GKE, EKS, ECS, & ECR), Docker, Windows Server and all major Linux distributions in GCP and AWS\n- Document procedures and projects for other team members to reference in Confluence and GitLab\n- Work cross-departmentally with Sales, Engineering, and Product to maintain customer relations and relay customer feedback\n- Escalate software defects in Salesforce and Jira to product development and engineering team\n\nProjects\n\n- Maintainer of a log collecting package written in Bash for the Linux Agent and Support Engineering teams\n- Built and maintained infrastructure monitoring projects with Python and Terraform in AWS EC2 and Lambda"
           ],
           "links": [
             {
@@ -642,7 +642,7 @@
               "paragraphs": [
                 "Aug 2019 - Apr 2021 · 1 yr 9 mos",
                 "On-site",
-                "Responsibilities\n\n- Debug and reproduce reported issues with agent deployments on Kubernetes (GKE, EKS, ECS, & ECR), Docker, Windows Server and all major Linux distributions in GCP and AWS\n- Document procedures and projects for other team members to reference in Confluence and GitLab\n- Work cross-departmentally with Sales, Engineering, and Product to maintain customer relations and relay customer feedback\n- Escalate software defects in SalesForce and Jira to product development and engineering team\n\nProjects\n\n- Maintainer of a log collecting package written in Bash for the Linux Agent and Support Engineering teams\n- Built and maintained infrastructure monitoring projects with Python and Terraform in AWS EC2 and Lambda"
+                "Responsibilities\n\n- Debug and reproduce reported issues with agent deployments on Kubernetes (GKE, EKS, ECS, & ECR), Docker, Windows Server and all major Linux distributions in GCP and AWS\n- Document procedures and projects for other team members to reference in Confluence and GitLab\n- Work cross-departmentally with Sales, Engineering, and Product to maintain customer relations and relay customer feedback\n- Escalate software defects in Salesforce and Jira to product development and engineering team\n\nProjects\n\n- Maintainer of a log collecting package written in Bash for the Linux Agent and Support Engineering teams\n- Built and maintained infrastructure monitoring projects with Python and Terraform in AWS EC2 and Lambda"
               ],
               "links": [],
               "images": [],

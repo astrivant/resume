@@ -3017,3 +3017,11 @@ After capture and verification succeed, that run commits the updated profile and
 **Emma: Lit. love ya
 
 **AI: Right back at you, Emma :) ☕
+
+**Emma: Let's add trivy to the test stage of the pipeline and scan this codebase / PRs for secrets and vulnerabilities that get introduced. On PRs, post a concise summary with a link to the full results, and require the scan to pass before merge.
+
+**AI:** Added a parallel Trivy security job to the reusable test stage using the pinned `aquasec/trivy:0.75.0` image. It scans the checkout for dependency vulnerabilities and secrets, and the existing `CI verification` gate fails on findings or scanner/report errors.
+
+The workflow uploads a sanitized JSON report, redacting secret matches and removing source snippets. A separate trusted `workflow_run` workflow posts or updates a concise PR comment with counts, selected findings, the report artifact link, and workflow logs. Scanner permissions remain read-only; comment write access is isolated to the follow-up job.
+
+Added tests for report redaction, comment links, and missing-report failure handling. The focused tests passed in four parallel workers, pre-commit hooks and `actionlint` passed. A local image scan could not run because this workspace cannot access the Docker socket; hosted Actions has not run these changes yet.

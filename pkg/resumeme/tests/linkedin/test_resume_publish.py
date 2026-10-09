@@ -380,7 +380,7 @@ def test_saved_resume_names_ignore_non_filename_text() -> None:
     """
     driver = MagicMock()
     filename, explanation, hidden = MagicMock(), MagicMock(), MagicMock()
-    filename.text = "Emma Doyle resume.pdf"
+    filename.text = "Résumé, Emma's file (2025).pdf"
     filename.is_displayed.return_value = True
     explanation.text = "Upload a PDF resume to apply"
     explanation.is_displayed.return_value = True
@@ -388,7 +388,7 @@ def test_saved_resume_names_ignore_non_filename_text() -> None:
     hidden.is_displayed.return_value = False
     driver.find_elements.side_effect = [[], [filename, explanation, hidden]]
 
-    assert _saved_resume_names(driver) == {"Emma Doyle resume.pdf"}
+    assert _saved_resume_names(driver) == {"Résumé, Emma's file (2025).pdf"}
 
 
 def test_resume_action_is_bound_to_filename_row() -> None:

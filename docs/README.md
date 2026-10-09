@@ -19,6 +19,7 @@
 - [LinkedIn application resume uploads](linkedin-resume.md)
 - [Pipeline and ownership](#pipeline-and-ownership)
 - [Development](development.md)
+- [Contributing](../CONTRIBUTING.md)
 - [Capture limits and recovery](#capture-limits-and-recovery)
 
 ## Install

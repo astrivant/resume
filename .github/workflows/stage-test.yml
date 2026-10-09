@@ -16,6 +16,81 @@ defaults:
   run:
     shell: bash
 jobs:
+  security:
+    name: Trivy security scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+
+      # Scan a read-only checkout with the pinned Docker Hub image and ignore no findings or repo-supplied rules.
+      - name: Scan source for vulnerabilities and secrets
+        id: scan
+        continue-on-error: true
+        run: |
+          mkdir -p "$RUNNER_TEMP/trivy-results"
+          docker run --rm --pull=always \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/src,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/trivy-results,target=/tmp" \
+            --workdir /src \
+            aquasec/trivy:0.75.0 fs \
+            --config /dev/null \
+            --scanners vuln,secret \
+            --format json \
+            --output /tmp/raw.json \
+            --exit-code 0 \
+            --no-progress \
+            --timeout 10m \
+            --ignorefile /dev/null \
+            --secret-config /dev/null \
+            --skip-dirs .git \
+            .
+
+      # Matched values and source snippets are removed before reports, summaries, or PR comments are published.
+      - name: Redact report and summarize findings
+        id: prepare
+        if: always()
+        run: |
+          python3 scripts/ci/trivy-report.py prepare \
+            --input "$RUNNER_TEMP/trivy-results/raw.json" \
+            --report-output "$RUNNER_TEMP/trivy-results/trivy-report.json" \
+            --summary-output "$RUNNER_TEMP/trivy-results/summary.md" \
+            --github-output "$GITHUB_OUTPUT" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          cat "$RUNNER_TEMP/trivy-results/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always() && steps.prepare.outputs.available == 'true'
+        with:
+          name: trivy-scan-report
+          path: ${{ runner.temp }}/trivy-results/trivy-report.json
+          if-no-files-found: error
+          retention-days: 90
+
+      # Findings, an invalid report, or a scanner error fail this reusable stage and therefore CI verification.
+      - name: Require a clean Trivy scan
+        if: always()
+        env:
+          SCAN_OUTCOME: ${{ steps.scan.outcome }}
+          REPORT_AVAILABLE: ${{ steps.prepare.outputs.available }}
+          FINDING_COUNT: ${{ steps.prepare.outputs.finding_count }}
+        run: |
+          if [[ "$SCAN_OUTCOME" != success ]]; then
+              echo 'Trivy could not complete the scan; review the scanner logs and report.'
+              exit 1
+          fi
+          if [[ "$REPORT_AVAILABLE" != true ]]; then
+              echo 'Trivy did not produce a valid report.'
+              exit 1
+          fi
+          if [[ "$FINDING_COUNT" != 0 ]]; then
+              echo "Trivy found $FINDING_COUNT secret or vulnerability issue(s)."
+              exit 1
+          fi
+
   checks:
     name: Lint, types, and contracts
     runs-on: ubuntu-24.04

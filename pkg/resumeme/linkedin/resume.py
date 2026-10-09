@@ -43,7 +43,6 @@ _MAIN = ':is(main, [role="main"])'
 _LOADING_QUERY = f'{_MAIN} [role="progressbar"], {_MAIN} [aria-busy="true"], {_MAIN}[aria-busy="true"]'
 _RECRUITER_LABELS = ("share resume data with recruiters", "share resume data with hirers", "allow recruiters to view your resumes")
 _UPLOAD_TIMEOUT_SECONDS = 120
-_RESUME_NAME = re.compile(r"[\w .()'&+-]{1,240}\.pdf", re.IGNORECASE)
 
 
 def _pdf_bytes(pdf: Path) -> bytes:
@@ -255,7 +254,8 @@ def _saved_resume_names(driver: WebDriver) -> set[str]:
 
         name = " ".join(element.text.split())
 
-        if _RESUME_NAME.fullmatch(name):
+        # Preserve unusual Unicode and punctuation in names rather than overlooking a file during replacement.
+        if name.casefold().endswith(".pdf") and len(name) <= 255:
             names.add(name)
 
     return names
@@ -440,7 +440,7 @@ def _delete_saved_resume(driver: WebDriver, config: Config, filename: str) -> No
         BrowserError: The delete action cannot be safely bound or LinkedIn does not confirm removal.
     """
     policy = config.capture
-    _settings(driver, config)
+    retry_selenium(lambda: _settings(driver, config), policy)
     names = retry_selenium(lambda: _saved_resume_names(driver), policy)
 
     if filename not in names:
@@ -507,7 +507,7 @@ def _replace_existing_resumes(driver: WebDriver, config: Config, keep_filename: 
         BrowserError: A saved file cannot be safely identified or removed.
     """
     policy = config.capture
-    _settings(driver, config)
+    retry_selenium(lambda: _settings(driver, config), policy)
     names = retry_selenium(lambda: _saved_resume_names(driver), policy)
 
     # Never delete prior files unless the verified current release is visible in the same saved-resume list.
@@ -523,7 +523,7 @@ def _replace_existing_resumes(driver: WebDriver, config: Config, keep_filename: 
             return
 
         _delete_saved_resume(driver, config, older[0])
-        _settings(driver, config)
+        retry_selenium(lambda: _settings(driver, config), policy)
         names = retry_selenium(lambda: _saved_resume_names(driver), policy)
 
     if names - {keep_filename}:

@@ -45,6 +45,30 @@ The [session-cache guide](docs/linkedin-session-cache.md) covers setup. The
 explains why deleting a cache or changing a display setting does not revoke an
 account session or remove already-published copies.
 
+## Automated source scanning
+
+The required CI test stage runs Trivy against the checked-out repository using
+the `aquasec/trivy:0.75.0` image. It checks filesystem dependencies for known
+vulnerabilities and repository files for secret patterns. The checkout is mounted
+read-only; repository-provided Trivy configuration, ignore files, and secret
+rules are not loaded. A finding, scanner error, or invalid report fails the
+`CI verification` check on pull requests and pushes.
+
+Before upload, report processing removes source snippets and redacts matched
+secret text. CI retains the sanitized report artifact for 90 days. A follow-up
+workflow posts or updates a pull request comment with finding counts and links to
+the report and scan logs. That workflow checks out the default branch, not pull
+request code, and alone receives permission to write issue comments. See the
+[Trivy pipeline details](docs/automation.md#trivy-security-scan) and its
+[scanner stage](.github/workflows/stage-test.yml),
+[report redaction code](scripts/ci/trivy-report.py), and
+[pull request comment workflow](.github/workflows/trivy-pr-comment.yml).
+
+This is a source-filesystem scan, not a scan of the built container image, runner,
+or live services. A clean result cannot establish that the application or its
+dependencies are free from vulnerabilities. Review the full sanitized report and
+address findings in the affected source or dependency declaration.
+
 ## Reporting a vulnerability
 
 Report vulnerabilities privately before opening a public issue or pull request.

@@ -338,7 +338,7 @@ Set `github.username` to your GitHub account for an icon and profile link direct
 below LinkedIn, or `null` to omit it. Both links use their platform icons.
 
 The cover/background photo is hidden by default in `resumeme.config.yaml`. Set
-`style.show_header_photo` to `true` to display it again; the portrait stays visible.
+`style.show_header_photo: true` to restore it; the portrait stays visible.
 
 Below the LinkedIn profile link, a compact contents list links to each visible
 section in PDF order. Set `style.show_table_of_contents: false` to hide it;
@@ -375,8 +375,8 @@ The top 20 skills appear as a word cloud scored by **references + 2 * endorsemen
 Size reflects this score; color reflects endorsements relative to the most-endorsed
 displayed skill. `style.skill_colors` defines the gradient from 0% to 100%.
 Disabled sections contribute no references. Set `style.skills_word_cloud: false`
-for the text list, or add `skills` to `disable` to hide it. Profiles with no optional
-sections also work. See the [profile schema and scoring rules](docs/profile-schema.md).
+for the text list. To hide the section, add `skills` under `disable`. Profiles with
+no optional sections also work. See the [profile schema and scoring rules](docs/profile-schema.md).
 
 ### Codex summaries
 
@@ -429,11 +429,11 @@ features you use. GitHub supplies the publication token:
   This does not encrypt profile snapshots, prompts, PDFs, or ordinary artifacts;
   see [encryption and cleanup limits](docs/data-handling.md#encrypted-browser-sessions-in-ci).
 - **`GH_TOKEN` / `GITHUB_TOKEN` - supplied automatically; no secret to create.**
-  Actions generates the repository token, and the deploy workflow passes it to the
-  GitHub CLI as `GH_TOKEN`. It uses `contents: write` to commit `resume.pdf` and
-  publish releases. No personal access token is needed on unprotected branches;
-  repository and branch rules must permit those writes. Tag publication also uses the built-in token with
-  `packages: write` to push the tool's container image to GHCR.
+  GitHub provides the repository token automatically. The deployment workflow passes it to
+  the GitHub CLI as `GH_TOKEN`. The workflow uses `contents: write` to commit `resume.pdf`
+  and publish releases. No personal access token is needed on unprotected branches;
+  repository and branch rules must permit these updates. Tag publication also uses the
+  built-in token with `packages: write` to push the tool's container image to GHCR.
 - **`RESUME_PUBLISH_TOKEN` - required when protecting `main`.** A repository-scoped
   contents-write token owned by an actor allowed to bypass required reviews and checks
   for generated PDF commits. Unprotected forks can omit it. See
@@ -486,6 +486,7 @@ interaction. See [automation setup and recovery](docs/automation.md).
 - [GitHub Pages](docs/pages.md): automatic website updates, publication paths, and custom domains.
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
 - [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR and Docker Hub.
+- [Contributing](CONTRIBUTING.md): local checks, CI behavior, and dependency pinning.
 - [Development](docs/development.md): setup, parallel tests, tooling, and document checks.
 - [Security policy](SECURITY.md) and [sensitive data handling](docs/data-handling.md): reporting, storage, recipients, retention, encryption limits, and fork responsibilities.
 - [Studies](studies/README.md): design assessments, including the proposed automated job application workflow.

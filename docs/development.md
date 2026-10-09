@@ -23,6 +23,65 @@ targeted pytest commands.
 Hooks check Ruff, strict mypy, Google-style docstrings, schemas, ShellCheck, and
 shfmt. For container-based development, see [local image builds](containers.md#build-locally).
 
+## Pinned toolchain and CI dependencies
+
+Python application and development packages are specified in
+[`pyproject.toml`](../pyproject.toml) and resolved by
+[`poetry.lock`](../poetry.lock). The following external tools, images, and GitHub
+Actions are pinned separately. The listed files are the source of truth; update
+this inventory in the same change whenever one of those pins changes.
+
+### Toolchain and images
+
+| Component | Pin | Source |
+| --- | --- | --- |
+| Local and Actions Python | `3.13.12` | [`.python-version`](../.python-version), [`.tool-versions`](../.tool-versions), and `actions/setup-python` below |
+| Production image Python | `python:3.14.7-slim-bookworm`, digest `sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56` | [`Dockerfile`](../Dockerfile) |
+| Poetry | `2.5.1` | [`.tool-versions`](../.tool-versions), [`setup-env.sh`](../scripts/tooling/setup-env.sh), [`Dockerfile`](../Dockerfile), and [`stage-pypi.yml`](../.github/workflows/stage-pypi.yml) |
+| Poetry build backend | `poetry-core==2.5.0` | [`pyproject.toml`](../pyproject.toml) build-system requirements |
+| Cosign CLI | `3.1.3` | [`.tool-versions`](../.tool-versions) and the release workflow inputs below |
+| TeX Live image | `drpsychick/texlive-pdflatex`, digest `sha256:55b4bef7344394c0aafcd69b1796280f64b871ee2d2f2c3115e8f93ec9fea6ea` | [`Dockerfile`](../Dockerfile) and [`toolchain.json`](../pkg/resumeme/compiler/backends/latex/resources/toolchain.json) |
+| Trivy scanner | `aquasec/trivy:0.75.0` | [`stage-test.yml`](../.github/workflows/stage-test.yml); version tag, not an immutable digest |
+| TeXtidote image | `gokhlayeh/textidote`, digest `sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441` | [`stage-documents.yml`](../.github/workflows/stage-documents.yml) |
+| Tini | Debian package `0.19.0-1+b3` | [`Dockerfile`](../Dockerfile) |
+
+### GitHub Actions
+
+Every external `uses:` reference below is pinned to the full commit SHA shown in
+the workflow. The adjacent version comment is for readability; the SHA is the
+actual reference. Repeated references use the same pin.
+
+| Action | Version comment | Commit SHA |
+| --- | --- | --- |
+| `actions/cache/restore`, `actions/cache/save` | `v6.1.0` | `55cc8345863c7cc4c66a329aec7e433d2d1c52a9` |
+| `actions/checkout` | `v7.0.1` | `3d3c42e5aac5ba805825da76410c181273ba90b1` |
+| `actions/configure-pages` | `v6.0.0` | `45bfe0192ca1faeb007ade9deae92b16b8254a0d` |
+| `actions/deploy-pages` | `v5.0.1` | `368f82528645a54fb793d4d04e342629a3f51346` |
+| `actions/download-artifact` | `v4.3.0` | `d3f86a106a0bac45b974a628896c90dbdf5c8093` |
+| `actions/setup-python` | `v5.6.0` | `a26af69be951a213d495a4c3e4e4022e16d87065` |
+| `actions/upload-artifact` | `v4.6.2` | `ea165f8d65b6e75b540449e92b4886f43607fa02` |
+| `actions/upload-pages-artifact` | `v5.0.0` | `fc324d3547104276b827a68afc52ff2a11cc49c9` |
+| `docker/build-push-action` | `v7.4.0` | `c3c9e263c25d99ce0380d002d59b67737d91b0dc` |
+| `docker/login-action` | `v4.6.0` | `dbcb813823bdd20940b903addbd779551569679f` |
+| `docker/metadata-action` | `v6.2.0` | `dc802804100637a589fabce1cb79ff13a1411302` |
+| `docker/setup-buildx-action` | `v4.4.1` | `f87e5991a6d7451dcb8d9637bfbc97413f497069` |
+| `openai/codex-action` | `v1` | `bdf19a4a223ec2549a3e2274a0cf61556bc07675` |
+| `ossf/scorecard-action` | `v2.4.4` | `2d1146689b8cda280b9bc96326124645441f03bc` |
+| `peaceiris/actions-gh-pages` | `v4.0.0` | `4f9cc6602d3f66b9c108549d475ec49e8ef4d45e` |
+| `sigstore/cosign-installer` | `v4.1.2` | `6f9f17788090df1f26f669e9d70d6ae9567deba6` |
+
+The workflow requests the GitHub-hosted `ubuntu-24.04` runner image. GitHub
+updates the contents behind that label, so it is not an immutable image pin.
+Likewise, Homebrew formulas in [`Brewfile`](../Brewfile) are package selections,
+not version locks; Debian's `firefox-esr` and development `git` packages are
+installed from the current apt index. These platform-managed tools can change
+without a source edit. The Tini apt package is version-constrained as listed above.
+
+When changing an action or tool, update its workflow or image reference first,
+then update this inventory and run the relevant local checks. Keep action SHAs,
+image digests, and `poetry.lock` updates in reviewed changes; do not resolve new
+Python versions during ordinary CI runs.
+
 CI uses three test partitions with four pytest-xdist workers per runner. The
 standard public `ubuntu-24.04` runner has
 [four CPUs](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories);

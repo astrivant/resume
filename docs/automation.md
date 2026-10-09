@@ -60,6 +60,7 @@ required verification check still waits for the entire test stage.
 ```mermaid
 flowchart LR
     source[Source SHA] --> builds[Package and container builds]
+    source --> trivy[Trivy secrets and vulnerability scan]
     source --> profile[Stored or refreshed profile]
     profile --> tests[Python and schema checks]
     profile --> summaries[Summary matrix]
@@ -67,6 +68,7 @@ flowchart LR
     summaries --> pdf[PDF and preview]
     summaries --> review[Document review]
     builds --> gate[CI verification]
+    trivy --> gate
     tests --> gate
     pdf --> gate
     review --> gate
@@ -80,13 +82,31 @@ flowchart LR
     skills --> publishskills
 ```
 
-`CI verification` requires successful source resolution, summaries, Python checks,
+`CI verification` requires successful source resolution, summaries, Trivy and Python checks,
 document review, source builds, and PDF compilation. Requested captures must also
 succeed. Skips or failures in required work block publication. Registry uploads
 can complete even if PDF signing later fails; release notes wait for both the
 signed release and successful registry references. Coverage and Scorecard remain
 independent reporting jobs. Live LinkedIn updates retain the shared account-write
 lock, and Pages consumes the accepted main publication commit.
+
+## Trivy security scan
+
+The test stage scans each source checkout for dependency vulnerabilities and
+secret findings with [`aquasec/trivy:0.75.0`](https://hub.docker.com/r/aquasec/trivy),
+selected in [`stage-test.yml`](../.github/workflows/stage-test.yml).
+The scanner's version-tag pin and the other non-Poetry tool pins are listed in
+the [development pin inventory](development.md#pinned-toolchain-and-ci-dependencies).
+Any finding, scanner failure, or unreadable report fails the test stage and
+blocks `CI verification` on pull requests and pushes. The scan runs alongside
+linting and the sharded Python tests.
+
+The report artifact keeps full finding metadata while redacting matched secret
+text and removing source snippets. A trusted follow-up workflow posts or updates
+a concise pull request comment with finding counts, a link to the complete
+sanitized artifact, and workflow logs. The scanner job has read-only repository
+permissions; only the separate comment job receives permission to write PR
+comments.
 
 ## Configure a fork
 
