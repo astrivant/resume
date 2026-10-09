@@ -109,7 +109,7 @@ document:
     profile_column_wrap: false
     # Fractions of available body width: page 1's column and page 2 onward, independently.
     first_page_body_width: 0.98
-    later_page_body_width: 0.85
+    later_page_body_width: 0.75
     line_height: 1.0
     paragraph_spacing: 3
     about_text_indent: 8
