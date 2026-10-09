@@ -77,7 +77,7 @@ def test_permanent_errors_are_not_retried(monkeypatch: MonkeyPatch) -> None:
         (InvalidSessionIdException("session gone"), True),
         (NoSuchWindowException("window closed"), True),
         (BrowserTimeoutError("profile page did not load"), True),
-        (ResumeUploadConfirmationError("upload not visible yet"), True),
+        (ResumeUploadConfirmationError("upload outcome is uncertain"), False),
         (TimeoutException("transient browser wait"), True),
         (BrowserError("LinkedIn requires MFA"), False),
         (ValueError("bad configuration"), False),

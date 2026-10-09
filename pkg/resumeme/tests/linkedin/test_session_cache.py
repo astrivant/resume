@@ -310,6 +310,7 @@ def test_job_wrapper_reuses_only_ciphertext_and_cleans_failed_runs(tmp_path: Pat
         ("capture-shard", (75, 75, 0), 0, 3),
         ("publish-ownership", (75, 75, 0), 0, 3),
         ("publish-resume", (75, 75, 75, 75), 75, 4),
+        ("publish-resume", (2, 0), 2, 1),
         ("publish-skills", (2, 0), 2, 1),
     ],
 )

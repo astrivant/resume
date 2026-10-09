@@ -632,7 +632,7 @@ def test_outer_retry_classifier_covers_transient_linkedin_reads_and_writes(monke
     """
     monkeypatch.setenv("RESUMEME_CI_RETRY_LINKEDIN", "1")
     assert _retryable_failure_status("publish-skills", TimeoutException()) == 75
-    assert _retryable_failure_status("publish-resume", ResumeUploadConfirmationError("not confirmed")) == 75
+    assert _retryable_failure_status("publish-resume", ResumeUploadConfirmationError("not confirmed")) == 2
     assert _retryable_failure_status("publish-ownership", BrowserError("LinkedIn checkpoint")) == 2
     assert _retryable_failure_status("capture-plan", TimeoutException()) == 75
     assert _retryable_failure_status("capture-shard", requests.ConnectionError("connection reset")) == 75

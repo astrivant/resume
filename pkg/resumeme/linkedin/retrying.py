@@ -68,7 +68,11 @@ def is_retryable_linkedin_error(error: Exception) -> bool:
     Returns:
         bool: Whether repeating the complete command in a fresh browser session may succeed.
     """
-    if isinstance(error, (BrowserTimeoutError, ResumeUploadConfirmationError)):
+    # LinkedIn may have accepted the upload; the command already reconciled once, so another write is unsafe.
+    if isinstance(error, ResumeUploadConfirmationError):
+        return False
+
+    if isinstance(error, BrowserTimeoutError):
         return True
 
     # A dead window/session stops same-driver retries, but a complete attempt creates a fresh WebDriver session.

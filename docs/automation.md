@@ -260,8 +260,9 @@ exponential delay because WebDriver does not expose LinkedIn response headers
 consistently. Network timeouts, connection resets, retryable HTTP statuses, and
 recoverable browser errors restart the command. MFA, CAPTCHA, rejected sign-in,
 owner mismatches, invalid configuration, and permanent HTTP errors stop without
-retry. Publishers reread LinkedIn state before replaying writes so uncertain
-outcomes are reconciled instead of blindly duplicated.
+retry. Publishers reread LinkedIn state before replaying writes. If a resume
+upload was submitted but its saved state remains uncertain after bounded checks,
+the command stops without another upload; check LinkedIn before manually rerunning it.
 
 ## Personal README
 
