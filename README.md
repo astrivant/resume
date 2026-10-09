@@ -34,7 +34,7 @@ version you want to share to get a signed release.
   select an [inline theme](docs/themes.md), including the autumn-colored `tiger`
   option. Custom LaTeX templates can change the layout without changing the collector.
 
-<a href="https://github.com/astrivant/resumeme/blob/main/resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/resume-preview.png" alt="First page of Emma Doyle's résumé" width="375"></a>
+<!-- <a href="https://github.com/astrivant/resumeme/blob/main/resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/resume-preview.png" alt="First page of Emma Doyle's résumé" width="375"></a> -->
 
 ## Contents
 
