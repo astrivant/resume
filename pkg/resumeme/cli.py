@@ -186,12 +186,14 @@ def _run(args: argparse.Namespace) -> int:
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
 
-        # Upload the caller-selected release bytes; a local captured snapshot is not needed for publication or recovery.
+        # Prefer the profile's display name, while allowing release-only recovery to fall back to the configured username.
         if args.command == "publish-resume":
+            profile_name = load_profile(snapshot, config.linkedin.username).name if snapshot.is_file() else config.linkedin.username
             filename = publish_resume(
                 config,
                 root,
                 project_path(root, str(args.pdf)),
+                profile_name=profile_name,
                 dry_run=args.dry_run,
                 headless=args.headless,
                 connect_port=args.connect_port,

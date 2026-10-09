@@ -39,8 +39,9 @@ are skipped. A failure in this optional job leaves the signed release available.
 
 LinkedIn stores the [four most recently uploaded resumes](https://www.linkedin.com/help/linkedin/answer/a510363)
 for reuse. Each new document gets a filename such as
-`resume-0123456789abcdef.pdf`, containing the first 16 hexadecimal characters of
-its SHA-256 digest. This distinguishes revisions and lets retries skip a file
+`emma-doyle-resume-0123456789abcdef.pdf`: the captured profile name is normalized
+to an ASCII slug, followed by the first 16 hexadecimal characters of the PDF's
+SHA-256 digest. This distinguishes revisions and lets retries skip a file
 already present. The publisher never clicks Delete; LinkedIn controls retention
 of older files. Review the selected resume when applying: uploading does not
 guarantee that LinkedIn will select it for every application or transfer it to

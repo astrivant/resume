@@ -4,7 +4,6 @@ Verify saved-resume publication without signing in or uploading personal files t
 
 from __future__ import annotations
 
-import hashlib
 import os
 import runpy
 import subprocess
@@ -21,9 +20,18 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
 from resumeme.cli import main
+from resumeme.compiler.asts.profile import Profile, save_profile
 from resumeme.config import Capture, Config, LinkedIn, LinkedInResume, load_config
 from resumeme.exceptions import BrowserError
-from resumeme.linkedin.resume import _pdf_bytes, _saved, _send_pdf_file, _upload_input, _upload_resume, publish_resume
+from resumeme.linkedin.resume import (
+    _pdf_bytes,
+    _resume_filename,
+    _saved,
+    _send_pdf_file,
+    _upload_input,
+    _upload_resume,
+    publish_resume,
+)
 
 if TYPE_CHECKING:
     from pytest import MonkeyPatch
@@ -171,7 +179,7 @@ def test_staged_upload_preserves_exact_release_bytes(dry_run: bool, pdf: Path, m
         None: Staged and original bytes match, the filename is stable, and scratch data is removed.
     """
     content = pdf.read_bytes()
-    expected = f"resume-{hashlib.sha256(content).hexdigest()[:16]}.pdf"
+    expected = _resume_filename("Example Person", content)
     staged_paths: list[Path] = []
 
     def record_upload(driver: object, config: Config, selected: Path, *, dry_run: bool) -> str:
@@ -204,11 +212,25 @@ def test_staged_upload_preserves_exact_release_bytes(dry_run: bool, pdf: Path, m
     monkeypatch.setattr("resumeme.linkedin.resume._upload_resume", record_upload)
 
     for _ in range(2):
-        assert publish_resume(config, pdf.parent, pdf, dry_run=dry_run) == expected
+        assert publish_resume(config, pdf.parent, pdf, profile_name="Example Person", dry_run=dry_run) == expected
 
     assert len(staged_paths) == 2
     assert all(not selected.exists() for selected in staged_paths)
     assert _pdf_bytes(pdf) == content
+
+
+def test_upload_filename_uses_profile_name_and_preserves_content_identity() -> None:
+    """
+    Produce a readable ASCII owner filename with a stable digest of the signed document.
+
+    Returns:
+        None: Names normalize consistently and different PDF bytes produce different filenames.
+    """
+    content = b"signed resume bytes"
+
+    assert _resume_filename("Émma Doyle", content).startswith("emma-doyle-resume-")
+    assert _resume_filename("Émma Doyle", content).endswith(".pdf")
+    assert _resume_filename("Émma Doyle", content) != _resume_filename("Émma Doyle", content + b" update")
 
 
 @pytest.mark.parametrize(
@@ -433,7 +455,28 @@ def test_cli_resolves_explicit_pdf_without_snapshot(tmp_path: Path, monkeypatch:
     assert main(["--config", str(config), "publish-resume", "--pdf", "signed/resume.pdf", "--dry-run", "--headless"]) == 0
     args, kwargs = publisher.call_args
     assert args[1:] == (tmp_path, tmp_path / "signed/resume.pdf")
-    assert kwargs == {"dry_run": True, "headless": True, "connect_port": None}
+    assert kwargs == {"profile_name": "example-person", "dry_run": True, "headless": True, "connect_port": None}
+
+
+def test_cli_uses_captured_profile_name_for_upload(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    """
+    Pass the captured display name through to LinkedIn's human-readable resume filename.
+
+    Args:
+        tmp_path (Path): Isolated config and profile snapshot.
+        monkeypatch (MonkeyPatch): Replace the live publisher.
+
+    Returns:
+        None: The captured profile name reaches the publication boundary.
+    """
+    config = tmp_path / "resumeme.config.yaml"
+    config.write_text("linkedin: {username: example-person}\n")
+    save_profile(Profile(username="example-person", name="Alex Example"), tmp_path / "data/profile.json")
+    publisher = MagicMock(return_value="alex-example-resume-fixture.pdf")
+    monkeypatch.setattr("resumeme.cli.publish_resume", publisher)
+
+    assert main(["--config", str(config), "publish-resume", "--pdf", "signed/resume.pdf", "--dry-run"]) == 0
+    assert publisher.call_args.kwargs["profile_name"] == "Alex Example"
 
 
 def test_upload_workflow_requires_verified_current_tag_and_explicit_settings() -> None:

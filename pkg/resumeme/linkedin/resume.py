@@ -6,7 +6,9 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 import tempfile
+import unicodedata
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -41,6 +43,7 @@ _MAIN = ':is(main, [role="main"])'
 _LOADING_QUERY = f'{_MAIN} [role="progressbar"], {_MAIN} [aria-busy="true"], {_MAIN}[aria-busy="true"]'
 _RECRUITER_LABELS = ("share resume data with recruiters", "share resume data with hirers", "allow recruiters to view your resumes")
 _TRANSIENT = (TimeoutException, StaleElementReferenceException, NoSuchElementException)
+_UPLOAD_TIMEOUT_SECONDS = 120
 
 
 def _pdf_bytes(pdf: Path) -> bytes:
@@ -75,6 +78,23 @@ def _pdf_bytes(pdf: Path) -> bytes:
         _LOGGER.warning("LinkedIn recommends resumes smaller than 2 MB", extra={"file.size": len(content)})
 
     return content
+
+
+def _resume_filename(name: str, content: bytes) -> str:
+    """
+    Include the profile owner's name while keeping retries bound to exact PDF bytes.
+
+    Args:
+        name (str): Captured profile display name or configured LinkedIn username fallback.
+        content (bytes): Signed PDF bytes selected for upload.
+
+    Returns:
+        str: ASCII filename such as `emma-doyle-resume-cbfd27b0e5f67b8d.pdf`.
+    """
+    ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii").casefold()
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_name).strip("-") or "linkedin-profile"
+    digest = hashlib.sha256(content).hexdigest()[:16]
+    return f"{slug}-resume-{digest}.pdf"
 
 
 def _upload_input(driver: WebDriver) -> WebElement | Literal[False]:
@@ -399,7 +419,8 @@ def _upload_resume(driver: WebDriver, config: Config, pdf: Path, *, dry_run: boo
     # A timed-out WebDriver call may already have sent the file. Never resubmit blindly or remove another saved resume.
     try:
         _send_pdf_file(driver, field, pdf)
-        WebDriverWait(driver, policy.page_timeout_seconds).until(lambda page: _saved(page, pdf.name))
+        # Stay on the upload page while LinkedIn processes the file; navigation can cancel its asynchronous upload.
+        WebDriverWait(driver, max(_UPLOAD_TIMEOUT_SECONDS, policy.page_timeout_seconds)).until(lambda page: _saved(page, pdf.name))
     except WebDriverException:
         _LOGGER.warning("Resume upload response was uncertain; checking saved resumes before reporting its outcome")
 
@@ -443,6 +464,7 @@ def publish_resume(
     root: Path,
     pdf: Path,
     *,
+    profile_name: str | None = None,
     dry_run: bool = False,
     headless: bool = False,
     connect_port: int | None = None,
@@ -454,6 +476,7 @@ def publish_resume(
         config (Config): Owner, explicit upload opt-in, optional sharing override, and browser settings.
         root (Path): Configuration directory owning local browser state and private staging files.
         pdf (Path): Explicit release PDF; CI verifies its signature before calling this command.
+        profile_name (str | None): Captured display name used in the uploaded filename; config username is the fallback.
         dry_run (bool): Validate the document, owner, upload form, and requested sharing control without writes, even when disabled.
         headless (bool): Use login environment variables without a desktop.
         connect_port (int | None): Existing local Firefox Marionette port.
@@ -472,7 +495,7 @@ def publish_resume(
         raise BrowserError("Headless resume publication cannot attach to an interactive browser.")
 
     content = _pdf_bytes(pdf)
-    filename = f"resume-{hashlib.sha256(content).hexdigest()[:16]}.pdf"
+    filename = _resume_filename(profile_name or config.linkedin.username, content)
     login_credentials(headless=headless, profile=config.linkedin.username)
     cache = root / ".cache/linkedin-resumes"
     cache.mkdir(parents=True, exist_ok=True)
