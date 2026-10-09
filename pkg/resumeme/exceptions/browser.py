@@ -15,6 +15,7 @@ __all__ = [
     "BrowserTimeoutError",
     "BrowserWaitError",
     "BrowserWindowError",
+    "ResumeUploadConfirmationError",
 ]
 
 
@@ -51,4 +52,10 @@ class BrowserWindowError(ResumemeError, NoSuchWindowException):
 class BrowserWaitError(ResumemeError, TimeoutException):
     """
     Request another state observation through Selenium's existing timeout retry contract.
+    """
+
+
+class ResumeUploadConfirmationError(BrowserError):
+    """
+    Report an uncertain upload result that can be reconciled against its content-addressed filename.
     """

@@ -16,6 +16,7 @@ from resumeme.exceptions.browser import (
     BrowserTimeoutError,
     BrowserWaitError,
     BrowserWindowError,
+    ResumeUploadConfirmationError,
 )
 from resumeme.exceptions.domain import (
     CompilationError,
@@ -37,6 +38,7 @@ __all__ = [
     "BrowserTimeoutError",
     "BrowserWaitError",
     "BrowserWindowError",
+    "ResumeUploadConfirmationError",
     "CompilationError",
     "ConfigurationError",
     "ContributionError",

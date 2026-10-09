@@ -24,7 +24,13 @@ from resumeme.compiler.backends.latex.compilation import compile_pdf
 from resumeme.compiler.passes.privacy import without_profile_location
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Ownership, load_config, project_path
-from resumeme.exceptions import ConfigurationError, ProfileError, ResumemeError
+from resumeme.exceptions import (
+    BrowserTimeoutError,
+    ConfigurationError,
+    ProfileError,
+    ResumemeError,
+    ResumeUploadConfirmationError,
+)
 from resumeme.github.contributions import fetch_calendar
 from resumeme.github.pages import build_site
 from resumeme.linkedin.browser import capture_profile
@@ -32,6 +38,7 @@ from resumeme.linkedin.identity import release_destination
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.ownership import publish_ownership
 from resumeme.linkedin.resume import publish_resume
+from resumeme.linkedin.retrying import is_retryable_selenium_error
 from resumeme.linkedin.skills import publish_skills
 from resumeme.telemetry import LOG_LEVELS, logging_context, set_log_level
 
@@ -40,6 +47,7 @@ if TYPE_CHECKING:
 
 __all__ = ["main"]
 _LOGGER = logging.getLogger(__name__)
+_MUTATING_LINKEDIN_COMMANDS = frozenset({"publish-ownership", "publish-resume", "publish-skills"})
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -325,7 +333,7 @@ def _run(args: argparse.Namespace) -> int:
     except TimeoutException as error:
         _LOGGER.error("LinkedIn timed out. %s", error.msg or "Rerun the command; increase capture.page_timeout_seconds if needed.")
         _LOGGER.debug("Browser timeout details", exc_info=True)
-        return 2
+        return _retryable_failure_status(args.command, error)
     except (
         ResumemeError,
         OSError,
@@ -338,9 +346,29 @@ def _run(args: argparse.Namespace) -> int:
     ) as error:
         _LOGGER.error("%s", error, extra={"error.type": type(error).__name__})
         _LOGGER.debug("Command failure details", exc_info=True)
-        return 2
+        return _retryable_failure_status(args.command, error)
 
     return 0
+
+
+def _retryable_failure_status(command: str, error: Exception) -> int:
+    """
+    Mark only transient browser failures from mutating Actions commands for bounded outer retries.
+
+    Args:
+        command (str): Parsed resumeme command.
+        error (Exception): Failure caught by the CLI boundary.
+
+    Returns:
+        int: 75 for retryable browser failures in the encrypted-session wrapper, otherwise 2.
+    """
+    if os.environ.get("RESUMEME_CI_RETRY_MUTATIONS") != "1" or command not in _MUTATING_LINKEDIN_COMMANDS:
+        return 2
+
+    if isinstance(error, (BrowserTimeoutError, ResumeUploadConfirmationError)) or is_retryable_selenium_error(error):
+        return 75
+
+    return 2
 
 
 if __name__ == "__main__":

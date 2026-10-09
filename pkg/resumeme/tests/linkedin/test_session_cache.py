@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import io
 import os
+import signal
 import subprocess
 import sys
 import tarfile
@@ -16,6 +17,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from resumeme.exceptions import SessionCacheError
+from resumeme.linkedin.retrying import is_retryable_linkedin_exit_status
 from resumeme.linkedin.session_cache import CacheKeys, archive_profile, open_archive, restore_profile, seal_archive
 from resumeme.tests.paths import REPOSITORY_ROOT
 
@@ -25,6 +27,24 @@ if TYPE_CHECKING:
     from pytest import MonkeyPatch
 
 _ROOT = REPOSITORY_ROOT
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [(75, True), (-signal.SIGABRT, True), (-signal.SIGBUS, True), (-signal.SIGSEGV, True), (2, False), (-signal.SIGTERM, False)],
+)
+def test_retry_classifier_accepts_only_transient_exit_types(status: int, expected: bool) -> None:
+    """
+    Retry only the explicit transient browser code and driver crash signals, never cancellation.
+
+    Args:
+        status (int): Child process result, negative for signal termination.
+        expected (bool): Expected classification.
+
+    Returns:
+        None: Failure classification is deterministic and independent of runner state.
+    """
+    assert is_retryable_linkedin_exit_status(status) is expected
 
 
 @pytest.fixture(scope="module")
@@ -226,6 +246,67 @@ def test_job_wrapper_reuses_only_ciphertext_and_cleans_failed_runs(tmp_path: Pat
 
         if status:
             assert after == before
+
+
+@pytest.mark.parametrize(
+    ("statuses", "expected_status", "expected_attempts"),
+    [((75, 75, 0), 0, 3), ((75, 75, 75, 75), 75, 4), ((2, 0), 2, 1)],
+)
+def test_mutating_actions_retry_only_classified_failures_with_fresh_sessions(
+    tmp_path: Path,
+    statuses: tuple[int, ...],
+    expected_status: int,
+    expected_attempts: int,
+) -> None:
+    """
+    Retry transient write failures three times at most, recreating and cleaning each browser session.
+
+    Args:
+        tmp_path (Path): Disposable checkout, runner temp, fake executable, and attempt counter.
+        statuses (tuple[int, ...]): Exit status returned by the fake LinkedIn client on each invocation.
+        expected_status (int): Final wrapper status after successful recovery or retry exhaustion.
+        expected_attempts (int): Number of complete command sessions expected.
+
+    Returns:
+        None: Transient status 75 retries, while permanent status 2 exits immediately.
+    """
+    binary, runner, checkout = tmp_path / "bin", tmp_path / "runner", tmp_path / "checkout"
+    binary.mkdir()
+    runner.mkdir()
+    checkout.mkdir()
+    counter = tmp_path / "attempts.txt"
+    command = binary / "resumeme"
+    command.write_text(
+        f"#!{sys.executable}\nfrom pathlib import Path\nimport os\n"
+        "counter = Path(os.environ['ATTEMPT_COUNTER'])\n"
+        "attempt = int(counter.read_text()) + 1 if counter.exists() else 1\n"
+        "counter.write_text(str(attempt))\n"
+        "statuses = [int(value) for value in os.environ['ATTEMPT_STATUSES'].split(',')]\n"
+        "raise SystemExit(statuses[min(attempt - 1, len(statuses) - 1)])\n"
+    )
+    command.chmod(0o700)
+    (checkout / "resumeme.config.yaml").write_text(
+        "linkedin: {username: example-person}\ncapture: {retry_backoff_seconds: 0, retry_max_backoff_seconds: 1}\n"
+    )
+    environment = {
+        **os.environ,
+        "PATH": str(binary) + os.pathsep + os.environ["PATH"],
+        "RUNNER_TEMP": str(runner),
+        "ATTEMPT_COUNTER": str(counter),
+        "ATTEMPT_STATUSES": ",".join(str(status) for status in statuses),
+    }
+    result = subprocess.run(
+        [sys.executable, str(_ROOT / "scripts/ci/linkedin-session.py"), "run", "--command", "publish-ownership"],
+        cwd=checkout,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == expected_status, result.stdout + result.stderr
+    assert counter.read_text() == str(expected_attempts)
+    assert list(runner.iterdir()) == []
 
 
 def test_setup_script_generates_pem_and_uploads_secrets_without_printing_them(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:

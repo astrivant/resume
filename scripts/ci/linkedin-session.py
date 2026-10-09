@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import logging
 import os
 import platform
 import shutil
@@ -17,12 +18,20 @@ from typing import TYPE_CHECKING
 
 from resumeme.config import load_config
 from resumeme.exceptions import SessionCacheError
+from resumeme.linkedin.retrying import is_retryable_linkedin_exit_status, retry
 from resumeme.linkedin.session_cache import CacheKeys, archive_profile, open_archive, restore_profile, seal_archive
+from resumeme.telemetry import logging_context
 
 if TYPE_CHECKING:
     from types import FrameType
 
+    from resumeme.config import Config
+
 _SECRETS = ("RESUMEME_CACHE_PRIVATE_KEY", "RESUMEME_CACHE_PUBLIC_KEY", "RESUMEME_CACHE_KEY_PASSWORD")
+_LOGGER = logging.getLogger("resumeme.ci.linkedin_session")
+# GitHub has no native job retry policy, so retry the entire browser command in a clean session at most three times.
+_MAX_MUTATION_ATTEMPTS = 4
+_MUTATING_COMMANDS = frozenset({"publish-ownership", "publish-resume", "publish-skills"})
 
 
 def cache_keys() -> CacheKeys | None:
@@ -118,6 +127,85 @@ def clean() -> None:
         shutil.rmtree(path)
 
 
+def _execute_command(
+    command: list[str],
+    config: Config,
+    keys: CacheKeys | None,
+    context: bytes,
+    archive: Path,
+    persistent: Path | None,
+    *,
+    retry_mutations: bool,
+) -> int:
+    """
+    Run one isolated browser attempt and persist state only after command success.
+
+    Args:
+        command (list[str]): Validated resumeme command and arguments.
+        config (Config): Browser profile settings used to locate encrypted state.
+        keys (CacheKeys | None): Encryption identity, absent when session caching is disabled.
+        context (bytes): Repository and owner binding authenticated with the archive.
+        archive (Path): Checkout-local encrypted session archive.
+        persistent (Path | None): Optional runner-local destination for encrypted bytes.
+        retry_mutations (bool): Whether the child may emit the reserved retry exit status.
+
+    Returns:
+        int: Successful status, permanent failure status, or a classified retry status.
+    """
+    with tempfile.TemporaryDirectory(prefix="resumeme-browser-", dir=os.environ.get("RUNNER_TEMP")) as temporary:
+        state = Path(temporary)
+
+        if destination := os.environ.get("GITHUB_ENV"):
+            with Path(destination).open("a") as stream:
+                stream.write(f"RESUMEME_SESSION_WORKDIR={state}\n")
+
+        source = persistent if persistent is not None and persistent.is_file() else archive
+
+        if keys and source.is_file():
+            restore_profile(open_archive(source.read_bytes(), keys, context), state / config.capture.browser)
+            print("Restored authenticated encrypted browser cache.", flush=True)
+
+        # Signing and LinkedIn credentials never enter the child; retry classification is an explicit non-secret flag.
+        environment = {name: value for name, value in os.environ.items() if name not in _SECRETS}
+        environment["RESUMEME_BROWSER_STATE_DIR"] = str(state)
+
+        if retry_mutations:
+            environment["RESUMEME_CI_RETRY_MUTATIONS"] = "1"
+
+        result = subprocess.run(command, env=environment, check=False)
+
+        # A failed or interrupted interaction cannot replace the last accepted encrypted login state.
+        if result.returncode == 0 and keys:
+            data = seal_archive(archive_profile(state / config.capture.browser), keys, context)
+            write_encrypted(archive, data)
+
+            if persistent is not None:
+                write_encrypted(persistent, data)
+
+            output("cache-ready", "true")
+
+        if retry_mutations and is_retryable_linkedin_exit_status(result.returncode):
+            raise subprocess.CalledProcessError(result.returncode, command)
+
+        if result.returncode < 0:
+            return 128 + -result.returncode
+
+        return result.returncode
+
+
+def _retryable_command_failure(error: Exception) -> bool:
+    """
+    Restrict the outer retry loop to explicitly classified child-process outcomes.
+
+    Args:
+        error (Exception): Failure propagated from one browser command attempt.
+
+    Returns:
+        bool: Whether the error carries a retryable LinkedIn process status.
+    """
+    return isinstance(error, subprocess.CalledProcessError) and is_retryable_linkedin_exit_status(error.returncode)
+
+
 def run() -> int:
     """
     Prepare cache metadata, execute a browser command, or clean up an interrupted job.
@@ -182,35 +270,37 @@ def run() -> int:
         "publish-skills": ["--tag", os.environ.get("GITHUB_REF_NAME", ""), "--suggestions", ".cache/codex/skills/skills.json"],
     }
     command = ["resumeme", args.command, *([] if args.interactive else ["--headless"]), *commands[args.command]]
+    retry_mutations = args.command in _MUTATING_COMMANDS
 
-    # All decrypted browser files and driver diagnostics live outside the cache, only for this command's lifetime.
-    with tempfile.TemporaryDirectory(prefix="resumeme-browser-", dir=os.environ.get("RUNNER_TEMP")) as temporary:
-        state = Path(temporary)
-        if destination := os.environ.get("GITHUB_ENV"):
-            with Path(destination).open("a") as stream:
-                stream.write(f"RESUMEME_SESSION_WORKDIR={state}\n")
-
-        source = persistent if persistent is not None and persistent.is_file() else archive
-
-        if keys and source.is_file():
-            restore_profile(open_archive(source.read_bytes(), keys, context), state / config.capture.browser)
-            print("Restored authenticated encrypted browser cache.", flush=True)
-
-        environment = {name: value for name, value in os.environ.items() if name not in _SECRETS}
-        environment["RESUMEME_BROWSER_STATE_DIR"] = str(state)
-        result = subprocess.run(command, env=environment, check=False)
-
-        # Failed captures never replace an accepted cache; a successful run seals files before temporary cleanup.
-        if result.returncode == 0 and keys:
-            data = seal_archive(archive_profile(state / config.capture.browser), keys, context)
-            write_encrypted(archive, data)
-
-            if persistent is not None:
-                write_encrypted(persistent, data)
-
-            output("cache-ready", "true")
-
-        return result.returncode
+    # Every outer retry rebuilds the browser session and rechecks live state before repeating a write.
+    with logging_context(os.environ.get("RESUMEME_LOG_LEVEL") or config.logging.level):
+        try:
+            return retry(
+                lambda: _execute_command(
+                    command,
+                    config,
+                    keys,
+                    context,
+                    archive,
+                    persistent,
+                    retry_mutations=retry_mutations,
+                ),
+                attempts=_MAX_MUTATION_ATTEMPTS if retry_mutations else 1,
+                backoff=config.capture.retry_backoff_seconds,
+                max_backoff=config.capture.retry_max_backoff_seconds,
+                exceptions=(subprocess.CalledProcessError,),
+                should_retry=_retryable_command_failure,
+            )
+        except subprocess.CalledProcessError as error:
+            _LOGGER.error(
+                "LinkedIn mutation failed after bounded whole-session retries",
+                extra={
+                    "error.type": type(error).__name__,
+                    "process.exit_code": error.returncode,
+                    "retry.limit": _MAX_MUTATION_ATTEMPTS,
+                },
+            )
+            return 128 + -error.returncode if error.returncode < 0 else error.returncode
 
 
 def interrupt(signum: int, frame: FrameType | None) -> None:

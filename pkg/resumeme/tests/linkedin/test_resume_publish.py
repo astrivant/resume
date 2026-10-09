@@ -4,11 +4,12 @@ Verify saved-resume publication without signing in or uploading personal files t
 
 from __future__ import annotations
 
+import logging
 import os
 import runpy
 import subprocess
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 import yaml
@@ -18,10 +19,10 @@ from pypdf import PdfWriter
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
-from resumeme.cli import main
+from resumeme.cli import _retryable_failure_status, main
 from resumeme.compiler.asts.profile import Profile, save_profile
 from resumeme.config import Capture, Config, LinkedIn, LinkedInResume, load_config
-from resumeme.exceptions import BrowserError
+from resumeme.exceptions import BrowserError, ResumeUploadConfirmationError
 from resumeme.linkedin.resume import publish_resume
 from resumeme.linkedin.resume_library import (
     _delete_saved_resume,
@@ -582,6 +583,59 @@ def test_existing_resume_and_dry_run_never_upload(already_saved: bool, dry_run: 
     field.send_keys.assert_not_called()
     driver.execute_script.assert_not_called()
     field.click.assert_not_called()
+
+
+def test_github_rerun_checks_the_exact_signed_pdf_before_upload(
+    pdf: Path,
+    monkeypatch: MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """
+    Reconcile the content-addressed release filename before any write on a GitHub workflow rerun.
+
+    Args:
+        pdf (Path): Exact signed release document selected for upload.
+        monkeypatch (MonkeyPatch): Simulate GitHub rerun metadata and isolate browser state reads.
+        caplog (pytest.LogCaptureFixture): Capture the structured rerun decision.
+
+    Returns:
+        None: An already saved copy is recognized and no duplicate upload is submitted.
+    """
+    field = MagicMock()
+    saved = MagicMock(return_value=True)
+    monkeypatch.setattr("resumeme.linkedin.resume_upload.check_owner", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume_settings._settings", MagicMock(return_value=field))
+    monkeypatch.setattr("resumeme.linkedin.resume_upload._saved", saved)
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "2")
+    monkeypatch.setenv("GITHUB_SHA", "a" * 40)
+    caplog.set_level(logging.INFO, logger="resumeme.linkedin.resume_upload")
+
+    assert _upload_resume(MagicMock(), _config(), pdf, dry_run=False) == pdf.name
+
+    saved.assert_called_once_with(ANY, pdf.name)
+    field.send_keys.assert_not_called()
+    record = next(record for record in caplog.records if "before retrying LinkedIn publication" in record.message)
+    assert record.__dict__["github.run_attempt"] == 2
+    assert record.__dict__["github.sha"] == "a" * 40
+
+
+def test_outer_retry_classifier_is_limited_to_transient_mutating_browser_failures(monkeypatch: MonkeyPatch) -> None:
+    """
+    Keep authentication, configuration, and read-only failures out of whole-session write retries.
+
+    Args:
+        monkeypatch (MonkeyPatch): Toggle the session wrapper's explicit retry marker.
+
+    Returns:
+        None: Only transient Selenium or uncertain resume persistence failures receive the retry exit status.
+    """
+    monkeypatch.setenv("RESUMEME_CI_RETRY_MUTATIONS", "1")
+    assert _retryable_failure_status("publish-skills", TimeoutException()) == 75
+    assert _retryable_failure_status("publish-resume", ResumeUploadConfirmationError("not confirmed")) == 75
+    assert _retryable_failure_status("publish-ownership", BrowserError("LinkedIn checkpoint")) == 2
+    assert _retryable_failure_status("capture", TimeoutException()) == 2
+    monkeypatch.delenv("RESUMEME_CI_RETRY_MUTATIONS")
+    assert _retryable_failure_status("publish-resume", TimeoutException()) == 2
 
 
 @pytest.mark.parametrize("uncertain", [False, True])

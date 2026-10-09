@@ -5,6 +5,7 @@ Retry transient operations with explicit bounds and injectable waiting.
 from __future__ import annotations
 
 import logging
+import signal
 import time
 from typing import TYPE_CHECKING, TypeVar
 
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
 
     from resumeme.config import Capture
 
-__all__ = ["is_retryable_selenium_error", "retry", "retry_selenium"]
+__all__ = ["is_retryable_linkedin_exit_status", "is_retryable_selenium_error", "retry", "retry_selenium"]
 _T = TypeVar("_T")
 _LOGGER = logging.getLogger(__name__)
 _NON_RETRYABLE_SELENIUM_ERRORS = (
@@ -34,6 +35,20 @@ _NON_RETRYABLE_SELENIUM_ERRORS = (
     NoSuchWindowException,
     UnexpectedAlertPresentException,
 )
+_RETRYABLE_PROCESS_SIGNALS = frozenset({signal.SIGABRT, signal.SIGBUS, signal.SIGSEGV})
+
+
+def is_retryable_linkedin_exit_status(status: int) -> bool:
+    """
+    Classify the private transient-failure exit code and browser-driver crash signals.
+
+    Args:
+        status (int): CLI exit status, negative when a child process was terminated by a signal.
+
+    Returns:
+        bool: Whether a fresh LinkedIn browser session may retry this failed mutation.
+    """
+    return status == 75 or (status < 0 and -status in _RETRYABLE_PROCESS_SIGNALS)
 
 
 def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers.

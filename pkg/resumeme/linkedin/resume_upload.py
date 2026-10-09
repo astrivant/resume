@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
 import re
 import unicodedata
 from io import BytesIO
@@ -18,7 +19,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-from resumeme.exceptions import BrowserError, BrowserWaitError
+from resumeme.exceptions import BrowserError, BrowserWaitError, ResumeUploadConfirmationError
 from resumeme.linkedin import browser_scripts, resume_settings
 from resumeme.linkedin.account import check_owner
 from resumeme.linkedin.retrying import retry_selenium
@@ -154,10 +155,20 @@ def _upload_resume(driver: WebDriver, config: Config, pdf: Path, *, dry_run: boo
 
     Raises:
         BrowserError: Ownership, settings, or persisted upload cannot be confirmed.
+        ResumeUploadConfirmationError: A submitted, content-addressed PDF is not yet visible in server state.
     """
     check_owner(driver, config)
     policy = config.capture
     field = retry_selenium(lambda: resume_settings._settings(driver, config), policy)
+
+    # GitHub numbers its first run attempt as 1; later reruns first reconcile this exact signed PDF before uploading.
+    github_attempt = os.environ.get("GITHUB_RUN_ATTEMPT", "1")
+
+    if github_attempt.isdecimal() and int(github_attempt) > 1:
+        _LOGGER.info(
+            "Checking whether this release PDF is already saved before retrying LinkedIn publication",
+            extra={"github.run_attempt": int(github_attempt), "github.sha": os.environ.get("GITHUB_SHA", ""), "file.name": pdf.name},
+        )
 
     if _saved(driver, pdf.name):
         _LOGGER.info("Release PDF already saved on LinkedIn", extra={"file.name": pdf.name})
@@ -195,9 +206,10 @@ def _upload_resume(driver: WebDriver, config: Config, pdf: Path, *, dry_run: boo
     try:
         confirmed = retry_selenium(confirm, policy)
     except WebDriverException as error:
-        raise BrowserError(
+        raise ResumeUploadConfirmationError(
             "Could not confirm the resume upload. Inspect LinkedIn Jobs > Preferences > Resumes and application data "
-            f"for {pdf.name} or an upload error, then retry the same PDF. No second upload was submitted."
+            f"for {pdf.name} or an upload error, then retry the same PDF. No second upload was submitted. A later "
+            "attempt checks for this exact content-addressed release before another submission."
         ) from error
 
     _LOGGER.info("Release PDF saved on LinkedIn", extra={"file.name": confirmed})
