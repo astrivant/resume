@@ -564,7 +564,12 @@ native launcher. Selenium Manager resolves the selected browser's driver and cac
 downloads under `.cache/selenium/`.
 
 Capture expands text and lazy lists, follows owner-scoped detail links, and traverses
-pagination. It preserves grouped positions, full text, link targets, and referenced
+pagination. Before each scroll, it waits for visible loading placeholders to finish
+and for content and layout to remain stable for one second. Expanded text is captured
+before advancing. The existing `capture.page_timeout_seconds` bounds each wait;
+unsettled content fails through the normal capture retries instead of being accepted
+as an absent section. This applies to both local capture and CI capture planning.
+It preserves grouped positions, full text, link targets, and referenced
 images, and reads the owner's Contact info dialog. Contact fields shown there,
 including email and birthday when present, are part of the snapshot. A separate
 `requests` session downloads images and one level of external

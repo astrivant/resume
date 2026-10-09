@@ -27,6 +27,7 @@ from resumeme.linkedin.browser import scripts as browser_scripts
 from resumeme.linkedin.capture.refinement import refine_capture_plan
 from resumeme.linkedin.capture.shards import CaptureRoute, CaptureShard, assign_routes, make_capture_plan
 from resumeme.linkedin.capture.timings import apply_timings, read_timings
+from resumeme.linkedin.capture.viewport import wait_for_content
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry_selenium
@@ -83,6 +84,9 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
     snapshots: list[str] = []
 
     for _ in range(settings.max_scrolls):
+        # A profile heading alone is not ready: moving first can permanently skip still-loading About/Featured cards.
+        wait_for_content(driver, settings)
+
         # Capture the current viewport before expanding or scrolling can replace its content.
         snapshots.append(driver.page_source)
         buttons = driver.find_elements(
@@ -104,6 +108,11 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
                 clicked = True
                 break
 
+        if clicked:
+            # Re-read the expanded viewport before scrolling can evict the content we just requested.
+            settled = 0
+            continue
+
         at_bottom: object = driver.execute_script(browser_scripts.SCROLL_PROFILE_CONTENT, "next")
         current = driver.find_element(By.CSS_SELECTOR, "main").text
         _LOGGER.debug(
@@ -122,11 +131,6 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
             settled = 0
 
         previous = current
-
-        try:
-            WebDriverWait(driver, 1.5, poll_frequency=0.25).until(_text_changed(current))
-        except TimeoutException:
-            pass
 
     raise BrowserTimeoutError("Capture reached max_scrolls before the page settled; raise the limit and retry.")
 
