@@ -37,9 +37,8 @@ def safe_url(value: str, base: str = "https://www.linkedin.com") -> str:
         return ""
 
     # Validate before any consumer fetches or embeds the URL; preserve anchors belonging to complete destinations.
-    absolute = urljoin(base, value)
-
     try:
+        absolute = urljoin(base, value)
         parsed = urlsplit(absolute)
 
         if parsed.scheme not in {"https", "http"} or not parsed.hostname or parsed.username or parsed.password:

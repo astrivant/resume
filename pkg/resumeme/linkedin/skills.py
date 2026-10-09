@@ -292,5 +292,5 @@ def publish_skills(
         if connect_port is None:
             _navigate(driver, "https://www.linkedin.com/login", config.capture)
 
-        _login(driver, config.capture, headless=headless)
+        _login(driver, config.capture, headless=headless, profile_username=config.linkedin.username)
         return _update_skills(driver, config, root, [skill.name for skill in proposal.skills], dry_run=dry_run)

@@ -401,6 +401,9 @@
               },
               "profile_column_side": {
                 "$ref": "#/properties/style/properties/profile_column_side"
+              },
+              "profile_column_wrap": {
+                "$ref": "#/properties/style/properties/profile_column_wrap"
               }
             },
             "additionalProperties": false
@@ -436,7 +439,7 @@
         "show_headline": {
           "type": "boolean",
           "default": false,
-          "description": "Display the captured headline beneath the portrait; hidden by default."
+          "description": "Display the captured or generated headline beneath the portrait; hidden by default."
         },
         "display_current_position": {
           "type": ["boolean", "null"],
@@ -444,12 +447,17 @@
           "description": "Sidebar company, logo, and title: null selects the latest visible Experience role, true selects the latest captured role regardless of filters, false hides it."
         },
         "profile_column_side": {
-          "description": "First-page profile placement: left keeps full-height columns; right wraps body content beside and below the profile.",
+          "description": "First-page profile placement in a separate left or right column; profile_column_wrap optionally permits body text below a right-side profile.",
           "enum": [
             "left",
             "right"
           ],
           "default": "left"
+        },
+        "profile_column_wrap": {
+          "description": "Allow body text to expand below the right-side profile; false keeps separate first-page columns. Ignored when profile_column_side is left.",
+          "type": "boolean",
+          "default": false
         }
       },
       "required": [],

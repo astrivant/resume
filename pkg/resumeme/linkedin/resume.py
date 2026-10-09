@@ -76,7 +76,7 @@ def publish_resume(
             if connect_port is None:
                 _navigate(driver, "https://www.linkedin.com/login", config.capture)
 
-            _login(driver, config.capture, headless=headless)
+            _login(driver, config.capture, headless=headless, profile_username=config.linkedin.username)
             filename = _upload_resume(driver, config, staged, dry_run=dry_run)
 
             if config.linkedin.resume.replace_existing:

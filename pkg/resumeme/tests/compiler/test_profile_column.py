@@ -33,29 +33,37 @@ def test_profile_column_defaults_left_and_supports_theme_override(tmp_path: Path
     path = tmp_path / "resumeme.config.yaml"
     path.write_text(
         "linkedin:\n  username: example-person\nstyle:\n  theme: floating\n  themes:\n    floating:\n      profile_column_side: right\n"
+        "      profile_column_wrap: true\n"
     )
     style = load_config(path).style
     assert style.profile_column_side == "left"
     assert resolve_style(style).profile_column_side == "right"
     assert style.profile_column_side == "left"
+    assert style.profile_column_wrap is False
+    assert resolve_style(style).profile_column_wrap is True
 
 
-@pytest.mark.parametrize("side", ["center", "Right", True, None])
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("profile_column_side", value) for value in ("center", "Right", True, None)]
+    + [("profile_column_wrap", value) for value in ("false", 1, None)],
+)
 @pytest.mark.parametrize("theme", [False, True])
-def test_profile_column_rejects_invalid_base_and_theme_values(tmp_path: Path, side: str | bool | None, theme: bool) -> None:
+def test_profile_column_rejects_invalid_base_and_theme_values(tmp_path: Path, field: str, value: object, theme: bool) -> None:
     """
     Reject unsupported placements before generating a PDF.
 
     Args:
         tmp_path (Path): Temporary configuration root.
-        side (str | bool | None): Invalid column placement.
+        field (str): Placement or wrapping setting.
+        value (object): Invalid setting value.
         theme (bool): Whether to put the invalid value in a theme override.
 
     Returns:
-        None: Base and theme configuration use the same strict enum.
+        None: Base and theme configuration use the same strict types and supported placements.
     """
     path = tmp_path / "resumeme.config.yaml"
-    override = {"profile_column_side": side}
+    override = {field: value}
     style = {"themes": {"custom": override}} if theme else override
     path.write_text(yaml.safe_dump({"linkedin": {"username": "example-person"}, "style": style}))
 
@@ -64,14 +72,18 @@ def test_profile_column_rejects_invalid_base_and_theme_values(tmp_path: Path, si
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
+@pytest.mark.parametrize("wrap", [False, True])
 @pytest.mark.parametrize("contact_first", [False, True])
-def test_both_layouts_preserve_visible_content_and_navigation(tmp_path: Path, side: Literal["left", "right"], contact_first: bool) -> None:
+def test_both_layouts_preserve_visible_content_and_navigation(
+    tmp_path: Path, side: Literal["left", "right"], wrap: bool, contact_first: bool
+) -> None:
     """
     Keep header, contact placement, section links, and ordered body content in either layout.
 
     Args:
         tmp_path (Path): Isolated template rendering directory.
         side (Literal["left", "right"]): Selected profile-column position.
+        wrap (bool): Whether right-side placement permits body text below the profile.
         contact_first (bool): Whether Contact is listed first or last in the configuration.
 
     Returns:
@@ -88,13 +100,14 @@ def test_both_layouts_preserve_visible_content_and_navigation(tmp_path: Path, si
         ],
     )
     order = ["contact", "about", "experience"] if contact_first else ["about", "experience", "contact"]
-    config = Config(LinkedIn(profile.username), style=Style(profile_column_side=side), section_order=order)
+    config = Config(LinkedIn(profile.username), style=Style(profile_column_side=side, profile_column_wrap=wrap), section_order=order)
     source = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
     assert source.count("Alex Example") == 1
     assert source.count("About evidence") == 1
     assert source.count("Contact evidence") == 1
     assert source.count("Delivered systems") == 1
     assert "Engineer at Example" not in source
+    assert (r"\profilewrappingtrue" in source) is (side == "right" and wrap)
     before, after = source.split(r"\framebreak", 1)
     assert "Contact evidence" in before
     assert "Contact evidence" not in after
@@ -106,19 +119,22 @@ def test_both_layouts_preserve_visible_content_and_navigation(tmp_path: Path, si
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
-def test_minimal_profile_needs_no_empty_body_frame(tmp_path: Path, side: Literal["left", "right"]) -> None:
+@pytest.mark.parametrize("wrap", [False, True])
+def test_minimal_profile_needs_no_empty_body_frame(tmp_path: Path, side: Literal["left", "right"], wrap: bool) -> None:
     """
     Render a name and profile link without manufacturing sections or an extra page break.
 
     Args:
         tmp_path (Path): Isolated rendering directory.
         side (Literal["left", "right"]): Selected profile-column position.
+        wrap (bool): Whether to permit wrapping around a right-side profile.
 
     Returns:
         None: A profile with no sections remains valid in either layout.
     """
     profile = Profile("example-person", "Alex")
-    source = render_profile(profile, Config(LinkedIn(profile.username), style=Style(profile_column_side=side)), tmp_path).read_text()
+    config = Config(LinkedIn(profile.username), style=Style(profile_column_side=side, profile_column_wrap=wrap))
+    source = render_profile(profile, config, tmp_path).read_text()
     body = source.split(r"\begin{document}", 1)[1]
     assert r"\framebreak" not in body
     assert "LinkedIn profile" in body

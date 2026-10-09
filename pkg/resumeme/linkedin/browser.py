@@ -557,7 +557,7 @@ def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False) 
         driver.set_page_load_timeout(config.capture.page_timeout_seconds)
         driver.set_window_size(1440, 1000)
         _navigate(driver, "https://www.linkedin.com/login", config.capture)
-        _login(driver, config.capture, headless=headless)
+        _login(driver, config.capture, headless=headless, profile_username=config.linkedin.username)
         _navigate(driver, f"https://www.linkedin.com/in/{username}/", config.capture)
 
         # The overview is the sole source of identity, section order, and route ownership for all six workers.
@@ -730,7 +730,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
         if connect_port is None:
             _navigate(driver, "https://www.linkedin.com/login", config.capture)
 
-        _login(driver, config.capture, headless=headless)
+        _login(driver, config.capture, headless=headless, profile_username=config.linkedin.username)
         _LOGGER.info("Login detected; loading profile")
         username = config.linkedin.username
         _navigate(driver, f"https://www.linkedin.com/in/{username}/", config.capture)

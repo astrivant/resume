@@ -14,19 +14,19 @@
     {
       "url": "https://media.licdn.com/dms/image/v2/D4E16AQFN0Ptpp3lEYA/profile-displaybackgroundimage-shrink_200_800/B4EZxESeUlJgAY-/0/1770672220223?e=1793232000&v=beta&t=ZH7Wu2NlqlL4XxyU97sDqENYS_0o8FLABcwQfyiWvl0",
       "alt": "Cover photo",
-      "path": "data/assets/025361a6842338730733ee3c248a12bf0d8a32276ff44e192607fbf06f1492ec.png",
+      "path": "data/assets/51b8537afc858ae5b6b5e58ccfa4a03fa87073764f3c9cf410ca480510d897a1.png",
       "link": ""
     },
     {
-      "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_200_200/B4EZ07hupKHYAY-/0/1774820195522?e=1793232000&v=beta&t=6h0mKmEfWQxvH5X7Ot2SodlPOEh7n1vwcWIPqkjIaYk",
+      "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
       "alt": "",
-      "path": "data/assets/ffc4ffcc4f5fa762251a16ce6be37e599042a752a715c4adea4e7c78f2a1d09f.png",
+      "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
       "link": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true"
     },
     {
       "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
       "alt": "",
-      "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+      "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
       "link": ""
     }
   ],
@@ -46,6 +46,11 @@
   ],
   "sections": [
     {
+      "key": "contact",
+      "title": "Contact info",
+      "entries": []
+    },
+    {
       "key": "about",
       "title": "About",
       "entries": [
@@ -64,7 +69,7 @@
             {
               "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
               "alt": "Releases · astrivant/resumeme",
-              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "path": "data/assets/17b8f263d6b964be52a79c2bc16fcc45a9f88cfd5153ee19e32eb1827aabe0e9.png",
               "link": "https://github.com/astrivant/resumeme/releases"
             }
           ],
@@ -102,15 +107,15 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792137600&v=beta&t=DF-3aDh0H7S3Culgrg5UGS5h_bb-UgpI10AUJL4dVAo",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_480/B4EaEaJW36HYAU-/0/1791440023748?e=1792137600&v=beta&t=1BPYoF9u7hAjBfaP3OF0vhyGWvJhQ0-1fwyF0K6QmHY",
               "alt": "",
-              "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
+              "path": "data/assets/64c6351a4d2d9f60b02e57c0115532b01feed81a41326e49d6dfb625be6cd6f8.png",
               "link": "https://www.linkedin.com/feed/update/urn:li:activity:7513843384734601217/"
             },
             {
               "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
               "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
-              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "path": "data/assets/17b8f263d6b964be52a79c2bc16fcc45a9f88cfd5153ee19e32eb1827aabe0e9.png",
               "link": "https://lnkd.in/evwPnqv9"
             }
           ],
@@ -148,21 +153,21 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_480/B4EaCMSldGHAAY-/0/1789060078326?e=1792137600&v=beta&t=H76y_0NC2WPsabG3KZfM-AHJ4YHKm6rrDrtQpE4wjU4",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_800/B4EaCMSldGHAAc-/0/1789060078326?e=1792137600&v=beta&t=-naBTrUrQHWI_eHBwvkmLVg4fdLNHX4q8dBMoLr1igg",
               "alt": "",
-              "path": "data/assets/72ae39716a7955f5365b9db5f9f8aac4e377fd64d2408660f2a25c4339c787d6.png",
+              "path": "data/assets/4e096054c334a3e4854f6bbc1c02d0dd8ba0e95c2e4e7a607a85a2e380bb3888.png",
               "link": "https://www.linkedin.com/feed/update/urn:li:activity:7509589632158928896/"
             },
             {
               "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
               "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
-              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "path": "data/assets/81ec35dd8fb147479968f2821e659e753d6389945662c5542eafec8bb9453645.png",
               "link": "https://lnkd.in/ektqstTY"
             },
             {
               "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
               "alt": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm",
-              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "path": "data/assets/81ec35dd8fb147479968f2821e659e753d6389945662c5542eafec8bb9453645.png",
               "link": "https://lnkd.in/eqZRNAqJ"
             }
           ],
@@ -211,33 +216,33 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGdP5KIxcpY2g/articleshare-shrink_480/B4EaDGvuAtHQAU-/0/1790040794209?e=1792137600&v=beta&t=m1WlUjPXwgxy47RS8LfffHffc_RpPTHjIT3Ss5j34Aw",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGdP5KIxcpY2g/articleshare-shrink_800/B4EaDGvuAtHQAY-/0/1790040794209?e=1792137600&v=beta&t=sEOa_d_Bxs0UmSOlV6Pn22uKwCem8sRUoeMfJXMPWkw",
               "alt": "",
-              "path": "data/assets/b8d75c5eb2a66a9f43e840f2bc5972afc656afb04b32aeb9cd644e1b4c503307.png",
+              "path": "data/assets/f5fea17d0fcf852c34b0b4a8c640a03e312b8345f565e4e898deec19d7d06aa6.png",
               "link": "https://www.linkedin.com/feed/update/urn:li:activity:7507271032412704768/"
             },
             {
               "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
               "alt": "GitHub - astrivant/polyad: Kubernetes operator and Python SDK for adaptive microservices. Compose graphs across clusters, enforce Cheeger bounds, and adapt topology, traffic and capacity to application demand.",
-              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "path": "data/assets/6f8bc8a1590987dde7570d934e0f5887676e33b131594dcacf8b72bd549784d4.png",
               "link": "https://lnkd.in/edjues52"
             },
             {
               "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
               "alt": "polyad/pkg/polyad-sdk at main · astrivant/polyad",
-              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "path": "data/assets/6f8bc8a1590987dde7570d934e0f5887676e33b131594dcacf8b72bd549784d4.png",
               "link": "https://lnkd.in/ep4n-NpJ"
             },
             {
               "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
               "alt": "polyad/studies/soul at main · astrivant/polyad",
-              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "path": "data/assets/6f8bc8a1590987dde7570d934e0f5887676e33b131594dcacf8b72bd549784d4.png",
               "link": "https://lnkd.in/enpeacGx"
             },
             {
               "url": "https://opengraph.githubassets.com/d3802f5c281958ffde4d10eaa70706e9b0c055f39bec6d02a4a6555db450fd78/astrivant/polyad",
               "alt": "polyad/studies/nature at main · astrivant/polyad",
-              "path": "data/assets/72f5faf8cfe89b6f32b51447a1a16bf393edfd3637dfdbdd32786fd071cf6efc.png",
+              "path": "data/assets/6f8bc8a1590987dde7570d934e0f5887676e33b131594dcacf8b72bd549784d4.png",
               "link": "https://lnkd.in/ew2XgdAX"
             }
           ],
@@ -260,7 +265,7 @@
             "Excited to share our new paper: LLM-as-Jev! We show how to easily turn any LLM into a Jev-style decision model. While the community has explored similar ideas, our approach proves very competitive, and we provide a detailed quantitative comparison alongside a practical guide on when off-the-shelf LLMs are enough vs. when and how to fine-tune them.\nhttps://lnkd.in/gbjVQCSE",
             "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune ThemLLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
             "arxiv.org",
-            "1,076 reactions1,076",
+            "1,082 reactions1,082",
             "18 comments18 comments",
             "•",
             "54 reposts54 reposts",
@@ -299,7 +304,7 @@
               "title": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them"
             },
             {
-              "label": "1,076 reactions 1,076",
+              "label": "1,082 reactions 1,082",
               "url": "https://www.linkedin.com/in/emmeowzing/?isSelfProfile=true",
               "resolved_url": "",
               "title": ""
@@ -309,31 +314,31 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E03AQESfgI2DatI7A/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1660620479185?e=1793232000&v=beta&t=hnwBw36yTYHIoW1CdgoexzcwXlUhFxiw5FPGb2Yi9P4",
               "alt": "View Yinheng Li’s profile",
-              "path": "data/assets/60714a2f8fd45bc5122168d953d96b3b04bde3246bd284aa958a956ab85d6a50.png",
+              "path": "data/assets/5457f96d962a7790a3ca81ddc1ac99c5ddd04cef9f7dd1177d8602e673cd0bc7.png",
               "link": "https://www.linkedin.com/in/yinhengli/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQGlDoUwxR8YAw/articleshare-shrink_160/B56aESRwitHIAU-/0/1791308007903?e=1792137600&v=beta&t=DYbKf4DX0kdz4EiKNBdCjd31I6JDxd-hpaO0Q8nEA_0",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQGlDoUwxR8YAw/articleshare-shrink_480/B56aESRwitHIAY-/0/1791308007903?e=1792137600&v=beta&t=0H2RtP4QOImDafhRoqQCRuacYA7TpTOkGRDB-062S20",
               "alt": "",
-              "path": "data/assets/c247c919baf02ca8aa21c6384e8d1ffdd0a635ca8f6c2edd07a82c30f15913f4.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Farxiv%2Eorg%2Fabs%2F2610%2E02076v2&urlhash=R-27&mt=on0ilRhVD-miKWz_0eZfrhA7f-uenh3XNIYfYng4a5oGOEeHBr6CmAmVamhGcloBQZWqSzKqK1MSz1z9cI50VtcgbPsFy75vt1XRzWj1glsZwnZT6YNgSLODig&isSdui=true"
+              "path": "data/assets/ffc3744369e5bf01b66b758800ce57e2467c1f0168b05995fdcb0256d7bee4ea.png",
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Farxiv%2Eorg%2Fabs%2F2610%2E02076v2&urlhash=R-27&mt=KvSO8P354DztkIzuLQhBYPaOGWZixVK6OnX11CBaq_gDMO4vFpCDQXd8hhnMiIhYJ3pxhT993GHyKtLC_iZpJPO-GqmJ0TdvszC5up66-eWj_yxJ4ItdSnb-bg&isSdui=true"
             },
             {
               "url": "https://arxiv.org/static/browse/0.3.4/images/arxiv-logo-fb.png",
               "alt": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
-              "path": "data/assets/fed5d0d5f6fa2ad0269ec7e16816ce002477626a8ecbc07b0052a3ce0e9ba8d6.png",
+              "path": "data/assets/531e11bc15ee69f276745a6a4246855c179394ccb0609c3258663eb731c6b34f.png",
               "link": "https://lnkd.in/gbjVQCSE"
             },
             {
               "url": "https://arxiv.org/static/browse/0.3.4/images/arxiv-logo-fb.png",
               "alt": "LLM-as-Jev: LLMs Are Already Jev-Style Decision Models -- When and How to Fine-Tune Them",
-              "path": "data/assets/fed5d0d5f6fa2ad0269ec7e16816ce002477626a8ecbc07b0052a3ce0e9ba8d6.png",
+              "path": "data/assets/531e11bc15ee69f276745a6a4246855c179394ccb0609c3258663eb731c6b34f.png",
               "link": "https://arxiv.org/abs/2610.02076v2"
             }
           ],
@@ -353,7 +358,7 @@
             "1 comment1 comment",
             "Comment",
             "Send",
-            "351 impressions",
+            "356 impressions",
             "View analyticsView analytics"
           ],
           "links": [
@@ -388,7 +393,7 @@
               "title": ""
             },
             {
-              "label": "351 impressions View analytics View analytics",
+              "label": "356 impressions View analytics View analytics",
               "url": "https://www.linkedin.com/analytics/post-summary/urn:li:activity:7513843384734601217/",
               "resolved_url": "",
               "title": ""
@@ -398,25 +403,25 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792137600&v=beta&t=DF-3aDh0H7S3Culgrg5UGS5h_bb-UgpI10AUJL4dVAo",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_480/B4EaEaJW36HYAU-/0/1791440023748?e=1792137600&v=beta&t=1BPYoF9u7hAjBfaP3OF0vhyGWvJhQ0-1fwyF0K6QmHY",
               "alt": "",
-              "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fresumeme&urlhash=IWSk&mt=tvVGJzcEAcESJSYVruduJ_dEhH0RHQ9sn9XdPcf2OvOXC_ZP4auh6D9CQ-WugmW2hiWCT6lRrQtJX3QdFxgC8gHUfBCxc-7iq8U3nZlK3pw3QE60m0fku14cyw&isSdui=true"
+              "path": "data/assets/64c6351a4d2d9f60b02e57c0115532b01feed81a41326e49d6dfb625be6cd6f8.png",
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fresumeme&urlhash=IWSk&mt=ViTJCSDdkQydscBwytGopAGlCyX0DCMdquIaXQiJCxqTZOYWretdx7KZyxJJKddbqwsekfuKbVB8aTOD6Ot0YPaYEULGtZ_JBjPIIQrm7nkiBsXNm5x-sMVJKA&isSdui=true"
             },
             {
               "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
               "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
-              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "path": "data/assets/17b8f263d6b964be52a79c2bc16fcc45a9f88cfd5153ee19e32eb1827aabe0e9.png",
               "link": "https://lnkd.in/evwPnqv9"
             },
             {
               "url": "https://repository-images.githubusercontent.com/1408175793/28ce601c-6b4d-45cd-8585-ef334c91d1c3",
               "alt": "GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
-              "path": "data/assets/42077705f6911f4927c0f93431e60e08c635896ffd4c483da20b69cc4a21aedc.png",
+              "path": "data/assets/17b8f263d6b964be52a79c2bc16fcc45a9f88cfd5153ee19e32eb1827aabe0e9.png",
               "link": "https://github.com/astrivant/resumeme"
             }
           ],
@@ -504,19 +509,19 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D5603AQG0LU4q8m_oAg/profile-displayphoto-scale_100_100/B56Z2LrC96IUAc-/0/1776164816824?e=1793232000&v=beta&t=1eTEe3jBREjK7LRo8JmWUzVY_yD8Bmuf3ysmfGvDS7o",
               "alt": "View Arun Fiddler’s profile",
-              "path": "data/assets/9ffe1190448d63da9e9ba9a5b854e695880e6992a444edd10ef27b85bb78ef6e.png",
+              "path": "data/assets/6711c0c955b9a9b79f9718f925986e61f16f585799e5f37c440403541383c721.png",
               "link": "https://www.linkedin.com/in/arunfiddler/"
             },
             {
               "url": "https://www.kubernetes.dev/favicons/favicon.ico",
               "alt": "Report Last Used Time On a PVC",
-              "path": "data/assets/feff4649268e6d53ba7599062999431ff32778f7ec2eda37ebd506febd9e851b.png",
+              "path": "data/assets/dc4943293c732f7d07001f81cd530e8e6eb08fa8c9d58928149a255ad3fd8d32.png",
               "link": "https://lnkd.in/gvYfRSUQ"
             }
           ],
@@ -573,25 +578,25 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D03AQEdA0sNi2fE3g/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1719407797539?e=1793232000&v=beta&t=dS0GwkBqbr56Ymu9nobrolqwYHq0zG6in1nfWZ8pnFY",
               "alt": "View Gjorgji J.’s profile",
-              "path": "data/assets/1eb5ac80509c8c581c6353faf4bef3de264c844ffc2a3f028fbad00be9ae103e.png",
+              "path": "data/assets/1e170a27d599e1f7397a154d6b6238771248dee09fed8922f7441f89d5a28330.png",
               "link": "https://www.linkedin.com/in/gjorgji-ts/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/v2/D4D22AQFADnMjNVdctQ/feedshare-shrink_480/B4DaEBDKgCJUAg-/0/1791018970250?e=1793232000&v=beta&t=98VYXe5CHryEedmyWJOsSJyGH48Ulocws2-O_YR_GzA",
+              "url": "https://media.licdn.com/dms/image/v2/D4D22AQFADnMjNVdctQ/feedshare-shrink_800/B4DaEBDKgCJUAc-/0/1791018970250?e=1793232000&v=beta&t=AeBzdk6c0_-qHUvxAlIjBirZgIzjnduNa1Br7FrAxcY",
               "alt": "View image",
-              "path": "data/assets/eee4e0d90ac706960e2b24a0fc8bd0d6c7547fd5e7f865abff39ad955f064b22.png",
+              "path": "data/assets/dbd4e71907ed99ed3fdde5b075b50c5f14d1d08bdcf941542b8dc91559d91f6f.png",
               "link": "https://www.linkedin.com/feed/update/urn:li:activity:7512671816159584257/"
             },
             {
               "url": "https://opengraph.githubassets.com/85198f563f537e1c128096767ae738a1a67bcfc4973bcdeaa0e374124472a602/gjorgji-ts/lightsout",
               "alt": "GitHub - gjorgji-ts/lightsout: LightsOut is a Kubernetes operator that automatically downscales workloads during off-hours to reduce cost and resource usage.",
-              "path": "data/assets/122db7dccf3949c77d8d34f694b17557e6d45c47d200f7bbe874f626cd8ea79a.png",
+              "path": "data/assets/a47a7f97dca83084dcd44226c471d11e47b04f7bcdcd454e9f344db9e2ded4c6.png",
               "link": "https://lnkd.in/dC3WYy39"
             }
           ],
@@ -608,7 +613,7 @@
             "Oct 1",
             "Unpopular opinion: AI companies are pushing society to accept an unacceptable level of risk for a non-essential technology.",
             "867 reactions867",
-            "100 comments100 comments",
+            "101 comments101 comments",
             "•",
             "46 reposts46 reposts",
             "Comment",
@@ -650,19 +655,19 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D03AQEvIshzRc7RBg/profile-displayphoto-scale_100_100/B4DaB7QDRvI4AY-/0/1788774202346?e=1793232000&v=beta&t=kiS89POJ02c5oL3MUc5TFpFFWq6Fqw_26sUvnFg7sio",
               "alt": "View Luiza Jarovsky, PhD’s profile",
-              "path": "data/assets/490b6937c3592198f5b8ca0ef901dea425d4f8b37bef31e8cfdd8b13ff9a5423.png",
+              "path": "data/assets/cac40454e26091549416c56c47dc0025ac65fa9404d56316860812f9ec113632.png",
               "link": "https://www.linkedin.com/in/luizajarovsky/"
             },
             {
               "url": "https://substackcdn.com/image/fetch/$s_!e9aJ!,w_400,h_400,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb6a56d5a-1724-4dac-b72a-afd9e41051e9_600x600.png",
               "alt": "Luiza's Newsletter | Substack",
-              "path": "data/assets/dd1061bbced9baa4d51aa049e25310246a82febfd5517e5aea0b204a6513d9bb.png",
+              "path": "data/assets/bec8f276311d85e6a1f9b158b298057e550f10061e58642a700545b33eaa9fca.png",
               "link": "https://www.luizasnewsletter.com"
             }
           ],
@@ -720,19 +725,19 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/C5603AQF4aDTnHoQsyA/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1632152012847?e=1793232000&v=beta&t=Vgv6Vt1ukVEiJosoaknTTMFq75Pe8htjDTFSOwD8yyo",
               "alt": "View Jered Sutton’s profile",
-              "path": "data/assets/48032c51cfc0b93261150ecaaaa65416cb9fab683677f15b4c4c7f320ee72165.png",
+              "path": "data/assets/b8b93c8f1d29b18deddd8ce0760e2be05db8e35a84b3e5c2706bd7929369bc21.png",
               "link": "https://www.linkedin.com/in/jereds/"
             },
             {
               "url": "https://claude-code.mintlify.app/_mintlify/api/og/v2?division=Getting+started&title=Overview&description=Claude+Code+is+an+agentic+coding+tool+that+reads+your+codebase%2C+edits+files%2C+runs+commands%2C+and+integrates+with+your+development+tools.+Available+in+your+termin&theme=03628e99c753a03aec319053&signature=a6211f7f0c07234ce7bcb0f2b0c2f91f628818e6374aecf9d861f1f986b61901",
               "alt": "Overview - Claude Code Docs",
-              "path": "data/assets/22f0d698c056180dc03d6240102d3241f19b66dc5fcf0e64529f0255adc98f6e.png",
+              "path": "data/assets/2e7a8ea4f866947552cb58cfcedc34460b96d1a8e2ebb751a2fdcbe87c66de51.png",
               "link": "http://CLAUDE.md"
             }
           ],
@@ -784,13 +789,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D5603AQFZvXQXpaX-IQ/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1720633000776?e=1793232000&v=beta&t=D1fFRCwIFdiEclZWsRbfe3yTxbyMy09F_VYkq8upkjg",
               "alt": "View James Busia’s profile",
-              "path": "data/assets/5a3e24d74bfde6bc7f8c8b4109314a55f904080690ad35da66587aac54d7ca9a.png",
+              "path": "data/assets/1006e64f30f3be615f150f1bac8de174da33842f26b24af83a57c550a512be66.png",
               "link": "https://www.linkedin.com/in/james-iden-busia/"
             }
           ],
@@ -842,13 +847,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D5603AQGN7hfA073Bjw/profile-displayphoto-scale_100_100/B56Z0IGmqyKAAc-/0/1773957451205?e=1793232000&v=beta&t=BLx3Pejgo7OdA6LrTsWPsgUXsMV4Ub9FrcpIK3UY1WU",
               "alt": "View Jeff Boggs B.A.Sc.  MBA’s profile",
-              "path": "data/assets/89a02d8b922a0afa836528706dc09edcb4eb42fbc1fe67edee2b0a8b58e81f3e.png",
+              "path": "data/assets/b42b48bd9a1c0e7a3979909c8decc2aea4990f633bb8f3e7191828f1039334a9.png",
               "link": "https://www.linkedin.com/in/jeffboggs/"
             }
           ],
@@ -919,31 +924,31 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_160/B4EaCMSldGHAAU-/0/1789060078327?e=1792137600&v=beta&t=dqJRuqTcZCW7WfCxWx3qa6b53EtM-XNzcAXVKJbAmys",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_480/B4EaCMSldGHAAY-/0/1789060078326?e=1792137600&v=beta&t=H76y_0NC2WPsabG3KZfM-AHJ4YHKm6rrDrtQpE4wjU4",
               "alt": "",
-              "path": "data/assets/a2f2a90b36104f27fb75986d9bd2be07a318b0eee6bf3e136effeb97681cf0f8.png",
-              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fhypothesis-helm&urlhash=J6A4&mt=jUo3gfGfkzsgU4Ww7_Kva-ig7RcQ6Mv4wnPC0orGrFKb6401zAu_98vhjEn4eKcEQMC5oCaW2UIf2k4WInAcJFCxx_r8fRFa1kPki7X27NRrU7MkH6i4QXipjw&isSdui=true"
+              "path": "data/assets/dc93f0dd755361d89d86a6ce73a7397cb3298aebff17b139c39c0b178c56acd5.png",
+              "link": "https://www.linkedin.com/safety/go/?url=https%3A%2F%2Fgithub%2Ecom%2Fastrivant%2Fhypothesis-helm&urlhash=J6A4&mt=-QDNTA6r9HsG4YQyPR0Y9fszfL3RcWAWMB2MfQiFl1UEt_rO7Q1CWHF4l4xfNGDZzf4IvP8veoyupwyHkt0J4MKSacNb32jatd4fs1z2LbfZbkZHAdqLkuBbvw&isSdui=true"
             },
             {
               "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
               "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
-              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "path": "data/assets/81ec35dd8fb147479968f2821e659e753d6389945662c5542eafec8bb9453645.png",
               "link": "https://lnkd.in/ektqstTY"
             },
             {
               "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
               "alt": "hypothesis-helm/docs/reports/bitnami.pdf at main · astrivant/hypothesis-helm",
-              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "path": "data/assets/81ec35dd8fb147479968f2821e659e753d6389945662c5542eafec8bb9453645.png",
               "link": "https://lnkd.in/eqZRNAqJ"
             },
             {
               "url": "https://opengraph.githubassets.com/e71a9da416d593e21dfbb367dc6f260c07cb9f1da4710dbf1e65758f0648cdee/astrivant/hypothesis-helm",
               "alt": "GitHub - astrivant/hypothesis-helm: Hypothesis testing for Helm charts",
-              "path": "data/assets/6fd9441f67b136cecbbef9153ef49d5130620d1a2097fbe25f086fcb8c6fd704.png",
+              "path": "data/assets/81ec35dd8fb147479968f2821e659e753d6389945662c5542eafec8bb9453645.png",
               "link": "https://github.com/astrivant/hypothesis-helm"
             }
           ],
@@ -1043,19 +1048,19 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQEKVm0ebTen_w/profile-displayphoto-scale_100_100/B4EZ07hupKHYAc-/0/1774820195522?e=1793232000&v=beta&t=12UWlyE-Yo-HAgySKPP9ru2aWcBqB7ArL_VtFH7vMGY",
               "alt": "View Emma Doyle’s profile",
-              "path": "data/assets/5cd645489c8a211986e22a6ce7b84ecd1c9423c18165e2faf5702a23a57dc6c7.png",
+              "path": "data/assets/647509936c10e94ea4d6d8701c09b2376828ae50c096965102b8d158ab8df4fd.png",
               "link": "https://www.linkedin.com/in/emmeowzing/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D5603AQFonO3j0dPYWA/profile-displayphoto-scale_100_100/B56ZvNHz7.K0Ac-/0/1768672945358?e=1793232000&v=beta&t=-OSOmEYIav3QG4JQ6sEZKWOQGTs_r_v8SQhIhAgcEVI",
               "alt": "View Aniket Maithani’s profile",
-              "path": "data/assets/2c36f2b2293e86b1da7552cf790cf60af1349acd7b3fa10537cc03c22393ebad.png",
+              "path": "data/assets/ac5f52a6f44c84faab07582e6ee4adcf91c4e9c70a6576a77be2a88533bce3cd.png",
               "link": "https://www.linkedin.com/in/aniketmaithani/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/v2/D5622AQHN3tan6A99XQ/feedshare-shrink_480/B56aCvaOecKcAg-/0/1789649283222?e=1793232000&v=beta&t=M4czkrbnE-la9cIB0T5USeOIdECQThoQoHWKNyPib_A",
+              "url": "https://media.licdn.com/dms/image/v2/D5622AQHN3tan6A99XQ/feedshare-shrink_800/B56aCvaOecKcAc-/0/1789649283223?e=1793232000&v=beta&t=vM8N7PGuzeoE5Lb9H0Kdb6pESZj-vkTwWCwNUVUxc80",
               "alt": "View image",
-              "path": "data/assets/3bd73a2eb170a503c1311b05b2c834a1d194b7cc226c49b9eb454f124cf320ec.png",
+              "path": "data/assets/56e5f078dcae805397f6e2d2164b1d76564da7bcdf13cc501e72b2cf9507c1d1.png",
               "link": "https://www.linkedin.com/feed/update/urn:li:activity:7507647094044835840/"
             }
           ],
@@ -1095,13 +1100,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "Astrivant logo",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": "https://www.linkedin.com/company/146494938/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_160/B4EaEaJW36HYAQ-/0/1791440023748?e=1792137600&v=beta&t=DF-3aDh0H7S3Culgrg5UGS5h_bb-UgpI10AUJL4dVAo",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_480/B4EaEaJW36HYAU-/0/1791440023748?e=1792137600&v=beta&t=1BPYoF9u7hAjBfaP3OF0vhyGWvJhQ0-1fwyF0K6QmHY",
               "alt": "Thumbnail for GitHub - astrivant/resumeme: Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions",
-              "path": "data/assets/98ae9336fa1370c6d6687e765198d9cf7c8eb82626e149fe5b054a2358f56668.png",
+              "path": "data/assets/64c6351a4d2d9f60b02e57c0115532b01feed81a41326e49d6dfb625be6cd6f8.png",
               "link": "https://github.com/astrivant/resumeme"
             }
           ],
@@ -1143,25 +1148,25 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "Tiger Lily Plants LLC. logo",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": "https://www.linkedin.com/company/111622183/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/v2/D4E2DAQHSeywKLg-Yug/profile-treasury-image-shrink_160_160/B4EZxatnLwGYAo-/0/1771048432843?e=1792137600&v=beta&t=f-XFGUw1uFOsWAtUbnl_lnCB7I3mgJ14M2JlpFj-OB4",
+              "url": "https://media.licdn.com/dms/image/v2/D4E2DAQHSeywKLg-Yug/profile-treasury-image-shrink_480_480/B4EZxatnLwGYAQ-/0/1771048432862?e=1792137600&v=beta&t=wfN4EpDGuQUwyz8stOX2FNoWpc7vhHkCTkAOAZKv31c",
               "alt": "Thumbnail for Tiger Lily Plants LLC. | Website",
-              "path": "data/assets/9937e3771298695cc15a144e32d1869d906fb5ac3cfeb7ca10d7e15222cd4c2f.png",
+              "path": "data/assets/6378499cac122cbff37f70ec62217df33c90df14c5d087a1b89e6aae1a40a6e3.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             },
             {
-              "url": "https://media.licdn.com/dms/image/v2/D4E2DAQFygld7obypGg/profile-treasury-image-shrink_160_160/B4EZxat2ZsKsAk-/0/1771048495090?e=1792137600&v=beta&t=urRIOLTIdOLevytDDpjlHOmeYJ-vitCmIkC1irxYpn0",
+              "url": "https://media.licdn.com/dms/image/v2/D4E2DAQFygld7obypGg/profile-treasury-image-shrink_480_480/B4EZxat2ZsKsAM-/0/1771048495090?e=1792137600&v=beta&t=PQlFS3CzDqDAzUbVADl7KFFgtUSjV9Q5Tr1IIoFBC_U",
               "alt": "Thumbnail for TigerLilyPlants - Etsy",
-              "path": "data/assets/af434336ce1211e35f4f3e25a4ef022289bcc693d6dc80051b7d9c9af2bb97d5.png",
+              "path": "data/assets/6e9df0b37967097fa6e72aac17feb888edc59fb3922522dad1d564ad6d7b3f7b.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEr9v7a8qo_3A/articleshare-shrink_160/B4EZvUtBAuHEAk-/0/1772461800633?e=1792137600&v=beta&t=3UI-u6A0CrlFzgKsLIBvKNug8AxDBxGbP_oO1cF3ORo",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEr9v7a8qo_3A/articleshare-shrink_480/B4EZvUtBAuHEAo-/0/1772461800652?e=1792137600&v=beta&t=JnPIvuUf5o2zLmtLLEFt0KvA29tZWYyPpnIxzY0CEvA",
               "alt": "Thumbnail for Tiger Lily",
-              "path": "data/assets/25826bc6f4919b5c83b8c919eb1506103b3151fbf9baeca2f4de980f9883ec7d.png",
+              "path": "data/assets/4d984860f1dd075e170313ea7de434d1446d699907e3e633a3ea990dbb4c4661.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2822784681/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             }
           ],
@@ -1204,13 +1209,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "SBE Vision, Inc. logo",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": "https://www.linkedin.com/company/75395048/"
             },
             {
               "url": "https://opengraph.githubassets.com/5a365b57ced0999287acef47a5c5561325cafed984fa53f3d16e2bf2bb02ed85/astrivant/composer",
               "alt": "GitHub - astrivant/composer: Get a Docker Compose file for free in your project from Helm charts",
-              "path": "data/assets/a18418a2f4cda2236315962dc4e64bdb2c2e4a1e7635ad9e02ff63abc3763ec0.png",
+              "path": "data/assets/c2a4598d6699321f663e1b3f8853daea063c42f71c17609d2eead82be3d5e284.png",
               "link": "https://github.com/astrivant/composer"
             }
           ],
@@ -1247,7 +1252,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQH_2nYAgUCL5A/company-logo_100_100/B4EZ4ok3z.H8AI-/0/1778797215230/klaviyo_logo?e=1793232000&v=beta&t=TTI0mZ5lY8LKF8zWIoOeKSE2ckqmrQj1UbI5bBhfn2U",
               "alt": "Klaviyo logo",
-              "path": "data/assets/c4e9c6ac58b16b59511507bb1fb6d4ca02a3244bf5c107994dc1c4b8d4bbd943.png",
+              "path": "data/assets/2cd6be2e05908a858e354923ded56b8475d5813636c3acf68c88b6c5b39f912c.png",
               "link": "https://www.linkedin.com/company/2908815/"
             }
           ],
@@ -1278,19 +1283,19 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH6BGDx5BE8GQ/company-logo_100_100/company-logo_100_100/0/1672415765992/premiscale_logo?e=1793232000&v=beta&t=W9m2dTaNhCgq9FRYLbHc0d1iyatlzptriwKxp-rYpRs",
               "alt": "PremiScale logo",
-              "path": "data/assets/771a5386e699dbf41ae350416ecbe6d093814e7e2ded75518257a6f35bb5f037.png",
+              "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": "https://www.linkedin.com/company/91593723/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH6PslF9M_yvA/articleshare-shrink_160/articleshare-shrink_160/0/1765935747957?e=1792137600&v=beta&t=483oru3bIt8J4nMoAXHGcQzhmDYdeoahxKYkH9Hbwsk",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH6PslF9M_yvA/articleshare-shrink_480/articleshare-shrink_480/0/1765935747949?e=1792137600&v=beta&t=eiBmDKjDh6YdW2W8XqqikXIlwLPLrBj4sPsZiqBkXvI",
               "alt": "Thumbnail for GitHub - premiscale/premiscale: The PremiScale autoscaler controller for Kubernetes",
-              "path": "data/assets/a2b43eaf1258499ce7235c7b8fe8880f94138e82ea07027df94164904cadd39f.png",
+              "path": "data/assets/2a1019fe55bf3cf0edbb32f94c1ec2c8437e13567fe40dbf159393c22b70c0c7.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2410566952/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQEVGwYKyLaQ3Q/articleshare-shrink_160/B56ZpUriPrJkAk-/0/1762357290221?e=1792137600&v=beta&t=D5tyB-DwwY5dtnScfokD0zlgq0WdC_4KAw11Ae-bMrM",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D5627AQEVGwYKyLaQ3Q/articleshare-shrink_1280_800/B56ZpUriPrJkAQ-/0/1762357290222?e=1792137600&v=beta&t=FZbuqZudvTHW7NVU3C6sgT0n8mzCMzKdV9RPRAxucKQ",
               "alt": "Thumbnail for GitHub - premiscale/pass-operator: A kubernetes operator that syncs and decrypts secrets from pass git repositories",
-              "path": "data/assets/3dee12b8de204b9af870356e96828f24eb974b69beac53637cd9f33afe8ba8b5.png",
+              "path": "data/assets/92d8a4b2d32c009a42143e49e92e2b2b8188384cef7a64977a168e01f596a540.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/2410566952/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             }
           ],
@@ -1333,13 +1338,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "SBE Vision, Inc. logo",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": "https://www.linkedin.com/company/75395048/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSiomweF5JSw/articleshare-shrink_160/articleshare-shrink_160/0/1773215972279?e=1792137600&v=beta&t=imHqNPZQkE2N6E2iNeXXWwFB32QBp4lIKlhMRwDxm4o",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSiomweF5JSw/articleshare-shrink_480/articleshare-shrink_480/0/1773215972249?e=1792137600&v=beta&t=aopauNPj1etxlEG4PKK7XYCrjjgdERYrV4_TeGCsqIM",
               "alt": "Thumbnail for pre-commit hook that lints Gitlab CI configurations",
-              "path": "data/assets/0ef4b900dd83df4fbb18d0c723b0f1626b29b513677798975e052fec3c2f3b54.png",
+              "path": "data/assets/2ec68037e893cd9c4cfab7c9f9d96c7b0a271d499942a9e814befb51251a9117.png",
               "link": "https://github.com/bjd2385/gitlabci-lint-pre-commit-hook"
             }
           ],
@@ -1396,25 +1401,25 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHGGvtpxtKl2g/company-logo_100_100/company-logo_100_100/0/1636022953216/hqo_logo?e=1793232000&v=beta&t=GAqyzqRK3C2Lb-mTQKy3xvcv7TT8qiPaLq_f4YKvOOg",
               "alt": "HqO logo",
-              "path": "data/assets/0f9aa87666ca79d0b0b9ee8f7c16ac61f4122082ada5fa58dd5ba10c6bc349de.png",
+              "path": "data/assets/d56693c597d38e22e80eca055f54ae4144d30200b2d780f753a516a4b30375b7.png",
               "link": "https://www.linkedin.com/company/11386524/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGqwqt-wFH1UA/articleshare-shrink_160/articleshare-shrink_160/0/1765461579014?e=1792137600&v=beta&t=v-2AsFfLOpy9qYLp1l24VftK3wA53sNgR7iSp5Gzbyk",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGqwqt-wFH1UA/articleshare-shrink_480/articleshare-shrink_480/0/1765461579387?e=1792137600&v=beta&t=9U2q0wNUA1ptqumJNK2DkM723Z4M_Ap5-cit5emFMUQ",
               "alt": "Thumbnail for CLI helper to filter inputs by .gitignore-like conf files in CI",
-              "path": "data/assets/5ddb44f3fc4370d9af1c695753ed20bfb2f4d01f3dbdadb30d301aab470385bf.png",
+              "path": "data/assets/ac15e706c9edf2fdceb878aa157e78d8b9159ea5f73fed5108a43edb36fac02f.png",
               "link": "https://github.com/bjd2385/wildmatch"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEIUoSqlP6jow/articleshare-shrink_160/articleshare-shrink_160/0/1766712018037?e=1792137600&v=beta&t=ngJL0aMQoQdB858lnC1Nch05kP_CutcA0GK_t-XheLc",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEIUoSqlP6jow/articleshare-shrink_480/articleshare-shrink_480/0/1766712018010?e=1792137600&v=beta&t=VcmjOD6FIks16bmA5O199MGnrDz-dM7lqVdjtySfoy0",
               "alt": "Thumbnail for CircleCI config validate pre-commit hook for use with dynamic-continuation",
-              "path": "data/assets/e7f50b82ed86db068fed8a03c0dcf3e5d82e0a0894bb126828d132e8bc35d817.png",
+              "path": "data/assets/6db1f8892d80b38bd006db0bee8e71c85b7a834c8f8564402d687d317e7a4064.png",
               "link": "https://github.com/bjd2385/circleci-config-pre-commit-hook"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQG8HAM3m4pPqA/articleshare-shrink_160/articleshare-shrink_160/0/1770670989074?e=1792137600&v=beta&t=8udaDnz4lLXfFdgCM7ZZouZumJOtK5n548isuk1IrIo",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQG8HAM3m4pPqA/articleshare-shrink_480/articleshare-shrink_480/0/1770670989051?e=1792137600&v=beta&t=fGYMU5v56Bry8YvKwuvfNyVVCt43VKrcr6yr4H7Tx9s",
               "alt": "Thumbnail for CircleCI orb pack and validate pre-commit hook",
-              "path": "data/assets/b65de48bc956a7f1d29054e86e570027f0b89fd3094811fe0cb1b5bbed277904.png",
+              "path": "data/assets/a4cbc62be6175c9784352e1eec6647b42e9d43ab6ca7d47cd675c3fb3233936d.png",
               "link": "https://github.com/bjd2385/circleci-orb-pre-commit-hook"
             }
           ],
@@ -1463,13 +1468,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH8ArNfftI-yg/company-logo_100_100/company-logo_100_100/0/1647357720328/threat_stack_inc_logo?e=1793232000&v=beta&t=Gs6Dm1h7Pr0o01wd0KqaeW6qFv469F73WLzJUWRA5O8",
               "alt": "Threat Stack, Inc logo",
-              "path": "data/assets/21e9c20fcc87a314736b9fec801cfd632cbfaf80d704d4fc1fc72ec31af86dc8.png",
+              "path": "data/assets/471b20aba29461c2d581582c2092cc6431af1e8e61460b1de5a75eaff1262c15.png",
               "link": "https://www.linkedin.com/company/3068295/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSFjsioNzzrw/articleshare-shrink_160/articleshare-shrink_160/0/1765836048051?e=1792137600&v=beta&t=Afd2o8sLkjKU1XijNuXk4eu5X50BmtIlg7tyMHQFZ6k",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSFjsioNzzrw/articleshare-shrink_480/articleshare-shrink_480/0/1765836048015?e=1792137600&v=beta&t=M0BHl-ZF9Uot_vUt0jnjEia3gnrLwiIOIOCFRiw2-iQ",
               "alt": "Thumbnail for A CLI tool for Threat Stack ruleset manipulation via API",
-              "path": "data/assets/231b933165198c763d2d173b8de109b6d1563c2e67d2a93f046075dd82207ba4.png",
+              "path": "data/assets/b63106d54fa92134ab675b3d49945cad3efef45561f0f0bbdc3dbda5b1a194ad.png",
               "link": "https://github.com/bjd2385/threatstack-rule-manager"
             }
           ],
@@ -1493,9 +1498,9 @@
               ],
               "images": [
                 {
-                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSFjsioNzzrw/articleshare-shrink_160/articleshare-shrink_160/0/1765836048051?e=1792137600&v=beta&t=Afd2o8sLkjKU1XijNuXk4eu5X50BmtIlg7tyMHQFZ6k",
+                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGSFjsioNzzrw/articleshare-shrink_480/articleshare-shrink_480/0/1765836048015?e=1792137600&v=beta&t=M0BHl-ZF9Uot_vUt0jnjEia3gnrLwiIOIOCFRiw2-iQ",
                   "alt": "Thumbnail for A CLI tool for Threat Stack ruleset manipulation via API",
-                  "path": "data/assets/231b933165198c763d2d173b8de109b6d1563c2e67d2a93f046075dd82207ba4.png",
+                  "path": "data/assets/b63106d54fa92134ab675b3d49945cad3efef45561f0f0bbdc3dbda5b1a194ad.png",
                   "link": "https://github.com/bjd2385/threatstack-rule-manager"
                 }
               ],
@@ -1554,19 +1559,19 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQE_CYue3wizWw/company-logo_100_100/company-logo_100_100/0/1656351956106/datto_inc_logo?e=1793232000&v=beta&t=zGp428v7yLMT7YRCx5FjWEbeuV6lQd0gQWybj8OiipU",
               "alt": "Datto, Inc. logo",
-              "path": "data/assets/3435132fa21c9d02f36e731a55a1234b7aabe9c5d372165f74d4296c8f2bae3a.png",
+              "path": "data/assets/ea8cf5e3633f974a98a55ae3186c1d07f1511d3cf25afbb8c081abd51a231d0e.png",
               "link": "https://www.linkedin.com/company/1477873/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEFlmQIo8flsA/articleshare-shrink_160/articleshare-shrink_160/0/1765482592593?e=1792137600&v=beta&t=GEglgAmrzVp5d4IxiPGduBzPR0OseDzPeo3YV21QrR8",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEFlmQIo8flsA/articleshare-shrink_480/articleshare-shrink_480/0/1765482592618?e=1792137600&v=beta&t=-KfLtxvaCotz5vDYsDLse6SwjABFbT27TXIFGbuFSRU",
               "alt": "Thumbnail for A fast (experimental) RX algorithm implementation in Python 3.9+",
-              "path": "data/assets/c0f6ea8182b1bc1cb7fee7c14ff6b73eff682d8e1d8be287a6b8384cc5ae7bd8.png",
+              "path": "data/assets/521a3d6b6a6943f3b233759e1da29651abf1ef4d99fc2aa673392a150d2828b2.png",
               "link": "https://github.com/bjd2385/rx_algorithm"
             },
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHJYd3i7-prBQ/articleshare-shrink_160/articleshare-shrink_160/0/1767070948324?e=1792137600&v=beta&t=rPoxzKjr_4nTICg6P1giKiZcXVzsb2TFUO22IplToAE",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHJYd3i7-prBQ/articleshare-shrink_480/articleshare-shrink_480/0/1767070948301?e=1792137600&v=beta&t=F0h0eOdwZlFmayl5c34yp4t0NhQCEyfeii0yDRcq13s",
               "alt": "Thumbnail for Parse backed-up volumes' utilization across ZFS snapshots",
-              "path": "data/assets/c07f715a0c010ff740764ae8298dfd4e7c7e83405fdb967b01aade2c717d21a9.png",
+              "path": "data/assets/6397a76eb20ff9f654377eb03b941a9904cbd4a5d461a576f85740a96795d6fb.png",
               "link": "https://github.com/bjd2385/datto"
             }
           ],
@@ -1607,15 +1612,15 @@
               ],
               "images": [
                 {
-                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEFlmQIo8flsA/articleshare-shrink_160/articleshare-shrink_160/0/1765482592593?e=1792137600&v=beta&t=GEglgAmrzVp5d4IxiPGduBzPR0OseDzPeo3YV21QrR8",
+                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQEFlmQIo8flsA/articleshare-shrink_480/articleshare-shrink_480/0/1765482592618?e=1792137600&v=beta&t=-KfLtxvaCotz5vDYsDLse6SwjABFbT27TXIFGbuFSRU",
                   "alt": "Thumbnail for A fast (experimental) RX algorithm implementation in Python 3.9+",
-                  "path": "data/assets/c0f6ea8182b1bc1cb7fee7c14ff6b73eff682d8e1d8be287a6b8384cc5ae7bd8.png",
+                  "path": "data/assets/521a3d6b6a6943f3b233759e1da29651abf1ef4d99fc2aa673392a150d2828b2.png",
                   "link": "https://github.com/bjd2385/rx_algorithm"
                 },
                 {
-                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHJYd3i7-prBQ/articleshare-shrink_160/articleshare-shrink_160/0/1767070948324?e=1792137600&v=beta&t=rPoxzKjr_4nTICg6P1giKiZcXVzsb2TFUO22IplToAE",
+                  "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHJYd3i7-prBQ/articleshare-shrink_480/articleshare-shrink_480/0/1767070948301?e=1792137600&v=beta&t=F0h0eOdwZlFmayl5c34yp4t0NhQCEyfeii0yDRcq13s",
                   "alt": "Thumbnail for Parse backed-up volumes' utilization across ZFS snapshots",
-                  "path": "data/assets/c07f715a0c010ff740764ae8298dfd4e7c7e83405fdb967b01aade2c717d21a9.png",
+                  "path": "data/assets/6397a76eb20ff9f654377eb03b941a9904cbd4a5d461a576f85740a96795d6fb.png",
                   "link": "https://github.com/bjd2385/datto"
                 }
               ],
@@ -1644,7 +1649,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHdNB4ekluoIw/company-logo_100_100/B56Zi.rLWuHQAY-/0/1755545647131/baxter_healthcare_logo?e=1793232000&v=beta&t=_FuBw2xJ0f9vsH29yC3lONkTT1YwiOc8otOHX9lT4qk",
               "alt": "Baxter International Inc. logo",
-              "path": "data/assets/b55a39927919894efbc83ad8c07ada9004c7f0ed7cc9b87c4ff25df05fc888cb.png",
+              "path": "data/assets/dc67c125b2ed87b03f136b34a3acfe9ae43f1f8b37bce5f7d7e2982fe4099e08.png",
               "link": "https://www.linkedin.com/company/2371/"
             }
           ],
@@ -1671,7 +1676,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEcZ2FNTBw6A/company-logo_100_100/company-logo_100_100/0/1706803356023/saint_gobain_adfors_logo?e=1793232000&v=beta&t=cpFPrUyYJUVTdSHRx8Rro4W7hWNWFl1oanNDXHfNjm8",
               "alt": "Saint-Gobain Adfors logo",
-              "path": "data/assets/2bf170089880a0803b59d33bc89ad261a2e3cbd69b0737e4f79574854a473109.png",
+              "path": "data/assets/5eccc5a89ec0792091f6477e7776d7a58ce3265e0b20fbedb6a086683123b363.png",
               "link": "https://www.linkedin.com/company/2282551/"
             }
           ],
@@ -1700,13 +1705,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQGnICZxLlhERw/company-logo_100_100/company-logo_100_100/0/1630565170020/rochester_institute_of_technology_logo?e=1793232000&v=beta&t=Kl5t4LU4QnxRbVpROIqS5MvAFtpU4RqLU1XSWwMlzNE",
               "alt": "Rochester Institute of Technology logo",
-              "path": "data/assets/bd9496f624c9f44e56be85b0db42793849a64ea3dc215b500c3c4b121e03518e.png",
+              "path": "data/assets/e4c5eba40d1ecb4ab0ee0fab22ade151bf69291f275863a057b8671f512a82a4.png",
               "link": "https://www.linkedin.com/school/165762/"
             },
             {
-              "url": "https://media.licdn.com/dms/image/v2/C4E2DAQEG-etA3nIrpQ/profile-treasury-image-shrink_160_160/profile-treasury-image-shrink_160_160/0/1596565249872?e=1792137600&v=beta&t=rbZnv3BWAJBwivRx7tl3dIOcRZNJ3jGtcRwF4agt6PU",
+              "url": "https://media.licdn.com/dms/image/v2/C4E2DAQEG-etA3nIrpQ/profile-treasury-image-shrink_480_480/profile-treasury-image-shrink_480_480/0/1596565249872?e=1792137600&v=beta&t=XnQYAAXQ2oTdMFempvVV8WbI4VFyrZlBi1307xGd5vE",
               "alt": "Thumbnail for Radio Galaxy 3C 210",
-              "path": "data/assets/d5d3ff4b7f726a4cf4a9079ea9b82843e8d9220386a7e24162356bc384f0fca7.png",
+              "path": "data/assets/2d24d909bf4ce39f275f8f5a7a6bd58fd7c37947399ea5e5145f0947c004b5de.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/Position/776655142/treasury/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             }
           ],
@@ -1737,7 +1742,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQFRXAnpxn1sKA/company-logo_100_100/company-logo_100_100/0/1631318871624?e=1793232000&v=beta&t=y5CHF78hzdfbcF0vuPRHH1LwXUVzcGvY42HZEDi_VC8",
               "alt": "Monroe Community College logo",
-              "path": "data/assets/9715a6e4826aab2147484cc0b4292bdaed6183e48c642c1701edd5a1e577c249.png",
+              "path": "data/assets/27e7d4c6a71ad1fc7050916fe05bd7933bd622b2dfa0de4202d7dc47b28b447d.png",
               "link": "https://www.linkedin.com/school/19573/"
             }
           ],
@@ -1762,7 +1767,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQGnICZxLlhERw/company-logo_100_100/company-logo_100_100/0/1630565170020/rochester_institute_of_technology_logo?e=1793232000&v=beta&t=Kl5t4LU4QnxRbVpROIqS5MvAFtpU4RqLU1XSWwMlzNE",
               "alt": "Rochester Institute of Technology logo",
-              "path": "data/assets/bd9496f624c9f44e56be85b0db42793849a64ea3dc215b500c3c4b121e03518e.png",
+              "path": "data/assets/e4c5eba40d1ecb4ab0ee0fab22ade151bf69291f275863a057b8671f512a82a4.png",
               "link": "https://www.linkedin.com/school/165762/"
             }
           ],
@@ -1791,15 +1796,15 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_480/B4EaEaJW36HYAU-/0/1791440023748?e=1792137600&v=beta&t=1BPYoF9u7hAjBfaP3OF0vhyGWvJhQ0-1fwyF0K6QmHY",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGurGV68Y55zA/articleshare-shrink_480/B4EaEaJW36HYAU-/0/1791440023748?e=1792141200&v=beta&t=XXb74UCOFF-FBDbkzcmnm3Yp8ap-H5wfW0h7C3s_M1I",
               "alt": "",
-              "path": "data/assets/e602e679540ba8662e80b4171091651265ae94a3d3bbc2959f103abf32696e48.png",
+              "path": "data/assets/64c6351a4d2d9f60b02e57c0115532b01feed81a41326e49d6dfb625be6cd6f8.png",
               "link": "https://github.com/astrivant/resumeme"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -1823,15 +1828,15 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGdP5KIxcpY2g/articleshare-shrink_480/B4EaDGvuAtHQAU-/0/1790040794209?e=1792137600&v=beta&t=m1WlUjPXwgxy47RS8LfffHffc_RpPTHjIT3Ss5j34Aw",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQGdP5KIxcpY2g/articleshare-shrink_480/B4EaDGvuAtHQAU-/0/1790040794209?e=1792141200&v=beta&t=dDvgBlpqeKYL1tMKuQuDyxVQvSfe1uzMzjJU2QGCpTM",
               "alt": "",
-              "path": "data/assets/b8d75c5eb2a66a9f43e840f2bc5972afc656afb04b32aeb9cd644e1b4c503307.png",
+              "path": "data/assets/7d9e7736c74e8191e967389569afa3244b1f5e9356aa53dc8cb404d9c177cad8.png",
               "link": "https://github.com/astrivant/polyad"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -1860,15 +1865,15 @@
           ],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_480/B4EaCMSldGHAAY-/0/1789060078326?e=1792137600&v=beta&t=H76y_0NC2WPsabG3KZfM-AHJ4YHKm6rrDrtQpE4wjU4",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQH7OmYSYb62Jg/articleshare-shrink_480/B4EaCMSldGHAAY-/0/1789060078326?e=1792141200&v=beta&t=1aVMUZSeWtC7g8S4ZdR60HnhMdKyh12inFLZdN2yVGc",
               "alt": "",
-              "path": "data/assets/72ae39716a7955f5365b9db5f9f8aac4e377fd64d2408660f2a25c4339c787d6.png",
+              "path": "data/assets/dc93f0dd755361d89d86a6ce73a7397cb3298aebff17b139c39c0b178c56acd5.png",
               "link": "https://github.com/astrivant/hypothesis-helm"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -1895,7 +1900,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -1912,15 +1917,15 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHQ7jcx3B1mKQ/articleshare-shrink_480/B4EZ8f_59aIsAU-/0/1782948274549?e=1792137600&v=beta&t=pvm_37Tsdkuune59cbZCWszg-FzrVQYUmoGuxNI-ZNw",
+              "url": "https://media.licdn.com/dms/image/sync/v2/D4E27AQHQ7jcx3B1mKQ/articleshare-shrink_1280_800/B4EZ8f_59aIsAg-/0/1782948274549?e=1792141200&v=beta&t=3dNPGJugZxs2C00k7K7URTdrjEGVs72phPsYhHatTjU",
               "alt": "",
-              "path": "data/assets/7b1046980e9fdb07136f96bf435000a530d7a4716d2d839f6fb15bfc6670e924.png",
+              "path": "data/assets/bc948768f34f711453f201a3f1844a846a0789dd3a19a485450673ff03d1c92b.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/1782948303592/single-media-viewer/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -1946,15 +1951,15 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/D562DAQHYgHRN3XmUig/profile-treasury-image-shrink_480_480/B56ZpUreDDJ8AM-/0/1762357273112?e=1792137600&v=beta&t=EnYJUkEG8XzWOOcnwyJp8lpFdR3oXABlXuUBi3zkTTM",
+              "url": "https://media.licdn.com/dms/image/v2/D562DAQHYgHRN3XmUig/profile-treasury-image-shrink_480_480/B56ZpUreDDJ8AM-/0/1762357273112?e=1792141200&v=beta&t=jnu1cnVLuTxtnwWpX6ZQVtDyKzUcX2Uf98jBofKC2lI",
               "alt": "",
-              "path": "data/assets/567ec75177e2da2df234b1c4dcf27237c1c399b4d662a035e248381d3d52158d.png",
+              "path": "data/assets/92d8a4b2d32c009a42143e49e92e2b2b8188384cef7a64977a168e01f596a540.png",
               "link": "https://www.linkedin.com/in/emmeowzing/overlay/1762357305602/single-media-viewer/?profileId=ACoAABzdWCYByiz8hK5nXMw8mLeEMAkr4HtvjLw"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH6BGDx5BE8GQ/company-logo_100_100/company-logo_100_100/0/1672415765992/premiscale_logo?e=1793232000&v=beta&t=W9m2dTaNhCgq9FRYLbHc0d1iyatlzptriwKxp-rYpRs",
               "alt": "",
-              "path": "data/assets/771a5386e699dbf41ae350416ecbe6d093814e7e2ded75518257a6f35bb5f037.png",
+              "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
           ],
@@ -1986,7 +1991,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -2015,7 +2020,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2050,7 +2055,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHGGvtpxtKl2g/company-logo_100_100/company-logo_100_100/0/1636022953216/hqo_logo?e=1793232000&v=beta&t=GAqyzqRK3C2Lb-mTQKy3xvcv7TT8qiPaLq_f4YKvOOg",
               "alt": "",
-              "path": "data/assets/0f9aa87666ca79d0b0b9ee8f7c16ac61f4122082ada5fa58dd5ba10c6bc349de.png",
+              "path": "data/assets/d56693c597d38e22e80eca055f54ae4144d30200b2d780f753a516a4b30375b7.png",
               "link": ""
             }
           ],
@@ -2072,7 +2077,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -2094,7 +2099,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -2116,7 +2121,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2138,7 +2143,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2167,7 +2172,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2189,7 +2194,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH6BGDx5BE8GQ/company-logo_100_100/company-logo_100_100/0/1672415765992/premiscale_logo?e=1793232000&v=beta&t=W9m2dTaNhCgq9FRYLbHc0d1iyatlzptriwKxp-rYpRs",
               "alt": "",
-              "path": "data/assets/771a5386e699dbf41ae350416ecbe6d093814e7e2ded75518257a6f35bb5f037.png",
+              "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
           ],
@@ -2263,7 +2268,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -2292,7 +2297,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2314,7 +2319,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -2336,7 +2341,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -2365,7 +2370,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2387,7 +2392,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -2409,7 +2414,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -2431,7 +2436,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -2482,7 +2487,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -2504,7 +2509,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -2533,7 +2538,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2562,7 +2567,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2591,7 +2596,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -2613,7 +2618,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH6BGDx5BE8GQ/company-logo_100_100/company-logo_100_100/0/1672415765992/premiscale_logo?e=1793232000&v=beta&t=W9m2dTaNhCgq9FRYLbHc0d1iyatlzptriwKxp-rYpRs",
               "alt": "",
-              "path": "data/assets/771a5386e699dbf41ae350416ecbe6d093814e7e2ded75518257a6f35bb5f037.png",
+              "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
           ],
@@ -2636,7 +2641,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHGGvtpxtKl2g/company-logo_100_100/company-logo_100_100/0/1636022953216/hqo_logo?e=1793232000&v=beta&t=GAqyzqRK3C2Lb-mTQKy3xvcv7TT8qiPaLq_f4YKvOOg",
               "alt": "",
-              "path": "data/assets/0f9aa87666ca79d0b0b9ee8f7c16ac61f4122082ada5fa58dd5ba10c6bc349de.png",
+              "path": "data/assets/d56693c597d38e22e80eca055f54ae4144d30200b2d780f753a516a4b30375b7.png",
               "link": ""
             }
           ],
@@ -2660,7 +2665,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH6BGDx5BE8GQ/company-logo_100_100/company-logo_100_100/0/1672415765992/premiscale_logo?e=1793232000&v=beta&t=W9m2dTaNhCgq9FRYLbHc0d1iyatlzptriwKxp-rYpRs",
               "alt": "",
-              "path": "data/assets/771a5386e699dbf41ae350416ecbe6d093814e7e2ded75518257a6f35bb5f037.png",
+              "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
           ],
@@ -2682,7 +2687,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -2834,7 +2839,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHGGvtpxtKl2g/company-logo_100_100/company-logo_100_100/0/1636022953216/hqo_logo?e=1793232000&v=beta&t=GAqyzqRK3C2Lb-mTQKy3xvcv7TT8qiPaLq_f4YKvOOg",
               "alt": "",
-              "path": "data/assets/0f9aa87666ca79d0b0b9ee8f7c16ac61f4122082ada5fa58dd5ba10c6bc349de.png",
+              "path": "data/assets/d56693c597d38e22e80eca055f54ae4144d30200b2d780f753a516a4b30375b7.png",
               "link": ""
             }
           ],
@@ -2856,7 +2861,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -2957,7 +2962,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH8ArNfftI-yg/company-logo_100_100/company-logo_100_100/0/1647357720328/threat_stack_inc_logo?e=1793232000&v=beta&t=Gs6Dm1h7Pr0o01wd0KqaeW6qFv469F73WLzJUWRA5O8",
               "alt": "",
-              "path": "data/assets/21e9c20fcc87a314736b9fec801cfd632cbfaf80d704d4fc1fc72ec31af86dc8.png",
+              "path": "data/assets/471b20aba29461c2d581582c2092cc6431af1e8e61460b1de5a75eaff1262c15.png",
               "link": ""
             }
           ],
@@ -2981,13 +2986,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C5603AQG14OUCZgAWpQ/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1516232220774?e=1793232000&v=beta&t=L4k9jDA3uB4sMRIIR0rRfPIVGoK6keg72Jw2nEJE5tY",
               "alt": "",
-              "path": "data/assets/d347ac4346d9377d9d1ca1e49eb91096ec60f38458a3e076ac85a27408db665b.png",
+              "path": "data/assets/f442ed1f34cdb5434b80d61b2150a8bfac1b11b67b0f1a5612cee1fa53df4b0d.png",
               "link": ""
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH8ArNfftI-yg/company-logo_100_100/company-logo_100_100/0/1647357720328/threat_stack_inc_logo?e=1793232000&v=beta&t=Gs6Dm1h7Pr0o01wd0KqaeW6qFv469F73WLzJUWRA5O8",
               "alt": "",
-              "path": "data/assets/21e9c20fcc87a314736b9fec801cfd632cbfaf80d704d4fc1fc72ec31af86dc8.png",
+              "path": "data/assets/471b20aba29461c2d581582c2092cc6431af1e8e61460b1de5a75eaff1262c15.png",
               "link": ""
             }
           ],
@@ -3039,7 +3044,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQE_CYue3wizWw/company-logo_100_100/company-logo_100_100/0/1656351956106/datto_inc_logo?e=1793232000&v=beta&t=zGp428v7yLMT7YRCx5FjWEbeuV6lQd0gQWybj8OiipU",
               "alt": "",
-              "path": "data/assets/3435132fa21c9d02f36e731a55a1234b7aabe9c5d372165f74d4296c8f2bae3a.png",
+              "path": "data/assets/ea8cf5e3633f974a98a55ae3186c1d07f1511d3cf25afbb8c081abd51a231d0e.png",
               "link": ""
             }
           ],
@@ -3078,7 +3083,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH8ArNfftI-yg/company-logo_100_100/company-logo_100_100/0/1647357720328/threat_stack_inc_logo?e=1793232000&v=beta&t=Gs6Dm1h7Pr0o01wd0KqaeW6qFv469F73WLzJUWRA5O8",
               "alt": "",
-              "path": "data/assets/21e9c20fcc87a314736b9fec801cfd632cbfaf80d704d4fc1fc72ec31af86dc8.png",
+              "path": "data/assets/471b20aba29461c2d581582c2092cc6431af1e8e61460b1de5a75eaff1262c15.png",
               "link": ""
             }
           ],
@@ -3171,7 +3176,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -3278,7 +3283,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -3301,7 +3306,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -3401,7 +3406,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHGGvtpxtKl2g/company-logo_100_100/company-logo_100_100/0/1636022953216/hqo_logo?e=1793232000&v=beta&t=GAqyzqRK3C2Lb-mTQKy3xvcv7TT8qiPaLq_f4YKvOOg",
               "alt": "",
-              "path": "data/assets/0f9aa87666ca79d0b0b9ee8f7c16ac61f4122082ada5fa58dd5ba10c6bc349de.png",
+              "path": "data/assets/d56693c597d38e22e80eca055f54ae4144d30200b2d780f753a516a4b30375b7.png",
               "link": ""
             }
           ],
@@ -3458,13 +3463,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E03AQFXi-tz_6K46A/profile-displayphoto-scale_100_100/B4EZ5RGZLiIcAY-/0/1779477092085?e=1793232000&v=beta&t=iSntNxPCHSq3hsxisicIO_AXf9E7yBbUJ6_pRYRXin0",
               "alt": "",
-              "path": "data/assets/52a3437b98e0b24aa758c135a4a3eeb99d0c1e704bfbd8c4cffde31af4f5c9f0.png",
+              "path": "data/assets/3c60cf1f4cfe0c17106b1d828e53d3ddbb4fec3bba598f17ab62cd9760e41acb.png",
               "link": "https://www.linkedin.com/in/juliandpicone/"
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D03AQELLZgvY6AYNg/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1590534356522?e=1793232000&v=beta&t=EUO1qVl_uf0h43CgQeYUaqHoiqAQ-spOtakaxVuJQ-E",
               "alt": "",
-              "path": "data/assets/3791af92f1585fea85e747f510b659fbb9f343e22db762f0a8832312f4a3944a.png",
+              "path": "data/assets/0581619255a09b9877a8f4679a28983965c465aa8df2ec03e0a0b2507e12f5c1.png",
               "link": "https://www.linkedin.com/in/joseph-gwinn/"
             }
           ],
@@ -3514,14 +3519,14 @@
           "paragraphs": [
             "· 3rd",
             "Co-founder of the AI, Tech & Privacy Academy (1,600+ participants), Author of Luiza’s Newsletter (100,000+ subscribers), Mother of 3",
-            "144,547 followers"
+            "144,548 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D03AQEvIshzRc7RBg/profile-displayphoto-scale_100_100/B4DaB7QDRvI4AY-/0/1788774202346?e=1793232000&v=beta&t=kiS89POJ02c5oL3MUc5TFpFFWq6Fqw_26sUvnFg7sio",
               "alt": "",
-              "path": "data/assets/490b6937c3592198f5b8ca0ef901dea425d4f8b37bef31e8cfdd8b13ff9a5423.png",
+              "path": "data/assets/cac40454e26091549416c56c47dc0025ac65fa9404d56316860812f9ec113632.png",
               "link": ""
             }
           ],
@@ -3531,14 +3536,14 @@
         {
           "title": "Companies: The Tor Project, CompanyThe Tor Project",
           "paragraphs": [
-            "27,329 followers"
+            "27,330 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGNK88-zMlkIg/company-logo_100_100/B56Z8lLsoaIMAI-/0/1783035251481/tor_project_logo?e=1793232000&v=beta&t=lOZ0KZpjjb9Dmokpmi3RcJZEJMJtShfPWpbbD9Lntko",
               "alt": "",
-              "path": "data/assets/606bc14d95f99a36945af7119b65c1a6862bdd504905e1feb60e20392b554636.png",
+              "path": "data/assets/a0aded75179ca907ed2d40042657d49987a9a4593f3052cedba26973818a0ea7.png",
               "link": ""
             }
           ],
@@ -3555,7 +3560,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQGzzvvkehd4rA/company-logo_100_100/company-logo_100_100/0/1695303093658?e=1793232000&v=beta&t=QBA-cwDXFnLUZiQGPsHx_FRpVbRLxbGd5XqSCdO5FPc",
               "alt": "",
-              "path": "data/assets/42c3c8bb3d5d70ea4365a9a81e2931797289fdf95f5e628116321d139c2956b6.png",
+              "path": "data/assets/a0b32845eb859fe042cce268e4322fa2a63b445c9d9a7a3ba9b464be6073a762.png",
               "link": ""
             }
           ],
@@ -3572,7 +3577,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEqNC2Jv-JG2A/company-logo_100_100/B4EaCMKdqmKcAI-/0/1789057948629?e=1793232000&v=beta&t=ZGcqdKm-P2X7UdC3NtDvuJHtWL2JTBNd1vVc7SPSm3U",
               "alt": "",
-              "path": "data/assets/1ae0dfaebc63ee8d670933a881e4c0f2c522624368b8826dbb79309b81ef1543.png",
+              "path": "data/assets/307788e84bed306cc3f59a46f5601600b48a355b3b0c6cd1659f5c3776bbed01.png",
               "link": ""
             }
           ],
@@ -3589,7 +3594,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE-0E1wRhta6A/company-logo_100_100/B4EZxscMzOGsAQ-/0/1771345859038?e=1793232000&v=beta&t=_nkynpzBXWdf5lKC2svmTgm5XsHEvh2FM-pJLeU3AFc",
               "alt": "",
-              "path": "data/assets/0dad94df469e33117971715835162a177ddc70c2beec2a02949cd4a4e24fdcca.png",
+              "path": "data/assets/e52a4ccb9521d2887463bb99a43347db04b6d198d15423da9b220c280058721b.png",
               "link": ""
             }
           ],
@@ -3606,7 +3611,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQHXXrRnp1JCfw/company-logo_100_100/company-logo_100_100/0/1630572771938/atlanta_orchid_society_inc_logo?e=1793232000&v=beta&t=qNrk7zR1fG9hWlBIK7pcKRMVjz7KalHrMtAbI60uclo",
               "alt": "",
-              "path": "data/assets/a237d368decfd14328bd5dc6d8723842b6d873fad7f61584a65ded774f5e3839.png",
+              "path": "data/assets/1951e4c82c228b0fdd192b36f3f2757d1c767b68b9866866c91b061432b5f6de.png",
               "link": ""
             }
           ],
@@ -3616,14 +3621,14 @@
         {
           "title": "Companies: Observable Space, CompanyObservable Space",
           "paragraphs": [
-            "4,479 followers"
+            "4,480 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQEY_v30CB_IUQ/company-logo_100_100/company-logo_100_100/0/1738773125669/observable_space_logo?e=1793232000&v=beta&t=uNKI-eHnFTe4fJvaNWOruzjMoSn2LYwoT5LxXxrT-es",
               "alt": "",
-              "path": "data/assets/2e4fd423518630d6cc787626cbbec321ce3adde3d252e6569a6c2cc288ec4859.png",
+              "path": "data/assets/5ce58b6b1f3a32e14797bc693e611c454e8efb2ecb7ea2cef47f82e6dd8c1d45.png",
               "link": ""
             }
           ],
@@ -3640,7 +3645,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQGOw3kmEbSuqQ/company-logo_100_100/company-logo_100_100/0/1630455277073/white_october_events_logo?e=1793232000&v=beta&t=ACoE3xxf-qlNwWAjcDXoI2gsCkhKwhJkQeWG-Gwua5I",
               "alt": "",
-              "path": "data/assets/6e166b34b059a21b8645d6726d57df6a48e0aa04eaceec0bed7449815c745afb.png",
+              "path": "data/assets/21a035849b8e0eff931185b69a03ffb3a956a0a5cb34393a7958cd1a0363412c.png",
               "link": ""
             }
           ],
@@ -3657,7 +3662,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQEVBWOg2X8_5g/company-logo_100_100/B56ZY6jC3mGoAQ-/0/1744738988693/stratablue_logo?e=1793232000&v=beta&t=38RVdGyR6f1azimzmscvdQn0iUOt_ZwSFuS1QcblvyQ",
               "alt": "",
-              "path": "data/assets/12c49645e075172207ae834ab3cbfc6fe6f8ee8c208b7ed499a84d4c7ee35015.png",
+              "path": "data/assets/a5cfdaa8111a57d3aa629cab509880a038cd6e7c927de057dcf5071ade5855cf.png",
               "link": ""
             }
           ],
@@ -3674,7 +3679,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHymFjNAlVlGQ/company-logo_100_100/company-logo_100_100/0/1719256485531/stateful_logo?e=1793232000&v=beta&t=v4SwNkat3-Q3f_fNFPdtcuWKg9WP74A3WANsIShWOMo",
               "alt": "",
-              "path": "data/assets/6c06fe4de2e0fc556056da2f3e6eda9361a8c22ded9cdeb3c2942c6e01e0045b.png",
+              "path": "data/assets/3325c7e977781b2e1495d7e642003717c46c4b1daed1f4fe4eaa3099b751f395.png",
               "link": ""
             }
           ],
@@ -3691,7 +3696,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHbfQyYX81kNQ/company-logo_100_100/B56ZdnievsHUAQ-/0/1749788782172/kubesploit_logo?e=1793232000&v=beta&t=YxnCCqaP521_kfAuVNk02ilj4axJSkeI4sPn5p7bQ74",
               "alt": "",
-              "path": "data/assets/1594b6f4cc3bce3e1f5dd5e384cd8e86960c7ee3676fdf49d96bd84c321734a5.png",
+              "path": "data/assets/323e32eff30d30ac9c93dd52caf718c550b243c9f5ed419fff807587d30c4eb0.png",
               "link": ""
             }
           ],
@@ -3708,7 +3713,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHJCfyXIufB4w/company-logo_100_100/B56ZdD1h.LHoAU-/0/1749189796086/k8sevents_logo?e=1793232000&v=beta&t=DXque5obCOmwwx7DGosVnjWL73WvYDH4vvgpKW4n_Fk",
               "alt": "",
-              "path": "data/assets/fc62705d1ef20c21db15a5741eaeb8e4569ab17ecf3ce9ac67dd008ba533797b.png",
+              "path": "data/assets/79daf25a53a1350b15a06487dbbb0997ba67a1362cfda6024c21fbe8b4f7fbeb.png",
               "link": ""
             }
           ],
@@ -3718,14 +3723,14 @@
         {
           "title": "Companies: Y Combinator, CompanyY Combinator",
           "paragraphs": [
-            "1,833,659 followers"
+            "1,833,664 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQGPzdBPNxrmEg/company-logo_100_100/company-logo_100_100/0/1673555093250/y_combinator_logo?e=1793232000&v=beta&t=7jwCCJua04Y98ahq2tFSdBqnndWo1Srh4mpacNzivKs",
               "alt": "",
-              "path": "data/assets/6dc4bf78e3c44a41532c0ca5be744c55a326e2594a607752a959c7022f3faa0c.png",
+              "path": "data/assets/3a53ca5d7ee532750537e67057bf5e2c626a52b45430a4f30f7fb77b52482103.png",
               "link": ""
             }
           ],
@@ -3742,7 +3747,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQEae0wfJIGkcQ/company-logo_100_100-alternative/company-logo_100_100-alternative/0/1630667975276/trail_of_bits_logo?e=1793232000&v=beta&t=gBGcroEkWte0WjXO0QavmnwEh73MXBg27t_jy2UoWiU",
               "alt": "",
-              "path": "data/assets/46df68a8df93b1e67826f549cf0b1369bfba0a7f13965630b6aaafdc178d3c1d.png",
+              "path": "data/assets/7250263219bc2b66bfde4048f4a3ad8594fac3427cd6f6893820e53e04e40fda.png",
               "link": ""
             }
           ],
@@ -3759,7 +3764,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFJRZiLkERwXQ/company-logo_100_100/B56ZWs.viBGsAU-/0/1742363885061/net2secure_logo?e=1793232000&v=beta&t=3Ybw-9d0OHqWMq1J6qbbj0lCFXqfblUavvE1t6Nk0kE",
               "alt": "",
-              "path": "data/assets/c48b0c9871f7c26d9f2a3fac7ee4ea35c2030ca986ede035881ab5b358004dde.png",
+              "path": "data/assets/b0638f0888d3fac315db28a1427fa141775b85cceeec14fa852283516ccb212b.png",
               "link": ""
             }
           ],
@@ -3776,7 +3781,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQER9zahoPji3g/company-logo_100_100/company-logo_100_100/0/1673274282853?e=1793232000&v=beta&t=1rHtwf9zMeX3zbG3Chy3fbN87mun9MitoJiiYWznx0s",
               "alt": "",
-              "path": "data/assets/2b12deac45a36e5e894f7f9df2fec74e82f721bcad3742ccca766b0a971391a9.png",
+              "path": "data/assets/f62ca6a6dcb6756dfaacc0cd2ede5f985eb82c11c3293b0c1fcec5e230f1d04b.png",
               "link": ""
             }
           ],
@@ -3793,7 +3798,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHz2emxfnWVeg/company-logo_100_100/company-logo_100_100/0/1671617605144/kontron_logo?e=1793232000&v=beta&t=g7sq_5CBgF5XyRWj9up3TlU6q2tBXJSakpvxujAiHvI",
               "alt": "",
-              "path": "data/assets/de0b32ca2095cfba8e1980f9503055c1fb9f5984d8c6949dd88a7bd2fbedccb6.png",
+              "path": "data/assets/7e2854d80ae341753a53b522d54d08a867d6ed5037ec6d60c1987e99a713a214.png",
               "link": ""
             }
           ],
@@ -3810,7 +3815,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFlv41SqoMavA/company-logo_100_100/B4EZvHlreuGkAQ-/0/1768580102384/datahub_cloud_logo?e=1793232000&v=beta&t=O8e7i5ByMvvSfNSO8HmdXP2J65-th7lBSHf-nIX6DT8",
               "alt": "",
-              "path": "data/assets/2964c4d2e8acfd71f5d95db07d43efc1e6f8a4edd6a0c3c0941eb90ca6962e4e.png",
+              "path": "data/assets/e5bd3d5b53b608a0d23bce65decbd1cb4fd11839a32d3bf9eaf20de56c2b7b98.png",
               "link": ""
             }
           ],
@@ -3820,14 +3825,14 @@
         {
           "title": "Companies: Ramp, CompanyRamp",
           "paragraphs": [
-            "363,808 followers"
+            "363,802 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFpzb0Ial_Qaw/company-logo_100_100/company-logo_100_100/0/1735867522188?e=1793232000&v=beta&t=ZYk3tU4XndZZFOBGlzwiup74szB--qlP5pbleztMqy8",
               "alt": "",
-              "path": "data/assets/b759014dad56959c6efd08a119352368983c51d65306d3396c4b507364038417.png",
+              "path": "data/assets/9c5a106f1feafda55ebe99359072c5df2d40743d62a9c332bdbc3f28ce3ab192.png",
               "link": ""
             }
           ],
@@ -3844,7 +3849,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFP1iMxf0wqAg/company-logo_100_100/B56Z9jKgtJKgAI-/0/1784075127823/usepylon_logo?e=1793232000&v=beta&t=7TqZ-GLdEM9qcINFtG2n94zIm4VgLomqMag1Kb-yIfg",
               "alt": "",
-              "path": "data/assets/389817e6f2277569be7f51e0c0829af376c58198c341f57d67f0cd1f8550b331.png",
+              "path": "data/assets/d788b23a976701a7e6128c4eb65fd3ea2fba499dab89cf88c1f39fc34940b2cb.png",
               "link": ""
             }
           ],
@@ -3861,7 +3866,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFeqyw5aFmULA/company-logo_100_100/company-logo_100_100/0/1707472744692?e=1793232000&v=beta&t=bEALn2MIAHB5znk0R9Lj4dOQI7q3pXwUGHJUmD3Ak-g",
               "alt": "",
-              "path": "data/assets/8649479945a81481d6f229b9ebed4aaf9613e4c9adc15415c452c4379d6cfcf2.png",
+              "path": "data/assets/10daefe525d6c3f279c2866b724103332b16e2863ca8a7d284c84edbaf773961.png",
               "link": ""
             }
           ],
@@ -3878,7 +3883,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHFNGTmskCxcw/company-logo_100_100/company-logo_100_100/0/1728889118917/teamhanko_logo?e=1793232000&v=beta&t=RRnIj6Ffdv2u_rgDOUzPpuklFHggvC9iJGwKbzgdESc",
               "alt": "",
-              "path": "data/assets/eb8ac1ac1b058ce144a6886ea9e87eeded71b69d67ebbaf8bf5b8c8904e793f5.png",
+              "path": "data/assets/dd9b1363e1410588c0eb64f5504ef53c5988e0ea65a93906c4a2167fa7d0deaa.png",
               "link": ""
             }
           ],
@@ -3895,7 +3900,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEYOw_r7b1l_Q/company-logo_100_100/B4EZ3feTfxIAAQ-/0/1777570757014/skio_logo?e=1793232000&v=beta&t=WbCyddgc9__h5aDetMDdv3B4epBaQQIG54GhYzh1Xs8",
               "alt": "",
-              "path": "data/assets/892208c4a09cffff5c1582c519003e60dd92cc1bc230b97136c4ce2bf4064d6d.png",
+              "path": "data/assets/bb188c8a3dbe14c4517b8e928c6d4f53510fad186ff22309ef099c518e185a16.png",
               "link": ""
             }
           ],
@@ -3912,7 +3917,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFv7mSLDMKj_g/company-logo_100_100/B4EZ4x7EvFGYAI-/0/1778954030497/renderatl_logo?e=1793232000&v=beta&t=9B9LB1oYpWC5665uf5aHqjnwrx2AZF69Iyky3ygcFgU",
               "alt": "",
-              "path": "data/assets/f498f62a38024125415c8ebf4067e36670717124abe809ec8793c06cb4a6092f.png",
+              "path": "data/assets/6c1729475e3cb826b2b9e2610b429dad0c11007ce51533ff39487de912253e42.png",
               "link": ""
             }
           ],
@@ -3929,7 +3934,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGRe1Ow7h13UQ/company-logo_100_100/company-logo_100_100/0/1701124550721/istio_logo?e=1793232000&v=beta&t=GXB5-Z8FKHAxn8_QSD7-h3KvyT_4lvNbLWRqoUHNyRI",
               "alt": "",
-              "path": "data/assets/524526b66866b404895ea7973e0a733c725850b23070300c7307bb4f743147d3.png",
+              "path": "data/assets/7483d0b305e2e5edadda7b05ee5124361e7272bcd6e555ede7e4fc7d66d2c902.png",
               "link": ""
             }
           ],
@@ -3946,7 +3951,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQG_iN5LYtGdpg/company-logo_100_100/company-logo_100_100/0/1686324068201?e=1793232000&v=beta&t=hvZ8hh9VkLIDyQJjBF6abYly5ta4nin0MBlP_-Pr-x8",
               "alt": "",
-              "path": "data/assets/7e854ee712df9b79b58e1af95dc2e96c0d185c44d4a84c1e46c2e788a93d7c71.png",
+              "path": "data/assets/d2898ecca6f80149d671399f021c0420e049682812f965c1e325b3deb254be48.png",
               "link": ""
             }
           ],
@@ -3963,7 +3968,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQG63dCDE0Xixg/company-logo_100_100/company-logo_100_100/0/1645996291378/victoriametrics_logo?e=1793232000&v=beta&t=mYkaWufTk8QM2zUohiIT_TLjJEvoUrPtMUC3r6akYvE",
               "alt": "",
-              "path": "data/assets/634746b8a7dddbec241c2b7cf926b1821e5f4dbcfa2ef2ed19eb659247613857.png",
+              "path": "data/assets/e6ce69ead18e735c63f42f4faee94704e66f393fe61924fed0c14de2cbaf5b25.png",
               "link": ""
             }
           ],
@@ -3980,7 +3985,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFRJVx9O1UdAw/company-logo_100_100/B56ZWkp9lwHEAc-/0/1742224218849/ga_asi_logo?e=1793232000&v=beta&t=nt4eATnrwNNGIzOnB7bkTw0NNeukSZUC-sWcCMqo-Gc",
               "alt": "",
-              "path": "data/assets/ef18631b9689f239ab83c46785d2ceb9b64e8c3e0221986e1b07729883a371b1.png",
+              "path": "data/assets/4aa9c7c97e0aefa6cba066b844bb9e89dfce1aa8a2548e27471b929d4173e574.png",
               "link": ""
             }
           ],
@@ -3997,7 +4002,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGYtVzVqcdZSg/company-logo_100_100/company-logo_100_100/0/1715878418877/starfish_space_logo?e=1793232000&v=beta&t=CCeAJtpJ27ou-dMPP8iePOyV9Th7e5xkffa3KYxeED0",
               "alt": "",
-              "path": "data/assets/bce865650b4804d9533e29c0b6b6e58e02ab8097573154dc4a72c5b5fa630358.png",
+              "path": "data/assets/1ca3e73dd218fecb14f0cc4ea7fcf509ab1fa09ab0f65011ce6373ed60e49512.png",
               "link": ""
             }
           ],
@@ -4007,14 +4012,14 @@
         {
           "title": "Companies: Sierra Space, CompanySierra Space",
           "paragraphs": [
-            "151,799 followers"
+            "151,800 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQEFWra7Odb3GA/company-logo_100_100/company-logo_100_100/0/1649731084319/sierraspace_logo?e=1793232000&v=beta&t=ZU4sfZ__3tkm0sQLVP26p8QgpEf__qaKJImcM8twLiQ",
               "alt": "",
-              "path": "data/assets/e9922b8d83c35797c5a4fb656fc38f60e7dae32443aa547ea61340df917b312b.png",
+              "path": "data/assets/cd0255a5e45ccc4f3551d355ab5bb73630014691400fa06e0a83851d5b0fc08d.png",
               "link": ""
             }
           ],
@@ -4031,7 +4036,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQEarEeGcqZKmg/company-logo_100_100/company-logo_100_100/0/1633303969967/payloadspace_logo?e=1793232000&v=beta&t=hI2OuZBz7SMkEhr7CU5ieviZstjkrVRiDBxvjVYUteU",
               "alt": "",
-              "path": "data/assets/1577e77ff56fc8b71034dd552dc14b901b5812764b4029d4ed01e78d0189ba5c.png",
+              "path": "data/assets/f11bac6ed0be849200d805249b469b21373a29f78fb42a6eb9b4edf08d50b468.png",
               "link": ""
             }
           ],
@@ -4048,7 +4053,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQHJcFS1cMx70A/company-logo_100_100/company-logo_100_100/0/1631347799848?e=1793232000&v=beta&t=UQu2ptF1Bp14wcUoIf9VfA-p9KwdoKuE6FPMNG7a5sU",
               "alt": "",
-              "path": "data/assets/297f723a6191cc08e3a322377ea478a09690b299bfce9b117c866bb4d8f4d533.png",
+              "path": "data/assets/3a1eacc1837fd1f22ced2847e21d35464c20f087b37c96b69202b02a959ca836.png",
               "link": ""
             }
           ],
@@ -4065,7 +4070,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHPrGQ1fAOrcg/company-logo_100_100/B56aEQJs7GHYAI-/0/1791272341603/gitkraken_logo?e=1793232000&v=beta&t=dvRm8NTJe5CHVLXyIIi0BhFoAprRmVTolKVLyLjUjOE",
               "alt": "",
-              "path": "data/assets/7bef85915e33ac824ab56be59dd74432bd66be050ff1ec037b265544712499cc.png",
+              "path": "data/assets/df5e3db52bc7ede756eaa79707a828f7c56acec753dfa569e6c6bea32fba2acd.png",
               "link": ""
             }
           ],
@@ -4082,7 +4087,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQF17AeecTI6KQ/company-logo_100_100/company-logo_100_100/0/1719855079399/pagerduty_logo?e=1793232000&v=beta&t=atGnprGd5y5neZgGNBCSdhxwRHNFFwnDq9dtiqu3qqI",
               "alt": "",
-              "path": "data/assets/b723958acd9e8d4103758fb56ee551b1157d962e24f75a4892137f4a27792c9f.png",
+              "path": "data/assets/15d7399e8d5787e0010e428fe77ae9045ec0b282043f0374bd5b0e98ac5c3839.png",
               "link": ""
             }
           ],
@@ -4099,7 +4104,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFre5n3AD4ceg/company-logo_100_100/B4EZp43jgKHoAQ-/0/1762964421041/chainguard_dev_logo?e=1793232000&v=beta&t=GLHg9o-6DMqu5NZTxxrS0DZ4F8nAblY3wLbx3fYm5H0",
               "alt": "",
-              "path": "data/assets/a0ea2e0c4fe1a2057c2ed2f19f705e0d8f267675789bb18f7ab4fade8d03a001.png",
+              "path": "data/assets/2e0d0952736cb4374fbfe6aa8e60b6c2a9a0b272d7b01c724e3fdd16ecf90578.png",
               "link": ""
             }
           ],
@@ -4116,7 +4121,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQF4txjQ0zEIZw/company-logo_100_100/company-logo_100_100/0/1630670188690/codesee_logo?e=1793232000&v=beta&t=iCanj0s7FhB_L97RMMwJwW1toB4S8XpErLx3IAX2d6w",
               "alt": "",
-              "path": "data/assets/0f4fda317e295c9d3133f7d9f6f011f04598d04a88d14fe3a45c432f03533cae.png",
+              "path": "data/assets/42c404b859cd14ceddbbdd1c45365b074b936b7d8dd32d0eefdaa1520af2ab46.png",
               "link": ""
             }
           ],
@@ -4133,7 +4138,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE2W5YinRNITA/company-logo_100_100/company-logo_100_100/0/1684417442222/cloudsmith_logo?e=1793232000&v=beta&t=P3gvcC0rWw6roRI2_hwjjBOjIJbZwTv3w2LX_e45u0Y",
               "alt": "",
-              "path": "data/assets/33d7100098978b0eda3eeb78419f4bb212882a7c83b7704188795d0f096cd8a3.png",
+              "path": "data/assets/70f3afb9670f0afd185bef9aec264036130c33dec9f46e4eb2fcd0e7b4d268d0.png",
               "link": ""
             }
           ],
@@ -4150,7 +4155,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQHveE7C8CXFMQ/company-logo_100_100/company-logo_100_100/0/1630573309601/gopuff_logo?e=1793232000&v=beta&t=xpzwZhicYJTw7QjAO4vitcPbpKykfpifOZxw28UnLZY",
               "alt": "",
-              "path": "data/assets/581afb4d21a2c0d2144420f1f3ca5541abc00e1c00632f863fd37d4bc9133fb3.png",
+              "path": "data/assets/6a8c15fa5f750f2a4c573e7a69b1f7b084faf3719ba10fe7918dc5551a0d0f14.png",
               "link": ""
             }
           ],
@@ -4167,7 +4172,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQERmYxMCGwEKg/company-logo_100_100/company-logo_100_100/0/1661350046340/manufacturo_com_logo?e=1793232000&v=beta&t=5UNNh8gs0xmJsmaBfRZYbaK3wQJUwnAC9w1notV6mhI",
               "alt": "",
-              "path": "data/assets/c2071787ab9e711fb745a77d414520f168ccda3aa0873380415911f9d3d794ca.png",
+              "path": "data/assets/5b1c79aff293ab7c61a7614f06a9356ff4e2794977e7a19fc470fe627111c5ea.png",
               "link": ""
             }
           ],
@@ -4184,7 +4189,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQGBnJae-ePLVw/company-logo_100_100/company-logo_100_100/0/1678136462147?e=1793232000&v=beta&t=bRbKTMfp_6w7Nk7ZFZ60Vw04esK8rF8XEzjLNaO6sf0",
               "alt": "",
-              "path": "data/assets/7ed56118d96065cad232271305e7545d387f217a468e899113b86291cb60cf2b.png",
+              "path": "data/assets/5ab057a5a6b0431cc27d291e3e4ea512af02dc7ba16d1dc4f06e90d512bff7d3.png",
               "link": ""
             }
           ],
@@ -4194,14 +4199,14 @@
         {
           "title": "Companies: Trane, CompanyTrane",
           "paragraphs": [
-            "372,178 followers"
+            "372,179 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGd-gtaiJuPCA/company-logo_100_100/B56Zw0wQWaKIAQ-/0/1770411591565/trane_logo?e=1793232000&v=beta&t=8U1UNZtNt-xgPVTFMg5HxmRJFws-j-0yxUQCH-VTORY",
               "alt": "",
-              "path": "data/assets/a9174fdb4b348e450960f07a72a624a14a61594bb3a8b07023a60560f881ed03.png",
+              "path": "data/assets/cede26317afe63bd881b0ad24eacaf202f01de946a45624d067a80bea03182a5.png",
               "link": ""
             }
           ],
@@ -4218,7 +4223,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQGJTdNhx1tvmg/img-crop_100/B4DZ7ebxcqGkAI-/0/1781848283276?e=1793232000&v=beta&t=JtkquvfN8fhnVQY_3Lbrm9bR_rKOn4nMuFLPw3b0iMo",
               "alt": "",
-              "path": "data/assets/8cc4af156d15629f3c8d965490958c20c74b488c71b87eb604636beb80e7cbe9.png",
+              "path": "data/assets/8a80d71a1a69d82032c602b2d4690cbdfea48715dd80077453e89d8ee6eec3ff.png",
               "link": ""
             }
           ],
@@ -4228,14 +4233,14 @@
         {
           "title": "Companies: Astrolab, CompanyAstrolab",
           "paragraphs": [
-            "37,291 followers"
+            "37,290 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQEbAiGyD-QxRQ/company-logo_100_100/company-logo_100_100/0/1646838684694/venturi_astrolab_logo?e=1793232000&v=beta&t=rhbvkCTrDwSCy-KS7RETsllIAzAAN5Dvp0-xz50LjSI",
               "alt": "",
-              "path": "data/assets/bad216ee969187e3658d3cfb45f615cc59315510e57086d82f83b1905adf151d.png",
+              "path": "data/assets/32d3bcdc2a78e742b244279ebaef6bc0db11455686025f080b082f1278c2571f.png",
               "link": ""
             }
           ],
@@ -4252,7 +4257,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQEq0wOYpy53EA/company-logo_100_100/company-logo_100_100/0/1678767613094/gemini_observatory_logo?e=1793232000&v=beta&t=SwmXr3Wj871-JHS-3w1ApR9d_bQcB1zOTHbNoVlmL4c",
               "alt": "",
-              "path": "data/assets/6bb52b5b5b244ee9d6a2534d691a0bdc532a4f477070d7a6518da491df60ef47.png",
+              "path": "data/assets/6cb84f28843b6c7e2ddca159978de93424ec840a4b1ac2e0d6248e1b9b8b8ced.png",
               "link": ""
             }
           ],
@@ -4269,7 +4274,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQEUnStIegIclQ/company-logo_100_100/company-logo_100_100/0/1635999860156/giantmagellantelescope_logo?e=1793232000&v=beta&t=Y4nKkBwycxYi6d3I26El_rwtwbY49MtBVasXYFqd-rY",
               "alt": "",
-              "path": "data/assets/3820d21f8721bfd1b72f1a704c107152a82739eff32d29d1d02e87e161a5de89.png",
+              "path": "data/assets/008df623f808cc1cd3647580327b6243e7c628f4bbc94f95134b3343f8b066c6.png",
               "link": ""
             }
           ],
@@ -4286,7 +4291,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQEhd03RiAChtA/company-logo_100_100/company-logo_100_100/0/1630595262357?e=1793232000&v=beta&t=UyD4TlLzOUG1meR0SKCQRLXXAsxlwS46BLJjQnNzKyU",
               "alt": "",
-              "path": "data/assets/76774c0dbc7ecb545419e96b39df5b71c3cda4ed9871983931fe1997e5fdf4c1.png",
+              "path": "data/assets/e74f85b4c5335478b425f93175e024e9ca4f4b17a77815218211c6ea36d94272.png",
               "link": ""
             }
           ],
@@ -4303,7 +4308,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQGLrIl05hYEMw/company-logo_100_100-alternative/company-logo_100_100-alternative/0/1630494201363/planewaveinstruments_logo?e=1793232000&v=beta&t=uXAoJmzyKktmbwhErjs6efT2I9b9MaixvsfColuVmEE",
               "alt": "",
-              "path": "data/assets/4806ecc0eb468e4db00ccdabe277c9053ce017dbe6f7e2794ba1a93e82f60fc2.png",
+              "path": "data/assets/d48445781f3e658d05b4622fee83d619bc6414527be8c83d369613bf9832a8e4.png",
               "link": ""
             }
           ],
@@ -4320,7 +4325,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGhzHn_rHLb6Q/company-logo_100_100/company-logo_100_100/0/1680888611433?e=1793232000&v=beta&t=qJYu3R3fk6sn40vMJqECGtcw_RsGlzvLy3wGEzLa-h4",
               "alt": "",
-              "path": "data/assets/dbc804411ba1c204616cae912a708fef6315b8d900a7c1baf636b03cb2846e38.png",
+              "path": "data/assets/8e1dc34ba7f38364123f916f8426d9c989c295ac6b1c9717a0715a019572229b.png",
               "link": ""
             }
           ],
@@ -4337,7 +4342,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQEZF2tTOASw4A/company-logo_100_100/B56Z0_jEpqJsAQ-/0/1774887652417/yerkes_observatory_logo?e=1793232000&v=beta&t=UZQQjm6_zjaZmxK1vrWM-nFhkMJhe5l7TlFXmPMS0L8",
               "alt": "",
-              "path": "data/assets/c5064f74d5d518580e2ef7e8210e056d6c7a302afe26dcdd77ce9f2fb513161d.png",
+              "path": "data/assets/4ca304ce937edbdb6945ff874ad1e7f06dc6644a325a6b17a089ca201b22faf8.png",
               "link": ""
             }
           ],
@@ -4354,7 +4359,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQHkLADW0Qgolg/company-logo_100_100/company-logo_100_100/0/1630670368583/canada_france_hawaii_telescope_corporation_logo?e=1793232000&v=beta&t=YVLM3ItsPrlPXtoQB2DDIlpDnjOmNTCouO4VzbkyoVk",
               "alt": "",
-              "path": "data/assets/356750b1adb66de381cbf4aacc2894bab24c177efad222b6afd2060edafeb738.png",
+              "path": "data/assets/165f0e4de3edd5dfe57416956b3b635e928bc94851459b4d8a9d414403d6e8ba.png",
               "link": ""
             }
           ],
@@ -4371,7 +4376,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQHd2E2mv81D6A/company-logo_100_100/company-logo_100_100/0/1630667681020/releasehub_logo?e=1793232000&v=beta&t=GtWh9iPZpqlSDKlsQ9lTKOtZuVpiK4_tZ2esIx7GagU",
               "alt": "",
-              "path": "data/assets/2dc4f7fca0e478d31cd8a4f0dfe44e59148080aa625f9d7b63f7dcf616df95e4.png",
+              "path": "data/assets/ccd6e7b626739ea542c9855a9a04cf4613411772418938be242892d6088dbebb.png",
               "link": ""
             }
           ],
@@ -4388,7 +4393,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGhUMU-ZA3Yeg/company-logo_100_100/company-logo_100_100/0/1737655171956/restack_io_logo?e=1793232000&v=beta&t=h2CF6IM8hvd5MYuVthsPYdzk_caSyaIjpgE3czWSeo0",
               "alt": "",
-              "path": "data/assets/4ba8e746c227fbde1468a36338b2a109d51178689a77a3a54e7f7a39f11bbc9a.png",
+              "path": "data/assets/cb2e5b08f43f8021fca6a153f1004ab21d64037c390cdb3ec83378ceeb74d76b.png",
               "link": ""
             }
           ],
@@ -4405,7 +4410,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEoBdlRfMe4iA/company-logo_100_100/B4EZ_2D5D8HYAM-/0/1786539643408/perfectscale_logo?e=1793232000&v=beta&t=4VBpFbwZ1V77fdb_vjRhNZjqSqGAxqfSEMwt9p1r-84",
               "alt": "",
-              "path": "data/assets/fb80ba15219992132ceede3578a36d65039e541c97e018ccee9b6c0c742d3218.png",
+              "path": "data/assets/8cc199dfe1ac1ff04bfdaf8edbb11b11f91ce134b127fc24ab869da8cdf29f11.png",
               "link": ""
             }
           ],
@@ -4422,7 +4427,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQHdIfR6SLBkpA/company-logo_100_100/company-logo_100_100/0/1630669462166/alma_2_logo?e=1793232000&v=beta&t=SAbpbwu-Pz26ianFuOUTkHVw3hwpYjIKUJdbDWf91Jc",
               "alt": "",
-              "path": "data/assets/e59ae5c283b55edf9335456abf963a57aac2fa85919f5180653f99e3c9f2ffea.png",
+              "path": "data/assets/3f5fad159957ff10753783cfbbfd4c91dabb71b47688c3078a750e0b885ce4d9.png",
               "link": ""
             }
           ],
@@ -4439,7 +4444,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQGzpRRkf4QM1w/company-logo_100_100/company-logo_100_100/0/1631406692678?e=1793232000&v=beta&t=iR4wgkdFoJqjSojlJhg-NX0hHqT-JaQkEJ3kk_VeeDo",
               "alt": "",
-              "path": "data/assets/f91c77663d51cc96a9dd485f5c80d0749f6d4bf22359cfc97e51430c3e40d493.png",
+              "path": "data/assets/764390cd1a029baf58dd3dabbeb83f27eb8f2154dac4e72b89b8a7070a671647.png",
               "link": ""
             }
           ],
@@ -4456,7 +4461,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQHVKslyCqWMrg/company-logo_100_100/company-logo_100_100/0/1630575597092/rubinobservatory_logo?e=1793232000&v=beta&t=IthFxxq4feVTl7Pr9XF1gpx2DqU6T0Fe4RnjfesAH3M",
               "alt": "",
-              "path": "data/assets/ebdfdea752742f8e463cfb4589b1f68915762456052d74ecd1a096a9aa889ecc.png",
+              "path": "data/assets/ea1aa1c6ac9883d6655a9bef1faa2f1430f78b4a74ff8e9b985a2d3e87240407.png",
               "link": ""
             }
           ],
@@ -4466,14 +4471,14 @@
         {
           "title": "Companies: Cypress HCM, CompanyCypress HCM",
           "paragraphs": [
-            "936,391 followers"
+            "936,393 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFSK7L7BGo6mw/company-logo_100_100/B56ZoXLtlwJYAQ-/0/1761325537912/cypress_hcm_logo?e=1793232000&v=beta&t=heNPPj3QjVIp-kzFNzptiDx-SGZOAcV5ABzkIoO6mLk",
               "alt": "",
-              "path": "data/assets/feccb4aba52b0ef51dfcab1fb2d768a3c1f76454b699239bbe2a2312c4e83bb4.png",
+              "path": "data/assets/8ef04a6bc874d72f5a6c9e22ad51beb5bcd230f1282c178eede2c8eafcb2f2d1.png",
               "link": ""
             }
           ],
@@ -4483,14 +4488,14 @@
         {
           "title": "Companies: Anduril Industries, CompanyAnduril Industries",
           "paragraphs": [
-            "659,660 followers"
+            "659,663 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQE_NOVau3lvmw/company-logo_100_100/company-logo_100_100/0/1630637180845/andurilindustries_logo?e=1793232000&v=beta&t=9f8BU3LBt4K1nEtA_WAOuLyQXFR68OSG5SNwE_xyddA",
               "alt": "",
-              "path": "data/assets/4512032c39a8edce9c65ad49602e8367bd22ee0e97e08f70a28ecb7efade8966.png",
+              "path": "data/assets/b54691426b953a717f1b614432224b1ca6f05e52559900bc28b6c8188b90a607.png",
               "link": ""
             }
           ],
@@ -4507,7 +4512,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE4qP79pCV-vQ/company-logo_100_100/company-logo_100_100/0/1712337869518/tailwarden_logo?e=1793232000&v=beta&t=XshSdI5fI33wHNLLHVSDNxsbKZt3wAryLxPrhlTmgPM",
               "alt": "",
-              "path": "data/assets/21373191e2894c43a9dd8cfc09b3c9891bf09334203a4ea98938cf42b4f6e3e1.png",
+              "path": "data/assets/0747d168557a6ac52c545b662e670c102c3783a18e66c0abd3fa43851656798a.png",
               "link": ""
             }
           ],
@@ -4524,7 +4529,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE4nt5LuSgpqg/company-logo_100_100/company-logo_100_100/0/1684141197565/entro_security_logo?e=1793232000&v=beta&t=fXPvVR6G-daqfT8ONSK5YLBV8GMWKmELEue8eWR9yOY",
               "alt": "",
-              "path": "data/assets/52402afd66ffee2bdd526697d5ebd275d71033dd7872caf1b04c41d0f87f35ad.png",
+              "path": "data/assets/71fef9484be6211f8f77e4394b3569633ef1fa9a587dbf98a9a1e69ad9e3b522.png",
               "link": ""
             }
           ],
@@ -4541,7 +4546,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQGewl4VHjlDLA/company-logo_100_100/B4DZdDBMZ1GYAQ-/0/1749176076402/kubernetes_architect_logo?e=1793232000&v=beta&t=-CG-mQDoO-gXGtkzFTxM4_r33W4MjZk1ttk8EPhIqM8",
               "alt": "",
-              "path": "data/assets/51dbd4e5a94c6a34dac1c13cd6c6429777afb9cf8647f97adaa23169511d51a0.png",
+              "path": "data/assets/62f53f212fd2105e776d31328245ee848b3de5d24ee16f4ce0f37866b4ebd837.png",
               "link": ""
             }
           ],
@@ -4558,7 +4563,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGVcceFizyU9A/company-logo_100_100/B56ZbUWbF.HgAQ-/0/1747319370386/whatnot_inc_logo?e=1793232000&v=beta&t=VAZToPuMhVzz0VZOEiwjm4vh0ws_EF751T2r60DGOwM",
               "alt": "",
-              "path": "data/assets/03994e06e92780621f18276eee0aaaf5db290493c04f83a78afb94b6c8440d57.png",
+              "path": "data/assets/22647e5443bade413998765babec04c1327c1a3b1d60b58234d03e108d044458.png",
               "link": ""
             }
           ],
@@ -4568,14 +4573,14 @@
         {
           "title": "Companies: Datadog, CompanyDatadog",
           "paragraphs": [
-            "593,419 followers"
+            "593,421 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQFLwWfI6v1OPA/company-logo_100_100/company-logo_100_100/0/1657564322231/datadog_logo?e=1793232000&v=beta&t=f_RPmTdXs_VdhwBpPYuE9nHlGiUwh8OvZcK4jXZf8XE",
               "alt": "",
-              "path": "data/assets/d5374002840077616a8dea83c740240cccd17e1c7a4fc2602c8e08336930fbad.png",
+              "path": "data/assets/68ca0ea7d45da86149486203cbcfe7b8b74f400e6a85632d56a7c873d105f158.png",
               "link": ""
             }
           ],
@@ -4585,14 +4590,14 @@
         {
           "title": "Companies: Google Cloud, CompanyGoogle Cloud",
           "paragraphs": [
-            "3,463,435 followers"
+            "3,463,453 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFrZn5P9fEf9A/company-logo_100_100/B4EZ22TKwAJ4AU-/0/1776879971686/google_cloud_logo?e=1793232000&v=beta&t=SBUdUdrWd9Y-yZh-NitVWzZn-WZavLO1LLriAAyWbXs",
               "alt": "",
-              "path": "data/assets/13666a021a70f0a3bf9a11819188c2c7a4aa110a102e44c404151450152a19b0.png",
+              "path": "data/assets/178e2943294ade61fe36285651637761cccee267c153941c71b67ef228418c7e.png",
               "link": ""
             }
           ],
@@ -4609,7 +4614,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQERUfwLUFJmBQ/company-logo_100_100/B4EZrf_9yQGUAQ-/0/1764694679056/stack_overflow_logo?e=1793232000&v=beta&t=xPrSmgwDoy9_Z18GF-Wzga2QP_SMmpf9xJTu1Qt1lLY",
               "alt": "",
-              "path": "data/assets/63a95b96288b2a8dc97ad50db39fb9b2fd2d9fbe98461a5dbfc18ddc6fe15991.png",
+              "path": "data/assets/26c37175f51afa3e5b3efbd17caa27e3ab575cb72ec8eb804b4530bfb1c0def2.png",
               "link": ""
             }
           ],
@@ -4619,14 +4624,14 @@
         {
           "title": "Companies: Fairmarkit, CompanyFairmarkit",
           "paragraphs": [
-            "17,004 followers"
+            "17,005 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQHLV2nm6HJzSw/company-logo_100_100/B4EZ2WxvWhH0AQ-/0/1776351114967/fairmarkit_logo?e=1793232000&v=beta&t=AGhm9gOczyhErBBFxIoV8wjaYgpcD3SN-qVRoFTNvjQ",
               "alt": "",
-              "path": "data/assets/1512d87d9e45ac1b9a46948e190a90278d9974a4e715e52fd264114c5da0ad6d.png",
+              "path": "data/assets/18e16f192678ac7b55b842c9548f6026027d081bfacd9a8dc175d7c99e314941.png",
               "link": ""
             }
           ],
@@ -4643,7 +4648,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQE8FL_yK1ZG5g/company-logo_100_100/company-logo_100_100/0/1630639563843/real_life_digital_logo?e=1793232000&v=beta&t=MdMaEdn20mo5EoKuEapFIn5MJfX-wFVWPG1I_YqYw08",
               "alt": "",
-              "path": "data/assets/aaee036ca56b87ab849f02298091b91f7cf412f78c80641c3036ded852edf231.png",
+              "path": "data/assets/21d0389e0855f13be4b013752864eab24018d878e1acc599f3512e81836adb07.png",
               "link": ""
             }
           ],
@@ -4660,7 +4665,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFNNQ90Z6bciA/company-logo_100_100/B56Z.qh9hvKAAI-/0/1785272457539/infisical_logo?e=1793232000&v=beta&t=XbAgEfhe1Uj5Xy6Zv9NpngzMntA_Hv_5IRDq7qvx4l4",
               "alt": "",
-              "path": "data/assets/0313933ad43eb63d8124eae8034a967de144eb133d62ffe8003c2cdac3fc351f.png",
+              "path": "data/assets/b40115f340aecfc9c68854228fa0dd56e71cff09d5c65dc3bd9b35a832f80f7e.png",
               "link": ""
             }
           ],
@@ -4677,7 +4682,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFWIYSyhHIVHg/company-logo_100_100/B4EZ7Xzu9rIAAI-/0/1781737123943/plaid__logo?e=1793232000&v=beta&t=57d3eZ1guXe9MtlP36CAEQWUosW1v0ajwgtQPn3rvjQ",
               "alt": "",
-              "path": "data/assets/9707078ebd6d620ec1731332509c3f647375fecc7d0528f7237cf2d6afa7b633.png",
+              "path": "data/assets/808e9184efd2cf0e56be88a49c3614ed7a88c5e7a54139c773a79ef556770500.png",
               "link": ""
             }
           ],
@@ -4694,7 +4699,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQFXEhS5PhUl3g/company-logo_100_100/company-logo_100_100/0/1714495215618/ddosify_logo?e=1793232000&v=beta&t=M3UTo-zeVpSXrl8o-M3AS9GEvPRRCNKcA04BITjiV2A",
               "alt": "",
-              "path": "data/assets/af414c11a3d0e90b192a85a90b47132791c174d11da6320cf48925755e4eec66.png",
+              "path": "data/assets/a70d17778992cbeb31d5a5ad8351612c9790574e7f6427d8362b6bb81dd9f6a1.png",
               "link": ""
             }
           ],
@@ -4704,14 +4709,14 @@
         {
           "title": "Companies: Grafana Labs, CompanyGrafana Labs",
           "paragraphs": [
-            "311,507 followers"
+            "311,510 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGPd_hES_AEJg/company-logo_100_100/company-logo_100_100/0/1689008396293/grafana_labs_logo?e=1793232000&v=beta&t=IEeBFRI9yyMwjzi7gc__tp2_jHIOJhVky98NHRfV0x4",
               "alt": "",
-              "path": "data/assets/13232465105a3382034bee88f3681d19b4b62282dd00cd8af288c69c940d80ac.png",
+              "path": "data/assets/16ce422fc2a00c84b555f43deb1e629df826c89f396b12b770542d2d02a3394d.png",
               "link": ""
             }
           ],
@@ -4728,7 +4733,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQHhdeDhCiIO9w/company-logo_100_100/company-logo_100_100/0/1630670442091/hatica_logo?e=1793232000&v=beta&t=TJna_IZ-DFRTX73Z9c68prTl64tXrGRkpRS4vORzvn4",
               "alt": "",
-              "path": "data/assets/d3870934b01554c87873a491a957b6c640d85863bafa8965ef71a3ab0df713e9.png",
+              "path": "data/assets/4eb8d63e89d7c6d2cfb77b43bb2f42659cdaf3e5dc7a718f3bf665fe0872484f.png",
               "link": ""
             }
           ],
@@ -4745,7 +4750,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQEtYfe3B0gcow/company-logo_100_100/company-logo_100_100/0/1724772419934/intelgranulate_logo?e=1793232000&v=beta&t=F9sHzayDUqk0CCLpxw8Otns8onenOvg7lwgE1FZtGh4",
               "alt": "",
-              "path": "data/assets/5255a465653e3c32dbc98cad52839b209e5c34294b0bf8a9b85375f7216fe8e8.png",
+              "path": "data/assets/c4c1b7354c263b5443cf78206b6c4d429fed5450db798fc89e8a3fea47d1a8e7.png",
               "link": ""
             }
           ],
@@ -4762,7 +4767,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGePrFavr5iiw/company-logo_100_100/company-logo_100_100/0/1713215086888/isovalent_logo?e=1793232000&v=beta&t=SIlDTXzgEjJd1jv9Tm9QNTYNNyefOlWrDEEDXti0lFg",
               "alt": "",
-              "path": "data/assets/2c8ed98186dc5667ad8c4d2dab46468962818d9897eeef13053f62f51baa7b63.png",
+              "path": "data/assets/5507ef6402501c7deb7de62d8cfc2e3cf4b398b317341e4acb6b9743e66820f8.png",
               "link": ""
             }
           ],
@@ -4779,7 +4784,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFAtSSnDby8hw/company-logo_100_100/B4EZiu_5TCHIAQ-/0/1755282642414/loft_sh_logo?e=1793232000&v=beta&t=el6VhNOhzu1EhK4hsMYpHkvPL9UmLLnAJ2CYfj7EkBg",
               "alt": "",
-              "path": "data/assets/86c24a37d21c2ede4e27c998eb3bd8ad21c749d3ce55d1e53f01936071b20afd.png",
+              "path": "data/assets/2caea53e42c1bfec4de84d96ab211262e622203e9763978ea2be24eee38df0a9.png",
               "link": ""
             }
           ],
@@ -4796,7 +4801,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHoRWjkUUpbcQ/company-logo_100_100/B56ZbbGo.eGsAU-/0/1747432673418/kubecost_logo?e=1793232000&v=beta&t=yZaXI3yI0OnksoE15FktM8u8uyNT9dP-F0aQ1pvn_NE",
               "alt": "",
-              "path": "data/assets/2271d16b161f070e3adb388f39f269000986d087012cbbd49daa78559df279be.png",
+              "path": "data/assets/18b71ab5fd5f70eaa9e619d452cb31efad3ba2c625ca54dd9ace6e426d7c104a.png",
               "link": ""
             }
           ],
@@ -4813,7 +4818,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQH6nGzT1X1E_g/company-logo_100_100/company-logo_100_100/0/1655845256961/containiq_logo?e=1793232000&v=beta&t=KStDpbYtjBJTNqHnlX4cBXeGU9smtDm6hDxAecqv4iU",
               "alt": "",
-              "path": "data/assets/b85bd0aff3513a10d6f285dc1cf7679668afcb228ff05ebf6409d42c7346dc15.png",
+              "path": "data/assets/79ebeb9d3cac1f9e90f0b3cded876a8344590d24badfc23afce12a1f84723e4d.png",
               "link": ""
             }
           ],
@@ -4830,7 +4835,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQFkur_vYu35YQ/company-logo_100_100/company-logo_100_100/0/1679450334927/comparably_logo?e=1793232000&v=beta&t=FBrr26xlelqM7VLVaEgjMS_HXEPjuCoTeiP2s1ilbRc",
               "alt": "",
-              "path": "data/assets/eb91aca4f7c9c57c43301f8d40e149955174411db3bc2d92aa2a2fbdc4c57989.png",
+              "path": "data/assets/fbec0aa176e022079253b53dee60f9d5f7399d0e949036542780ac46ab679696.png",
               "link": ""
             }
           ],
@@ -4847,7 +4852,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQF7JVOwJb4m4A/company-logo_100_100/company-logo_100_100/0/1674595253664?e=1793232000&v=beta&t=JLXI-R06QpxgbQAhklQOA0F7HEW2TUjPoNGovd3yqZ0",
               "alt": "",
-              "path": "data/assets/3936697f62fac72e90609ed314e9db42b72bb844be50f7f2fa4f9f0d3ca88fd0.png",
+              "path": "data/assets/b57ae7ee9c8a4972f1b1193bfbaf2e51e3db38a860c99b161a1518d9a86ca84d.png",
               "link": ""
             }
           ],
@@ -4864,7 +4869,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGluNYWqpf1PA/company-logo_100_100/company-logo_100_100/0/1694192691915/skills_databases_logo?e=1793232000&v=beta&t=1itsiegkyoImKUD_AZjT9l1GMExlFzQtzwqVOm2LN_0",
               "alt": "",
-              "path": "data/assets/b3036041b851468798c356479d2b35ac9580aa102f65983434daa13218913b7f.png",
+              "path": "data/assets/b4c05a1a9cabddc9f2cb2239e41fa3607746471678a4a3422cc8b7752a2ffd3a.png",
               "link": ""
             }
           ],
@@ -4881,7 +4886,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQFJ6-OeQ1CXag/company-logo_100_100/company-logo_100_100/0/1674597181624?e=1793232000&v=beta&t=nJZugncp2e-ArnEspYtZiTXPl5RxIN-QFOMI6DSCz0g",
               "alt": "",
-              "path": "data/assets/c875d13f3306c88583d144dd1a91d9d303de7347a04e833ebef778f348bfb1b7.png",
+              "path": "data/assets/cccc5b4ed1e9ab0009ecbf3461e8f2f16fc12179ce52fc071f7cac15d7b8169e.png",
               "link": ""
             }
           ],
@@ -4898,7 +4903,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQFedIq6gTA2_Q/company-logo_100_100/company-logo_100_100/0/1674601362423?e=1793232000&v=beta&t=IIxl-lkW9oN-n1EcaQNuPP1ab1LunNLg17saYN-jvgI",
               "alt": "",
-              "path": "data/assets/bc8d9a8a7c0c32efe1d41d99ac94fbde3caf1985477699bc9a2c1afa194cb59d.png",
+              "path": "data/assets/d22863fd546b5b68241e2f07fe0eae45a0be13ba02e1e10bd3ecb103c1e84dc9.png",
               "link": ""
             }
           ],
@@ -4908,14 +4913,14 @@
         {
           "title": "Companies: Miro, CompanyMiro",
           "paragraphs": [
-            "498,975 followers"
+            "498,976 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEPS1xZbw7MFQ/company-logo_100_100/company-logo_100_100/0/1694624157258/mirohq_logo?e=1793232000&v=beta&t=fxNNRC-_jVi7N1Crb4RBVsc6iV2-OADeIrbrSAIbSyA",
               "alt": "",
-              "path": "data/assets/df022c266641c3cb3d910882aad33e6406348b9724c7392705b777fffbd547d3.png",
+              "path": "data/assets/cb34c4c939d1959c068f786b018290f506a663cadaeb65bf11dee2e25de89c8b.png",
               "link": ""
             }
           ],
@@ -4925,14 +4930,14 @@
         {
           "title": "Companies: Zscaler, CompanyZscaler",
           "paragraphs": [
-            "543,169 followers"
+            "543,173 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHswWh4VGNL3A/company-logo_100_100/B56Za2TSlsGoAU-/0/1746815232721/zscaler_logo?e=1793232000&v=beta&t=o5zf328-D4lfmHFJ_fEOKJyoAitVq4WKXP9NZl_q4WE",
               "alt": "",
-              "path": "data/assets/10a4caadec3cd04bb57c6f156ef858811c69e26bcdab5ea948ebc34a7751ca3a.png",
+              "path": "data/assets/6dcdd2198bee0d0e1e92341e98508111833080446b6c978fb08a4360fad1d576.png",
               "link": ""
             }
           ],
@@ -4949,7 +4954,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGY_dKlE0DrTw/company-logo_100_100/B4EZ2TxCVHH0AU-/0/1776300600368/ona_hq_logo?e=1793232000&v=beta&t=buft1X0UdRhUstbNqCIor4JQxOCg0QVSrCBNqxAUIBc",
               "alt": "",
-              "path": "data/assets/29b3365f864085a004e7c59ecdff1f9adc4b620b56943ef182055ee856efe422.png",
+              "path": "data/assets/11a8e98f50ef62e8c3e701c04e84413c3d36dec6de94a139618b9d39bd4d0624.png",
               "link": ""
             }
           ],
@@ -4959,14 +4964,14 @@
         {
           "title": "Companies: LinkedIn, CompanyLinkedIn",
           "paragraphs": [
-            "34,480,296 followers"
+            "34,480,407 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQHaVYd13rRz3A/company-logo_100_100/company-logo_100_100/0/1638831590218/linkedin_logo?e=1793232000&v=beta&t=EfSZyf3mLmdWEFDwN6OAJPmHHDZ5JYgh_XZ48BvAs8g",
               "alt": "",
-              "path": "data/assets/5adb4b71e4e7db19288147af54cd2c151141bd69fa98e3334e55b0da5902fd55.png",
+              "path": "data/assets/afe7dc4b0696ccfe6e0751a9aea90d69d86c6a44372437f249a9526b365c64e6.png",
               "link": ""
             }
           ],
@@ -4983,7 +4988,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQETmYPkIzZYkQ/company-logo_100_100/company-logo_100_100/0/1702335156983/heavybit_logo?e=1793232000&v=beta&t=S0sIFWXsp4SvM5HPWb_neGDSDwwaFmKVfLNqQpZHORk",
               "alt": "",
-              "path": "data/assets/6d438df78447cc5683fef8c7986471c47db69b0cc8dae412d11c022870b6023b.png",
+              "path": "data/assets/5f69d54e2573790896fa85fc3aa79988961f7f63e39b8a348136f381ce9a2909.png",
               "link": ""
             }
           ],
@@ -4993,14 +4998,14 @@
         {
           "title": "Companies: Harness, CompanyHarness",
           "paragraphs": [
-            "150,432 followers"
+            "150,434 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQHOMMezCXy4Sw/company-logo_100_100/B4EaEdWpoZK4AI-/0/1791493839663/harnessinc_logo?e=1793232000&v=beta&t=RzgyIBUJ32fs5R8o1iXplqGfluPj18Soitlfz9q3za0",
               "alt": "",
-              "path": "data/assets/d76d455e0f8b792a1caa4c39e6029c545dbf8492d822cbfe978c6737c9893e93.png",
+              "path": "data/assets/eb5e20a4573059917a94a75985690eca19cccf450e7cc0834b3c1ddeefb99667.png",
               "link": ""
             }
           ],
@@ -5010,14 +5015,14 @@
         {
           "title": "Companies: Silent Breach, CompanySilent Breach",
           "paragraphs": [
-            "41,693 followers"
+            "41,694 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQEMRAyU-dk3FA/company-logo_100_100/B4DZ0o9S.kKUAU-/0/1774508651247/silent_breach_logo?e=1793232000&v=beta&t=FZSpeujL9qUl_I3wSGg6axq1yIJmtSIAg9bBqB4gwYk",
               "alt": "",
-              "path": "data/assets/a4aa9a0e71a97ce8086558d216fade15e3ee01772fee00b0f13a680aa53a5100.png",
+              "path": "data/assets/c961cbe3c4e2b2bd0da9c6f13c0127f35ec8fd5fbde7d4fe8d05e5bc88dc2a13.png",
               "link": ""
             }
           ],
@@ -5034,7 +5039,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGttTVy0xvT6Q/company-logo_100_100/B56Z_JcvZIKwAM-/0/1785791182737/dopplerhq_logo?e=1793232000&v=beta&t=0ZGBB04CQYVjTK_sXXtFWLRq5_Tv_XeGIncDmiVMn4U",
               "alt": "",
-              "path": "data/assets/4cc84822918b48a4dd72ea1e47af0a089a6929432006cfe9e00b5abf9b09fa78.png",
+              "path": "data/assets/56b444d364f480d67ce418b8a6d0f612f5cdca0a52ae8c33c28c414aadfbca1e.png",
               "link": ""
             }
           ],
@@ -5051,7 +5056,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQFlPdn35zAq4Q/company-logo_100_100/company-logo_100_100/0/1680179357149/franshares_logo?e=1793232000&v=beta&t=XKcA02p6rW01z_j9joWArLL4YKJxebgdlCvM2aKQavY",
               "alt": "",
-              "path": "data/assets/9e7d1adbd56720c9637a29f0a5ac263efe7e12c9e1036685b2fe6092db47786b.png",
+              "path": "data/assets/23a979bb4eda887f82e704be90a9f408b628f8a1ab4e0609842f96d53052f450.png",
               "link": ""
             }
           ],
@@ -5068,7 +5073,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGleZzTdziiig/company-logo_100_100/company-logo_100_100/0/1734605494428/komiser_logo?e=1793232000&v=beta&t=bDl_8nysoEp5YAwe9yboryT7ea3LdvzUDFyeZ2N-3A4",
               "alt": "",
-              "path": "data/assets/ea2b5617c1a60a9d45894a6caf114bab30ba26fb312c401eb7b2b6aaebb2441e.png",
+              "path": "data/assets/f89908fbfeac052b682fb31280eac418c67c52b7b7b561424384d1eb1b5fe683.png",
               "link": ""
             }
           ],
@@ -5085,7 +5090,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQE1SZJxvXmReg/company-logo_100_100/B4EZnPabSmKcAQ-/0/1760121435660/devopsbulletin_logo?e=1793232000&v=beta&t=lJ6Ee3rPafiri8RwKV2DrWsdq0ngqjXQa7i1dtEIt_8",
               "alt": "",
-              "path": "data/assets/4e524e4450f1316c6546f7910dd2226def884594e9d52e0db60a353eb0c88824.png",
+              "path": "data/assets/3922cf7d40a28589637cf1e41703b9b95a7118a0c8ddf438ffe3a5aac32c0a6f.png",
               "link": ""
             }
           ],
@@ -5095,14 +5100,14 @@
         {
           "title": "Companies: Spotify, CompanySpotify",
           "paragraphs": [
-            "4,764,275 followers"
+            "4,764,299 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQFkDzx_7dqq3A/company-logo_100_100/company-logo_100_100/0/1631377935713?e=1793232000&v=beta&t=BukEF9cHEiK9YhVdIJWof8O9HHRjS8IzJzOvLkqoTqQ",
               "alt": "",
-              "path": "data/assets/4cc491d5280792b9353c093690dd28c291f64bf2a32ed7a168cd0b913749bdf8.png",
+              "path": "data/assets/7cd18e8aa9fda5eb7e93dae1f05b105266d762d3a63a47d4147641a9b43cc302.png",
               "link": ""
             }
           ],
@@ -5119,7 +5124,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQHsJr85TGi5_w/company-logo_100_100/company-logo_100_100/0/1645806250057/eversourceenergy_logo?e=1793232000&v=beta&t=yNyrIb058Uq8uxz4LAg3akz_GMG5AjDVnAXfxYaueKg",
               "alt": "",
-              "path": "data/assets/46d1a9d67a28839f125b576cfaae0b8eec3bcd24eb08888b79233c39b3e8f690.png",
+              "path": "data/assets/e01794dc0b7f7ef7d619cd94d024a4bc9310cd63ccb3c970da8dc57ee7085ca0.png",
               "link": ""
             }
           ],
@@ -5136,7 +5141,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFDGQx06y2DZA/company-logo_100_100/company-logo_100_100/0/1726769585143/helloorum_logo?e=1793232000&v=beta&t=VzUCCuGFxPZNCJ3n5Dk0MS63Agc6hwSzPgCLv7tuRXw",
               "alt": "",
-              "path": "data/assets/c6f5c1ce2784bb63e1b37913363ad038ce57d2528513673bf771508c3733acef.png",
+              "path": "data/assets/3b55317f7270ed661713919335b74a442727e4c1af8a07f8b99f0870eb4ad51d.png",
               "link": ""
             }
           ],
@@ -5153,7 +5158,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQH6BGDx5BE8GQ/company-logo_100_100/company-logo_100_100/0/1672415765992/premiscale_logo?e=1793232000&v=beta&t=W9m2dTaNhCgq9FRYLbHc0d1iyatlzptriwKxp-rYpRs",
               "alt": "",
-              "path": "data/assets/771a5386e699dbf41ae350416ecbe6d093814e7e2ded75518257a6f35bb5f037.png",
+              "path": "data/assets/24bf9fe8bd56a652f88cf0faafa67b3363639960bffb81cbc931c12fc3a7b7be.png",
               "link": ""
             }
           ],
@@ -5163,14 +5168,14 @@
         {
           "title": "Companies: GLG, CompanyGLG",
           "paragraphs": [
-            "503,141 followers"
+            "503,140 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHoFuOTjwcd6Q/company-logo_100_100/B4DZyV23jsJoAQ-/0/1772040714734/glg_logo?e=1793232000&v=beta&t=0Lgp7BMKNROAhuHrZ7zK9b4P3d4V6irSvEATblFhqBs",
               "alt": "",
-              "path": "data/assets/81e2c0ac6c29d3a44ae8a1fe3a7fda2dd3754592c0f31bb664c5f2ef383f9ee1.png",
+              "path": "data/assets/f472b57b01e330de809555fa95b8ca562e312cc9fa9e3e37a0d45c19b562ebfb.png",
               "link": ""
             }
           ],
@@ -5187,7 +5192,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQFn95qX5QKmxQ/company-logo_100_100/company-logo_100_100/0/1678825443462/array_io_logo?e=1793232000&v=beta&t=MERsipx2qvq6pa7WdecJNAX7yoBRDR6I5o90NK3vVA8",
               "alt": "",
-              "path": "data/assets/b77152fe73f9ad85efb47b961d1a53ac5feef705797bc4c35789e327b79b9126.png",
+              "path": "data/assets/5fc5cf070133c6d3cdc3102e7ae7cad1d87c6e55c53e9f04b4b20912bbbfa0e4.png",
               "link": ""
             }
           ],
@@ -5204,7 +5209,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQFN0aCscps4rw/company-logo_100_100/company-logo_100_100/0/1631369783777/bubble_group_inc_logo?e=1793232000&v=beta&t=Q6s6fSZ1Y3igX5mEYKUcAsXQffLkNCQOrdCSNaCtkw4",
               "alt": "",
-              "path": "data/assets/0ce37fe7b25193d09f56fb52b934f4c9c5f867cb8e90131f4511e09eb37a7423.png",
+              "path": "data/assets/44241e0c0de97752a16cfc5733e4ec2cb252ad9987b50fb0bcf7813e471c305f.png",
               "link": ""
             }
           ],
@@ -5221,7 +5226,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEirUSt3k10Aw/company-logo_100_100/B4EZiavHekGUAQ-/0/1754942699761/beyond_identity_inc_logo?e=1793232000&v=beta&t=jJO9YcTl1T1UFMTNLO5gP03NByuV4xU8_x7hCW1Yr50",
               "alt": "",
-              "path": "data/assets/bf1d95c15debbdfa802af472f427e983ab0374fb6f7b0cdc8c86ec69dc171026.png",
+              "path": "data/assets/f651e404def566beef8a8722b1b5fe15f902116ef5f30d291626722117ead5b9.png",
               "link": ""
             }
           ],
@@ -5238,7 +5243,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQE-tjwwNseMTg/company-logo_100_100/B56ZvgdorgJ4AQ-/0/1768997424331/prefect_logo?e=1793232000&v=beta&t=tRAc5vUHWZX-ZnD1a024wawjctKGfs9_79Lu85dgROk",
               "alt": "",
-              "path": "data/assets/e76550df9549171d6d11e97a6b3e59b9a2152442fae13248f4a6e41ee43efe17.png",
+              "path": "data/assets/4ba1459735b95ae8732db890834afe8bae8c3d1dd9411fdfd7fc7cd126b5fbf1.png",
               "link": ""
             }
           ],
@@ -5255,7 +5260,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFGCGjZabgY6g/company-logo_100_100/company-logo_100_100/0/1689195708719/symops_logo?e=1793232000&v=beta&t=MKkjQ3HbzSHTYJgBs0HsvEIhGs779iiT768l1nApYjc",
               "alt": "",
-              "path": "data/assets/33c70053d43a74e037fd872d5d473d284bb73f26eeb101bae84dbfb4b912c665.png",
+              "path": "data/assets/a1197ca551c52c965c0c4a9b939436444e301e628eeae735c872f3e3fc40accc.png",
               "link": ""
             }
           ],
@@ -5272,7 +5277,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQHvcvQXvYW-pw/company-logo_100_100/B4EZ4I7TCgHUAI-/0/1778266223073/readme_logo?e=1793232000&v=beta&t=PvVe-aPM1gfXSbsmLMiyFijDvCEMSQJnQ8oDT1VTMPU",
               "alt": "",
-              "path": "data/assets/65285824dccf5054f7e994f490a6778fd77f7fcc9f8fc23a809cf7356e9dc5e2.png",
+              "path": "data/assets/865c50f1ab92bb5b36adedb53508c9703bf4bd49f7328df8b43a0cf58a57eda6.png",
               "link": ""
             }
           ],
@@ -5289,7 +5294,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQH9UOhxuWRJ5A/company-logo_100_100/B4EZhmcAVsGUAY-/0/1754065274607/cloudtruth_logo?e=1793232000&v=beta&t=roKjtftVc0cQQ0VI_zmXHlFjlh5FZDo6l45Ibk1eoRI",
               "alt": "",
-              "path": "data/assets/429d4dfa7ce25cb8d350ca994618308aab7d38e478a27d6d962e1f8e0c7a0c3f.png",
+              "path": "data/assets/c383e6eaaa370951493b53f1aea7140081ed7f56b5a2bccdb8e7ccfcc058d45a.png",
               "link": ""
             }
           ],
@@ -5306,7 +5311,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGf6qqJ57v6zw/company-logo_100_100/company-logo_100_100/0/1709614261877/octopus_deploy_logo?e=1793232000&v=beta&t=Bh1X23R-0v6JLlVwQSo9iiGwuGv4CT8onjT1HYiWMLQ",
               "alt": "",
-              "path": "data/assets/690951ad7437dc92a560809fe7d67dffbdb4d046f2d9f220713e301ffab8c8f3.png",
+              "path": "data/assets/018fc22b5d146b10a244ef63375c26dae95bded0d2c78421e20501b37fdc9219.png",
               "link": ""
             }
           ],
@@ -5323,7 +5328,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQFDtpdJQWLoZQ/company-logo_100_100/company-logo_100_100/0/1648766392651?e=1793232000&v=beta&t=2n8kZy_vCok4rIZVTD1OJdUZY5vi6nS5YDMtGU20E0I",
               "alt": "",
-              "path": "data/assets/7d28b85451a159e0a8bd0a515a21388f4073c4bd24d7869e54ae5de76165312e.png",
+              "path": "data/assets/da734b66c32ce22267bf04df17e2b41bc92baf5997ab52b6ce88bfdc04e40a3a.png",
               "link": ""
             }
           ],
@@ -5340,7 +5345,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQGY3SNuJXOZlQ/company-logo_100_100/company-logo_100_100/0/1640694850751/datreeio_logo?e=1793232000&v=beta&t=kXmlL_p_qD3VGqRKtcRSMZ26ToOHeX3jGH6AKs3ZJks",
               "alt": "",
-              "path": "data/assets/fac4e3531846f0b30df2960fa808d4b1bb7ebfea1136f96e2f7ceedaf2d124bc.png",
+              "path": "data/assets/1c79ecf9d1746ca42ec57e0ff2f0c1a15ee9938b88c0ae509452105ac3d5a139.png",
               "link": ""
             }
           ],
@@ -5357,7 +5362,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQE8kCZnMbJkIw/company-logo_100_100/company-logo_100_100/0/1660053629814/veriff_logo?e=1793232000&v=beta&t=KT_ynGamoGO7WNfXnYkPzMLnUuYQ7fBujzQ5876nW9A",
               "alt": "",
-              "path": "data/assets/a002d06a4818ec5fba30001fe5467c1958d66b3e098accc9bf62dc51bdc026b0.png",
+              "path": "data/assets/8a7c3550b8b1f76dc5554462d1eb584f4333bba17031505f9156b9c30f55be03.png",
               "link": ""
             }
           ],
@@ -5374,7 +5379,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQFqaiTVW1g6HA/company-logo_100_100/company-logo_100_100/0/1631334538896?e=1793232000&v=beta&t=GjVUy9agwoQgea9Ay0xw0reLxq4PpoNsDXQHJFqVZzw",
               "alt": "",
-              "path": "data/assets/ec5cc8342efc0b7af1023bfc8318cffb8d12debe60adb1412193e1ff62ff3014.png",
+              "path": "data/assets/ffb79f66d4846f946a86d9a8411fc7038f8f7f12e89d8f83eca67a3574690e09.png",
               "link": ""
             }
           ],
@@ -5391,7 +5396,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQHpREzvALyL8Q/company-logo_100_100/company-logo_100_100/0/1642284857917?e=1793232000&v=beta&t=ScQZt8fOzk3IwbmcAVIMlVt6bYmiQzpBUQoRJ5mzTFQ",
               "alt": "",
-              "path": "data/assets/80d5e4e8e0256da22e0c9d650e6a2dd55bfc004da20707386aa861a1f6eb4bd0.png",
+              "path": "data/assets/2608409a2ab6c29c9fd3f485c5f8b1ca0c26b1e99d6e59f55bd7238420355cc1.png",
               "link": ""
             }
           ],
@@ -5408,7 +5413,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGqwAatd1xefg/company-logo_100_100/B56ZX3wrWCHoAQ-/0/1743618487964/codefresh_logo?e=1793232000&v=beta&t=nEN8Dyeg_apcTpuzE2UeqguIoVydAn959DX6Xrzb1-s",
               "alt": "",
-              "path": "data/assets/f2533587c2ecbbde926ad1ebf5888ea76e34d2caadae506c5c6b5f9d21998ef9.png",
+              "path": "data/assets/ec6a34bf9f717fcc759e938eaf187d6c70111e3047262347104b5f274206c478.png",
               "link": ""
             }
           ],
@@ -5425,7 +5430,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEEknHSzMGk6Q/company-logo_100_100/B4EZrBY5PPIQAQ-/0/1764181120447/sbe_vision_logo?e=1793232000&v=beta&t=R0J5D2DQuPv9hhGdb89bJXuikQueIamcOFwNoCM4Wc0",
               "alt": "",
-              "path": "data/assets/7d273d3ad07128c5e282a7ef0c9818a5a3af6b1acd8a6ea56b69fc947da2be54.png",
+              "path": "data/assets/19ba12633cd2203f6cdc2e4ea295f29df8f5a6df3389f74aa80eb4821b2304b3.png",
               "link": ""
             }
           ],
@@ -5442,7 +5447,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGjS_TiNdsBvg/company-logo_100_100/B56aCvZDzwHEAM-/0/1789648977346/str_us_logo?e=1793232000&v=beta&t=9s8gb-c4n6TXXbEMY_ev3fpyC1G8GHXuMkS8Vj6SJHw",
               "alt": "",
-              "path": "data/assets/e39237f57255f3d66de15e2bd5ececefb4ece3ece62f675099feb9d0112ab0d3.png",
+              "path": "data/assets/0e94569588664afc3ce9060e841159f4eaa3c55767ca7244d84118836a6da1dc.png",
               "link": ""
             }
           ],
@@ -5459,7 +5464,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQHkUFBxRQDFjA/company-logo_100_100-alternative/company-logo_100_100-alternative/0/1630648728732/skylight_hq_logo?e=1793232000&v=beta&t=9FOkRuRLGyX2-LY7M90OTaota9LxBwR47bj48XQ_gDY",
               "alt": "",
-              "path": "data/assets/bde8ff3b287f4b53ccfd8fb5b69dd90d9054a7cee04e566012cb3ad88333b45b.png",
+              "path": "data/assets/51dbbe22026372b2475eb7603b4090942a817644c2fe7019065571e4141a26db.png",
               "link": ""
             }
           ],
@@ -5469,14 +5474,14 @@
         {
           "title": "Companies: Rocket Lab, CompanyRocket Lab",
           "paragraphs": [
-            "385,083 followers"
+            "385,087 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQEoxk0rRcE6JA/company-logo_100_100/company-logo_100_100/0/1645135300007/rocket_lab_limited_logo?e=1793232000&v=beta&t=FKeLQdJtbFPm9B9wiQEvKuz1I5hyS1z5UzkJn6KXj1o",
               "alt": "",
-              "path": "data/assets/b5b63c7446a1a07b6877d50cf466dc0e804167f378194e6cb77a156fb8d0e5fc.png",
+              "path": "data/assets/e515fbc4581680f40819a7a895a146f5cc16031071f004db178f5dff81d1a0b5.png",
               "link": ""
             }
           ],
@@ -5493,7 +5498,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFrxMjHS_ZdvQ/company-logo_100_100/B56Z4njEh.HEAM-/0/1778779965870/heliumnetwork_logo?e=1793232000&v=beta&t=Ysr3fzhmhYXUeEt_oZsA80ErxDzdCq4dfje7H-ZMvs4",
               "alt": "",
-              "path": "data/assets/67d7a4484535c6b06154c12f7bc4f97fbc48fa0bed5a99cc2dba6b455b1c2390.png",
+              "path": "data/assets/dfe8a1859794ffea29d26454bf382a278b53a799897d680346b30ce5a602bf45.png",
               "link": ""
             }
           ],
@@ -5510,7 +5515,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQEWtGvo-YthHg/company-logo_100_100/B56Z0bURBQKsAQ-/0/1774279791411/safebase_logo?e=1793232000&v=beta&t=ocksC95KmiCFAUGJ8IT6z36aqYiezvzFNRs6YnsptHM",
               "alt": "",
-              "path": "data/assets/9a4aaf158380f88af0dfb0953bddd50c0ecb66c4a37c2860cb14c86e026c361e.png",
+              "path": "data/assets/7d4c40c8074fad1b0a20dbb6520bc929d684a43f06f7a4baa770f899eb778f81.png",
               "link": ""
             }
           ],
@@ -5527,7 +5532,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQHgyFqaR_IHSg/company-logo_100_100/B4EaCipEdUIUAI-/0/1789435070754/portainer_logo?e=1793232000&v=beta&t=5it9AC4AlKchx8Fu7-UqnBol2DTx74FDgDJwUka_M6U",
               "alt": "",
-              "path": "data/assets/d79b51c2fae3e6c7fad602c4e94de2a29ac62e541d203122e6d8e70ba41efa3f.png",
+              "path": "data/assets/82ee1394c6e30bb7015612e2e6f70c642e4c19b970b5227712fbf51a2f5adde5.png",
               "link": ""
             }
           ],
@@ -5544,7 +5549,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQG7OnUZN1wNTw/company-logo_100_100/B56Z3fNmTzGsAQ-/0/1777566377722/infracost_logo?e=1793232000&v=beta&t=-0YgRffEXKJ9-_XnPCldKqonAA2N1hwWrJbrLYgDyYo",
               "alt": "",
-              "path": "data/assets/0b2034a6cbfd631a60ac6a1867a5cc97bcb9099fa1e460efe86cc2a051606f83.png",
+              "path": "data/assets/76d475c3d4c0535df8bf8c1cd2c90c54e9f53685ccb8543c19437e46303df421.png",
               "link": ""
             }
           ],
@@ -5554,14 +5559,14 @@
         {
           "title": "Companies: GitHub, CompanyGitHub",
           "paragraphs": [
-            "6,720,303 followers"
+            "6,720,359 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGxQRyEwD643g/company-logo_100_100/B56Z3045ErGgAQ-/0/1777930048179/github_logo?e=1793232000&v=beta&t=YLUk-RgtkBHgzNGPtCBLcdUV6U-_i_Xux87TaqmFcr8",
               "alt": "",
-              "path": "data/assets/46ca7cd351058e830d1cd85dbf929b8ec48a85113228525486bf2b6dc7418ba6.png",
+              "path": "data/assets/d0a02f461230ac9886b92c84909ef30824d552b31c5825d9f6ca8f52f3078e44.png",
               "link": ""
             }
           ],
@@ -5578,7 +5583,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGGAYKB3JGKrg/company-logo_100_100/company-logo_100_100/0/1688581340882/circleci_logo?e=1793232000&v=beta&t=kWmHx5tmVsrg9cm-VmnZ8_DLDRCocQ5F2073LojlAo8",
               "alt": "",
-              "path": "data/assets/55d04c039c8869f118fe0c4683d9e4747a5cfceca36f169460c17be68df168ea.png",
+              "path": "data/assets/120f4d3488cdf66ec2d87a8bdf7aecfdecb06fcb06c303eb94821706a9f150e5.png",
               "link": ""
             }
           ],
@@ -5595,7 +5600,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQHodUlsQkC6AQ/company-logo_100_100/B4EaBFCOnmIUAI-/0/1787864607562/soloio_logo?e=1793232000&v=beta&t=m_PMouheRhYAy4L8gWHAkmFldLSyMSjIwtVUZuZHE08",
               "alt": "",
-              "path": "data/assets/fa6bb361d1f6fd1a6c11dffbcf7fc55d2f0ca9b2b12f71d48e0e1880ca3ff518.png",
+              "path": "data/assets/f7363207f928613b72ee5c2b1f9f7a5b64d4d15b0cd254d17c357d520ae102f8.png",
               "link": ""
             }
           ],
@@ -5605,14 +5610,14 @@
         {
           "title": "Companies: Coinbase, CompanyCoinbase",
           "paragraphs": [
-            "1,497,944 followers"
+            "1,497,950 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQHQJxIt9C0pHA/company-logo_100_100/B4EZ755_FYJIAI-/0/1782309188194/coinbase_logo?e=1793232000&v=beta&t=PKY8E0ZOj1HOpD1uwVkUY41buiI_hue1NyRqwZfwZYE",
               "alt": "",
-              "path": "data/assets/c84738546378c2338e1b5d5b764a6ec016254bda18c519c7c423938d76caacfc.png",
+              "path": "data/assets/d0c1056f03ad1d1dad3ab85c28a02df697645277f709b63e7fbd5bb939c83132.png",
               "link": ""
             }
           ],
@@ -5622,14 +5627,14 @@
         {
           "title": "Companies: Circle, CompanyCircle",
           "paragraphs": [
-            "238,606 followers"
+            "238,607 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFONRpP_VBB_g/company-logo_100_100/company-logo_100_100/0/1665523815027/circle_internet_financial_logo?e=1793232000&v=beta&t=-QS4efuCeDcBTxCrHTWzxotDZwh7WjRBItsG1f54UfE",
               "alt": "",
-              "path": "data/assets/bfbd7b193529e0dc5b9b43e87b6ad08f6ba1a0763d34191bfbd7d44b81bd1ffd.png",
+              "path": "data/assets/e62d231e59171470a31dedcebbd94a14a5c381dec8957b911e2f666d1fd0acb0.png",
               "link": ""
             }
           ],
@@ -5639,14 +5644,14 @@
         {
           "title": "Companies: Cloudflare, CompanyCloudflare",
           "paragraphs": [
-            "1,192,847 followers"
+            "1,192,852 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQG16gpXzS14DQ/company-logo_100_100/company-logo_100_100/0/1630499898593/cloudflare_logo?e=1793232000&v=beta&t=MKTJ_3eRP8DJxO4o-Mj6qii6wkOcvZj5GGW3S7J7vzc",
               "alt": "",
-              "path": "data/assets/212c3358037fb8cbf7b7eacd01aac0e12e6e4fc48244d006073936e68094bfbd.png",
+              "path": "data/assets/02b0370687f8ed649ebc7c622e57b2406f053d89466e1f236c2b85a5429080e7.png",
               "link": ""
             }
           ],
@@ -5656,14 +5661,14 @@
         {
           "title": "Companies: Rafay, CompanyRafay",
           "paragraphs": [
-            "19,485 followers"
+            "19,486 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQGUO6go9stwUg/company-logo_100_100/company-logo_100_100/0/1630608748398/rafay_systems_logo?e=1793232000&v=beta&t=htNbtrcGh3qOQlD9Coru2W4T-zctDzLWUDAZEoSf594",
               "alt": "",
-              "path": "data/assets/f174c23260d0757557db12e20e2516e35fabd8e74185cd41fdc25803434d34bc.png",
+              "path": "data/assets/f24886f22ebe8cc95044eb56cc61fe3e302ee9d49e95a80cccb0177c25b7c3e0.png",
               "link": ""
             }
           ],
@@ -5673,14 +5678,14 @@
         {
           "title": "Companies: Planet, CompanyPlanet",
           "paragraphs": [
-            "171,351 followers"
+            "171,352 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHzSVfNWuPeog/company-logo_100_100/company-logo_100_100/0/1719853927768/planet_labs_logo?e=1793232000&v=beta&t=-JfWD0MRfcMcE_xxin5MvxVgfvnL6oVQzAEmGqP4wJ8",
               "alt": "",
-              "path": "data/assets/0e0a1fab553ca4f411fb7c887ee5f8b8de023516b2f4dd04fcbe83b1e39315da.png",
+              "path": "data/assets/235524fd7a845a9c2f68afa3d536a4541715b027cb955c9c1c3275b36ed94914.png",
               "link": ""
             }
           ],
@@ -5697,7 +5702,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQFUCQNRdltLPw/company-logo_100_100/company-logo_100_100/0/1631379771265/boom_technology_inc_logo?e=1793232000&v=beta&t=2i8U6s-2mfA8pZcGzD6ssvQvKpUmkfX8brLvddV78gI",
               "alt": "",
-              "path": "data/assets/6934abc950d8cc76ae07b9c6ab3e88ee967d080ecda197dc7473c73e1851727f.png",
+              "path": "data/assets/a899e63325a9785bdf7c65f71d827e50d285b85a5d78bb63f5d2e99047d49447.png",
               "link": ""
             }
           ],
@@ -5707,14 +5712,14 @@
         {
           "title": "Companies: Axiom Space, CompanyAxiom Space",
           "paragraphs": [
-            "180,198 followers"
+            "180,199 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQGGXg-_JP8dFQ/company-logo_100_100/company-logo_100_100/0/1630635893789?e=1793232000&v=beta&t=-CbOJ7VJzfTJuRxKevRZzAQX87nXrblbdCAiEM5jyRU",
               "alt": "",
-              "path": "data/assets/b946ecb0b8d8a709016427454900146371535f0fbed4fb15df055212945eb7ec.png",
+              "path": "data/assets/f81c97f8eb6bb6ed4be7c89de6f18a75ea90b1570ee3245b278c285efa5dca03.png",
               "link": ""
             }
           ],
@@ -5724,14 +5729,14 @@
         {
           "title": "Companies: Boeing, CompanyBoeing",
           "paragraphs": [
-            "4,229,311 followers"
+            "4,229,323 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQG8NhuAoYdTgw/company-logo_100_100/company-logo_100_100/0/1708109812925/boeing_logo?e=1793232000&v=beta&t=jvAKdsxrn29lOe-dtiYZVMqcnbit_qJjplVow3thQ8E",
               "alt": "",
-              "path": "data/assets/4b3d78e40bf745335b01fa02a1444859048ae6b20fa508e6a53ce683860ef7f6.png",
+              "path": "data/assets/ccc86590096450082ab5c843d8b7f5f61fa32995e9ef982425e5bbcf3513839d.png",
               "link": ""
             }
           ],
@@ -5741,14 +5746,14 @@
         {
           "title": "Companies: GitLab, CompanyGitLab",
           "paragraphs": [
-            "1,190,299 followers"
+            "1,190,306 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQEMpW43u_veYQ/company-logo_100_100/company-logo_100_100/0/1707968675381/gitlab_com_logo?e=1793232000&v=beta&t=nya7Sh4Mgtev7Mh330wL5XGJj53z2U4RZ1Qln-PbdzE",
               "alt": "",
-              "path": "data/assets/3f6002d31b4cb4f2dbe442978de2bbb987a0775097a9c26ff5d8a9cc86347203.png",
+              "path": "data/assets/7c13246c81f76d450491b111f4bffe5eb15a3b011ef1efea48026a75ac857cbe.png",
               "link": ""
             }
           ],
@@ -5758,14 +5763,14 @@
         {
           "title": "Companies: Docker, Inc, CompanyDocker, Inc",
           "paragraphs": [
-            "840,696 followers"
+            "840,702 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQEbB4zEuUiVew/company-logo_100_100/B56aDRNVbhG0AM-/0/1790216329138/docker_logo?e=1793232000&v=beta&t=2z1MpMyACilLX2viLxVsTM8SYoKM71oa6wxsuEvSoTs",
               "alt": "",
-              "path": "data/assets/db295154380dde3efb70b5b803df4af0309ca731aacb2a479cf5f3a1184a8eeb.png",
+              "path": "data/assets/64d46d865abf990474cd1f0edbaa5500ea1c00e4ddc2687c130add74c7a44bf9.png",
               "link": ""
             }
           ],
@@ -5775,14 +5780,14 @@
         {
           "title": "Companies: HashiCorp, CompanyHashiCorp",
           "paragraphs": [
-            "328,787 followers"
+            "328,786 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQFBoGhgrPpY9g/company-logo_100_100/B56ZVHpOInHsAQ-/0/1740663743267/hashicorp_logo?e=1793232000&v=beta&t=YLWnolgwOf0FO75sp2dqOpwuOwnnv0mYAYqXqYPyN0s",
               "alt": "",
-              "path": "data/assets/438f93c1d6d654222b9b453c33c9993e5274a7f1eebd14a0714dbb327b54590f.png",
+              "path": "data/assets/97973763c49e0a895d5b3d40a72852965b7e534e53fd1f09630fe485182f6d3f.png",
               "link": ""
             }
           ],
@@ -5792,14 +5797,14 @@
         {
           "title": "Companies: The Linux Foundation, CompanyThe Linux Foundation",
           "paragraphs": [
-            "422,250 followers"
+            "422,252 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQEXYSSWEvEL9g/company-logo_100_100/company-logo_100_100/0/1657565842240/the_linux_foundation_logo?e=1793232000&v=beta&t=OvAk_KGSOlf_ByJxXGVOssmLHpJz0WDmF93UC880efU",
               "alt": "",
-              "path": "data/assets/929091e1ce273c7c9fb54a3e0e04181a1627fc80cff9d4442220b2cde0ad99cc.png",
+              "path": "data/assets/4a3d71a8d783c216cc19a0a87bab6019bfb665ee73f5f46afa877207263f8b81.png",
               "link": ""
             }
           ],
@@ -5809,14 +5814,14 @@
         {
           "title": "Companies: Cloud Native Computing Foundation (CNCF), CompanyCloud Native Computing Foundation (CNCF)",
           "paragraphs": [
-            "180,140 followers"
+            "180,142 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQH5MvALB7nkQQ/company-logo_100_100/company-logo_100_100/0/1720630871456/cloud_native_computing_foundation_logo?e=1793232000&v=beta&t=rJsPPwEBF9H5uZGO0mq4P6Md25WB9Tfjcxt27g90zXc",
               "alt": "",
-              "path": "data/assets/dec9493be68f086f6f0121d72ad799cd8a29e1d7ed89defa16b8caa22d8711a4.png",
+              "path": "data/assets/8fc1bc929e759147bcd0fe9cdf1938c8045e105f72a58b70fb4deb76bde7f53e.png",
               "link": ""
             }
           ],
@@ -5826,14 +5831,14 @@
         {
           "title": "Companies: Relativity Space, CompanyRelativity Space",
           "paragraphs": [
-            "239,589 followers"
+            "239,590 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQFKeRPssztcCQ/company-logo_100_100/company-logo_100_100/0/1630648864936/relativity_logo?e=1793232000&v=beta&t=Gs8VHeKHVZx5y4iiS431d96z9mp2Rw9CoIrVxb81EbA",
               "alt": "",
-              "path": "data/assets/5c07da745533260cd1ee1ede776a15237ac7eed8fddba577411442fab9e5df2a.png",
+              "path": "data/assets/929fd482a02d95e74b73bcf8e7d8ebdd8e8b7ad81138d0aad5e875463589df33.png",
               "link": ""
             }
           ],
@@ -5850,7 +5855,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQEl7FGTGEN4QQ/company-logo_100_100/company-logo_100_100/0/1630533417478?e=1793232000&v=beta&t=GCacxwQTf5Yl-zXXpA2uPVBNPWZSVGHbecUSKk95YAM",
               "alt": "",
-              "path": "data/assets/d8f8e03893b46b3fc251aec2389fb864184f1ff535ec6362fe7695e173dde45a.png",
+              "path": "data/assets/0aef85d0b01058df8a51af36c2c5797aa34def0795280e688141f096e1e83c70.png",
               "link": ""
             }
           ],
@@ -5867,7 +5872,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGM3kJdzolTVQ/company-logo_100_100/company-logo_100_100/0/1689059761767/blackbox_research_logo?e=1793232000&v=beta&t=uP0X3riGH-UZmffDush0RNj4bcyKH3kIS4oe9I3Z9hw",
               "alt": "",
-              "path": "data/assets/9392b75cbb3b8ca276097a67989989a292807add0da1653f67a19ba836717066.png",
+              "path": "data/assets/97f2482ad0ab91c964800e84ff534a288a58f095db13c0b79473dbf39af62631.png",
               "link": ""
             }
           ],
@@ -5884,7 +5889,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFZXLeXhXxJyw/company-logo_100_100/company-logo_100_100/0/1719837214942/federal_reserve_bank_of_boston_logo?e=1793232000&v=beta&t=MoyNhMBltM3V9Xqqmltpoibz6zSAJ-f6l0fMgJ1P3wE",
               "alt": "",
-              "path": "data/assets/d7512ed85a1c4b2a560ec95b099f19c65aed61b98abd390679bd014c1327173a.png",
+              "path": "data/assets/b0c0678ad0de00353eb369623e928656ff2b8b5c5f41c64a2eec6e34f47d972f.png",
               "link": ""
             }
           ],
@@ -5894,14 +5899,14 @@
         {
           "title": "Companies: Rapid7, CompanyRapid7",
           "paragraphs": [
-            "228,556 followers"
+            "228,557 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQEvLxvLFXAk6A/company-logo_100_100/B4DZbPgFH5GUAQ-/0/1747238018082/rapid7_logo?e=1793232000&v=beta&t=isnozKXT6vB3VzU5FhvSB4EheUY9ATGYsftQcQTt2rI",
               "alt": "",
-              "path": "data/assets/d8ee926b2668fdb6bd75a58efce006b639b2b89ca1884337d058f1a2b1b6c0f5.png",
+              "path": "data/assets/73ac57bb4566fb351a76513b85a4246fd18bb54ff38ef8a6675b51a48acad9f2.png",
               "link": ""
             }
           ],
@@ -5911,14 +5916,14 @@
         {
           "title": "Companies: Fidelity Investments, CompanyFidelity Investments",
           "paragraphs": [
-            "1,448,089 followers"
+            "1,448,096 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEuH501asNUIQ/company-logo_100_100/B4EZXtxo03G0AU-/0/1743450967859/fidelity_investments_logo?e=1793232000&v=beta&t=1Xcbw2BiP2uyhDkzW_rKRdPSgQBMRr1clvW5S58cALQ",
               "alt": "",
-              "path": "data/assets/c33a209d9bfbef0931820f0616951a90c595f11cb6d12e1d9922941b9b7b9afc.png",
+              "path": "data/assets/5c3073af69a2f714cb7d7bf6ba90d924286107f4797e366bbf8889665ad73c8b.png",
               "link": ""
             }
           ],
@@ -5935,7 +5940,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHm8gCQMydp7g/company-logo_100_100/company-logo_100_100/0/1719847870864/anacondainc_logo?e=1793232000&v=beta&t=0pho37I_lWrcfTkQm4xmsEs-4z0CxiKT9DCMCG6JkaI",
               "alt": "",
-              "path": "data/assets/924b07e6d923f2216c968d34486d19538e1b16ff04abbd9651a0b825bc292edd.png",
+              "path": "data/assets/d91289fa1ca0bcb65c26c80d5264f4af3c80d69883fb35e9eba8a91e620350ed.png",
               "link": ""
             }
           ],
@@ -5945,14 +5950,14 @@
         {
           "title": "Companies: Python Software Foundation, CompanyPython Software Foundation",
           "paragraphs": [
-            "160,674 followers"
+            "160,676 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEd6YYbewi_3g/company-logo_100_100/company-logo_100_100/0/1684944383346/thepsf_logo?e=1793232000&v=beta&t=dL1-04IkBduTi4c_ddEHdBb8ySM66Xs6iiDGUZpD8Mw",
               "alt": "",
-              "path": "data/assets/cd508c34127afcf02e490e5c9d86fceb79cbbd3ef0302791119aa43b20be478f.png",
+              "path": "data/assets/865ae2f09913c6f8c0256b911b06162f96d71d9b42c3f5aeb0d9f875f7f462b1.png",
               "link": ""
             }
           ],
@@ -5962,14 +5967,14 @@
         {
           "title": "Companies: Red Hat, CompanyRed Hat",
           "paragraphs": [
-            "1,588,674 followers"
+            "1,588,675 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQEto-TydTTIfQ/company-logo_100_100/company-logo_100_100/0/1630583759577/red_hat_logo?e=1793232000&v=beta&t=sMHB3fL8kWptABk_zYw4WvNMr4bRxZNyxrZ5OOCF0HQ",
               "alt": "",
-              "path": "data/assets/5d994a1daa130e931950bfb19a1bb54936a577507ed71c5027faa79d1e2f58db.png",
+              "path": "data/assets/59cc146606f1155de5279acfbd0e4222810c9c4c774926a4310d540f9ccf124c.png",
               "link": ""
             }
           ],
@@ -5986,7 +5991,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQFsJ-5vTraZAg/company-logo_100_100/company-logo_100_100/0/1654637493056/debtbook_logo?e=1793232000&v=beta&t=57KXdAUbvRSy4249jLgTuJdCL94z642TPPY1WrnJWiM",
               "alt": "",
-              "path": "data/assets/9c72d5590ec94d705a2bb66595c64a3922723318765a9e8ad50a48c8089f1f17.png",
+              "path": "data/assets/e5144304e01d87983598f04d8fdb0744dbb76840da53dff5a6025fab8c6fd4f4.png",
               "link": ""
             }
           ],
@@ -5996,14 +6001,14 @@
         {
           "title": "Companies: Weave, CompanyWeave",
           "paragraphs": [
-            "55,482 followers"
+            "55,483 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C560BAQE5qU-CsUolLQ/company-logo_100_100/company-logo_100_100/0/1660170006736?e=1793232000&v=beta&t=qUqC1LwR-cDRI2zYmFfjAE5SVttgP21ALhyinavl2-E",
               "alt": "",
-              "path": "data/assets/19e34286746ed95ec8413b6e37fde013ca931e17e7737dd4d151ede05a063ec0.png",
+              "path": "data/assets/3622b80393931d530f68abc217cd13c2cbbf135c2384be28fad42bc22096d3aa.png",
               "link": ""
             }
           ],
@@ -6013,14 +6018,14 @@
         {
           "title": "Companies: Amazon Web Services (AWS), CompanyAmazon Web Services (AWS)",
           "paragraphs": [
-            "11,155,568 followers"
+            "11,155,591 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQFqdm1TZ-RZKQ/company-logo_100_100/B4EZgOay6gHEAY-/0/1752588562343/amazon_web_services_logo?e=1793232000&v=beta&t=u-iqtWKurtFgW7ABE6LN0fJCCBo1ClBDH6CmWtIGeQ4",
               "alt": "",
-              "path": "data/assets/e232cf048feead354dd34dfd9f0c26d93ec798fe2663c63653f2920b9312fcd6.png",
+              "path": "data/assets/7da9dfc11b440282838fa479e10d2515af3f8cd20e6de2db0642fe15c303e266.png",
               "link": ""
             }
           ],
@@ -6037,7 +6042,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/C4E0BAQG9V63O4sKUzw/company-logo_100_100/company-logo_100_100/0/1648731139379/noaa_logo?e=1793232000&v=beta&t=iziyOzjOFezA5E4E84ew5nc3Lu8vo6EOdLdaSkE9wSw",
               "alt": "",
-              "path": "data/assets/61d4f9432d92b60ffa212257b672230222041e4443726ff0e5f79676468a655d.png",
+              "path": "data/assets/db6908ed72308e09e68a186d3f863409d9732361fb69d0ed2fdd970c06473b89.png",
               "link": ""
             }
           ],
@@ -6052,9 +6057,9 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/D4E07AQGAUN0W68Gsyw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1679464692171?e=1792137600&v=beta&t=jQGCfGXuASx4eyy-ivWDouNx2HbAdA9rdTmuemRGyHk",
+              "url": "https://media.licdn.com/dms/image/v2/D4E07AQGAUN0W68Gsyw/group-logo_image-shrink_200x200/group-logo_image-shrink_200x200/0/1679464692171?e=1792137600&v=beta&t=rWIp_M3Dk7fPBuuX6g626GqrgP5EddV4F5AA-k-SVW8",
               "alt": "",
-              "path": "data/assets/27c8de0ae42d16a19a60b2bae94037a0dc87f609ec7d83adb7c9f959ed150024.png",
+              "path": "data/assets/918bf6720ac52ba849ff63ab727c3a910612591fb098cf7d8e07fb656a54c7ee.png",
               "link": ""
             }
           ],
@@ -6069,9 +6074,9 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/C4D07AQG37VB8M0OUdA/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631366309621?e=1792137600&v=beta&t=2LjCr0jHImzxV7uxMAXI7c3ZpFFAVZVpc_YjFlly1Yk",
+              "url": "https://media.licdn.com/dms/image/v2/C4D07AQG37VB8M0OUdA/group-logo_image-shrink_92x92/group-logo_image-shrink_92x92/0/1631366309621?e=1792137600&v=beta&t=TOzS93Gnk4M5Shf1n1u5_UOfaDVFv_0_vwnJ8VBgaBk",
               "alt": "",
-              "path": "data/assets/4fb378854d8edb37df7925dcf1c3ba7929545bf57137ce6419d636b812ed8790.png",
+              "path": "data/assets/759fb41448db1809551d30b78ae06b38cd96e03b2877cc41fe0aa023104900fe.png",
               "link": ""
             }
           ],
@@ -6081,14 +6086,14 @@
         {
           "title": "Groups: DevOps & SRE Discussions, GroupDevOps & SRE Discussions",
           "paragraphs": [
-            "276,929 members"
+            "276,930 members"
           ],
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/D5607AQH3d2ImPADArg/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1657802580080?e=1792137600&v=beta&t=gp53-m6Rjij9iKJ-mw6XhuOJfvievvblBHmKzZ3mXFk",
+              "url": "https://media.licdn.com/dms/image/v2/D5607AQH3d2ImPADArg/group-logo_image-shrink_200x200/group-logo_image-shrink_200x200/0/1657802580080?e=1792137600&v=beta&t=8jOIiK_ogomm6CAwH_XKbcjCnt6Xebwfi_78cqDmjps",
               "alt": "",
-              "path": "data/assets/e5e044f6ce4b5bbcddc71e8f1e56a2430c38bde04200fef8d407278b15fc6da1.png",
+              "path": "data/assets/326d62a33861b37e73aa8545ceeabd49ec436ace3ce3590e70f126dd4afaa1a7.png",
               "link": ""
             }
           ],
@@ -6103,9 +6108,9 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/C4D07AQGk_pP01ZElDQ/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631005519508?e=1792137600&v=beta&t=-wMSf6COrzI6bdzMx0V8v5szWdDpzbbgLeIHBPqdeiI",
+              "url": "https://media.licdn.com/dms/image/v2/C4D07AQGk_pP01ZElDQ/group-logo_image-shrink_200x200/group-logo_image-shrink_200x200/0/1631005519508?e=1792137600&v=beta&t=7-jqIOsD675CRNHh-mcVenrjD9OOyJYJIITTs6GZagc",
               "alt": "",
-              "path": "data/assets/6ee0bef71b162d826f18c972d04f3b9aa20b78cbfcc7c13e0f891be68fda472d.png",
+              "path": "data/assets/e614619f188921f578027c76ec236f481fcc9d4f866464b0b7c2f192c50dd16d.png",
               "link": ""
             }
           ],
@@ -6120,9 +6125,9 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/C5607AQGYeBgRmXjEOw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631004506770?e=1792137600&v=beta&t=UDe0HRt6enQh4ESrE4Rw_85yM07YIy5Dv6QNJkVPsRs",
+              "url": "https://media.licdn.com/dms/image/v2/C5607AQGYeBgRmXjEOw/group-logo_image-shrink_200x200/group-logo_image-shrink_200x200/0/1631004506770?e=1792137600&v=beta&t=AhBHV-tY3J_TTanqzKBfsE0hS00Sc5ChAnhi6Pi-7E4",
               "alt": "",
-              "path": "data/assets/f282b867aa1fe7af60e41417aaaff08a0b6948be97dcaf6dc4994a7eb15ff5e5.png",
+              "path": "data/assets/59b56c4e45574b4bdf3f78e3fd6161989baa4fb95da0f1d31fb4f84981f13587.png",
               "link": ""
             }
           ],
@@ -6137,9 +6142,9 @@
           "links": [],
           "images": [
             {
-              "url": "https://media.licdn.com/dms/image/v2/C4D07AQG8Vd6LWUE0Gw/group-logo_image-shrink_48x48/group-logo_image-shrink_48x48/0/1631004597306?e=1792137600&v=beta&t=RKj5uM_0DLGxgLgNHkj7laG6yKZyEUpglh4afFdguBU",
+              "url": "https://media.licdn.com/dms/image/v2/C4D07AQG8Vd6LWUE0Gw/group-logo_image-shrink_200x200/group-logo_image-shrink_200x200/0/1631004597306?e=1792137600&v=beta&t=7Qh2GanCLNJ6FHh9WDEzouiftmStFyOOdK0EIf9eqs0",
               "alt": "",
-              "path": "data/assets/5929c99267e29cc975edc6aa950832c38fb6718234a3739c47561d43ab593742.png",
+              "path": "data/assets/c517dc5d50ed7acd21636fbb26d0a9e4357e0060b619591aafdf44c8942faf6b.png",
               "link": ""
             }
           ],
@@ -6165,13 +6170,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E12AQH7I--OnPIryg/series-logo_image-shrink_100_100/series-logo_image-shrink_100_100/0/1704731644888?e=1793232000&v=beta&t=hQybsSIfkSuYun2Ey18JABT-OtANPs_vkPje_PqcMaw",
               "alt": "",
-              "path": "data/assets/e533bb54d710099f9b51181024ad3a7257fe2f18334b193d7113f6abe71bdb91.png",
+              "path": "data/assets/3e1c8a84e72377615e1773736987768ede0df1c2e8fda8c8490116b7d11dbc9d.png",
               "link": ""
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQHxwcJuB2s5Ew/company-logo_100_100/company-logo_100_100/0/1704331328152/linkedin_guide_to_creating_logo?e=1793232000&v=beta&t=HqOcDz2NfUzmBXAWmRc8Y6WLgHNwG4IawSMEokojiQY",
               "alt": "",
-              "path": "data/assets/8d766532e98433e2706c3e13529f7e43d89c79a9f798933a6b3e5883980c8035.png",
+              "path": "data/assets/0580485a78b9eed5c30b275aa5cd789ac70ef9c7870d6616845eceb60e95df94.png",
               "link": "https://www.linkedin.com/showcase/linkedin-guide-to-creating/"
             }
           ],
@@ -6197,7 +6202,7 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D0BAQGJTdNhx1tvmg/img-crop_100/B4DZ7ebxcqGkAI-/0/1781848283276?e=1793232000&v=beta&t=JtkquvfN8fhnVQY_3Lbrm9bR_rKOn4nMuFLPw3b0iMo",
               "alt": "",
-              "path": "data/assets/8cc4af156d15629f3c8d965490958c20c74b488c71b87eb604636beb80e7cbe9.png",
+              "path": "data/assets/8a80d71a1a69d82032c602b2d4690cbdfea48715dd80077453e89d8ee6eec3ff.png",
               "link": "https://www.linkedin.com/company/robusta-dev/"
             }
           ],
@@ -6223,13 +6228,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D5612AQH8cUMgg1J9_A/series-logo_image-shrink_100_100/B56aDM0Ru2JIAc-/0/1790142651539?e=1793232000&v=beta&t=MmGBxveDeFIJWdGQn1cqpmjUG1z_6a9Gm_8utJ9neWI",
               "alt": "",
-              "path": "data/assets/06928b40cdcc02343f30cc5bf4ad9ae2ab4d346fab95c12af67d0a9035d9dc0e.png",
+              "path": "data/assets/423bf247c765e7dd1cded3b2021e31cd97f7c6983f646d0e04e0d11ca4b950f5.png",
               "link": ""
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGGAYKB3JGKrg/company-logo_100_100/company-logo_100_100/0/1688581340882/circleci_logo?e=1793232000&v=beta&t=kWmHx5tmVsrg9cm-VmnZ8_DLDRCocQ5F2073LojlAo8",
               "alt": "",
-              "path": "data/assets/55d04c039c8869f118fe0c4683d9e4747a5cfceca36f169460c17be68df168ea.png",
+              "path": "data/assets/120f4d3488cdf66ec2d87a8bdf7aecfdecb06fcb06c303eb94821706a9f150e5.png",
               "link": "https://www.linkedin.com/company/circleci/"
             }
           ],
@@ -6255,13 +6260,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4D12AQHJdsZ3jjuHDw/series-logo_image-shrink_100_100/series-logo_image-shrink_100_100/0/1706551606923?e=1793232000&v=beta&t=eJgEgDF1pb7ZLMVsNLC3dkGUNEL_e25ypHdL1c2t55w",
               "alt": "",
-              "path": "data/assets/a4a27c1794ec3f8dd424434d265bd22a30f1b1f5e5ec64b7bc58e4d9156dfc72.png",
+              "path": "data/assets/00873bea4fb3fed5bccd26aecd89b7dddbc410fe947689a96c41deaa28d57afa.png",
               "link": ""
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E0BAQEoBdlRfMe4iA/company-logo_100_100/B4EZ_2D5D8HYAM-/0/1786539643408/perfectscale_logo?e=1793232000&v=beta&t=4VBpFbwZ1V77fdb_vjRhNZjqSqGAxqfSEMwt9p1r-84",
               "alt": "",
-              "path": "data/assets/fb80ba15219992132ceede3578a36d65039e541c97e018ccee9b6c0c742d3218.png",
+              "path": "data/assets/8cc199dfe1ac1ff04bfdaf8edbb11b11f91ce134b127fc24ab869da8cdf29f11.png",
               "link": "https://www.linkedin.com/company/perfectscale/"
             }
           ],
@@ -6287,13 +6292,13 @@
             {
               "url": "https://media.licdn.com/dms/image/v2/D4E12AQGacMj90xMXJA/series-logo_image-shrink_100_100/B4EZZt1ddSHYAU-/0/1745599453453?e=1793232000&v=beta&t=CJR9Sf8ULZOO_l9bLGERMfJ4SqVgFYt49cnxF-vdo0Q",
               "alt": "",
-              "path": "data/assets/9e00f3baec079c4b4f6e779a8ea65dcc0079a412985075f768bc70a921992c79.png",
+              "path": "data/assets/3819c128b2c64b79e48393b55c88222162f5948110009090fd4d913ee504a6ae.png",
               "link": ""
             },
             {
               "url": "https://media.licdn.com/dms/image/v2/D560BAQGxQRyEwD643g/company-logo_100_100/B56Z3045ErGgAQ-/0/1777930048179/github_logo?e=1793232000&v=beta&t=YLUk-RgtkBHgzNGPtCBLcdUV6U-_i_Xux87TaqmFcr8",
               "alt": "",
-              "path": "data/assets/46ca7cd351058e830d1cd85dbf929b8ec48a85113228525486bf2b6dc7418ba6.png",
+              "path": "data/assets/d0a02f461230ac9886b92c84909ef30824d552b31c5825d9f6ca8f52f3078e44.png",
               "link": "https://www.linkedin.com/company/github/"
             }
           ],
@@ -6303,14 +6308,14 @@
         {
           "title": "Schools: Y Combinator, SchoolY Combinator",
           "paragraphs": [
-            "1,833,659 followers"
+            "1,833,664 followers"
           ],
           "links": [],
           "images": [
             {
               "url": "https://media.licdn.com/dms/image/v2/C4D0BAQGPzdBPNxrmEg/company-logo_100_100/company-logo_100_100/0/1673555093250/y_combinator_logo?e=1793232000&v=beta&t=7jwCCJua04Y98ahq2tFSdBqnndWo1Srh4mpacNzivKs",
               "alt": "",
-              "path": "data/assets/6dc4bf78e3c44a41532c0ca5be744c55a326e2594a607752a959c7022f3faa0c.png",
+              "path": "data/assets/3a53ca5d7ee532750537e67057bf5e2c626a52b45430a4f30f7fb77b52482103.png",
               "link": ""
             }
           ],
@@ -6332,15 +6337,10 @@
           "positions": []
         }
       ]
-    },
-    {
-      "key": "contact",
-      "title": "Contact info",
-      "entries": []
     }
   ],
   "warnings": [],
-  "captured_at": "2026-10-09T07:35:23.603694+00:00",
+  "captured_at": "2026-10-09T08:01:36.772460+00:00",
   "schema_version": 1,
   "headline": ""
 }

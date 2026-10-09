@@ -21,6 +21,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError, BrowserWindowError
+from resumeme.linkedin.approval_audit import record_approval_context
 from resumeme.linkedin.challenges import observe_challenge
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.retrying import is_retryable_selenium_error, retry_selenium
@@ -144,7 +145,13 @@ def _check_login_challenge(driver: WebDriver) -> ChallengeObservation:
     return observation
 
 
-def _wait_for_app_approval(driver: WebDriver, settings: Capture, observation: ChallengeObservation) -> bool:
+def _wait_for_app_approval(
+    driver: WebDriver,
+    settings: Capture,
+    observation: ChallengeObservation,
+    *,
+    profile_username: str | None = None,
+) -> bool:
     """
     Observe the existing session for a bounded mobile-app approval without submitting anything further.
 
@@ -152,6 +159,7 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture, observation: Ch
         driver (WebDriver): Browser displaying an approval prompt or an unrecognized verification checkpoint.
         settings (Capture): Maximum app-approval wait, independent of page loading timeouts.
         observation (ChallengeObservation): Initial classification and allowlisted diagnostic evidence.
+        profile_username (str | None): Public configured profile identifier for the audit record.
 
     Returns:
         bool: True only after the existing browser has an authenticated LinkedIn session.
@@ -168,6 +176,12 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture, observation: Ch
         f'{prompt} Check your LinkedIn app for "Yes, it\'s me". Waiting up to {timeout} seconds. '
         f"Checkpoint diagnostics: {observation.summary()}.",
         flush=True,
+    )
+    record_approval_context(
+        profile_username=profile_username,
+        browser=settings.browser,
+        checkpoint=observation.kind,
+        timeout_seconds=timeout,
     )
 
     def approved(page: WebDriver) -> bool:
@@ -222,13 +236,14 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture, observation: Ch
         ) from error
 
 
-def _headless_login_ready(driver: WebDriver, settings: Capture) -> bool:
+def _headless_login_ready(driver: WebDriver, settings: Capture, *, profile_username: str | None = None) -> bool:
     """
     Observe login success or allow a bounded approval window for any checkpoint without a recognized hard failure.
 
     Args:
         driver (WebDriver): Browser whose current authentication state is being polled.
         settings (Capture): Bounded approval wait settings.
+        profile_username (str | None): Public configured profile identifier for the audit record.
 
     Returns:
         bool: True after authentication, otherwise False while ordinary page loading may continue.
@@ -245,13 +260,21 @@ def _headless_login_ready(driver: WebDriver, settings: Capture) -> bool:
         return True
 
     if state in _LOGIN_BLOCKED_STATES:
-        return _wait_for_app_approval(driver, settings, _check_login_challenge(driver))
+        return _wait_for_app_approval(
+            driver,
+            settings,
+            _check_login_challenge(driver),
+            profile_username=profile_username,
+        )
 
     return False
 
 
 def _login_form(
-    driver: WebDriver, *, unattended: Capture | None = None
+    driver: WebDriver,
+    *,
+    unattended: Capture | None = None,
+    profile_username: str | None = None,
 ) -> tuple[WebElement, WebElement, WebElement] | Literal[True, False]:
     """
     Wait for a complete usable form or an already authenticated session.
@@ -259,6 +282,7 @@ def _login_form(
     Args:
         driver (WebDriver): Browser whose location is rechecked on every poll.
         unattended (Capture | None): Approval settings for headless login, or None for ordinary interactive login.
+        profile_username (str | None): Public configured profile identifier for the audit record.
 
     Returns:
         tuple[WebElement, WebElement, WebElement] | Literal[True, False]: Editable username/password fields and visible submit control;
@@ -272,7 +296,9 @@ def _login_form(
     if _login_page(driver) == "loading":
         return False
 
-    authenticated = _headless_login_ready(driver, unattended) if unattended is not None else _authenticated(driver)
+    authenticated = (
+        _headless_login_ready(driver, unattended, profile_username=profile_username) if unattended is not None else _authenticated(driver)
+    )
 
     if authenticated:
         return True
@@ -310,13 +336,19 @@ def _login_form(
     return (username, password, submit) if submit is not None else False
 
 
-def _login_submit(driver: WebDriver, *, unattended: Capture | None = None) -> WebElement | Literal[True, False]:
+def _login_submit(
+    driver: WebDriver,
+    *,
+    unattended: Capture | None = None,
+    profile_username: str | None = None,
+) -> WebElement | Literal[True, False]:
     """
     Observe an enabled sign-in button after credential entry without resubmitting or retaining stale controls.
 
     Args:
         driver (WebDriver): Browser whose form may rerender as credentials are entered.
         unattended (Capture | None): Approval settings for headless login, or None for ordinary interactive login.
+        profile_username (str | None): Public configured profile identifier for the audit record.
 
     Returns:
         WebElement | Literal[True, False]: Enabled submit control, True if already authenticated, or False while unavailable.
@@ -324,7 +356,7 @@ def _login_submit(driver: WebDriver, *, unattended: Capture | None = None) -> We
     Raises:
         BrowserError: The form leaves LinkedIn, requires unsupported verification, or exhausts its app-approval wait.
     """
-    controls = _login_form(driver, unattended=unattended)
+    controls = _login_form(driver, unattended=unattended, profile_username=profile_username)
 
     if isinstance(controls, bool):
         return controls
@@ -334,7 +366,7 @@ def _login_submit(driver: WebDriver, *, unattended: Capture | None = None) -> We
     return submit if submit.is_enabled() else False
 
 
-def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
+def _login(driver: WebDriver, settings: Capture, *, headless: bool, profile_username: str | None = None) -> None:
     """
     Submit configured credentials once, then observe authentication without retrying a password submission.
 
@@ -342,6 +374,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         driver (WebDriver): Browser on LinkedIn's login page or an authenticated tab.
         settings (Capture): Page loading timeout and bounded app-approval wait.
         headless (bool): Allow app approval but fail immediately for code-entry MFA or CAPTCHA.
+        profile_username (str | None): Public configured profile identifier for the audit record.
 
     Returns:
         None: Authentication succeeded, including any manually completed challenge in interactive mode.
@@ -363,7 +396,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
             """
             try:
                 return WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
-                    partial(_login_form, unattended=settings if headless else None)
+                    partial(_login_form, unattended=settings if headless else None, profile_username=profile_username)
                 )
             except TimeoutException as error:
                 # A challenge is not a transient missing form. Never reload it or replay credentials to get past it.
@@ -405,7 +438,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
         try:
             ready: WebElement | Literal[True] = retry_selenium(
                 lambda: WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
-                    partial(_login_submit, unattended=settings if headless else None)
+                    partial(_login_submit, unattended=settings if headless else None, profile_username=profile_username)
                 ),
                 settings,
             )
@@ -444,7 +477,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
     try:
         retry_selenium(
             lambda: WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
-                partial(_headless_login_ready, settings=settings)
+                partial(_headless_login_ready, settings=settings, profile_username=profile_username)
             ),
             settings,
         )

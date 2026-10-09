@@ -60,6 +60,37 @@ jobs:
           REFRESH_PROFILE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) }}
         run: bash scripts/ci/source.sh
 
+  # Source-only validation starts before live capture; no browser, profile artifact, or model output is needed.
+  test-stage:
+    name: Test
+    needs: source
+    if: >-
+      ${{ !cancelled()
+      && needs.source.result == 'success' }}
+    uses: ./.github/workflows/stage-test.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+
+  security-stage:
+    name: Security
+    needs: source
+    if: >-
+      ${{ !cancelled()
+      && needs.source.result == 'success' }}
+    uses: ./.github/workflows/stage-security.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+
+  readme-stage:
+    name: Review README
+    needs: source
+    if: >-
+      ${{ !cancelled()
+      && needs.source.result == 'success' }}
+    uses: ./.github/workflows/stage-readme.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+
   # Packages and the synthetic container smoke test need only source, so start them alongside browser capture.
   build-stage:
     name: Build package and container
@@ -209,6 +240,11 @@ jobs:
       # Fan-in is strict: incomplete or mismatched shards prevent profile publication.
       - name: Validate and aggregate all six profile shards
         run: poetry run resumeme --config resumeme.config.yaml aggregate
+      # Fresh data retains the same schema checks without delaying source-only tests behind the browser.
+      - name: Check the accepted profile and schema contracts
+        run: |
+          poetry run python scripts/validation/check-data.py
+          poetry run resumeme --config resumeme.config.yaml validate
       - name: Export complete capture for downstream stages
         run: poetry run python scripts/ci/profile-artifact.py export
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -234,32 +270,17 @@ jobs:
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  test-stage:
-    name: Test
-    needs: [source, capture]
-    # Schema checks validate the selected capture; Python tests have no dependency on generated summaries.
-    if: >-
-      !cancelled()
-      && needs.source.result == 'success'
-      && ((needs.source.outputs.refresh == 'true'
-      && needs.capture.result == 'success')
-      || (needs.source.outputs.refresh != 'true'
-      && needs.capture.result == 'skipped'))
-    uses: ./.github/workflows/stage-test.yml
-    with:
-      sha: ${{ needs.source.outputs.sha }}
-      refresh: ${{ needs.source.outputs.refresh == 'true' }}
 
   # Keep PR feedback in the same pipeline as the Trivy scan that produced its sanitized report.
   trivy-pr-comment:
     name: Trivy PR summary
-    needs: [source, test-stage]
+    needs: [source, security-stage]
     if: >-
       always()
       && github.event_name == 'pull_request'
       && needs.source.result == 'success'
-      && needs.test-stage.result != 'cancelled'
-      && needs.test-stage.result != 'skipped'
+      && needs.security-stage.result != 'cancelled'
+      && needs.security-stage.result != 'skipped'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -344,7 +365,17 @@ jobs:
       always()
       && !(github.event_name == 'schedule'
       && github.event.schedule == '43 6 * * 1')
-    needs: [source, capture, summary-stage, test-stage, build-stage, browser-e2e-stage, documents-stage, resume-stage]
+    needs:
+      - source
+      - capture
+      - summary-stage
+      - test-stage
+      - security-stage
+      - readme-stage
+      - build-stage
+      - browser-e2e-stage
+      - documents-stage
+      - resume-stage
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -353,7 +384,8 @@ jobs:
           RESULTS_JSON: ${{ toJSON(needs) }}
         run: |
           jq -e '
-            ([.source, .["summary-stage"], .["test-stage"], .["build-stage"], .["browser-e2e-stage"], .["documents-stage"], .["resume-stage"]] |
+            ([.source, .["summary-stage"], .["test-stage"], .["security-stage"], .["readme-stage"],
+              .["build-stage"], .["browser-e2e-stage"], .["documents-stage"], .["resume-stage"]] |
               all(.result == "success")) and
             (if .source.outputs.refresh == "true" then .capture.result == "success" else .capture.result == "skipped" end)
           ' <<<"$RESULTS_JSON"

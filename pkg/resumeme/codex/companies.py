@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
@@ -17,6 +18,7 @@ from resumeme.codex.request import prepare_summary
 from resumeme.compiler.asts.contributions import calendar_window, validate_calendar
 from resumeme.compiler.asts.summary import CompanyEvidence, load_summary
 from resumeme.compiler.backends.latex.compilation import compile_pdf
+from resumeme.compiler.passes.context import resolve_dates
 from resumeme.compiler.passes.summary import summary_digest
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import company_config, project_path
@@ -266,6 +268,7 @@ def render_companies(
     Raises:
         SummaryError: A required summary is stale, malformed, or belongs to another company or applicant.
     """
+    today = datetime.now(UTC).date()
     selected: list[tuple[CompanyEvidence, Path, Config]] = []
 
     # Missing or invalid variants must fail before any existing target PDF is replaced.
@@ -273,7 +276,7 @@ def render_companies(
         directory = project_path(summaries, target.key)
         company = load_company(directory / "company.json", target)
         response = directory / "summary.json"
-        settings = company_config(config, target, root=root)
+        settings = resolve_dates(company_config(config, target, root=root), today=today)
         load_summary(response, username=profile.username, source_digest=summary_digest(profile, settings, company), settings=settings.codex)
         selected.append((company, response, settings))
 

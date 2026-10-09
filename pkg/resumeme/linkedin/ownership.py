@@ -359,6 +359,6 @@ def publish_ownership(
         if connect_port is None:
             _navigate(driver, "https://www.linkedin.com/login", config.capture)
 
-        _login(driver, config.capture, headless=headless)
+        _login(driver, config.capture, headless=headless, profile_username=config.linkedin.username)
         _LOGGER.info("Login detected; loading the owner's About editor")
         return _update_about(driver, config, root, block, dry_run=dry_run)

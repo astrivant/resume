@@ -39,6 +39,7 @@ def test_job_attribution_cleanup_preserves_prose_and_grouped_snapshots(tmp_path:
         "Boston, Massachusetts, United States",
         "LinkedIn helped me get this job",
         "helped me get this job",
+        "LinkedIn helped me get this job helped me get this job",
         "- Built services\n LINKEDIN  helped me get this job.\n- Mentored engineers",
         "My colleague helped me get this job and we built the platform together.",
     ]
@@ -163,7 +164,7 @@ def test_since_stays_fixed_and_overrides_trailing_years() -> None:
         assert filter_experience(jobs, settings, today=today) == [boundary, ongoing]
 
     assert filter_experience(jobs, evolve(settings, as_of="2020-06-01")) == [boundary, ongoing]
-    assert filter_experience(jobs, evolve(settings, disable=[JobSelector(title="Boundary")])) == [ongoing]
+    assert filter_experience(jobs, evolve(settings, disable=[JobSelector(title="Boundary")]), today=date(2026, 10, 7)) == [ongoing]
 
 
 @pytest.mark.parametrize("as_of", [None, "2020-05-31"])

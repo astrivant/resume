@@ -169,7 +169,11 @@ def main() -> None:
                 LinkedIn(profile.username),
                 github=GitHub("layout-check", evolve(settings, enabled=expanded)),
                 style=Style(
-                    profile_column_side="right", show_headline=expanded, show_header_photo=expanded, show_table_of_contents=expanded
+                    profile_column_side="right",
+                    profile_column_wrap=True,
+                    show_headline=expanded,
+                    show_header_photo=expanded,
+                    show_table_of_contents=expanded,
                 ),
                 output=Output(tex=f"{name}/resume.tex", pdf=f"{name}/resume.pdf"),
             )
@@ -198,6 +202,25 @@ def main() -> None:
 
         assert transitions[1] > transitions[0], "Enabling profile content did not increase its wrapping exclusion"
 
+        # Fixed columns reserve the profile's side for the whole first page, even when the profile is very short.
+        paragraphs = [f"Paragraph {index:03d}. {sentence}" for index in range(50)]
+        profile = Profile("layout-check", "Layout Check", sections=[Section("about", "About", [Entry(paragraphs=paragraphs)])])
+        config = Config(
+            LinkedIn(profile.username),
+            style=Style(profile_column_side="right", show_table_of_contents=False),
+            output=Output(tex="fixed/resume.tex", pdf="fixed/resume.pdf"),
+        )
+        rows = _rows(compile_pdf(render_profile(profile, config, root), config, root))
+        text = " ".join(row[1] for row in rows)
+        assert re.findall(r"Paragraph \d{3}", text) == [f"Paragraph {index:03d}" for index in range(50)]
+        first_lines = [(page, text, y) for page, text, _, y in rows if text.startswith("Paragraph ")]
+        narrow_lengths = [len(text) for page, text, _ in first_lines if page == 1]
+        wide_lengths = [len(text) for page, text, _ in first_lines if page > 1]
+        assert len(narrow_lengths) > 5 and min(y for page, _, y in first_lines if page == 1) < 300
+        assert len(set(narrow_lengths)) == 1, "Fixed first-page paragraphs widened below the profile"
+        assert min(wide_lengths) > max(narrow_lengths), "Continuation pages did not resume full-width body text"
+        print("fixed: first-page paragraphs retain their column width; continuation pages use full width")
+
         # A short profile must not force an otherwise fitting Projects section onto a new page.
         profile = Profile(
             "layout-check",
@@ -211,7 +234,9 @@ def main() -> None:
                 skills,
             ],
         )
-        config = Config(LinkedIn(profile.username), style=Style(profile_column_side="right", show_table_of_contents=False))
+        config = Config(
+            LinkedIn(profile.username), style=Style(profile_column_side="right", profile_column_wrap=True, show_table_of_contents=False)
+        )
         source = render_profile(profile, config, root)
         pdf = compile_pdf(source, config, root)
         rows = _rows(pdf)

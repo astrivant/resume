@@ -219,8 +219,11 @@ output:
   pdf: resume.pdf
 
 style:
-  # left keeps a full-height profile column; right floats it at the upper right with body text flowing beneath it.
+  # Place the profile in a separate left or right column on the first page.
   profile_column_side: left
+
+  # true lets body text wrap beneath a right-side profile; false keeps full-height separate columns.
+  profile_column_wrap: false
   paper: letter  # US Letter; use a4 for ISO A4.
   font_size: 10
 
@@ -239,6 +242,8 @@ style:
   display_profile_photo: true
   # Personal location and labeled address fields are optional; Experience locations remain visible.
   display_location: false
+
+  # Show the captured LinkedIn headline or optional generated portrait summary; independent of About and the current role.
   show_headline: false
 
   # Sidebar company/logo/title: null uses the latest visible Experience role; true ignores its filters; false hides the block.
@@ -275,7 +280,7 @@ style:
   #     heading_color: 'A44813'
   #     entry_color: '363636'
   #     company_color: '6B2737'
-  #     skill_colors: ['9A7663', '6B2737']
+  #     skill_colors: ['827C76', 'B45A24', '943B32', '57182E']
 
 # Optional path to a custom Jinja LaTeX template; null uses the packaged template.
 template: null

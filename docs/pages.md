@@ -25,8 +25,20 @@ The default address is `https://OWNER.github.io/REPOSITORY/`. Its directory root
 and `index.html` display the same page; `resume.pdf` opens the complete document.
 No additional secret or personal access token is needed. The deployment job uses
 the built-in token with `pages: write`, `id-token: write`, `actions: read`, and
-`contents: read`, and targets the `github-pages` environment. Allow `main` in
-that environment's deployment rules. See
+`contents: read`, and targets the `github-pages` environment. In **Settings >
+Environments > github-pages > Deployment branches and tags**, select **Selected
+branches and tags** and add both rules:
+
+| Type | Name pattern | Purpose |
+| --- | --- | --- |
+| Branch | `main` | Branch pushes, monthly captures, and manual main runs |
+| Tag | `v*` | Versioned releases after their signed PDF is committed to main |
+
+Use the matching tag pattern if your fork names releases differently. GitHub
+checks the triggering workflow's ref, even when a tag job checks out an accepted
+commit on `main`. A branch rule named `v*` does not authorize tags. See
+[GitHub's environment rules](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments#deployment-branches-and-tags)
+and
 [GitHub's custom workflow setup](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
 ## Custom domain
@@ -91,22 +103,34 @@ or host this fork as a separate Pages site with its own subdomain.
 
 ## Updates and recovery
 
-Main-branch pushes, monthly captures, and manual runs update Pages after the
-accepted PDF is available. The pipeline passes the publication commit directly
-to the Pages stage; it does not depend on a second workflow being triggered by
-the bot commit. Queued deployments check that `main` still names that accepted
-commit before proceeding. Superseded runs skip the older site.
+Main-branch pushes, monthly captures, manual main runs, and tagged releases
+update Pages after their accepted PDF is committed to `main`. Tags publish the
+same signed PDF attached to the release. The pipeline passes the publication
+commit directly to the Pages stage; it does not depend on a second workflow
+being triggered by the bot commit. Queued deployments check that `main` still
+names that accepted commit before proceeding. Superseded runs skip the older site.
 
-Pull requests, other branches, and tags do not deploy the site. Tagged releases
-capture LinkedIn and sign their freshly built PDF separately; the site's **Signed releases**
-link leads to those verification artifacts. Pages does not publish raw profile
+Pull requests and other branches do not deploy the site. The site's **Signed releases**
+link leads to release verification artifacts. Pages does not publish raw profile
 JSON, browser state, or the employer-specific PDFs under `single-origin/`.
 
 If Pages setup, domain validation, or deployment fails, the PDF commit remains
 available and the existing live site stays at its last successful deployment.
-Fix the indicated setting and rerun the failed jobs, or trigger a new main run
-if `main` has advanced. Setting `pages.enabled: false` stops updates; unpublishing
-an already-live site is a separate operation in GitHub Pages settings.
+If GitHub reports `Tag "v..." is not allowed to deploy to github-pages`, add the
+tag rule above. This rejection happens before any job step runs, so retries
+cannot fix it until the environment rule changes. Rerun only the failed **Update
+GitHub Pages** job to reuse its prepared artifact; no LinkedIn capture or release
+rebuild is required while that artifact is retained and its accepted commit is
+still current. For example:
+
+```bash
+gh run rerun RUN_ID --job FAILED_PAGES_JOB_ID
+```
+
+For other errors, fix the indicated setting and rerun the failed job, or trigger
+a new main run if `main` has advanced. Setting `pages.enabled: false` stops
+updates; unpublishing an already-live site is a separate operation in GitHub
+Pages settings.
 
 ## Local preview
 

@@ -209,13 +209,16 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     aggregate = pipeline["jobs"]["capture"]
     assert aggregate["needs"] == ["source", "capture-bootstrap", "capture-shards"]
     assert any(step.get("run") == "poetry run resumeme --config resumeme.config.yaml aggregate" for step in aggregate["steps"])
+    validation = next(step for step in aggregate["steps"] if "scripts/validation/check-data.py" in step.get("run", ""))
+    export = next(step for step in aggregate["steps"] if "profile-artifact.py export" in step.get("run", ""))
+    assert "resumeme --config resumeme.config.yaml validate" in validation["run"]
+    assert aggregate["steps"].index(validation) < aggregate["steps"].index(export)
     assert "capture" in pipeline["jobs"]["summary-stage"]["needs"]
     assert "continue-on-error" not in source and "continue-on-error" not in capture
 
     # A fresh capture must reach every job that reads profile evidence, including optional tag-only skill publication.
     consumers = {
         "summary": ("prepare", "summary"),
-        "test": ("checks", "python"),
         "documents": ("documents",),
         "resume": ("build",),
         "skills": ("generate",),
@@ -317,11 +320,23 @@ def test_tag_runs_share_a_workflow_level_concurrency_lane() -> None:
         (True, "failure", "success", False),
         (True, "cancelled", "success", False),
         (False, "skipped", "failure", False),
+        (False, "skipped", "cancelled", False),
         (True, "success", "skipped", False),
     ],
 )
 @pytest.mark.parametrize(
-    "stage", ["source", "summary-stage", "test-stage", "build-stage", "browser-e2e-stage", "documents-stage", "resume-stage"]
+    "stage",
+    [
+        "source",
+        "summary-stage",
+        "test-stage",
+        "security-stage",
+        "readme-stage",
+        "build-stage",
+        "browser-e2e-stage",
+        "documents-stage",
+        "resume-stage",
+    ],
 )
 def test_verification_gate_requires_requested_capture_and_successful_work(
     refresh: bool, capture: str, build: str, accepted: bool, stage: str
@@ -346,6 +361,8 @@ def test_verification_gate_requires_requested_capture_and_successful_work(
         "capture": {"result": capture},
         "summary-stage": {"result": "success"},
         "test-stage": {"result": "success"},
+        "security-stage": {"result": "success"},
+        "readme-stage": {"result": "success"},
         "build-stage": {"result": "success"},
         "browser-e2e-stage": {"result": "success"},
         "documents-stage": {"result": "success"},
@@ -365,6 +382,8 @@ def test_verification_gate_requires_requested_capture_and_successful_work(
     for consumer in (
         "summary-stage",
         "test-stage",
+        "security-stage",
+        "readme-stage",
         "build-stage",
         "browser-e2e-stage",
         "documents-stage",
@@ -385,22 +404,37 @@ def test_independent_pipeline_work_has_no_profile_or_summary_barrier() -> None:
     """
     workflows = REPOSITORY_ROOT / ".github/workflows"
     jobs = yaml.safe_load((workflows / "ci.yml").read_text())["jobs"]
-    assert jobs["build-stage"]["needs"] == "source"
-    assert jobs["test-stage"]["needs"] == jobs["summary-stage"]["needs"] == jobs["skills-stage"]["needs"] == ["source", "capture"]
+    assert jobs["summary-stage"]["needs"] == jobs["skills-stage"]["needs"] == ["source", "capture"]
     assert jobs["documents-stage"]["needs"] == jobs["resume-stage"]["needs"] == ["source", "summary-stage"]
     assert jobs["container-stage"]["needs"] == jobs["release-stage"]["needs"] == jobs["pypi-stage"]["needs"] == ["source", "verified"]
     assert jobs["container-notes-stage"]["needs"] == ["source", "container-stage", "release-stage"]
     assert jobs["skills-publish-stage"]["needs"] == ["source", "skills-stage", "release-stage"]
 
-    # Independent build jobs retain the same source and never read captured profile or generated summary artifacts.
-    builds = yaml.safe_load((workflows / "stage-build.yml").read_text())["jobs"]
+    # Source-only branches never restore a captured profile; nested coverage joins only the test shards it consumes.
+    for stage in ("build", "test", "security", "readme", "browser-e2e"):
+        caller = jobs[f"{stage}-stage"]
+        assert caller["needs"] == "source"
+        assert caller["with"] == {"sha": "${{ needs.source.outputs.sha }}"}
+        reusable = yaml.safe_load((workflows / f"stage-{stage}.yml").read_text())
+        assert set(reusable[True]) == {"workflow_call"}
 
-    for job in builds.values():
-        assert "needs" not in job
-        checkout = job["steps"][0]
-        assert checkout["with"]["ref"] == "${{ inputs.sha }}"
-        assert not any(step.get("uses") == "./.github/actions/restore-profile" for step in job["steps"])
-        assert not any(step.get("uses", "").startswith("actions/download-artifact@") for step in job["steps"])
+        for name, job in reusable["jobs"].items():
+            assert not any(step.get("uses") == "./.github/actions/restore-profile" for step in job["steps"])
+
+            if (stage, name) == ("test", "coverage"):
+                assert job["needs"] == "python"
+                continue
+
+            assert "needs" not in job
+            checkout = job["steps"][0]
+            assert checkout["with"]["ref"] == "${{ inputs.sha }}"
+            assert not any(step.get("uses", "").startswith("actions/download-artifact@") for step in job["steps"])
+
+    # Security feedback follows its producer, while coverage publication remains independent of the scanner.
+    assert jobs["trivy-pr-comment"]["needs"] == ["source", "security-stage"]
+    assert "needs.security-stage.result != 'cancelled'" in jobs["trivy-pr-comment"]["if"]
+    assert "needs.security-stage.result != 'skipped'" in jobs["trivy-pr-comment"]["if"]
+    assert jobs["coverage-badge"]["needs"] == ["source", "test-stage"]
 
     # The public required check must account for every branch before any release or main publication can start.
     assert set(jobs["verified"]["needs"]) == {
@@ -408,6 +442,8 @@ def test_independent_pipeline_work_has_no_profile_or_summary_barrier() -> None:
         "capture",
         "summary-stage",
         "test-stage",
+        "security-stage",
+        "readme-stage",
         "build-stage",
         "browser-e2e-stage",
         "documents-stage",

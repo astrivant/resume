@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import calendar
 import json
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, timedelta
 from importlib.resources import files
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode
@@ -105,13 +105,24 @@ def calendar_window(settings: GitHubContributions, *, today: date | None = None)
 
     Args:
         settings (GitHubContributions): Month count and optional ISO endpoint.
-        today (date | None): UTC date override for deterministic tests.
+        today (date | None): Explicit reference date when settings.as_of is unset.
 
     Returns:
         tuple[date, date]: Inclusive start and end dates, clipping the start day to its month's last valid day.
+
+    Raises:
+        ContributionError: No reference date is supplied or the requested window precedes the supported calendar.
     """
-    end = date.fromisoformat(settings.as_of) if settings.as_of else today or datetime.now(UTC).date()
+    end = date.fromisoformat(settings.as_of) if settings.as_of else today
+
+    if end is None:
+        raise ContributionError("GitHub calendar filtering requires github.contributions.as_of or an explicit reference date.")
+
     year, month = divmod(end.year * 12 + end.month - 1 - settings.months, 12)
+
+    if year < 1:
+        raise ContributionError("The GitHub contribution window starts before year 1; choose a later endpoint or fewer months.")
+
     start = date(year, month + 1, min(end.day, calendar.monthrange(year, month + 1)[1]))
     return start, end
 

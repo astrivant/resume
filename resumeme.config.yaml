@@ -233,12 +233,16 @@ output:
   tex: tex/resume.tex
   pdf: resume.pdf
 style:
-  # left keeps the full-height profile column; right places it at the upper right with body text flowing below it.
+  # Place the profile in a separate left or right column on the first page.
   profile_column_side: right
+
+  # true lets body text wrap beneath a right-side profile; false keeps full-height separate columns.
+  profile_column_wrap: false
 
   # Keep personal location and any explicitly labeled address out of the PDF and published profile snapshot.
   display_location: false
 
+  # Show the captured LinkedIn headline or optional generated portrait summary; independent of About and the current role.
   show_headline: false
 
   # Sidebar company/logo/title: null uses the latest visible Experience role; true ignores its filters; false hides the block.
@@ -284,7 +288,7 @@ style:
   display_birthday: false
 
   # Captured Website fields (such as linktr.ee) are hidden independently of LinkedIn, Email, and GitHub.
-  display_websites: false
+  display_websites: true
 
   # Optional local image path or direct public image/favicon URL, e.g. https://example.org/favicon.ico.
   website_icon: null
@@ -304,7 +308,7 @@ style:
     tiger:
 
       # Profile/company names: burgundy; section headings: burnt orange; role titles and body: soft charcoal.
-      # Green marks links; skill colors progress from muted brown to burgundy as endorsement counts increase.
+      # Green marks links; skill colors progress from warm gray through burnt orange to deep burgundy with endorsements.
       # Source and palette roles: docs/themes.md
       accent: '245135'
       ink: '363636'
@@ -312,7 +316,7 @@ style:
       heading_color: 'A44813'
       entry_color: '363636'
       company_color: '6B2737'
-      skill_colors: ['9A7663', '6B2737']
+      skill_colors: ['827C76', 'B45A24', '943B32', '57182E']
 
 # Optional exact template override; otherwise the package template is used.
 template: null

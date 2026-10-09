@@ -524,7 +524,7 @@ def test_ownership_uses_configured_browser(tmp_path: Path, monkeypatch: MonkeyPa
     )
     assert publish_ownership(config, tmp_path, tmp_path / "key.pub", dry_run=True) == _BLOCK
     session.assert_called_once_with(tmp_path, config.capture, None, headless=False)
-    login.assert_called_once_with(driver, config.capture, headless=False)
+    login.assert_called_once_with(driver, config.capture, headless=False, profile_username=config.linkedin.username)
     update.assert_called_once_with(driver, config, tmp_path, _BLOCK, dry_run=True)
 
 

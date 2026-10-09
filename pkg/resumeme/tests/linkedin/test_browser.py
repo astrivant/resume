@@ -329,7 +329,7 @@ def test_capture_uses_configured_browser_and_shared_login(
     assert capture_profile(config, tmp_path).name == "Alex"
     session.assert_called_once_with(tmp_path, config.capture, None, headless=False)
     driver.set_page_load_timeout.assert_called_once_with(config.capture.page_timeout_seconds)
-    login.assert_called_once_with(driver, config.capture, headless=False)
+    login.assert_called_once_with(driver, config.capture, headless=False, profile_username=config.linkedin.username)
     assert media.call_args.args[0].name == "Alex"
     assert "Alex" in (state / "capture/profile.html").read_text()
     assert "Alex" in (state / "capture/profile.json").read_text()

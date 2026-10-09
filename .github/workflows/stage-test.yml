@@ -6,126 +6,12 @@ on:
         description: Immutable source commit resolved by the entry workflow
         type: string
         required: true
-      refresh:
-        description: Validate the fresh LinkedIn capture from this run
-        type: boolean
-        default: false
 permissions:
   contents: read
 defaults:
   run:
     shell: bash
 jobs:
-  security:
-    name: Trivy security scan
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.sha }}
-          persist-credentials: false
-
-      # Rotate the cache key every six hours so Trivy never restores an older database window.
-      - name: Select Trivy database cache window
-        id: trivy-cache-key
-        run: |
-          cache_window=$(( $(date -u +%s) / 21600 ))
-          echo "key=trivy-db-v1-${RUNNER_OS}-0.75.0-$cache_window" >> "$GITHUB_OUTPUT"
-
-      - name: Prepare Trivy database cache paths
-        run: mkdir -p "$RUNNER_TEMP/trivy-cache/db" "$RUNNER_TEMP/trivy-cache/java-db"
-
-      # Cache only downloaded vulnerability databases, not scan results or files from the checkout.
-      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: trivy-cache
-        continue-on-error: true
-        with:
-          path: |
-            ${{ runner.temp }}/trivy-cache/db
-            ${{ runner.temp }}/trivy-cache/java-db
-          key: ${{ steps.trivy-cache-key.outputs.key }}
-
-      # Keep findings in the mounted JSON file and forward the scanner's console logs to the Actions stdout stream.
-      - name: Scan source for vulnerabilities and secrets
-        id: scan
-        continue-on-error: true
-        run: |
-          mkdir -p "$RUNNER_TEMP/trivy-results"
-          docker run --rm --pull=always \
-            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/src,readonly" \
-            --mount "type=bind,source=$RUNNER_TEMP/trivy-results,target=/tmp" \
-            --mount "type=bind,source=$RUNNER_TEMP/trivy-cache,target=/trivy-cache" \
-            --workdir /src \
-            aquasec/trivy:0.75.0 fs \
-            --config "" \
-            --cache-dir /trivy-cache \
-            --scanners vuln,secret \
-            --format json \
-            --output /tmp/raw.json \
-            --exit-code 0 \
-            --no-progress \
-            --timeout 10m \
-            --ignorefile "" \
-            --secret-config "" \
-            --skip-dirs .git \
-            . 2>&1
-
-      # Save a complete database only after a successful scan; cache failures must not gate security checks.
-      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        if: >-
-          always()
-          && steps.scan.outcome == 'success'
-          && steps.trivy-cache.outputs.cache-hit != 'true'
-        continue-on-error: true
-        with:
-          path: |
-            ${{ runner.temp }}/trivy-cache/db
-            ${{ runner.temp }}/trivy-cache/java-db
-          key: ${{ steps.trivy-cache-key.outputs.key }}
-
-      # Matched values and source snippets are removed before reports, summaries, or PR comments are published.
-      - name: Redact report and summarize findings
-        id: prepare
-        if: always()
-        run: |
-          python3 scripts/ci/trivy-report.py prepare \
-            --input "$RUNNER_TEMP/trivy-results/raw.json" \
-            --report-output "$RUNNER_TEMP/trivy-results/trivy-report.json" \
-            --summary-output "$RUNNER_TEMP/trivy-results/summary.md" \
-            --github-output "$GITHUB_OUTPUT" \
-            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          cat "$RUNNER_TEMP/trivy-results/summary.md" >> "$GITHUB_STEP_SUMMARY"
-
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always() && steps.prepare.outputs.available == 'true'
-        with:
-          name: trivy-scan-report
-          path: ${{ runner.temp }}/trivy-results/trivy-report.json
-          if-no-files-found: error
-          retention-days: 90
-
-      # Findings, an invalid report, or a scanner error fail this reusable stage and therefore CI verification.
-      - name: Require a clean Trivy scan
-        if: always()
-        env:
-          SCAN_OUTCOME: ${{ steps.scan.outcome }}
-          REPORT_AVAILABLE: ${{ steps.prepare.outputs.available }}
-          FINDING_COUNT: ${{ steps.prepare.outputs.finding_count }}
-        run: |
-          if [[ "$SCAN_OUTCOME" != success ]]; then
-              echo 'Trivy could not complete the scan; review the scanner logs and report.'
-              exit 1
-          fi
-          if [[ "$REPORT_AVAILABLE" != true ]]; then
-              echo 'Trivy did not produce a valid report.'
-              exit 1
-          fi
-          if [[ "$FINDING_COUNT" != 0 ]]; then
-              echo "Trivy found $FINDING_COUNT secret or vulnerability issue(s)."
-              exit 1
-          fi
-
   checks:
     name: Lint, types, and contracts
     runs-on: ubuntu-24.04
@@ -136,9 +22,6 @@ jobs:
           ref: ${{ inputs.sha }}
           persist-credentials: false
       - uses: ./.github/actions/setup-project
-      - uses: ./.github/actions/restore-profile
-        with:
-          refresh: ${{ inputs.refresh }}
       - run: bash scripts/ci/test.sh checks
 
   python:
@@ -160,9 +43,6 @@ jobs:
           ref: ${{ inputs.sha }}
           persist-credentials: false
       - uses: ./.github/actions/setup-project
-      - uses: ./.github/actions/restore-profile
-        with:
-          refresh: ${{ inputs.refresh }}
 
       # Each public Ubuntu runner provides four CPUs; workers collect the same deterministic partition.
       - run: bash scripts/ci/test.sh tests --shard-index "$TEST_SHARD_INDEX" --shard-count "$TEST_SHARD_COUNT" -n 4

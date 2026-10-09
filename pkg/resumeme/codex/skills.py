@@ -11,12 +11,14 @@ import os
 import re
 import subprocess
 import unicodedata
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import cattrs
 from jsonschema import Draft202012Validator
 
 from resumeme.compiler.asts.skill_suggestions import SkillSuggestions, skill_suggestions_schema
+from resumeme.compiler.passes.context import resolve_dates
 from resumeme.compiler.passes.summary import summary_evidence
 from resumeme.config import project_path
 from resumeme.exceptions import SummaryError
@@ -136,6 +138,8 @@ def skill_evidence(profile: Profile, config: Config, tag: str, revision: str) ->
     if profile.warnings or profile.username != config.linkedin.username:
         raise SummaryError("Skill proposals require a complete capture belonging to linkedin.username.")
 
+    # Keep time selection outside the compiler passes; callers can pin endpoints for replay.
+    config = resolve_dates(config, today=datetime.now(UTC).date())
     evidence: dict[str, object] = {
         "username": profile.username,
         "source_tag": tag,

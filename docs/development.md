@@ -23,6 +23,45 @@ targeted pytest commands.
 Hooks check Ruff, strict mypy, Google-style docstrings, schemas, ShellCheck, and
 shfmt. For container-based development, see [local image builds](containers.md#build-locally).
 
+## CI environment caches
+
+The shared [project setup action](../.github/actions/setup-project/action.yml)
+restores installed environments before doing installation work:
+
+| Cache | Contents | Reuse boundary |
+| --- | --- | --- |
+| `resumeme-poetry-v1-*` | Dedicated Poetry runtime under `$RUNNER_TEMP/resumeme-poetry` | Pinned Poetry version, Python runtime/ABI, OS release, architecture, absolute paths, and setup implementation |
+| `resumeme-project-v1-*` | `.venv` with locked dependencies, saved before installing resumeme | Same compatibility inputs plus `poetry.lock`, `pyproject.toml`, project setup implementation, and `main` versus `main,dev` |
+
+Exact hits skip package downloads and dependency installation. Every project
+setup still runs `poetry check --lock`, then installs only the current checkout
+with `poetry install --only-root`. That local operation refreshes the editable
+package, entry points, and metadata without fetching dependencies. Profile data,
+PDFs, and application source are not restored from these caches. The PyPI job
+uses the same Poetry cache without installing application dependencies.
+
+On misses, Poetry synchronizes the selected groups from the committed lockfile
+without resolving newer versions. Each environment is saved immediately after
+successful setup, before tests or credential-bearing operations. There is no
+cache warmup dependency between otherwise independent jobs. Concurrent cold jobs
+can install simultaneously; subsequent jobs and runs reuse the completed cache.
+Installed environments have no partial-key fallback because incompatible paths,
+interpreters, or dependency selections can produce invalid executables.
+
+GitHub scopes caches by branch/tag and permits default-branch fallback. Pull
+request caches do not populate `main`; sibling tags cannot restore one another's
+caches. Eviction, quota, and runner/path changes can still cause cold installs.
+Caching is an optimization, not a prerequisite for a successful build. See
+[GitHub's cache scope and retention rules](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching).
+Delete the relevant cache or bump its `v1` namespace in
+[`cache-keys.py`](../scripts/tooling/cache-keys.py) to force replacement.
+
+Only the two environment directories are archived. Their packages are not
+encrypted by resumeme; never put credentials or browser state inside them.
+Docker layers and the six-hour Trivy database cache remain separate, as does the
+[encrypted LinkedIn session cache](linkedin-session-cache.md). See
+[dependency cache data handling](data-handling.md#dependency-environment-caches).
+
 ## Pinned toolchain and CI dependencies
 
 Python application and development packages are specified in
@@ -38,12 +77,12 @@ this inventory in the same change whenever one of those pins changes.
 | Local and Actions Python | `3.13.12` | [`.python-version`](../.python-version), [`.tool-versions`](../.tool-versions), and `actions/setup-python` below |
 | ESLint runtime Node.js | `26.10.0` | [`.tool-versions`](../.tool-versions) and the pre-commit `node` language version |
 | Production image Python | `python:3.14.7-slim-bookworm`, digest `sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56` | [`Dockerfile`](../Dockerfile) |
-| Poetry | `2.5.1` | [`.tool-versions`](../.tool-versions), [`setup-env.sh`](../scripts/tooling/setup-env.sh), [`Dockerfile`](../Dockerfile), and [`stage-pypi.yml`](../.github/workflows/stage-pypi.yml) |
+| Poetry | `2.5.1` | [`.tool-versions`](../.tool-versions) is read by [shared CI setup](../.github/actions/setup-poetry/action.yml); [`Dockerfile`](../Dockerfile) pins the container installation separately |
 | Poetry build backend | `poetry-core==2.5.0` | [`pyproject.toml`](../pyproject.toml) build-system requirements |
 | Cosign CLI | `3.1.3` | [`.tool-versions`](../.tool-versions) and the release workflow inputs below |
 | TeX Live image | `drpsychick/texlive-pdflatex`, digest `sha256:55b4bef7344394c0aafcd69b1796280f64b871ee2d2f2c3115e8f93ec9fea6ea` | [`Dockerfile`](../Dockerfile) and [`toolchain.json`](../pkg/resumeme/compiler/backends/latex/resources/toolchain.json) |
-| Trivy scanner | `aquasec/trivy:0.75.0` | [`stage-test.yml`](../.github/workflows/stage-test.yml); version tag, not an immutable digest |
-| TeXtidote image | `gokhlayeh/textidote`, digest `sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441` | [`stage-documents.yml`](../.github/workflows/stage-documents.yml) |
+| Trivy scanner | `aquasec/trivy:0.75.0` | [`stage-security.yml`](../.github/workflows/stage-security.yml); version tag, not an immutable digest |
+| TeXtidote image | `gokhlayeh/textidote`, digest `sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441` | [`stage-readme.yml`](../.github/workflows/stage-readme.yml) and [`stage-documents.yml`](../.github/workflows/stage-documents.yml) |
 | Tini | Debian package `0.19.0-1+b3` | [`Dockerfile`](../Dockerfile) |
 | ESLint | `10.10.0` | [`.pre-commit-config.yaml`](../.pre-commit-config.yaml); lints standalone Selenium JavaScript resources |
 
@@ -302,6 +341,8 @@ without removing accents or meaningful symbols such as list bullets.
 
 CI runs [TeXtidote Action](https://github.com/marketplace/actions/textidote-action)
 against the root README and generated LaTeX, with English spelling and grammar
-checks. Download `textidote-reports` for annotated HTML; the job summary reports
+checks. README review starts with source checks; generated LaTeX review waits for
+its profile and summaries. Download `textidote-readme-report` and
+`textidote-reports` for annotated HTML; each job summary reports
 finding counts. Prose findings are advisory; tool failures block publication.
 See [document review](README.md#document-review) for the pinned image and review policy.

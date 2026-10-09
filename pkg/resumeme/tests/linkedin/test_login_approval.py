@@ -186,12 +186,13 @@ def test_login_resumes_after_app_approval(monkeypatch: MonkeyPatch, capsys: Capt
     else:
         submit.click.side_effect = show_prompt
 
-    _login(driver, Capture(page_timeout_seconds=1), headless=True)
+    _login(driver, Capture(page_timeout_seconds=1), headless=True, profile_username="example-person")
+    output = capsys.readouterr().out
+    assert "LinkedIn profile: example-person" in output
     assert now[0] == 10 and delays == [1] * 10
     assert submit.click.call_count == int(phase == "submitted")
     assert username.send_keys.call_count == int(phase != "form")
     assert password.send_keys.call_count == int(phase != "form")
-    output = capsys.readouterr().out
     assert output.count("Yes, it's me") == 1 and "900 seconds" in output
     assert "private-token" not in output
     driver.get.assert_not_called()

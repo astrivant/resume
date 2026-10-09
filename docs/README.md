@@ -95,7 +95,7 @@ See [logging controls and record fields](CLI.md#logging).
 | `github.contributions.as_of` | `null` | Quoted ISO end date; null uses today's UTC date |
 | `capture.browser` | `firefox` | `firefox` or `chrome` for capture, live profile updates, and saved resume uploads |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
-| `capture.app_approval_timeout_seconds` | `900` | Headless wait for LinkedIn app approval, capped at 15 minutes; `0` disables waiting. Code-entry MFA and CAPTCHA fail immediately |
+| `capture.app_approval_timeout_seconds` | `900` | Headless wait for LinkedIn app approval, capped at 15 minutes; `0` disables waiting. Logs and the Actions summary include a sanitized run-correlation record. Code-entry MFA and CAPTCHA fail immediately |
 | `capture.max_scrolls` | `60` | Maximum expansion iterations per page |
 | `capture.max_pages_per_section` | `30` | Bound on section pagination |
 | `capture.retry_attempts` | `5` | Total attempts for transient browser and HTTP failures |
@@ -113,13 +113,15 @@ See [logging controls and record fields](CLI.md#logging).
 | `codex.about_max_words` | `100` | Maximum generated About length, from 1 to 300 words |
 | `codex.headline_max_words` | `18` | Maximum portrait summary length, from 1 to 40 words |
 | `codex.companies` | `[]` | Company usernames and job URLs for additional tailored PDFs under `single-origin/`; see [company summaries](codex.md#single-origin-resumes) |
-| `style.profile_column_side` | `left` | `right` places the profile at the upper right and lets body content use the full width beneath it |
+| `style.profile_column_side` | `left` | Place the profile in a separate first-page column on the left or right |
+| `style.profile_column_wrap` | `false` | Allow body text beneath a right-side profile; ignored for the left-side layout |
 | `style.paper` | `letter` | `letter` (8.5 x 11 inches) or `a4` |
 | `style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; disabled in the author's personal config |
 | `style.display_profile_photo` | `true` | Display the round profile portrait in either first-page column; independent of the cover photo |
+| `style.show_headline` | `false` | Show the captured headline or generated portrait summary; independent of About and the current employment block |
 | `style.display_location` | `true` | Display the profile location and labeled personal address fields; false also removes them from the committed snapshot. Both checked-in configs opt out |
 | `style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page profile column |
 | `style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
@@ -151,14 +153,15 @@ fields keep their base values. See [inline themes and palette sources](themes.md
 
 ### First-page profile placement
 
-Set `style.profile_column_side: right` for an upper-right profile block. Its height
-is measured from the enabled portrait, header text, social links, contents, and
-leading Contact section. Body text starts to its left and continues at full width
-below it, adjusting at paragraph boundaries. Later pages use the full width.
-The default, `left`, retains the original full-height column layout. This setting
-also supports inline theme overrides.
-An oversized profile block falls back to ordinary flowing columns so long contact
-information remains visible.
+Set `style.profile_column_side: right` to place the profile on the right and body
+content on the left. Both placements use separate full-height columns by default;
+later pages use the full width.
+
+Enable `style.profile_column_wrap: true` to let body text expand beneath the
+right-side profile. The exclusion height follows the enabled portrait, header
+text, contact details, contribution graph, and contents. An oversized profile
+falls back to breakable columns so long contact information remains visible.
+The wrap setting is ignored on the left. Both settings support inline theme overrides.
 
 ### Section visibility, order, and tiles
 
@@ -213,7 +216,11 @@ credentials. Use a local path for offline builds. Invalid or unavailable enabled
 icons fail the build with a configuration-specific error.
 `null` keeps the text-only website row; hidden or absent websites require no icon
 file or download. Both settings support inline theme overrides.
-About has no forced position beyond its place in the default array.
+About follows its position in `section_order` among body sections. With
+`style.profile_column_side: right` and `about` first after `contact`, it starts
+at the upper left. The section must exist in the captured profile or in an
+explicitly supplied Codex summary; enabling it cannot create missing text.
+If About is absent from `data/profile.json`, capture the profile again.
 
 Projects and Featured use the same two-column tiles with a subtle gray background
 and inset padding. Tiles use the full page width and can continue across pages
@@ -222,9 +229,11 @@ their project previews still consolidate into Projects.
 
 ### Header and skills
 
-- `show_headline` controls the captured headline beneath the portrait; it defaults
-  to false. Location and the selected employment block are independent. Older snapshots use a
-  conservative role-at-company match when an explicit headline field is absent.
+- `show_headline` controls captured and generated headlines beneath the portrait;
+  it defaults to false. Set `style.show_headline: true` to display one. About,
+  location, and the selected employment block are independent. Captures without
+  an explicit headline use a conservative role-at-company or three-field
+  pipe-separated match at the start of the intro.
 - `display_current_position` controls the company, logo, and role title in either
   profile-column layout. `null` selects the first retained Experience role after
   job exclusions, date windows, and section visibility; `true` selects from the
@@ -582,13 +591,14 @@ The first page has an identity column and a content column starting with About b
 default; `section_order` controls the content sequence. Subsequent pages use the
 full text width. Projects and Featured use two-column tiles.
 
-With `style.profile_column_side: right`, each body paragraph adjusts its line widths
+With `style.profile_column_side: right` and `style.profile_column_wrap: true`, each body paragraph adjusts its line widths
 to the measured profile height. Portraits, headline, social links, contribution
 graph, contents, and leading Contact information all participate in that measurement.
 Text can widen within a paragraph or bullet as it clears the profile; disabling
 items does not reserve their former space. Full-width tiles and the skills plot
 can use the remaining first-page area. A profile too tall to leave usable space
-below it retains the breakable two-column layout.
+below it retains the breakable two-column layout. With wrapping disabled, body text
+stays in its first-page column and full-width tiles and skills start on a later page.
 
 | Content | Presentation |
 | --- | --- |
@@ -870,10 +880,12 @@ See [compiler boundaries and pass order](compiler.md) for the internal interface
 
 CI runs [TeXtidote Action](https://github.com/marketplace/actions/textidote-action)
 against `README.md` and generated LaTeX with `--check en`. The action container is
-pinned by digest in `stage-documents.yml`.
+pinned by digest in `stage-readme.yml` and `stage-documents.yml`. README review
+starts alongside source tests; generated LaTeX review waits for its profile and summaries.
 
 Findings are advisory; execution and report-generation failures block publication.
-Annotated HTML reports are retained for 14 days in `textidote-reports`, and counts
+Annotated HTML reports are retained for 14 days in `textidote-readme-report`
+and `textidote-reports`, and counts
 appear in the job summary. Review technical names and LaTeX-specific findings
 before editing source text.
 

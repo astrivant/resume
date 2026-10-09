@@ -20,7 +20,7 @@ from resumeme.compiler.asts.summary import load_summary
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.summary import summary_digest, summary_evidence
 from resumeme.compiler.pipeline import render_profile
-from resumeme.config import Codex, Config, Experience, JobSelector, LinkedIn, load_config
+from resumeme.config import Codex, Config, Experience, JobSelector, LinkedIn, Style, load_config
 from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
@@ -78,24 +78,28 @@ def _summary_file(root: Path, profile: Profile, config: Config, **overrides: str
     return path
 
 
-def test_summary_updates_only_display_copy(profile: Profile, tmp_path: Path) -> None:
+@pytest.mark.parametrize("show_headline", [False, True])
+def test_summary_updates_only_display_copy(profile: Profile, tmp_path: Path, show_headline: bool) -> None:
     """
     Overlay generated copy without restoring a captured headline or altering identity metadata.
 
     Args:
         profile (Profile): Captured fixture.
         tmp_path (Path): Temporary rendering directory.
+        show_headline (bool): Whether the generated portrait headline is visible.
 
     Returns:
-        None: About and portrait copy render, the original snapshot and ordinary build stay intact.
+        None: About renders independently of headline visibility; the snapshot and ordinary build stay intact.
     """
-    config = Config(LinkedIn(profile.username), codex=Codex(enabled=True))
+    config = Config(LinkedIn(profile.username), codex=Codex(enabled=True), style=Style(show_headline=show_headline))
     summary = _summary_file(tmp_path, profile, config)
     source = render_profile(profile, config, tmp_path, summary_path=summary).read_text()
     document = source.split(r"\begin{document}", 1)[1]
     assert "Builds reliable services for engineering teams." in document
-    assert r"Platform engineer \& systems builder" in document
-    assert document.index(r"Platform engineer \& systems builder") < document.index(r"\companytext{Example}")
+    assert (r"Platform engineer \& systems builder" in document) is show_headline
+
+    if show_headline:
+        assert document.index(r"Platform engineer \& systems builder") < document.index(r"\companytext{Example}")
     assert "Original About" not in document and "Engineer at Example" not in document
     assert "Boston, MA" in document and "Built services" in document
     assert profile.headline == "Engineer at Example" and profile.sections[0].entries[0].title == "Original About"

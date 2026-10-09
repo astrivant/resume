@@ -1,0 +1,56 @@
+name: README review stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: Immutable source commit resolved by the entry workflow
+        type: string
+        required: true
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  readme:
+    name: TeXtidote README review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - run: mkdir -p .cache/textidote
+
+      # README prose depends only on the checkout, so review it while capture and tests run independently.
+      - name: Review README prose
+        id: readme
+        uses: docker://gokhlayeh/textidote@sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441
+        with:
+          args: README.md . html .cache/textidote/readme.html -1 "--check en"
+
+      # Editorial findings remain advisory; an execution failure still blocks the common verification gate.
+      - name: Summarize README review
+        if: always()
+        env:
+          README_WARNINGS: ${{ steps.readme.outputs.num_warnings }}
+        run: |
+          {
+              printf '## TeXtidote README review\n\n'
+              printf 'Findings: %s\n\n' "${README_WARNINGS:-unavailable}"
+              printf 'Download the textidote-readme-report artifact for annotated HTML. Prose findings are advisory; tool failures block CI.\n'
+          } >>"$GITHUB_STEP_SUMMARY"
+
+          if [[ "${README_WARNINGS:-0}" != 0 ]]; then
+              echo '::warning::TeXtidote found README prose issues. Review the textidote-readme-report artifact.'
+          fi
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: textidote-readme-report
+          path: .cache/textidote/readme.html
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

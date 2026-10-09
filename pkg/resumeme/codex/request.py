@@ -6,9 +6,11 @@ from __future__ import annotations
 
 import json
 import logging
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from resumeme.compiler.asts.summary import summary_schema
+from resumeme.compiler.passes.context import resolve_dates
 from resumeme.compiler.passes.summary import summary_digest, summary_evidence
 from resumeme.config import project_path
 from resumeme.exceptions import SummaryError
@@ -65,6 +67,8 @@ def prepare_summary(profile: Profile, config: Config, root: Path, company: Compa
     relative = f".cache/codex/companies/{company.target.key}" if company else ".cache/codex"
     directory = project_path(root, relative)
     directory.mkdir(parents=True, exist_ok=True)
+    # Date-dependent evidence and its fingerprint share one orchestration reference.
+    config = resolve_dates(config, today=datetime.now(UTC).date())
     payload = summary_evidence(profile, config, company)
     payload["source_digest"] = summary_digest(profile, config, company)
 

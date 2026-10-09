@@ -73,9 +73,10 @@ reasoning tokens. See [reasoning controls](https://developers.openai.com/api/doc
 
 - Section and job exclusions apply before preparing the prompt. Contact blocks,
   images, and remote link metadata are omitted.
-- About is replaced only when enabled in the document. The short summary appears
-  beneath the portrait, before company/location details and social links.
-  It replaces the captured headline even when `style.show_headline` is true.
+- About is replaced only when enabled in the document. Set
+  `style.show_headline: true` to display the short summary beneath the portrait,
+  before company/location details and social links. It replaces the captured
+  headline. The default, `false`, hides both headlines without hiding About.
 - `headline_max_words` accepts 1-40 words; `about_max_words` accepts 1-300 words.
   Responses exceeding those limits fail validation.
 - Minimal profiles can return empty fields. Empty fields retain ordinary rendering.

@@ -23,10 +23,52 @@ The source representation is the existing `Profile`/`Section`/`Entry` tree; it
 retains captured text, links, images, skills, and nested positions. Presentation
 records describe output layout without replacing the saved source schema.
 
+## Deterministic contracts
+
+The compiler targets the supported profile schema, not the repository owner's
+biography. Rules describe source syntax and ownership: section keys, complete UI
+labels, nested roles, captured links, and explicit configuration. Names, employers,
+fingerprints, and release hosts are data. Unrecognized prose remains prose;
+ambiguous role boundaries produce a `ProfileError` when a requested filter cannot
+be applied safely.
+
+The functional core consumes typed, validated values and returns display copies.
+It neither mutates caller-owned collections nor acquires external state. Date
+windows need a pinned `as_of` or an explicit reference date. Orchestration resolves
+UTC once through `passes/context.py` before filtering, evidence hashing, and
+calendar validation. `render_profile(..., today=date(...))` supports deterministic
+replay in Python; CLI callers can pin `experience.as_of` and
+`github.contributions.as_of` in YAML. Unbound date windows called directly through
+the pure helpers raise a domain-specific error instead of reading the clock.
+Identity-only exclusions do not imply a date window.
+
+For repeatable rendering, retain the same profile, effective configuration,
+reference date, template, local assets, optional summary, and contribution calendar.
+Fetching a website icon, a new capture, or a model response belongs to orchestration
+and changes the inputs. TeX and skill graphics use stable ordering and a fixed
+word-cloud seed. Byte-identical PDFs additionally depend on the pinned toolchain,
+fonts, release-footer inputs, and PDF postprocessor; source determinism alone does
+not establish binary reproducibility across toolchain versions.
+
+The property tests in
+[`test_contracts.py`](../pkg/resumeme/tests/compiler/test_contracts.py) generate
+minimal and nested schema-valid profiles with independent identities and Unicode
+text. They check source preservation, output-schema closure, stable ordering,
+normalizer idempotence, explicit date resolution, and repeatable HTML-to-TeX
+translation. Targeted cases check repeated accessibility badges, split ownership
+records, redirects, and malformed URLs. These are executable contracts over the
+tested domain, not a formal proof of totality over arbitrary HTML or all Python
+objects. Missing assets, invalid configuration, malformed external observations,
+and unsupported filters remain explicit failures.
+
+Only passes documented as normalizers promise idempotence. The whole pipeline is
+ordered: visibility must precede scoring, and escaping must happen at the target
+boundary. Reordering passes or escaping text twice is not an equivalent operation.
+
 ## Compilation order
 
 1. Load and validate configuration and snapshot ownership.
-2. Discover text links locally, resolve themes, and filter sections and jobs.
+2. Bind explicit date context, discover text links locally, resolve themes, and filter sections and jobs.
 3. Apply header/contact visibility, optional validated summary copy, and consolidate visible project attachments.
 4. Expand collapsed skill summaries, score skills, and stage local image/font assets.
 5. Build section and employment destinations from the retained hierarchy.
@@ -36,6 +78,16 @@ records describe output layout without replacing the saved source schema.
 Passes return display copies; they do not modify the snapshot or fetch remote
 data. Exclusions precede scoring, media staging, and destination generation.
 Hidden jobs therefore cannot contribute assets or dangling internal PDF links.
+
+`passes/ownership.py` treats `resume signature:` and `releases:` as the publisher's
+reserved About fields. It first classifies the complete section, then removes
+their text, links, and previews even when capture placed them in separate or nested
+entries. Original/resolved URL pairs supply redirect equivalence without network
+requests; a destination referenced by retained personal prose stays visible.
+Identical media in other sections remains owned by those sections.
+`passes/experience.py` recognizes repeated full or shortened LinkedIn job badges
+as a complete-line grammar, so arbitrary duplication does not require another
+literal string exception. Sentences containing those words remain authored prose.
 
 `passes/contact.py` splits flattened contact dialogs into field/value entries,
 removes LinkedIn profile navigation and edit controls, and applies birthday

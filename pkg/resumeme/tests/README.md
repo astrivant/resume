@@ -8,7 +8,7 @@ The suite is grouped by the subsystem a maintainer is changing. Pytest still dis
 | `configuration/` | Config and profile schemas, CLI validation, and the config pre-commit hook |
 | `delivery/` | GitHub releases, PyPI publication, README output, and Pages deployment |
 | `linkedin/` | Browser capture, login, session reuse, profile refresh, and account updates |
-| `operations/` | Runtime errors, telemetry, and test sharding |
+| `operations/` | Runtime errors, telemetry, test sharding, and CI environment caching |
 
 Run one area with `poetry run pytest pkg/resumeme/tests/<directory>`. For example:
 

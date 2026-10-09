@@ -246,14 +246,16 @@ def test_unavailable_calendar_fails_visibly(monkeypatch: MonkeyPatch, response: 
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
+@pytest.mark.parametrize("wrap", [False, True])
 @pytest.mark.parametrize("placement", ["profile", "appendix"])
-def test_template_places_linked_cells_in_configured_location(tmp_path: Path, side: str, placement: str) -> None:
+def test_template_places_linked_cells_in_configured_location(tmp_path: Path, side: str, wrap: bool, placement: str) -> None:
     """
     Emit one day link per observation and keep appendix output separate from first-page profile content.
 
     Args:
         tmp_path (Path): Temporary config and generated source root.
         side (str): Profile column placement.
+        wrap (bool): Whether right-side profile content is measured for wrapping.
         placement (str): Calendar's configured destination.
 
     Returns:
@@ -262,14 +264,15 @@ def test_template_places_linked_cells_in_configured_location(tmp_path: Path, sid
     path = tmp_path / "resumeme.config.yaml"
     path.write_text(
         "linkedin: {username: example-person}\n"
-        f"style: {{profile_column_side: {side}}}\n"
+        f"style: {{profile_column_side: {side}, profile_column_wrap: {str(wrap).lower()}}}\n"
         "github:\n  username: example-person\n  contributions:\n"
         f"    enabled: true\n    placement: {placement}\n    as_of: '2026-10-07'\n",
         encoding="utf-8",
     )
     config = load_config(path)
     calendar = _calendar(config.github.contributions)
-    source = render_profile(Profile("example-person", "Alex"), config, tmp_path, contributions=calendar).read_text()
+    profile = Profile("example-person", "Alex", sections=[Section("about", "About", [Entry("Body evidence")])])
+    source = render_profile(profile, config, tmp_path, contributions=calendar).read_text()
     assert source.count("tab=overview") == len(calendar.days)
 
     for color in CONTRIBUTION_COLORS:
@@ -283,7 +286,8 @@ def test_template_places_linked_cells_in_configured_location(tmp_path: Path, sid
         assert graph > source.index("\\finishthispage")
         assert "\\hyperlink{github-contributions}" in source
     else:
-        assert graph < source.index("\\sbox{\\profileidentitybox}") if side == "right" else True
+        # The profile graph stays before the body-column transition in either fixed or floating layouts.
+        assert graph < source.index("\\framebreak", source.index("\\begin{document}"))
 
     assert load_calendar(tmp_path / "tex/github-contributions.json") == calendar
 

@@ -1,5 +1,5 @@
 name: Set up resumeme
-description: Install the selected dependency groups from the committed Poetry lockfile
+description: Reuse locked dependency environments and install the current resumeme checkout
 inputs:
   groups:
     description: main for rendering, main,dev for validation
@@ -7,11 +7,33 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version-file: .python-version
-    - name: Install locked dependencies
+    - uses: ./.github/actions/setup-poetry
+    - name: Identify compatible project environment
+      id: environment
       shell: bash
       env:
         DEPENDENCY_GROUPS: ${{ inputs.groups }}
+      run: python scripts/tooling/cache-keys.py project >>"$GITHUB_OUTPUT"
+    - name: Restore locked dependencies
+      id: cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.environment.outputs.path }}
+        key: ${{ steps.environment.outputs.key }}
+    - name: Validate lockfile and prepare dependencies
+      shell: bash
+      env:
+        DEPENDENCY_GROUPS: ${{ inputs.groups }}
+        PROJECT_CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
       run: bash scripts/tooling/setup-env.sh
+
+    # Cache dependencies before installing the editable checkout or running any commands that use credentials.
+    - name: Save locked dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.environment.outputs.path }}
+        key: ${{ steps.cache.outputs.cache-primary-key }}
+    - name: Install current resumeme checkout without fetching dependencies
+      shell: bash
+      run: poetry install --only-root --no-interaction --no-ansi

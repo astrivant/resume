@@ -14,7 +14,7 @@ Rendering uses strict undefined-variable checks and these delimiters:
 | `profile` | Filtered profile with consolidated projects, staged image paths, and sections in configured display order |
 | `style` | Effective style after theme overrides |
 | `skill_cloud` | Relative PNG path, or `None` |
-| `summary_headline` | Validated generated text beneath the portrait, or an empty string |
+| `summary_headline` | Validated generated text beneath the portrait, or an empty string when absent or `style.show_headline` is false |
 | `connection_count`, `connection_url` | Enabled captured values, otherwise empty strings |
 | `github_username` | Configured public account, or `None` |
 | `contributions` | Validated `ContributionCalendar` with `username`, `start`, `end`, `days`, `weeks`, and `total`, or `None` |

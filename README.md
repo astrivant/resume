@@ -490,6 +490,10 @@ When both login environment variables are present, it submits them automatically
 interactive capture still waits for you to complete MFA. Scheduled runs use
 `capture --headless` and fail without updating `main` if authentication requires
 interaction. See [automation setup and recovery](docs/automation.md).
+If LinkedIn asks for app approval, the job log records the configured public
+profile, browser, workflow ref, commit, attempt, and a direct run link so you can
+match the phone notification to the workflow you started. LinkedIn controls its
+own device label; resumeme cannot set or verify the label shown in the app.
 
 ## Documentation
 

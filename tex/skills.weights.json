@@ -5,13 +5,18 @@
     "weight": 13
   },
   "Kubernetes": {
-    "references": 7,
+    "references": 10,
     "endorsements": 0,
-    "weight": 7
+    "weight": 10
   },
   "Python": {
-    "references": 2,
+    "references": 3,
     "endorsements": 2,
+    "weight": 7
+  },
+  "Terraform": {
+    "references": 6,
+    "endorsements": 0,
     "weight": 6
   },
   "Amazon Web Services (AWS)": {
@@ -29,14 +34,14 @@
     "endorsements": 1,
     "weight": 5
   },
+  "Gitlab": {
+    "references": 5,
+    "endorsements": 0,
+    "weight": 5
+  },
   "Telecommunications": {
     "references": 1,
     "endorsements": 2,
-    "weight": 5
-  },
-  "Terraform": {
-    "references": 5,
-    "endorsements": 0,
     "weight": 5
   },
   "Python (Programming Language)": {
@@ -49,9 +54,19 @@
     "endorsements": 1,
     "weight": 3
   },
+  "AWS": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
   "Cloud Computing": {
     "references": 1,
     "endorsements": 1,
+    "weight": 3
+  },
+  "Distributed Systems": {
+    "references": 3,
+    "endorsements": 0,
     "weight": 3
   },
   "GitHub": {
@@ -65,6 +80,11 @@
     "weight": 3
   },
   "Helm Charts": {
+    "references": 3,
+    "endorsements": 0,
+    "weight": 3
+  },
+  "Linux": {
     "references": 3,
     "endorsements": 0,
     "weight": 3
@@ -85,11 +105,6 @@
     "weight": 2
   },
   "Artifactory": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
-  "AWS": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -124,6 +139,11 @@
     "endorsements": 0,
     "weight": 2
   },
+  "Google Kubernetes Engine (GKE)": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
   "Hydroponics": {
     "references": 2,
     "endorsements": 0,
@@ -144,11 +164,6 @@
     "endorsements": 0,
     "weight": 2
   },
-  "Linux": {
-    "references": 2,
-    "endorsements": 0,
-    "weight": 2
-  },
   "Mathematics": {
     "references": 2,
     "endorsements": 0,
@@ -159,7 +174,22 @@
     "endorsements": 0,
     "weight": 2
   },
+  "spot.io": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Technical Support": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
   "Troubleshooting": {
+    "references": 2,
+    "endorsements": 0,
+    "weight": 2
+  },
+  "Virtualization": {
     "references": 2,
     "endorsements": 0,
     "weight": 2
@@ -170,6 +200,11 @@
     "weight": 2
   },
   "3D Printing": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Agentic Automation": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -234,12 +269,12 @@
     "endorsements": 0,
     "weight": 1
   },
-  "Google Kubernetes Engine (GKE)": {
+  "Graph Theory": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
   },
-  "Graph Theory": {
+  "High Performance Computing (HPC)": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -270,6 +305,11 @@
     "weight": 1
   },
   "MySQL": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Network Infrastructure": {
     "references": 1,
     "endorsements": 0,
     "weight": 1
@@ -314,6 +354,11 @@
     "endorsements": 0,
     "weight": 1
   },
+  "Small Business Development": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
   "Software as a Service (SaaS)": {
     "references": 1,
     "endorsements": 0,
@@ -324,7 +369,12 @@
     "endorsements": 0,
     "weight": 1
   },
-  "Technical Support": {
+  "Start-up Leadership": {
+    "references": 1,
+    "endorsements": 0,
+    "weight": 1
+  },
+  "Successful Business Owner": {
     "references": 1,
     "endorsements": 0,
     "weight": 1

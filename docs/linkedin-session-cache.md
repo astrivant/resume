@@ -52,6 +52,13 @@ Watch the capture job. App approvals and unknown checkpoints allow up to
 request in your LinkedIn app when one appears. Recognized code-entry MFA, CAPTCHA,
 denial, and expiry fail immediately.
 
+While approval is pending, the job log prints a correlation record with the
+configured public profile slug, browser, workflow and job IDs, trigger, ref,
+commit, run attempt, UTC time, and direct Actions link. GitHub adds the same record to the job summary
+when the step finishes. LinkedIn chooses what browser or device label appears in
+its notification; this project cannot set that value. The record helps you find
+the corresponding workflow run, but it cannot prove which request LinkedIn sent.
+
 Tag and scheduled or requested main-branch refresh jobs require all cache keys;
 without them, the bootstrap cannot hand an authenticated browser session to the
 six workers. A partial key set fails before capture. `LINKEDIN_USERNAME` and

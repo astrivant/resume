@@ -25,7 +25,7 @@ style:
       heading_color: 'A44813'
       entry_color: '363636'
       company_color: '6B2737'
-      skill_colors: ['9A7663', '6B2737']
+      skill_colors: ['827C76', 'B45A24', '943B32', '57182E']
     compact:
       paper: a4
       font_size: 10
@@ -47,7 +47,7 @@ configuration validation. Rebuild with `poetry run resumeme build`.
 | `company_color` | `6B2737` | Employer names and project affiliations, including linked names |
 | `ink`, `entry_color` | `363636` | Body text and entry titles |
 | `accent` | `245135` | Other clickable text in deep plant green |
-| `skill_colors` | `[9A7663, 6B2737]` | Skill endorsement gradient: muted brown to burgundy |
+| `skill_colors` | `[827C76, B45A24, 943B32, 57182E]` | Skill endorsement gradient: warm gray, burnt orange, rust, deep burgundy |
 
 The tiger palette references [Tiger Lily Plants](https://tiger-lily-plants.com/assets/main.css).
 Colors are configured locally; builds do not fetch the stylesheet. Logos and
@@ -77,6 +77,8 @@ top 20 skills, scores, colors, and legend.
 zero endorsements; the last represents the highest endorsement count among the
 20 displayed skills. Intermediate counts interpolate between the stops.
 The centered cloud includes a compact, unnumbered vertical color scale to its left.
+The `tiger` palette starts with a neutral warm gray for unendorsed skills, then
+adds orange and progressively darker burgundy as endorsement counts increase.
 Set `style.skills_size_legend: true` to show three progressively larger `a` samples
 below the scale, illustrating 0, 1+, and 5+
 endorsements. These are size references, not exact font-size thresholds: profile

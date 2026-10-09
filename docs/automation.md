@@ -60,19 +60,32 @@ It has only a `workflow_call` trigger, so it creates no separate push-triggered 
 
 ## Pipeline concurrency
 
-Jobs depend on the artifacts they consume. Once the source SHA is resolved,
-package and container builds run alongside any required LinkedIn capture.
+Jobs depend on actual input artifacts or required verification results. The graph
+follows Amdahl's law: shorten the serial path and start independent work early,
+including inside reusable workflows. Once the source SHA is resolved, Python test
+shards, lint/type/schema checks, Trivy, README review, browser E2E, and package and
+container builds all become eligible alongside any required LinkedIn capture.
+Runner availability determines when eligible jobs actually start.
+
 Capture is a fan-out/fan-in subgraph: bootstrap creates a weighted plan, six
 independent browser jobs collect sections, and aggregation joins their outputs
-only after every shard succeeds and matches the plan. Downstream profile checks,
-summary generation, and tag-only skill proposals start from that accepted
-profile. PDF compilation and TeXtidote review run independently after summaries
+only after every shard succeeds and matches the plan. Aggregation validates the
+fresh snapshot and schema contracts before exporting the accepted profile.
+Source checks validate committed inputs and do not download that capture.
+Summary generation and tag-only skill proposals start from the accepted profile.
+PDF compilation and generated-document review run independently after summaries
 finish. Summary matrix jobs retain their four-worker limit;
 pytest partitions the collected cases across three `ubuntu-24.04` runners with
 four workers each. Lint, type, and schema checks run once in parallel with those
 partitions. A failed partition does not cancel the others, and all partitions
 must succeed before their coverage is combined into the badge report. The
 required verification check still waits for the entire test stage.
+
+Trivy comments wait only for the security stage, so a slow test shard cannot delay
+security feedback. Coverage follows the test stage independently of security and
+PDF builds. The shared `CI verification` gate still requires every validation
+branch before publication; capture failures cannot fall back to old data.
+Dependency edges use GitHub's [`needs` semantics](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds).
 
 ### LinkedIn capture sharding algorithm
 
@@ -98,9 +111,12 @@ profile. The complete overview is retained, and each collected detail section
 replaces only its matching overview preview.
 
 ```mermaid
-flowchart LR
+flowchart TD
     source[Source SHA] --> builds[Package and container builds]
     source --> trivy[Trivy secrets and vulnerability scan]
+    source --> tests[Python shards and lint/type/schema checks]
+    source --> readme[README review]
+    source --> browsers[Browser E2E]
     source --> refresh{Refresh requested?}
     refresh -->|No| stored[Committed profile for ordinary builds]
     refresh -->|Yes| bootstrap[Refresh bootstrap]
@@ -119,14 +135,17 @@ flowchart LR
     shard6 --> aggregate
     stored --> profile[Selected complete profile]
     aggregate --> profile
-    profile --> tests[Python and schema checks]
     profile --> summaries[Summary matrix]
     profile --> skills[Tag skill proposals]
     summaries --> pdf[PDF and preview]
     summaries --> review[Document review]
     builds --> gate[CI verification]
     trivy --> gate
+    trivy --> comment[PR security summary]
     tests --> gate
+    tests --> coverage[Coverage badge]
+    readme --> gate
+    browsers --> gate
     pdf --> gate
     review --> gate
     gate --> release[Signed tag release]
@@ -145,8 +164,9 @@ verification point. In resumeme, the six section workers form the fan-out and th
 strict profile aggregator is their fan-in. GitHub Actions artifacts carry the
 plan and results between jobs; every job checks out the same resolved source SHA.
 
-`CI verification` requires successful source resolution, summaries, Trivy and Python checks,
-document review, source builds, and PDF compilation. Requested captures must also
+`CI verification` requires successful source resolution, summaries, Trivy, Python,
+lint/type/schema checks, README review, browser E2E, document review, source builds,
+and PDF compilation. Requested captures must also
 succeed. Skips or failures in required work block publication. Registry uploads
 can complete even if PDF signing later fails; release notes wait for both the
 signed release and successful registry references. Coverage and Scorecard remain
@@ -155,17 +175,17 @@ lock, and Pages consumes the accepted main publication commit.
 
 ## Trivy security scan
 
-The test stage scans each source checkout for dependency vulnerabilities and
+The independent security stage scans each source checkout for dependency vulnerabilities and
 secret findings with [`aquasec/trivy:0.75.0`](https://hub.docker.com/r/aquasec/trivy),
-selected in [`stage-test.yml`](../.github/workflows/stage-test.yml).
+selected in [`stage-security.yml`](../.github/workflows/stage-security.yml).
 The scanner's version-tag pin and the other non-Poetry tool pins are listed in
 the [development pin inventory](development.md#pinned-toolchain-and-ci-dependencies).
-Any finding, scanner failure, or unreadable report fails the test stage and
+Any finding, scanner failure, or unreadable report fails the security stage and
 blocks `CI verification` on pull requests and pushes. The scan runs alongside
 linting and the sharded Python tests.
 
 The report artifact keeps full finding metadata while redacting matched secret
-text and removing source snippets. A trusted follow-up workflow posts or updates
+text and removing source snippets. A trusted follow-up job in the same pipeline posts or updates
 a concise pull request comment with finding counts, a link to the complete
 sanitized artifact, and workflow logs. The scanner job has read-only repository
 permissions; only the separate comment job receives permission to write PR
@@ -378,6 +398,17 @@ the command prints a notice to open the LinkedIn app and tap **Yes, it's me**.
 open, and capture resumes once LinkedIn redirects it to an authenticated page.
 The wait has one deadline and does not resubmit credentials or resend notifications.
 Unrecognized or temporarily unreadable checkpoints receive the same bounded window.
+
+LinkedIn controls the wording and device or browser label shown in its app
+notification. Resumeme cannot set that label or attach a custom reason to the
+request. Before waiting, the command prints a sign-in audit record with the
+configured public profile slug, selected browser, workflow and job IDs, trigger,
+repository ref, source commit, run ID and attempt, UTC request time, checkpoint category,
+timeout, and a direct Actions run link. The record is also appended to the job's
+Actions summary. The stdout record is available while the request is pending;
+GitHub renders the summary after the step finishes. Approve only when the run
+matches a tag, manual dispatch, or scheduled refresh you expected. The record
+does not verify what LinkedIn displayed on the phone.
 
 Code-entry MFA, CAPTCHA, and denied or expired approvals fail as soon as they are
 detected, including during the approval wait. Timeout errors identify the last

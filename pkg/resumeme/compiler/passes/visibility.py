@@ -13,19 +13,22 @@ from resumeme.compiler.passes.education import filter_education
 from resumeme.compiler.passes.experience import clean_experience, filter_experience
 
 if TYPE_CHECKING:
+    from datetime import date
+
     from resumeme.compiler.asts.profile import Profile
     from resumeme.config import Config
 
 __all__ = ["visible_profile"]
 
 
-def visible_profile(profile: Profile, config: Config) -> Profile:
+def visible_profile(profile: Profile, config: Config, *, today: date | None = None) -> Profile:
     """
     Apply section, employment, and education exclusions without modifying the captured snapshot.
 
     Args:
         profile (Profile): Validated profile snapshot.
         config (Config): Enabled sections, job and education exclusions, and inclusive employment window.
+        today (date | None): Explicit date for an unpinned employment window; unused without date filtering.
 
     Returns:
         Profile: Retained sections and entries in capture order.
@@ -39,7 +42,7 @@ def visible_profile(profile: Profile, config: Config) -> Profile:
             evolve(
                 section,
                 key=section_key(section.key),
-                entries=[clean_experience(entry) for entry in filter_experience(section.entries, config.experience)]
+                entries=[clean_experience(entry) for entry in filter_experience(section.entries, config.experience, today=today)]
                 if section_key(section.key) == "experience"
                 else filter_education(section.entries, config.education)
                 if section_key(section.key) == "education"

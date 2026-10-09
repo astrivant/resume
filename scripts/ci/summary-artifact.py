@@ -6,11 +6,13 @@ from __future__ import annotations
 
 import os
 import shutil
+from datetime import UTC, datetime
 from pathlib import Path
 
 from resumeme.codex.companies import load_company
 from resumeme.compiler.asts.profile import load_profile
 from resumeme.compiler.asts.summary import load_summary
+from resumeme.compiler.passes.context import resolve_dates
 from resumeme.compiler.passes.summary import summary_digest
 from resumeme.config import company_config, load_config, project_path
 
@@ -26,7 +28,7 @@ if key and target is None:
 relative = f"companies/{key}" if target else ""
 directory = project_path(root, f".cache/codex/{relative}")
 company = load_company(directory / "company.json", target) if target else None
-settings = company_config(config, target, root=root) if target else config
+settings = resolve_dates(company_config(config, target, root=root) if target else config, today=datetime.now(UTC).date())
 load_summary(
     directory / "summary.json", username=profile.username, source_digest=summary_digest(profile, settings, company), settings=settings.codex
 )

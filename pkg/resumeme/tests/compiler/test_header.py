@@ -47,7 +47,7 @@ def test_headline_visibility_preserves_company_location_and_source(show: bool, e
     assert profile.intro == intro
 
 
-@pytest.mark.parametrize("intro", [[], ["Boston, MA"], ["Example Co.", "Boston, MA"]])
+@pytest.mark.parametrize("intro", [[], ["Boston, MA"], ["Example Co.", "Boston, MA"], ["Example | Partners", "Boston, MA"]])
 def test_missing_headline_does_not_remove_minimal_identity(intro: list[str]) -> None:
     """
     Preserve header fields when no headline can be identified.
@@ -60,6 +60,41 @@ def test_missing_headline_does_not_remove_minimal_identity(intro: list[str]) -> 
     """
     profile = Profile("example-person", "Alex", intro=intro)
     assert prepare_header(profile, Style())[0].intro == intro
+
+
+@pytest.mark.parametrize("show", [False, True])
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_unmarked_pipe_headline_visibility_preserves_about(tmp_path: Path, show: bool, side: Literal["left", "right"]) -> None:
+    """
+    Recognize a multi-part headline in unmarked intro text without hiding About or company identity.
+
+    Args:
+        tmp_path (Path): Isolated rendering directory.
+        show (bool): Whether to enable the headline.
+        side (Literal["left", "right"]): Profile column placement.
+
+    Returns:
+        None: Only the headline follows the toggle; enabled About leads the body in either layout.
+    """
+    headline = "Platform Engineer | SRE | Business Owner | Building reliable systems"
+    profile = parse_profile(
+        "<main><section><h2>Alex Example</h2><p>She/Her</p>"
+        f"<p>{headline}</p><p>Example Co.</p></section>"
+        "<section><h2>About</h2><p>I build reliable infrastructure.</p></section></main>",
+        "example-person",
+    )
+    config = Config(
+        LinkedIn(profile.username),
+        section_order=["contact", "about"],
+        style=Style(show_headline=show, profile_column_side=side),
+    )
+    document = render_profile(profile, config, tmp_path).read_text().split(r"\begin{document}", 1)[1]
+    identity, body = document.split(r"\framebreak", 1)
+    assert (headline in identity) is show
+    assert identity.count(headline) == int(show)
+    assert "Example Co." in identity and "She/Her" in identity
+    assert r"\sectiontitle{About}" in body and "I build reliable infrastructure." in body
+    assert profile.headline == "" and headline in profile.intro
 
 
 @pytest.mark.parametrize("username", [None, "emmeowzing"])

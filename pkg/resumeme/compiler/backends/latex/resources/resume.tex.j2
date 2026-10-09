@@ -1,3 +1,5 @@
+((# Keep placement independent of flow: wrapping is an explicit opt-in for the right-side profile. #))
+((* set floating_profile = style.profile_column_side == 'right' and style.profile_column_wrap *))
 ((# Shared entry rendering keeps project cards and ordinary sections on the same escaping and image rules. #))
 ((* macro render_text(paragraphs, links, locations={}, affiliations={}, badges={}, link_jobs=false, job_text=false, company_labels=false) *))
 ((* set blocks = paragraphs|job_text_blocks if job_text else paragraphs|text_blocks *))
@@ -184,13 +186,15 @@
 ((* set tiled = section.key in ['projects', 'featured'] *))
 ((* if tiled *))
 % Tiled sections use the full paper width; move past the first-page identity columns only when necessary.
-((* if style.profile_column_side == 'right' *))
+((* if floating_profile *))
 \profilefullwidth
 ((* else *))
 \ifnum\value{page}=1\clearpage\fi
 ((* endif *))
 ((* endif *))
-((* if section.key == 'skills' and skill_cloud and style.profile_column_side == 'right' *))\profilefullwidth((* endif *))
+((* if section.key == 'skills' and skill_cloud and style.profile_column_side == 'right' *))
+((* if floating_profile *))\profilefullwidth((* else *))\ifnum\value{page}=1\clearpage\fi((* endif *))
+((* endif *))
 ((# Reserve the first education entry's eight lines plus its section heading so reflow cannot strand the heading. #))
 \Needspace{((* if section.key == 'education' *))11((* else *))5((* endif *))\baselineskip}
 ((* if section.key == 'skills' and skill_cloud *))\begin{minipage}{\linewidth}((* endif *))
@@ -326,7 +330,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newlength{\contributionradius}
 \newlength{\contributionappendixwidth}
 ((* endif *))
-((* if style.profile_column_side == 'right' *))
+((* if floating_profile *))
 \newif\ifprofileprogression
 \newcounter{profileparagraphid}
 \newcount\profilerailpage
@@ -397,7 +401,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \fill[ink!55] (-3mm-0.3pt,0.5ex) circle[radius=0.9mm];
   }%
 }
-((* if style.profile_column_side == 'right' *))
+((* if floating_profile *))
 \newcommand{\roletitle}[2][\normalsize]{\profileparagraph{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}}\nopagebreak}
 ((* else *))
 \newcommand{\roletitle}[2][\normalsize]{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}\par\nopagebreak}
@@ -420,7 +424,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \fi%
   \hspace{3mm}\usebox{\roleframemeasure}%
 }
-((* if style.profile_column_side == 'right' *))
+((* if floating_profile *))
 % Keep role paragraphs in the main text flow so each can widen when it clears the profile block.
 % Paint the continuous rail behind the text, rather than boxing an entire role at its initial width.
 \newcommand{\drawprofilerail}[4]{%
@@ -469,7 +473,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 }
 % Measure paragraph starts for progression rails. Fixed-column layouts also use the
 % measurement to avoid carrying narrow line breaks onto a wider continuation page.
-((* if style.profile_column_side == 'right' *))
+((* if floating_profile *))
 \newcommand{\profilesetwidth}{%
   \ifprofilewrapping\ifinner\else%
     \setlength{\linewidth}{\typeblockwidth}%
@@ -535,7 +539,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \setlength{\profileparagraphwidth}{\linewidth}%
   \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
   \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{#1}}%
-  % A header too tall to wrap retains the original column transition and its paragraph remeasurement.
+  % Fixed columns and headers too tall to wrap remeasure paragraphs when moving to a wider continuation page.
   \ifprofilewrapping\else
     \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\typeblockheight
       \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax>\dimexpr\pagegoal-\pagetotal\relax
@@ -738,7 +742,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* set body = section_navigation|rejectattr('1.key', 'equalto', 'contact')|list *))
 ((# Relocate observed header branding beside its name, using the same linked company row as Experience. #))
 ((* set header, header_badges = profile|header_logos *))
-((* if style.profile_column_side == 'right' *))
+((* if floating_profile *))
 % Keep one content definition: measuring must not duplicate anchors or change which header fields are visible.
 % The identity macro captures profile data so its actual rendered height can be measured.
 \newcommand{\profileidentity}{%
@@ -821,7 +825,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* endif *))
 \par\addvspace{6pt}
 ((* endif *))
-((* if style.profile_column_side == 'right' *))
+((* if floating_profile *))
 }
 % Measure the actual header, including optional contact and navigation, with its normal column typography.
 \sbox{\profileidentitybox}{%
@@ -848,7 +852,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((# A header-only profile does not need a forced break or an empty body heading. #))
 ((* if body *))
 \framebreak
-((* if style.profile_column_side == 'right' *))\profilebodytrue((* endif *))
+((* if floating_profile *))\profilebodytrue((* endif *))
 % The section markers below follow the configured order after visibility filtering.
 % Follow the configured section order for body sections; Contact remains with the identity block.
 ((* for anchor, section in body *))

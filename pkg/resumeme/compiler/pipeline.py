@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import shutil
+from datetime import UTC, datetime
 from functools import partial
 from importlib.resources import files
 from typing import TYPE_CHECKING
@@ -34,6 +35,7 @@ from resumeme.compiler.constants.backend import (
 )
 from resumeme.compiler.constants.contributions import CONTRIBUTION_COLORS
 from resumeme.compiler.passes.contact import contact_email_url, is_contact_website, prepare_contact
+from resumeme.compiler.passes.context import resolve_dates
 from resumeme.compiler.passes.header import is_pronouns, prepare_header, prepare_header_logos, prepare_header_position
 from resumeme.compiler.passes.headings import distinct_heading, is_body_heading
 from resumeme.compiler.passes.lists import text_blocks
@@ -55,6 +57,7 @@ from resumeme.exceptions import ProfileError
 from resumeme.visualization.skills import render_skill_cloud, skill_scores
 
 if TYPE_CHECKING:
+    from datetime import date
     from pathlib import Path
 
     from resumeme.compiler.asts.contributions import ContributionCalendar
@@ -75,6 +78,7 @@ def render_profile(
     summary_path: Path | None = None,
     contributions: ContributionCalendar | None = None,
     company: CompanyEvidence | None = None,
+    today: date | None = None,
 ) -> Path:
     """
     Render enabled sections and stage their referenced images alongside the TeX source.
@@ -87,6 +91,7 @@ def render_profile(
         summary_path (Path | None): Explicit generated-copy artifact, validated against this capture and configuration.
         contributions (ContributionCalendar | None): Acquired public activity for the optional GitHub graph; never fetched by this function.
         company (CompanyEvidence | None): Employer evidence bound to a tailored summary; None selects generic copy.
+        today (date | None): UTC reference date for replay; orchestration reads the clock once when omitted.
 
     Returns:
         Path: Generated LaTeX source.
@@ -99,6 +104,8 @@ def render_profile(
     if profile.warnings and not allow_incomplete:
         raise ProfileError("Capture is incomplete: " + "; ".join(profile.warnings))
 
+    # Resolve external time once at the boundary; pure passes and summary validation receive identical fixed endpoints.
+    config = resolve_dates(config, today=today or datetime.now(UTC).date())
     _LOGGER.info("Rendering LaTeX", extra={"profile.sections": len(profile.sections), "summary.enabled": summary_path is not None})
     # Validate against the original inputs before display passes remove or relocate source text.
     summary = (
@@ -177,7 +184,7 @@ def render_profile(
     visible = without_ownership_metadata(visible)
 
     # Connection counts are optional header metadata, not repeated intro prose or a second profile URL.
-    summary_headline = " ".join(summary.headline.split()) if summary else ""
+    summary_headline = " ".join(summary.headline.split()) if summary and style.show_headline else ""
     visible, connection_count, connection_url = prepare_header(visible, evolve(style, show_headline=False) if summary_headline else style)
     visible, current_position = prepare_header_position(visible, captured=profile, display=style.display_current_position)
 

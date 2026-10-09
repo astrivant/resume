@@ -168,7 +168,7 @@ def prepare_header(profile: Profile, style: Style) -> tuple[Profile, str, str]:
             if _COUNT.fullmatch(label):
                 count = count or label
 
-    # Older snapshots lack an explicit headline field. Recognize only an initial role-at-company phrase.
+    # Older and unmarked captures can lack a headline field; recognize an initial role-at-company or multi-part headline.
     headline = profile.headline
 
     if not headline:

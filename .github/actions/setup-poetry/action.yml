@@ -1,0 +1,33 @@
+name: Set up Poetry
+description: Reuse the pinned Poetry runtime across compatible CI jobs and runs
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version-file: .python-version
+    - name: Identify compatible Poetry environment
+      id: environment
+      shell: bash
+      run: python scripts/tooling/cache-keys.py poetry >>"$GITHUB_OUTPUT"
+    - name: Restore Poetry environment
+      id: cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.environment.outputs.path }}
+        key: ${{ steps.environment.outputs.key }}
+    - name: Prepare pinned Poetry
+      shell: bash
+      env:
+        POETRY_CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+        POETRY_ENVIRONMENT: ${{ steps.environment.outputs.path }}
+        POETRY_VERSION: ${{ steps.environment.outputs.version }}
+      run: bash scripts/tooling/setup-poetry.sh
+
+    # Save immediately so later jobs can restore while this job is still doing independent work.
+    - name: Save Poetry environment
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.environment.outputs.path }}
+        key: ${{ steps.cache.outputs.cache-primary-key }}

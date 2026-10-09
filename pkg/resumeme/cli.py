@@ -8,6 +8,7 @@ import argparse
 import logging
 import os
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -22,6 +23,7 @@ from resumeme.codex.skills import prepare_skills
 from resumeme.compiler.asts.contributions import load_calendar
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.compiler.backends.latex.compilation import compile_pdf
+from resumeme.compiler.passes.context import resolve_dates
 from resumeme.compiler.passes.privacy import without_profile_location
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Ownership, load_config, project_path
@@ -364,6 +366,7 @@ def _run(args: argparse.Namespace) -> int:
             return 0
 
         # Optional public activity is acquired once before the offline compiler; explicit snapshots support repeatable builds.
+        config = resolve_dates(config, today=datetime.now(UTC).date())
         contributions = None
 
         if args.github_calendar:

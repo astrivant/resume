@@ -5,7 +5,7 @@ Select displayed employment before templates, assets, and skill scoring consume 
 from __future__ import annotations
 
 import calendar
-from datetime import UTC, date, datetime
+from datetime import date
 from typing import TYPE_CHECKING
 
 from attrs import evolve
@@ -38,7 +38,7 @@ def clean_experience(entry: Entry) -> Entry:
     # Accessibility duplicates can appear as complete or shortened rows, including within a multiline paragraph.
     for paragraph in entry.paragraphs:
         original = paragraph.splitlines()
-        lines = [line for line in original if _normalized(line).rstrip(".! ") not in _ATTRIBUTION]
+        lines = [line for line in original if not _ATTRIBUTION.fullmatch(_normalized(line))]
 
         if len(lines) == len(original):
             paragraphs.append(paragraph)
@@ -49,7 +49,7 @@ def clean_experience(entry: Entry) -> Entry:
     return evolve(
         entry,
         paragraphs=paragraphs,
-        links=[link for link in entry.links if _normalized(link.label).rstrip(".! ") not in _ATTRIBUTION],
+        links=[link for link in entry.links if not _ATTRIBUTION.fullmatch(_normalized(link.label))],
         positions=[clean_experience(position) for position in entry.positions],
     )
 
@@ -239,7 +239,7 @@ def _select(entry: Entry, settings: Experience, cutoff: date | None, as_of: date
 
 def filter_experience(entries: list[Entry], settings: Experience, *, today: date | None = None) -> list[Entry]:
     """
-    Filter employment without mutating captured inputs or using the machine's local timezone.
+    Filter employment using only captured inputs, settings, and an explicit reference date.
 
     Missing and unrecognized dates are retained. Partial dates include their entire
     displayed month or year. February 29 maps to February 28 in a non-leap cutoff year.
@@ -247,21 +247,29 @@ def filter_experience(entries: list[Entry], settings: Experience, *, today: date
     Args:
         entries (list[Entry]): Experience entries in display order.
         settings (Experience): Job exclusions and an optional fixed or trailing calendar-year window.
-        today (date | None): Explicit current UTC date for deterministic callers; defaults to the clock.
+        today (date | None): Reference date when settings.as_of is unset; required for unpinned date windows.
 
     Returns:
         list[Entry]: Selected jobs with original descriptions and dates intact.
 
     Raises:
-        ProfileError: The fixed start is after the effective endpoint, or a legacy group cannot be safely separated.
+        ProfileError: A date window lacks an endpoint, its start exceeds its end, or a legacy group cannot be safely separated.
     """
 
     # Preserve the original records when filtering is disabled, including legacy groups without role boundaries.
     if not settings.disable and settings.last_years is None and settings.since is None:
         return entries
 
-    # A pinned endpoint makes rebuilds repeatable; otherwise use one UTC date consistently for every job in this call.
-    as_of = date.fromisoformat(settings.as_of) if settings.as_of else today or datetime.now(UTC).date()
+    # Relative windows require context; identity-only exclusions must not invent a clock-dependent date restriction.
+    date_filter = settings.last_years is not None or settings.since is not None
+
+    if settings.as_of is None and today is None and date_filter:
+        raise ProfileError("Employment date filtering requires experience.as_of or an explicit compilation reference date.")
+
+    as_of = date.fromisoformat(settings.as_of) if settings.as_of else today or date.max
+
+    if not date_filter:
+        as_of = date.max
     cutoff = date.fromisoformat(settings.since) if settings.since else None
 
     # A fixed start stays put as the endpoint advances; users need not clear last_years when switching to it.

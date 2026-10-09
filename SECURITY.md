@@ -45,6 +45,12 @@ The [session-cache guide](docs/linkedin-session-cache.md) covers setup. The
 explains why deleting a cache or changing a display setting does not revoke an
 account session or remove already-published copies.
 
+CI also reuses installed Python dependencies and Poetry through exact-key Actions
+caches. These contain executable public packages, not browser sessions or secret
+files, and are saved before commands use publication credentials. They are not
+encrypted by resumeme. See [dependency cache boundaries](docs/data-handling.md#dependency-environment-caches)
+before adding private dependencies or extending the archived paths.
+
 ## Automated source scanning
 
 The required CI test stage runs Trivy against the checked-out repository using
@@ -56,13 +62,13 @@ rules are not loaded. A finding, scanner error, or invalid report fails the
 
 Before upload, report processing removes source snippets and redacts matched
 secret text. CI retains the sanitized report artifact for 90 days. A follow-up
-workflow posts or updates a pull request comment with finding counts and links to
-the report and scan logs. That workflow checks out the default branch, not pull
+job in the same pipeline posts or updates a pull request comment with finding counts and links to
+the report and scan logs. That job checks out the default branch, not pull
 request code, and alone receives permission to write issue comments. See the
 [Trivy pipeline details](docs/automation.md#trivy-security-scan) and its
-[scanner stage](.github/workflows/stage-test.yml),
+[scanner stage](.github/workflows/stage-security.yml),
 [report redaction code](scripts/ci/trivy-report.py), and
-[pull request comment workflow](.github/workflows/trivy-pr-comment.yml).
+[pull request comment job](.github/workflows/ci.yml).
 
 This is a source-filesystem scan, not a scan of the built container image, runner,
 or live services. A clean result cannot establish that the application or its

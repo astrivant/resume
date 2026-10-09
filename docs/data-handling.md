@@ -1,6 +1,6 @@
 # Sensitive data handling
 
-This document describes the checked-in CLI and workflows, reviewed on 2026-10-08.
+This document describes the checked-in CLI and workflows, reviewed on 2026-10-09.
 Paths below are defaults relative to the configuration directory unless stated
 otherwise. Fork changes, custom templates, alternate actions, and runner settings
 can change these boundaries. See [SECURITY.md](../SECURITY.md) for reporting and
@@ -11,6 +11,7 @@ maintainer responsibilities.
 - [Before capturing or publishing](#before-capturing-or-publishing)
 - [Credentials and who can use them](#credentials-and-who-can-use-them)
 - [Local files and their lifetime](#local-files-and-their-lifetime)
+- [Dependency environment caches](#dependency-environment-caches)
 - [Encrypted browser sessions in CI](#encrypted-browser-sessions-in-ci)
 - [Key creation, backups, and rotation](#key-creation-backups-and-rotation)
 - [CI artifacts, commits, and public output](#ci-artifacts-commits-and-public-output)
@@ -89,6 +90,27 @@ The parsed snapshot intentionally excludes browser credentials, private messages
 the connections address book, and profile-view analytics. That is a collector
 boundary, not a guarantee that page HTML or browser databases contain only those
 fields. Do not upload an entire `.cache/` directory when asking for support.
+
+## Dependency environment caches
+
+CI archives the dedicated Poetry virtual environment under
+`$RUNNER_TEMP/resumeme-poetry` and the checkout's `.venv` separately. These contain
+installed public dependencies, executable scripts, and package metadata. They
+are saved after dependency setup, before installing the editable resumeme source
+and before capture, AI, signing, or publication commands. The selected paths do
+not include browser sessions, profiles, credentials, prompts, PDFs, package-manager
+configuration, or the user's home directory. They have no resumeme-level
+encryption and can be readable by fork pull requests under GitHub's cache rules.
+
+Treat these caches as executable build inputs. Keep workflow changes reviewed;
+GitHub's branch/ref scope prevents a pull request's merge-ref cache from being
+restored by `main`. Cache keys bind installed environments to the runtime, paths,
+installation implementation, and dependency selection. Caches expire or can be
+deleted through GitHub Actions cache management; a miss installs dependencies
+again. Forks adding private package sources must review whether their package
+contents may be shared through Actions caches. Never add secret files or browser
+state to a dependency environment. See [the cache contract](development.md#ci-environment-caches)
+and [GitHub's access restrictions](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching).
 
 ## Encrypted browser sessions in CI
 
@@ -211,7 +233,7 @@ repository's own retention setting, not the artifact-specific values.
 | `resumeme-python-distributions` | Successful package build; later used for version-tag PyPI publication | Wheel and source archive, including package metadata and README content. | 14 |
 | `resumeme-container` | Tag container build; later registry publication | Tested production container archive. | 7 |
 | `python-coverage-*` | Each test partition, including failed tests | Raw coverage databases with relative source paths and executed line numbers; used to combine all partitions. | 14 |
-| `python-coverage`, `textidote-reports` | Combined successful test partitions/document checks | Source-path coverage and document reports; reports can include excerpts of checked prose. | 14 |
+| `python-coverage`, `textidote-readme-report`, `textidote-reports` | Combined successful test partitions/independent document checks | Source-path coverage and document reports; reports can include excerpts of checked prose. | 14 |
 
 Each successful refresh replaces the configured profile snapshot and its
 referenced image paths in place. Resumeme does not create dated profile archives.
@@ -356,6 +378,17 @@ output are not all passed through that redaction filter. For example,
 prints names. GitHub's own secret masking also has limits. Review logs before
 sharing; never enable shell tracing or attach the entire browser profile for a
 bug report. Local logs remain until removed; hosted logs follow Actions settings.
+
+When a headless sign-in waits for LinkedIn app approval, stdout and the GitHub
+job summary include the configured public profile slug, browser, workflow and
+job IDs, trigger, ref, source commit, run ID and attempt, UTC request time, checkpoint
+category, timeout, and a link to that Actions run. This is operational metadata
+for correlating a phone notification with a run. It excludes login credentials,
+cookies, checkpoint text, and browser-session details. The stdout record appears
+while the job is waiting; the summary is rendered after its step completes.
+Locally, the record is printed to the terminal and no summary is written. GitHub
+Actions log and summary retention follows the repository's configured retention
+policy. LinkedIn independently chooses the device label and notification text.
 
 ## Disable, delete, or respond to exposure
 
