@@ -33,19 +33,47 @@ def test_body_style_defaults_and_theme_overrides(tmp_path: Path) -> None:
     path.write_text(
         "linkedin: {username: example-person}\n"
         "style:\n  theme: airy\n  themes:\n"
-        "    airy: {line_height: 1.15, paragraph_spacing: 7.5, about_background: F0F4F7}\n"
+        "    airy: {line_height: 1.15, paragraph_spacing: 7.5, about_text_indent: 10, about_background: F0F4F7}\n"
     )
     base = load_config(path).style
     resolved = resolve_style(base)
-    assert (base.line_height, base.paragraph_spacing, base.about_background) == (1.0, 3.0, None)
-    assert (resolved.line_height, resolved.paragraph_spacing, resolved.about_background) == (1.15, 7.5, "F0F4F7")
+    assert (base.line_height, base.paragraph_spacing, base.about_text_indent, base.about_background) == (1.0, 3.0, 8.0, None)
+    assert (resolved.line_height, resolved.paragraph_spacing, resolved.about_text_indent, resolved.about_background) == (
+        1.15,
+        7.5,
+        10,
+        "F0F4F7",
+    )
     assert base == Style(theme="airy", themes=base.themes)
+
+
+def test_section_heading_margins_are_ten_percent_larger(tmp_path: Path) -> None:
+    """
+    Keep the generated section-heading spacing at 1.1 times its previous values.
+
+    Args:
+        tmp_path (Path): Isolated rendering directory.
+
+    Returns:
+        None: Body and identity headings share the widened spacing constants.
+    """
+    profile = Profile(
+        "example-person",
+        "Alex Example",
+        sections=[Section("skills", "Skills", [Entry("Python")]), Section("experience", "Experience", [Entry("Engineer")])],
+    )
+    source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
+
+    assert r"\newcommand{\sectionheadingbefore}{11pt}" in source
+    assert r"\newcommand{\sectionheadingafter}{0.55\baselineskip}" in source
+    assert r"\newcommand{\identityheadingbefore}{13.2pt}" in source
 
 
 @pytest.mark.parametrize(
     ("field", "value"),
     [("line_height", value) for value in (0, 0.99, 2.01, True, "1.1", None)]
     + [("paragraph_spacing", value) for value in (-1, 24.01, True, "6pt", None)]
+    + [("about_text_indent", value) for value in (-1, 24.01, True, "8pt", None)]
     + [("about_background", value) for value in ("#F0F4F7", "F0F", "blue", "GGGGGG", True, 123456)],
 )
 @pytest.mark.parametrize("theme", [False, True])
@@ -99,5 +127,8 @@ def test_about_panel_preserves_content_and_section_visibility(tmp_path: Path, ba
 
     for paragraph in paragraphs:
         assert body.count(paragraph) == int(visible)
+
+    if visible:
+        assert r"\setlength{\leftskip}{\abouttextindent}%" in body
 
     assert profile.sections[0].entries[0].paragraphs == paragraphs

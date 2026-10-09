@@ -69,7 +69,7 @@ def check_owner(driver: WebDriver, config: Config) -> str:
         )
 
         if not editable:
-            raise BrowserError("No owner edit control found. Sign in as linkedin.username before publishing account data.")
+            raise BrowserError("No owner edit control found. Sign in as profile.linkedin.username before publishing account data.")
 
         return path
 

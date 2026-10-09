@@ -1,225 +1,13 @@
 # yaml-language-server: $schema=./pkg/resumeme/compiler/asts/resources/config.schema.json
+
+# Cross-cutting runtime diagnostics. Keep this near the top so CI behavior is obvious.
 logging:
-  # OpenTelemetry JSON logs on stdout. DEBUG includes sanitized HTTP requests and browser progress.
-  # Override with RESUMEME_LOG_LEVEL or the global --log-level option.
   level: ERROR
 
-linkedin:
-  username: emmeowzing
-
-  # Upload the signed release PDF to LinkedIn's saved application resumes on tag.
-  resume:
-    publish: true
-
-    # After the new signed PDF is confirmed saved, remove any other resumes from LinkedIn's saved application list.
-    replace_existing: true
-
-    # null preserves LinkedIn's recruiter-sharing setting; true enables it and false disables it after upload.
-    share_with_recruiters: true
-
-  # Opt in to updating your live About with artifact signing details after a release; existing About text is preserved.
-  ownership:
-    update_about: true
-
-    # null uses GITHUB_REPOSITORY in Actions, or the local Git origin (OWNER/REPO).
-    repository: null
-
-    # Optional HTTPS short link to your releases page; null uses https://github.com/OWNER/REPO/releases.
-    releases_url: null
-
-# Optional public profile link; set username to null to hide it.
-github:
-  username: emmeowzing
-
-  # Optional public activity; uses GitHub's light-theme greens and clickable day links without an API token.
-  contributions:
-    enabled: true
-    months: 1
-
-    # profile follows the profile column; appendix adds a separate final page.
-    placement: profile
-
-    # null uses today's UTC date. Pin a quoted ISO date when rebuilding saved calendar JSON offline.
-    as_of: null
-
-# Generate a personal landing page and clickable first-page PDF preview at the configured destination.
-# auto generates on forks; project disables generation; resume also generates in the upstream repository.
-readme:
-  mode: resume
-
-  # This repository publishes an example. Set README.md in your fork to replace the project landing page.
-  output: docs/FORK_EXAMPLE.md
-
-  # Optional plain-text introduction; null uses the shared boilerplate. The heading uses your captured name.
-  introduction: null
-
-# Enable after selecting GitHub Actions as the publishing source in your fork's Settings > Pages.
-pages:
-  enabled: true
-
-  # Site-relative directory with leading/trailing slashes. / serves index.html at the site's root; /cv/ serves a subdirectory.
-  # GitHub's automatic /REPOSITORY prefix is handled separately; do not repeat it here.
-  path: /
-
-  # Optional check against the domain configured in Settings > Pages, e.g. resume.tiger-lily-plants.com.
-  # This does not change DNS or GitHub's domain settings. null also supports USER.github.io/REPOSITORY sites.
-  custom_domain: resume.tiger-lily-plants.com
-
-# Optional Codex-generated About and portrait summary. Set OPENAI_API_KEY as an Actions secret before enabling.
-codex:
-  enabled: false
-
-  # Astra with light reasoning. Alternatives and setup: docs/codex.md#model-selection
-  # Create an API key at https://platform.openai.com/api-keys and store it as the OPENAI_API_KEY Actions secret.
-  model: gpt-6-astra
-  reasoning_effort: low
-  about_max_words: 100
-  headline_max_words: 18
-
-  # Independent of résumé summaries: generate proposals only on a tag push, using captured profile evidence.
-  skills:
-    # false skips proposal generation and its API usage, even when an OPENAI_API_KEY secret exists.
-    enabled: false
-
-    # Opt in to live additions after the signed release. All existing skills and endorsements are retained.
-    # false only disables LinkedIn writes; use enabled: false above to stop generating proposals.
-    publish: false
-    max_skills: 20
-    context: ''
-
-  # Add target roles, audience, tone, or additional factual background here. Never put an API key in this file.
-  context: ''
-
-  # Additional tailored PDFs under single-origin/<company>/job-<id>/resume.pdf; the generic resume.pdf stays separate.
-  companies: []
-  # Each target accepts partial root config under overrides; mappings merge, lists/null replace. See docs/codex.md.
-  # companies:
-  #   - username: example-company
-  #     job_url: https://www.linkedin.com/jobs/view/1234567890/
-  #     context: Emphasize platform reliability and developer tooling.
-  #     company_context: ''  # Optional company description instead of fetching its LinkedIn About page.
-  #     overrides:
-  #       style: {display_current_position: false}
-  #       experience: {disable: [], since: '2020-06-01'}
-  #       codex: {about_max_words: 70}
-  #     job_context: ''      # Optional full job description for login-only or expired postings.
-
-# Enabled sections in PDF/contents order. Reorder entries; comment out a key to hide that section.
-# Uncomment it to restore the section. Missing/empty sections are skipped; [] renders only the profile header.
-# Add unfamiliar keys from data/profile.json to include them. Featured uses the same tiles as Projects.
-section_order:
-  # Contact groups social links, the profile contribution graph, and captured fields above Contents.
-  - contact
-  - about
-  # - featured
-  # - activity
-  - experience
-  - education
-  # - services
-  # - career-breaks
-  # - certifications
-  # - volunteering-experiences
-  - projects
-  - publications
-  # - patents
-  # - courses
-  # - honors
-  # - test-scores
-  - skills
-  # - recommendations
-  # - languages
-  # - organizations
-  # - interests
-  # - causes
-
-# Keep Projects whose resolved source URL matches this Python regex; null includes all projects, even without a URL.
-# Single quotes preserve regex backslashes. The default matches github.com, ignoring case.
-project_filter: null #'(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
-
-projects:
-
-  # null keeps all projects allowed by project_filter; [] hides every project tile.
-  # Filter by name, affiliation, or both. Every supplied field must match; separate list entries are alternatives.
-  # Matching ignores case and repeated spaces. The source URL filter above still applies.
-  include:
-    - name: polyad
-    - name: hypothesis-helm
-    - name: composer
-    - name: resumeme
-    - name: orchidarium
-    - name: pass-operator
-  #   - affiliation: Another Company
-  #   - name: Deployment platform
-  #     affiliation: Example Company
-
-  # Omit matching tiles even when include also matches. Uses the same name/affiliation rules; [] excludes nothing.
-  exclude:
-    - affiliation: HqO
-    - name: gitlabci-lint-pre-commit-hook
-  # exclude:
-  #   - affiliation: Another Company
-  #   - name: Archived tool
-  #   - name: Deployment platform
-  #     affiliation: Former Company
-
-experience:
-
-  # Match a job title, company, or both (case-insensitive).
-  # Example: [{title: DevOps Engineer, company: HqO}]
-  disable:
-    - company: astrivant
-    - company: Tiger Lily Plants LLC.
-    - title: Founder
-      company: PremiScale
-
-  # Set to 5 to include jobs overlapping the past five years, including ongoing jobs.
-  # Used only when since is null.
-  last_years: 5
-
-  # Optional fixed inclusive start, e.g. '2020-06-01'; overrides last_years and stays fixed as time advances.
-  # Jobs that started earlier are included if they overlap this date or any later part of the window.
-  since: '2021-08-01'
-
-  # Optional fixed endpoint for reproducible date filtering, e.g. '2026-10-07'.
-  # null uses today's UTC date. Keep explicit dates quoted.
-  as_of: null
-
-  # Reflow single line breaks inside job prose and bullets. False retains captured line boundaries.
-  # Blank lines, new bullets, metadata, and the labels below remain boundaries either way.
-  reflow_soft_breaks: true
-
-  # Whole standalone labels only, ignoring case, spacing, and a trailing colon; these are literal text, not regexes.
-  # Replace this list to tune recognition, add your own labels (e.g. Impact or Deliverables), or use [] to disable it.
-  # Styling is controlled separately by style.highlight_job_subheadings; turning it off does not hide any text.
-  subheadings:
-    - Responsibilities
-    - Key responsibilities
-    - Technologies
-    - Projects
-    - Skills
-    - Achievements
-    - Key achievements
-    - Accomplishments
-    - Highlights
-    - Summary
-    - Duties
-
-education:
-
-  # Match school, degree, major, or a combination; all supplied fields must match.
-  # Exact matches ignore case, repeated whitespace, and straight versus curly apostrophes.
-  # Replace [] with selectors, e.g. [{school: Example University}, {degree: "Associate's Degree", major: Mathematics}].
-  # Omit education from section_order to hide the entire section.
-  disable:
-    - school: Rochester Institute of Technology
-
+# Browser and network behavior used while acquiring and enriching a profile.
 capture:
-  # firefox (default) or chrome; applies to interactive capture, headless CI, and live About updates.
-  # Install the selected browser locally. Logins persist separately under .cache/<browser>/.
   browser: firefox
   page_timeout_seconds: 30
-
-  # Wait up to 15 minutes for "Yes, it's me" in the LinkedIn app. Code-entry MFA and CAPTCHA fail immediately.
   app_approval_timeout_seconds: 900
   max_scrolls: 60
   max_pages_per_section: 30
@@ -227,109 +15,187 @@ capture:
   retry_attempts: 5
   retry_backoff_seconds: 10
   retry_max_backoff_seconds: 300
-output:
-  profile: data/profile.json
-  assets: data/assets
-  tex: tex/resume.tex
-  pdf: resume.pdf
-style:
-  # Place the profile in a separate left or right column on the first page.
-  profile_column_side: right
 
-  # true lets body text wrap beneath a right-side profile; false keeps full-height separate columns.
-  profile_column_wrap: false
+# Profile identity and the sections selected from the captured source.
+profile:
+  linkedin:
+    username: emmeowzing
 
-  # Limit body lines to this fraction of their available column/page width; 1.0 uses the full width.
-  text_wrap_width: 0.8
+  github:
+    username: emmeowzing
+    contributions:
+      enabled: true
+      months: 1
+      placement: profile
+      as_of: null
 
-  # Body baseline multiplier and paragraph separation in points; headings and sidebar retain their compact spacing.
-  line_height: 1.0
-  paragraph_spacing: 3
+  sections:
+    # Reorder entries; comment out a key to hide it. Missing/empty sections are skipped.
+    order:
+      - contact
+      - about
+      # - featured
+      # - activity
+      - experience
+      - education
+      # - services
+      # - career-breaks
+      # - certifications
+      # - volunteering-experiences
+      - projects
+      - publications
+      # - patents
+      # - courses
+      # - honors
+      # - test-scores
+      - skills
+      # - recommendations
+      # - languages
+      # - organizations
+      # - interests
+      # - causes
 
-  # Optional About panel, with the same rounded corners as project tiles. null removes the background.
-  about_background: null
+    projects:
+      # Null includes all resolved project URLs; a Python regex can restrict the source.
+      source_url_filter: null
+      include:
+        - name: polyad
+        - name: hypothesis-helm
+        - name: composer
+        - name: resumeme
+        - name: orchidarium
+        - name: pass-operator
+      exclude:
+        - affiliation: HqO
+        - name: gitlabci-lint-pre-commit-hook
 
-  # Keep personal location and any explicitly labeled address out of the PDF and published profile snapshot.
-  display_location: false
+    experience:
+      disable:
+        - company: astrivant
+        - company: Tiger Lily Plants LLC.
+        - title: Founder
+          company: PremiScale
+      last_years: 5
+      since: '2021-08-01'
+      as_of: null
+      reflow_soft_breaks: true
+      subheadings:
+        - Responsibilities
+        - Key responsibilities
+        - Technologies
+        - Projects
+        - Skills
+        - Achievements
+        - Key achievements
+        - Accomplishments
+        - Highlights
+        - Summary
+        - Duties
 
-  # Show the captured LinkedIn headline or optional generated portrait summary; independent of About and the current role.
-  show_headline: false
+    education:
+      disable:
+        - school: Rochester Institute of Technology
 
-  # Sidebar company/logo/title: null uses the latest visible Experience role; true ignores its filters; false hides the block.
-  display_current_position: null
+# Resume compilation inputs, generated paths, and visual presentation.
+document:
+  output:
+    profile: data/profile.json
+    assets: data/assets
+    tex: tex/resume.tex
+    pdf: resume.pdf
 
-  # null uses the base style below; set tiger to apply the matching overrides in themes.
-  theme: tiger
+  style:
+    profile_column_side: right
+    profile_column_wrap: false
+    text_wrap_width: 0.88
+    profile_column_text_wrap_width: 1.0
+    line_height: 1.0
+    paragraph_spacing: 3
+    about_text_indent: 8
+    about_background: null
+    display_location: false
+    show_headline: false
+    display_current_position: null
+    theme: tiger
+    paper: letter
+    accent: '245135'
+    skill_colors: ['363636', '777777']
+    background: FFFFFF
+    font_size: 10
+    ink: '363636'
+    entry_color: '363636'
+    company_font_size: 13
+    company_color: '191919'
+    show_header_photo: false
+    display_profile_photo: false
+    show_table_of_contents: true
+    highlight_job_subheadings: true
+    show_connection_count: false
+    show_connection_link: false
+    display_birthday: false
+    display_phone: false
+    display_websites: false
+    website_icon: null
+    skills_word_cloud: true
+    skills_allow_vertical: true
+    skills_size_legend: false
+    themes:
+      tiger:
+        accent: '245135'
+        ink: '363636'
+        name_color: '6B2737'
+        heading_color: 'A44813'
+        entry_color: '363636'
+        company_color: '6B2737'
+        skill_colors: ['3B1F16', 'D77A2A']
 
-  # US Letter (8.5 x 11 inches); set a4 for ISO A4.
-  paper: letter
+  template: null
 
-  # Deep plant green identifies clickable text; neutral headings use size and weight for hierarchy.
-  accent: '245135'
-  skill_colors: ['777777', '363636']
-  background: FFFFFF
-  font_size: 10
+# External publication targets and release follow-up actions.
+publishing:
+  linkedin:
+    resume:
+      publish: true
+      replace_existing: true
+      share_with_recruiters: true
+    ownership:
+      update_about: true
+      repository: null
+      releases_url: null
 
-  # Soft charcoal for normal text and bold entry titles on white paper.
-  ink: '363636'
-  entry_color: '363636'
+  readme:
+    mode: resume
+    output: docs/FORK_EXAMPLE.md
+    introduction: null
 
-  # Company names stand above body subheadings and role titles; linked names keep this color and remain clickable.
-  company_font_size: 13
-  company_color: '191919'
+  pages:
+    enabled: true
+    path: /
+    custom_domain: resume.tiger-lily-plants.com
 
-  # Set true to display the cover/background photo independently of the portrait.
-  show_header_photo: false
-
-  # Display the round profile portrait in the first-page profile column.
-  display_profile_photo: false
-
-  # Link visible sections beneath the LinkedIn profile link in the first-page profile column.
-  show_table_of_contents: true
-
-  # Bold job subsection labels with a small gap above them. False displays those labels as ordinary text.
-  highlight_job_subheadings: true
-
-  # Optional connection metadata below the LinkedIn profile link. Enable either or both.
-  show_connection_count: false
-  show_connection_link: false
-
-  # Display the birthday only when Contact is enabled (uncomment contact in section_order).
-  display_birthday: false
-
-  # Keep phone separate from Website visibility; Email remains visible whenever Contact is enabled.
-  display_phone: false
-
-  # Captured Website fields (such as linktr.ee) are hidden independently of LinkedIn, Email, and GitHub.
-  display_websites: false
-
-  # Optional local image path or direct public image/favicon URL, e.g. https://example.org/favicon.ico.
-  website_icon: null
-
-  # Size the top 20 skills by references + 2 * endorsements; skill_colors runs from 0% to 100% of the highest displayed count.
-  skills_word_cloud: true
-
-  # Mix vertical and horizontal labels in the cloud; false keeps every label horizontal.
-  skills_allow_vertical: true
-
-  # Show small, medium, and large 'a' examples below the endorsement color bar; disabled by default.
-  skills_size_legend: false
-
-  # Each named theme can override any presentation field above, or the text/cloud colors below.
-  # Theme fields win over base style fields; omitted fields keep their base values.
-  themes:
-    tiger:
-
-      # Profile/company names: burgundy; section headings: burnt orange; role titles and body: soft charcoal.
-      # Green marks links; skill colors progress from warm gray through burnt orange to deep burgundy with endorsements.
-      # Source and palette roles: docs/themes.md
-      accent: '245135'
-      ink: '363636'
-      name_color: '6B2737'
-      heading_color: 'A44813'
-      entry_color: '363636'
-      company_color: '6B2737'
-      skill_colors: ['827C76', 'B45A24', '943B32', '57182E']
-
-# Optional exact template override; otherwise the package template is used.
-template: null
+# Optional AI-assisted generation and employer-specific resume variants.
+automation:
+  codex:
+    enabled: false
+    model: gpt-6-astra
+    reasoning_effort: low
+    about_max_words: 100
+    headline_max_words: 18
+    context: ''
+    skills:
+      enabled: false
+      publish: false
+      max_skills: 20
+      context: ''
+    companies: []
+    # companies:
+    #   - username: example-company
+    #     job_url: https://www.linkedin.com/jobs/view/1234567890/
+    #     context: Emphasize platform reliability and developer tooling.
+    #     company_context: ''
+    #     job_context: ''
+    #     overrides:
+    #       document: {style: {display_current_position: false}}
+    #       profile:
+    #         sections: {experience: {disable: [], since: '2020-06-01'}}
+    #       automation: {codex: {about_max_words: 70}}

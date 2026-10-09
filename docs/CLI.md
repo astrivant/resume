@@ -150,7 +150,7 @@ when it exits, so repeated calls do not duplicate records.
 ### resumeme capture
 
 Open Firefox or Chrome, wait for authentication, and save the expanded profile
-and downloaded assets to `output.profile` and `output.assets`. Capture saves inputs
+and downloaded assets to `document.output.profile` and `document.output.assets`. Capture saves inputs
 only; run `resumeme render` to generate and clean TeX locally, or `resumeme build`
 to compile the PDF. Interactive login waits until you finish. `--headless` requires
 `LINKEDIN_USERNAME` (email/phone) and `LINKEDIN_PASSWORD`. The same username variable accepts public usernames and
@@ -262,7 +262,7 @@ options:
 ### resumeme enrich
 
 Read the saved profile, discover links in its text, resolve remote destinations,
-and cache previews and images. Saves the enriched snapshot to `output.profile`.
+and cache previews and images. Saves the enriched snapshot to `document.output.profile`.
 This command uses network requests and does not launch a login browser. Warnings
 follow the same diagnostic/acceptance behavior as `capture`.
 
@@ -286,7 +286,7 @@ options:
 ### resumeme validate
 
 Validate the configuration and saved profile schema, require the snapshot owner
-to match `linkedin.username`, and reject capture warnings unless
+to match `profile.linkedin.username`, and reject capture warnings unless
 `--allow-incomplete` is set. Prints the profile name and section count on success.
 This command does not compile a PDF or check remote links.
 
@@ -346,7 +346,7 @@ options:
 ### resumeme summary-prompt
 
 Prepare `.cache/codex/prompt.txt` and `schema.json` from visible profile evidence.
-Requires `codex.enabled: true` and a complete snapshot. This command prepares
+Requires `automation.codex.enabled: true` and a complete snapshot. This command prepares
 inputs; the Codex CLI or CI action performs generation separately.
 
 `--companies` also acquires configured company/job context and writes a prompt,
@@ -378,7 +378,7 @@ options:
 
 ### resumeme render
 
-Generate `output.tex` (default `tex/resume.tex`), stage its image assets, and
+Generate `document.output.tex` (default `tex/resume.tex`), stage its image assets, and
 write skill scores from the saved snapshot. Does not invoke the LaTeX compiler.
 
 Pass `--summary` to apply a generated summary explicitly. Pass
@@ -388,8 +388,8 @@ Each selected response must match its owner and source evidence.
 
 When GitHub contributions are enabled, rendering fetches their calendar unless
 `--github-calendar` supplies captured JSON. The saved calendar must match
-`github.username`, `github.contributions.months`, and
-`github.contributions.as_of`; set `as_of` to its end date for an offline replay.
+`profile.github.username`, `profile.github.contributions.months`, and
+`profile.github.contributions.as_of`; set `as_of` to its end date for an offline replay.
 
 ```bash
 resumeme render
@@ -416,14 +416,14 @@ options:
                         additionally
   --github-calendar GITHUB_CALENDAR
                         Reuse captured calendar JSON instead of fetching GitHub; match
-                        github.contributions.as_of
+                        profile.github.contributions.as_of
 ~~~
 
 </details>
 
 ### resumeme build
 
-Render the same inputs and options as `render`, then compile `output.pdf`
+Render the same inputs and options as `render`, then compile `document.output.pdf`
 (default `resume.pdf`). Local source/package installs use Docker; the published
 runtime container uses its bundled TeX toolchain. The generic PDF is replaced
 only after successful compilation.
@@ -456,7 +456,7 @@ options:
                         additionally
   --github-calendar GITHUB_CALENDAR
                         Reuse captured calendar JSON instead of fetching GitHub; match
-                        github.contributions.as_of
+                        profile.github.contributions.as_of
 ~~~
 
 </details>
@@ -464,7 +464,7 @@ options:
 ### resumeme site
 
 Build `.cache/pages/` from the existing PDF and matching profile snapshot.
-`pages.path` selects the site's publication path. The command prepares files
+`publishing.pages.path` selects the site's publication path. The command prepares files
 without rebuilding the PDF or deploying to GitHub Pages.
 
 `--repository OWNER/REPO` selects the publishing repository. Otherwise the
@@ -575,9 +575,9 @@ options:
 ### resumeme skills-prompt
 
 Prepare `.cache/codex/skills/prompt.txt` and `schema.json` for a skill proposal.
-Requires `codex.skills.enabled: true`, a complete matching snapshot, and an
+Requires `automation.codex.skills.enabled: true`, a complete matching snapshot, and an
 existing `--tag` pointing to the checked-out commit. It is independent of the
-`codex.enabled` summary switch and does not invoke Codex itself.
+`automation.codex.enabled` summary switch and does not invoke Codex itself.
 
 ```bash
 resumeme skills-prompt --tag resume-2026-10
@@ -612,8 +612,8 @@ resumeme publish-skills --tag resume-2026-10 \
 ```
 
 `--dry-run` compares against the live profile and prints proposed additions
-without saving. For live additions, set `codex.skills.publish: true` and omit
-`--dry-run`. Both modes require `codex.skills.enabled: true` and the matching
+without saving. For live additions, set `automation.codex.skills.publish: true` and omit
+`--dry-run`. Both modes require `automation.codex.skills.enabled: true` and the matching
 tagged checkout; Actions additionally requires that tag's push event.
 `--headless` requires both LinkedIn login environment variables. A validated
 empty proposal completes without opening a browser.

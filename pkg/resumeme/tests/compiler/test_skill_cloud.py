@@ -318,8 +318,8 @@ def test_cloud_limits_display_to_twenty_skills_and_preserves_all_scores(tmp_path
     cloud.generate_from_frequencies.assert_called_once()
     assert factory.call_args.kwargs["max_words"] == 20
     color = factory.call_args.kwargs["color_func"]
-    assert color("Endorsed") == "#363636"
-    assert color("Referenced") == "#777777"
+    assert color("Endorsed") == "#777777"
+    assert color("Referenced") == "#363636"
     assert list(cloud.generate_from_frequencies.call_args.args[0]) == expected
     assert scores == original
 

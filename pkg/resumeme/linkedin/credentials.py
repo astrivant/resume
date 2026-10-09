@@ -86,13 +86,13 @@ def login_credentials(*, headless: bool, profile: str | None = None) -> tuple[st
             raise BrowserError("LINKEDIN_USERNAME must be a login email/phone, public username, or LinkedIn profile URL.") from error
 
         if profile is not None and public.casefold() != profile_username(profile).casefold():
-            raise BrowserError("LINKEDIN_USERNAME identifies a different profile from linkedin.username in the configuration.")
+            raise BrowserError("LINKEDIN_USERNAME identifies a different profile from profile.linkedin.username in the configuration.")
 
         if headless:
             raise BrowserError(
                 "LINKEDIN_USERNAME is a public profile identifier, which LinkedIn cannot use to sign in. "
                 "Set LINKEDIN_USERNAME to your login email or phone for --headless, or omit --headless to sign in manually. "
-                "Keep the public profile username or URL in linkedin.username."
+                "Keep the public profile username or URL in profile.linkedin.username."
             )
 
         # A profile slug is not a login credential; interactive users can complete the real form without replaying a password.

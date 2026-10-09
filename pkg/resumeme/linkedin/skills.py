@@ -272,7 +272,7 @@ def publish_skills(
         BrowserError: Opt-in, tag, evidence, owner, or authentication requirements are not met.
     """
     if not dry_run and not config.codex.skills.publish:
-        raise BrowserError("Set codex.skills.publish: true to opt in to live LinkedIn skill additions.")
+        raise BrowserError("Set automation.codex.skills.publish: true to opt in to live LinkedIn skill additions.")
 
     profile = load_profile(project_path(root, config.output.profile), config.linkedin.username)
     proposal = load_skill_suggestions(suggestions, profile, config, root, tag)

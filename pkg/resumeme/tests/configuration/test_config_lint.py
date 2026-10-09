@@ -15,6 +15,7 @@ import pytest
 import yaml
 
 from resumeme.cli import main
+from resumeme.config import load_config
 from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
@@ -74,6 +75,58 @@ def test_lint_defaults_to_selected_config(tmp_path: Path, monkeypatch: MonkeyPat
     assert main([*(["--config", name] if explicit else []), "config", "lint"]) == 0
 
 
+def test_grouped_schema_maps_to_runtime_paths(tmp_path: Path) -> None:
+    """
+    Translate grouped human-facing paths into the stable runtime configuration model.
+
+    Args:
+        tmp_path (Path): Isolated configuration directory.
+
+    Returns:
+        None: Profile, document, publication, and automation groups retain their values after loading.
+    """
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(
+        "profile:\n"
+        "  linkedin: {username: example-person}\n"
+        "  github: {username: example-github}\n"
+        "  sections:\n"
+        "    order: [about, experience]\n"
+        "    projects: {source_url_filter: null, include: [], exclude: []}\n"
+        "    experience: {since: '2020-06-01'}\n"
+        "document:\n"
+        "  output: {pdf: output/resume.pdf}\n"
+        "publishing:\n"
+        "  linkedin: {resume: {publish: true}}\n"
+        "automation:\n"
+        "  codex:\n"
+        "    enabled: true\n"
+        "    model: gpt-6-astra\n"
+        "    companies:\n"
+        "      - username: example-company\n"
+        "        job_url: https://example.com/jobs/platform\n"
+        "        overrides:\n"
+        "          profile:\n"
+        "            sections:\n"
+        "              experience: {since: '2020-06-01'}\n"
+        "          document:\n"
+        "            style: {font_size: 11}\n"
+        "          automation:\n"
+        "            codex: {about_max_words: 50}\n",
+        encoding="utf-8",
+    )
+
+    config = load_config(path)
+    assert config.linkedin.username == "example-person"
+    assert config.github.username == "example-github"
+    assert config.section_order == ["about", "experience"]
+    assert config.project_filter is None and config.projects.include == []
+    assert config.experience.since == "2020-06-01"
+    assert config.output.pdf == "output/resume.pdf"
+    assert config.linkedin.resume.publish is True
+    assert config.codex.enabled is True and config.codex.model == "gpt-6-astra"
+
+
 @pytest.mark.parametrize(
     "invalid",
     [
@@ -83,6 +136,7 @@ def test_lint_defaults_to_selected_config(tmp_path: Path, monkeypatch: MonkeyPat
         "linkedin: {username: example-person}\nstyle: {theme: unknown}\n",
         "linkedin: {username: example-person}\ncodex:\n  companies:\n    - username: example\n"
         "      job_url: https://www.linkedin.com/jobs/view/123/\n      overrides:\n        style: {font_size: 9}\n",
+        "linkedin: {username: example-person}\nprofile:\n  linkedin: {username: another-person}\n",
     ],
 )
 def test_lint_reports_all_failed_files_and_continues(tmp_path: Path, capsys: CaptureFixture[str], invalid: str) -> None:

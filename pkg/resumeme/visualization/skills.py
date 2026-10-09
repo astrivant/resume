@@ -203,7 +203,7 @@ def render_skill_cloud(
     scores: dict[str, SkillScore],
     directory: Path,
     *,
-    colors: tuple[str, ...] = ("777777", "363636"),
+    colors: tuple[str, ...] = ("363636", "777777"),
     background: str = "FFFFFF",
     allow_vertical: bool = False,
 ) -> str | None:
@@ -290,5 +290,5 @@ def render_skill_cloud(
             return f"assets/{name}"
 
     raise RenderingError(
-        "The skill cloud could not fit every selected label. Set style.skills_word_cloud: false to render the complete text list."
+        "The skill cloud could not fit every selected label. Set document.style.skills_word_cloud: false to render the complete text list."
     )

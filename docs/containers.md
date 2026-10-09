@@ -43,7 +43,7 @@ networking as well. No nested Docker daemon or host Docker socket is required.
 
 If the optional GitHub graph is enabled, either remove `--network=none` to acquire
 public activity or append `--github-calendar tex/github-contributions.json` after
-`build` and pin `github.contributions.as_of` to that saved calendar's end date.
+`build` and pin `profile.github.contributions.as_of` to that saved calendar's end date.
 The TeX compiler itself never needs network access. See
 [calendar configuration](README.md#github-contribution-graph).
 

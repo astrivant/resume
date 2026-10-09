@@ -92,11 +92,11 @@ resumeme publish-resume --pdf .cache/publication/resume.pdf --dry-run
 resumeme publish-resume --pdf .cache/publication/resume.pdf
 ```
 
-`--dry-run` validates the PDF, signs in, confirms ownership of `linkedin.username`,
+`--dry-run` validates the PDF, signs in, confirms ownership of `profile.linkedin.username`,
 and checks the upload form and any requested recruiter-sharing override without
 changing LinkedIn. It works with publication disabled and prints the requested
 sharing state when an override is set. The live command requires
-`linkedin.resume.publish: true`. Local use
+`publishing.linkedin.resume.publish: true`. Local use
 does not independently verify Cosign signatures or require a Git tag; the CI job
 performs those checks before invoking it.
 

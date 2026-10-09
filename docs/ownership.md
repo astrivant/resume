@@ -27,7 +27,7 @@ linkedin:
 - `update_about`: opt in to the live update after a signed tag release. Defaults
   to `false`; capture, rendering, and monthly refreshes do not edit your profile.
 - `repository`: `OWNER/REPO`, or `null` to use `GITHUB_REPOSITORY` in Actions and
-  the GitHub `origin` remote locally. It is independent of `github.username`.
+  the GitHub `origin` remote locally. It is independent of `profile.github.username`.
 - `releases_url`: optional HTTPS short link that **you configure to redirect to
   your releases page**. Resumeme publishes it verbatim; it does not create or
   verify the redirect. `null` uses the repository's full GitHub releases URL.

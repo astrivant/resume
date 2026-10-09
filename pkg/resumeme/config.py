@@ -5,6 +5,7 @@ Load a strict configuration with paths anchored to its own directory.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from copy import deepcopy
 from importlib.resources import files
 from pathlib import Path
@@ -150,6 +151,117 @@ def _merge_config(base: object, override: object) -> object:
     return deepcopy(override)
 
 
+def _normalize_config(raw: object) -> object:
+    """
+    Translate the human-facing hierarchical schema into the immutable runtime model.
+
+    Args:
+        raw (object): YAML data using the current grouped layout or the legacy flat layout.
+
+    Returns:
+        object: A flat, backwards-compatible mapping for the existing typed model.
+
+    Raises:
+        ConfigurationError: A grouped path and its legacy equivalent are both supplied.
+    """
+    if not isinstance(raw, Mapping):
+        return raw
+
+    normalized = deepcopy(dict(raw))
+
+    def assign(name: str, value: object) -> None:
+        """
+        Assign one migrated field without allowing two sources of truth.
+
+        Args:
+            name (str): Flat runtime field receiving the grouped value.
+            value (object): Value translated from the grouped configuration.
+
+        Returns:
+            None: The enclosing normalizer is updated in place.
+
+        Raises:
+            ConfigurationError: The legacy field is already present.
+        """
+        if name in normalized:
+            raise ConfigurationError(f"Use only one configuration path for {name}; do not mix grouped and legacy keys.")
+        normalized[name] = value
+
+    grouped_profile = normalized.pop("profile", None)
+    grouped_document = normalized.pop("document", None)
+    grouped_publishing = normalized.pop("publishing", None)
+    grouped_automation = normalized.pop("automation", None)
+
+    if isinstance(grouped_profile, Mapping):
+        if "linkedin" in grouped_profile:
+            linkedin = grouped_profile["linkedin"]
+            if isinstance(linkedin, Mapping) and "username" in linkedin:
+                assign("linkedin", {"username": linkedin["username"]})
+            else:
+                assign("linkedin", linkedin)
+
+        if "github" in grouped_profile:
+            assign("github", grouped_profile["github"])
+
+        sections = grouped_profile.get("sections")
+
+        if isinstance(sections, Mapping):
+            if "order" in sections:
+                assign("section_order", sections["order"])
+
+            for name in ("experience", "education"):
+                if name in sections:
+                    assign(name, sections[name])
+
+            if "projects" in sections:
+                projects = sections["projects"]
+                if isinstance(projects, Mapping):
+                    projects = dict(projects)
+                    if "source_url_filter" in projects:
+                        assign("project_filter", projects.pop("source_url_filter"))
+                assign("projects", projects)
+
+    if isinstance(grouped_document, Mapping):
+        for name in ("output", "style", "template"):
+            if name in grouped_document:
+                assign(name, grouped_document[name])
+
+    publishing_linkedin: dict[str, object] = {}
+
+    if isinstance(grouped_publishing, Mapping):
+        if "linkedin" in grouped_publishing:
+            linked = grouped_publishing["linkedin"]
+            if isinstance(linked, Mapping):
+                publishing_linkedin.update(linked)
+            else:
+                publishing_linkedin = {"resume": linked}
+
+        for name in ("readme", "pages"):
+            if name in grouped_publishing:
+                assign(name, grouped_publishing[name])
+
+    if isinstance(grouped_profile, Mapping) and isinstance(grouped_profile.get("linkedin"), Mapping):
+        profile_linkedin = grouped_profile["linkedin"]
+        for name in ("resume", "ownership"):
+            if name in profile_linkedin:
+                publishing_linkedin[name] = profile_linkedin[name]
+
+    if publishing_linkedin:
+        normalized.setdefault("linkedin", {})
+
+        if not isinstance(normalized["linkedin"], Mapping):
+            raise ConfigurationError("The grouped LinkedIn settings require a mapping at profile.linkedin.")
+
+        merged_linkedin = dict(normalized["linkedin"])
+        merged_linkedin.update(publishing_linkedin)
+        normalized["linkedin"] = merged_linkedin
+
+    if isinstance(grouped_automation, Mapping) and "codex" in grouped_automation:
+        assign("codex", grouped_automation["codex"])
+
+    return normalized
+
+
 def company_config(config: Config, target: CompanyTarget, *, root: Path | None = None) -> Config:
     """
     Resolve a job's partial configuration and validate its isolated output contract.
@@ -167,8 +279,18 @@ def company_config(config: Config, target: CompanyTarget, *, root: Path | None =
         ConfigurationError: Merged settings have incompatible dates, themes, or paths.
     """
     schema = json.loads(files(AST_PACKAGE).joinpath(CONFIG_SCHEMA).read_text(encoding="utf-8"))
-    overrides_schema = {"$ref": "#/properties/codex/properties/companies/items/properties/overrides", "properties": schema["properties"]}
+    # Keep the grouped override schema authoritative for its partial profile/document/automation maps.
+    # The compatibility properties below resolve legacy `$ref` targets without reapplying the complete
+    # top-level `profile` schema, whose required LinkedIn identity is intentionally global.
+    compatibility_properties = {
+        name: value for name, value in schema["properties"].items() if name not in {"profile", "document", "publishing", "automation"}
+    }
+    overrides_schema = {
+        "$ref": "#/properties/codex/properties/companies/items/properties/overrides",
+        "properties": compatibility_properties,
+    }
     Draft202012Validator(overrides_schema, format_checker=FormatChecker()).validate(target.overrides)
+    normalized_overrides = _normalize_config(target.overrides)
 
     # Each variant shares the capture but owns its output paths; nested targets must not recurse into another matrix.
     isolated = evolve(
@@ -180,7 +302,7 @@ def company_config(config: Config, target: CompanyTarget, *, root: Path | None =
     # Omit absent attrs fields, including sparse selector keys; explicit nulls in the partial mapping remain meaningful.
     # Normalize attrs tuples into JSON arrays before applying the same schema used for YAML inputs.
     inherited = asdict(isolated, filter=lambda attribute, value: value is not None)
-    merged = _merge_config(json.loads(json.dumps(inherited)), target.overrides)
+    merged = _merge_config(json.loads(json.dumps(inherited)), normalized_overrides)
     return _parse_config(merged, (root or Path.cwd()) / "resumeme.config.yaml", validate_companies=False)
 
 
@@ -200,8 +322,12 @@ def _parse_config(raw: object, path: Path, *, validate_companies: bool) -> Confi
         jsonschema.ValidationError: A field or raw value violates the configuration schema.
         ConfigurationError: Settings conflict with each other or escape the configuration directory.
     """
-    # Validate raw types before cattrs can coerce them, including real calendar dates for the job window.
+    # Validate the public grouped layout before flattening it into the runtime model.
     schema = json.loads(files(AST_PACKAGE).joinpath(CONFIG_SCHEMA).read_text(encoding="utf-8"))
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
+    raw = _normalize_config(raw)
+
+    # Validate the normalized values again so legacy and grouped inputs share every runtime constraint.
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(raw)
     converter = cattrs.Converter(forbid_extra_keys=True)
     converter.register_structure_hook_func(lambda target_type: target_type is object, _override_value)
@@ -209,25 +335,25 @@ def _parse_config(raw: object, path: Path, *, validate_companies: bool) -> Confi
 
     # A publish opt-in must have a corresponding proposal producer.
     if config.codex.skills.publish and not config.codex.skills.enabled:
-        raise ConfigurationError("codex.skills.publish requires codex.skills.enabled.")
+        raise ConfigurationError("automation.codex.skills.publish requires automation.codex.skills.enabled.")
 
     # Validated ISO dates sort chronologically; reject reversed explicit bounds before any capture or rendering work.
     if config.experience.since and config.experience.as_of and config.experience.since > config.experience.as_of:
-        raise ConfigurationError("experience.since must be on or before experience.as_of.")
+        raise ConfigurationError("profile.sections.experience.since must be on or before profile.sections.experience.as_of.")
 
     # Distinct URLs for the same LinkedIn job can differ only in tracking parameters; never let them overwrite one output.
     company_keys = [company.key for company in config.codex.companies]
 
     if len(company_keys) != len(set(company_keys)):
-        raise ConfigurationError("codex.companies must select distinct company/job pairs.")
+        raise ConfigurationError("automation.codex.companies must select distinct company/job pairs.")
 
     # Contribution ownership is explicit: never infer a GitHub account from the LinkedIn username or a repository owner.
     if config.github.contributions.enabled and config.github.username is None:
-        raise ConfigurationError("Set github.username before enabling github.contributions.")
+        raise ConfigurationError("Set profile.github.username before enabling profile.github.contributions.")
 
     # Reject selector typos even for validation-only commands; themes are user-defined, not a hard-coded registry.
     if config.style.theme is not None and config.style.theme not in config.style.themes:
-        raise ConfigurationError(f"Unknown style.theme {config.style.theme!r}; define it under style.themes or use null.")
+        raise ConfigurationError(f"Unknown document.style.theme {config.style.theme!r}; define it under document.style.themes or use null.")
 
     # Validate paths and URL syntax without reading files or making requests during configuration loading.
     icons = [config.style.website_icon, *(theme.get("website_icon") for theme in config.style.themes.values())]
@@ -243,7 +369,7 @@ def _parse_config(raw: object, path: Path, *, validate_companies: bool) -> Confi
                 valid = False
 
             if not valid:
-                raise ConfigurationError("style.website_icon requires a public HTTP(S) image URL on a standard port.")
+                raise ConfigurationError("document.style.website_icon requires a public HTTP(S) image URL on a standard port.")
         else:
             project_path(path.resolve().parent, icon)
 
@@ -261,7 +387,7 @@ def _parse_config(raw: object, path: Path, *, validate_companies: bool) -> Confi
 
     # Generated Markdown must not replace the configuration needed by the next publication.
     if project_path(path.resolve().parent, config.readme.output) == path.resolve():
-        raise ConfigurationError("readme.output must not replace the configuration file.")
+        raise ConfigurationError("publishing.readme.output must not replace the configuration file.")
 
     # Fail invalid partials during ordinary config validation, before network acquisition or any target PDF can be replaced.
     if validate_companies:

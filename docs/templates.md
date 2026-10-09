@@ -1,6 +1,6 @@
 # Template interface
 
-Set `template` in `resumeme.config.yaml` to a project-relative Jinja file.
+Set `document.template` in `resumeme.config.yaml` to a project-relative Jinja file.
 Rendering uses strict undefined-variable checks and these delimiters:
 
 - Expressions: `((( value )))`
@@ -14,13 +14,13 @@ Rendering uses strict undefined-variable checks and these delimiters:
 | `profile` | Filtered profile with consolidated projects, staged image paths, and sections in configured display order |
 | `style` | Effective style after theme overrides |
 | `skill_cloud` | Relative PNG path, or `None` |
-| `summary_headline` | Validated generated text beneath the portrait, or an empty string when absent or `style.show_headline` is false |
+| `summary_headline` | Validated generated text beneath the portrait, or an empty string when absent or `document.style.show_headline` is false |
 | `connection_count`, `connection_url` | Enabled captured values, otherwise empty strings |
 | `github_username` | Configured public account, or `None` |
 | `contributions` | Validated `ContributionCalendar` with `username`, `start`, `end`, `days`, `weeks`, and `total`, or `None` |
 | `contribution_colors` | GitHub light-theme hex colors indexed by intensity level 0 through 4 |
 | `contribution_placement` | `profile` or `appendix` |
-| `contact_enabled` | Whether `contact` is included in `section_order`; controls the identity column's contact and social block |
+| `contact_enabled` | Whether `contact` is included in `profile.sections.order`; controls the identity column's contact and social block |
 | `website_icon` | Staged PNG path for the optional website icon, or `None` when unused; use this instead of the configured path or public URL |
 | `current_position` | Selected sidebar employment (`title`, `company`, optional staged `logo`), or `None`; independent of body Experience visibility |
 | `section_navigation` | `(anchor, section)` pairs in display order with unique TeX-safe anchors |
@@ -29,7 +29,7 @@ Filters return presentation values without changing the captured snapshot.
 For each calendar day, `contributions.cell(day)` returns its zero-based week,
 Sunday-first weekday, and exact GitHub activity URL. Escape that URL with `url`.
 Disabled sections and jobs are excluded before templates run.
-`section_order` applies after generated and empty sections have settled, so both
+`profile.sections.order` applies after generated and empty sections have settled, so both
 `profile.sections` and `section_navigation` have the same sequence. The packaged
 template shares its tiled row renderer between Projects and Featured.
 

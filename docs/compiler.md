@@ -37,8 +37,8 @@ It neither mutates caller-owned collections nor acquires external state. Date
 windows need a pinned `as_of` or an explicit reference date. Orchestration resolves
 UTC once through `passes/context.py` before filtering, evidence hashing, and
 calendar validation. `render_profile(..., today=date(...))` supports deterministic
-replay in Python; CLI callers can pin `experience.as_of` and
-`github.contributions.as_of` in YAML. Unbound date windows called directly through
+replay in Python; CLI callers can pin `profile.sections.experience.as_of` and
+`profile.github.contributions.as_of` in YAML. Unbound date windows called directly through
 the pure helpers raise a domain-specific error instead of reading the clock.
 Identity-only exclusions do not imply a date window.
 

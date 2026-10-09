@@ -87,7 +87,7 @@ def load_summary(path: Path, *, username: str, source_digest: str, settings: Cod
         jsonschema.ValidationError: The artifact does not satisfy the summary contract.
     """
     if not settings.enabled:
-        raise SummaryError("Set codex.enabled: true before supplying a generated summary.")
+        raise SummaryError("Set automation.codex.enabled: true before supplying a generated summary.")
 
     raw = json.loads(path.read_text(encoding="utf-8"))
     Draft202012Validator(summary_schema()).validate(raw)

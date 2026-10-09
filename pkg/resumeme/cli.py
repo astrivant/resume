@@ -104,7 +104,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             command.add_argument(
                 "--github-calendar",
                 type=Path,
-                help="Reuse captured calendar JSON instead of fetching GitHub; match github.contributions.as_of",
+                help="Reuse captured calendar JSON instead of fetching GitHub; match profile.github.contributions.as_of",
             )
 
         if name == "summary-prompt":
@@ -371,7 +371,7 @@ def _run(args: argparse.Namespace) -> int:
 
         if args.github_calendar:
             if not config.github.contributions.enabled:
-                raise ConfigurationError("Enable github.contributions before supplying --github-calendar.")
+                raise ConfigurationError("Enable profile.github.contributions before supplying --github-calendar.")
 
             contributions = load_calendar(project_path(root, str(args.github_calendar)))
         elif config.github.contributions.enabled:

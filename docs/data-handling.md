@@ -30,9 +30,9 @@ content is not necessarily public content. Recommendations and other profile
 sections can also identify third parties.
 
 **Most visibility settings are presentation filters, not source-data redaction.**
-Removing a section from `section_order`, excluding a job or school, or disabling
+Removing a section from `profile.sections.order`, excluding a job or school, or disabling
 the birthday or profile photo does not remove it from `data/profile.json` or its
-referenced assets. `style.display_location: false` is an explicit exception: it
+referenced assets. `document.style.display_location: false` is an explicit exception: it
 removes recognized profile-location lines and labeled Address fields from the
 saved snapshot, CI capture artifact, and PDF. Experience locations remain. Other
 captured fields remain subject to the snapshot review below. A later automatic
@@ -54,7 +54,7 @@ encryption, an access control, or protection against `git add -f`.
 
 | Credential | Consumer and purpose | Exposure boundary |
 | --- | --- | --- |
-| `LINKEDIN_USERNAME`, `LINKEDIN_PASSWORD` | Browser capture and enabled LinkedIn publishers; submitted to LinkedIn's login form when needed | Present in the command's environment and process memory. Headless commands require both even when restoring a session. The public profile slug belongs in `linkedin.username`; an email/phone is needed for unattended login. |
+| `LINKEDIN_USERNAME`, `LINKEDIN_PASSWORD` | Browser capture and enabled LinkedIn publishers; submitted to LinkedIn's login form when needed | Present in the command's environment and process memory. Headless commands require both even when restoring a session. The public profile slug belongs in `profile.linkedin.username`; an email/phone is needed for unattended login. |
 | `RESUMEME_CACHE_PRIVATE_KEY`, `RESUMEME_CACHE_KEY_PASSWORD` | Session wrapper restores and creates encrypted browser archives | The same wrapper can access the encrypted private PEM and its password. It removes the three cache-key variables from the launched `resumeme` subprocess environment; this is not isolation from the wrapper, runner administrator, or other code running as that user. |
 | `RESUMEME_CACHE_PUBLIC_KEY` | Cache encryption, signature verification, and cache-key fingerprint | Public key material, supplied as a secret for setup consistency. It cannot decrypt an archive or sign a valid replacement by itself. |
 | `OPENAI_API_KEY` | Upstream Codex action for enabled summaries or skill proposals | Passed to that action, which owns API authentication. Browser, signing, and publication credentials are not supplied to the model jobs. |
@@ -78,7 +78,7 @@ describes these controls and masking limits.
 | `resumeme.config.yaml` and overrides | Profile identifiers, presentation choices, company/job targets, and optional writing context | Usually committed. Treat context and target lists as publishable; never put passwords or tokens here. |
 | `.cache/firefox/`, `.cache/chrome/` | Dedicated browser profile for login reuse, potentially including session cookies, storage, history, preferences, and browser-managed databases | Ordinary CLI capture, including direct `--headless`, retains it across commands without resumeme encryption. Profile directory permissions are `0700`; the current OS user and privileged processes can read it. No automatic expiry or deletion. |
 | `.cache/capture/` | Expanded profile/detail HTML, failure screenshots, driver logs, and recoverable profile JSON for diagnosis | Ordinary local capture retains plaintext until removed. These files can contain account details or page tokens beyond the parsed snapshot. On a warning-bearing capture/enrichment, the CLI also writes `.cache/capture/profile.json`. |
-| `data/profile.json`, `data/assets/` | Accepted profile, original/resolved links, and downloaded images for reproducible builds | Written after capture/enrichment; retained until replaced or deleted. `style.display_location: false` removes recognized personal location/address fields; other hidden sections remain. No application encryption. Downloads can leave additional local assets after failure. |
+| `data/profile.json`, `data/assets/` | Accepted profile, original/resolved links, and downloaded images for reproducible builds | Written after capture/enrichment; retained until replaced or deleted. `document.style.display_location: false` removes recognized personal location/address fields; other hidden sections remain. No application encryption. Downloads can leave additional local assets after failure. |
 | `tex/`, `.cache/build/`, `resume.pdf`, `single-origin/` | Generated source/assets, compiler logs, PDF, and optional employer variants | Generated for rendering; retain personal text and images. Compiler scratch directories are removed on normal exit, but TeX, logs, and final outputs remain. Configured output paths can differ. |
 | `.cache/codex/` | Prompt/schema files, generated JSON, and employer/job evidence | Retained locally for generation and validation until removed. Contains personal prose and user context even when no API key is stored there. |
 | `.cache/ownership/about-before-*.txt`, `.cache/skills/before-*.json` | Original live About text or existing skill names, saved before a non-dry-run change for recovery | Plaintext backups with private temporary-file permissions, retained until removed. Also written in CI checkouts when those publishers make changes; not selected for artifact upload or removed by the session wrapper. |
@@ -273,8 +273,8 @@ scripts. Review package archives and build inputs before registry publication.
 
 ## Optional AI processing
 
-`codex.enabled` prepares summaries on main/tag runs; `codex.skills.enabled`
-independently prepares skill proposals on tag runs. `codex.skills.publish: false`
+`automation.codex.enabled` prepares summaries on main/tag runs; `automation.codex.skills.enabled`
+independently prepares skill proposals on tag runs. `automation.codex.skills.publish: false`
 only stops LinkedIn writes, not generation or API use. The reference config
 disables both generators; the author's active config may differ.
 
@@ -344,11 +344,11 @@ truth of résumé claims. Public log records can link multiple releases to one k
 See [Cosign signing defaults](https://github.com/sigstore/cosign/blob/v3.1.3/cmd/cosign/cli/options/sign.go)
 and [Rekor's immutable log](https://docs.sigstore.dev/logging/overview/).
 
-The independent write switches are `linkedin.ownership.update_about`,
-`codex.skills.publish`, and `linkedin.resume.publish`.
-`linkedin.resume.share_with_recruiters` is an optional account-setting override
+The independent write switches are `publishing.linkedin.ownership.update_about`,
+`automation.codex.skills.publish`, and `publishing.linkedin.resume.publish`.
+`publishing.linkedin.resume.share_with_recruiters` is an optional account-setting override
 during resume publication. When upload is enabled,
-`linkedin.resume.replace_existing: true` also deletes other saved resumes after
+`publishing.linkedin.resume.replace_existing: true` also deletes other saved resumes after
 the new file is confirmed. Review these before tagging: CI executes enabled
 writes without a separate interactive review of each change. Disabling them
 does not undo About edits, resume deletions, uploaded resumes, added skills, or

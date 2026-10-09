@@ -55,10 +55,10 @@ block: `Projects improved reliability` stays a sentence. For nested lists, use
 consistent indentation before the child marker where the editor preserves it;
 flat lists are the simplest option.
 
-Custom labels such as `Impact` can be added to `experience.subheadings`. That
+Custom labels such as `Impact` can be added to `profile.sections.experience.subheadings`. That
 array replaces the defaults, so retain the labels you still use.
-`style.highlight_job_subheadings` controls their emphasis, and
-`experience.reflow_soft_breaks` controls joining captured soft breaks in jobs.
+`document.style.highlight_job_subheadings` controls their emphasis, and
+`profile.sections.experience.reflow_soft_breaks` controls joining captured soft breaks in jobs.
 See [job text settings](README.md#job-text-and-subheadings) for the full example.
 
 ## Links, projects, and skills
@@ -70,7 +70,7 @@ See [job text settings](README.md#job-text-and-subheadings) for the full example
   roles and Featured can move into the consolidated Projects section with their
   captions. Repeated resolved destinations can merge into one project tile.
 - Check project filters if an item is missing. The default URL filter includes
-  GitHub projects; other sites require a broader `project_filter` or `null`.
+  GitHub projects; other sites require a broader `profile.sections.projects.source_url_filter` or `null`.
 - Keep skill entries in LinkedIn's Skills section. Mention technologies naturally
   when explaining your work; repeated tag-only rows make descriptions harder to
   read. Project skill/tag rows are omitted from tiles.

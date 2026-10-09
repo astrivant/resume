@@ -394,11 +394,13 @@ class StyleOverrides(TypedDict, total=False):
         profile_column_side (Literal["left", "right"]): First-page profile placement in a separate column.
         profile_column_wrap (bool): Allow body text beneath a right-side profile; False keeps separate first-page columns.
         text_wrap_width (float): Fraction of the available body-text width, independently of profile placement.
+        profile_column_text_wrap_width (float): Fraction of first-page column width; independent of later full-width body text.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
         line_height (float): Multiplier for the font's normal body-text baseline spacing.
         paragraph_spacing (float): Separation between body paragraphs in points.
+        about_text_indent (float): Left inset for About body text in points; the heading remains at the section margin.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile cover photo.
         display_profile_photo (bool): Whether to display the profile portrait.
@@ -429,11 +431,13 @@ class StyleOverrides(TypedDict, total=False):
     profile_column_side: Literal["left", "right"]
     profile_column_wrap: bool
     text_wrap_width: float
+    profile_column_text_wrap_width: float
     accent: str
     background: str
     about_background: str | None
     line_height: float
     paragraph_spacing: float
+    about_text_indent: float
     font_size: int
     show_header_photo: bool
     display_profile_photo: bool
@@ -470,11 +474,13 @@ class Style:
         profile_column_side (Literal["left", "right"]): First-page profile placement in a separate column.
         profile_column_wrap (bool): Allow body text beneath a right-side profile; disabled by default and ignored on the left.
         text_wrap_width (float): Fraction of available body-text width; 0.9 reserves the rightmost ten percent on every page.
+        profile_column_text_wrap_width (float): Fraction of first-page column width; 1.0 keeps the column at its full available width.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
         line_height (float): Multiplier for the font's normal body-text baseline spacing.
         paragraph_spacing (float): Separation between body paragraphs in points.
+        about_text_indent (float): Left inset for About body text in points; the heading remains at the section margin.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile's cover/background photo.
         display_profile_photo (bool): Display the profile portrait; enabled by default.
@@ -507,11 +513,13 @@ class Style:
     profile_column_side: Literal["left", "right"] = "left"
     profile_column_wrap: bool = False
     text_wrap_width: float = 0.9
+    profile_column_text_wrap_width: float = 1.0
     accent: str = "245135"
     background: str = "FFFFFF"
     about_background: str | None = None
     line_height: float = 1.0
     paragraph_spacing: float = 3.0
+    about_text_indent: float = 8.0
     font_size: int = 10
     show_header_photo: bool = True
     display_profile_photo: bool = True
@@ -535,7 +543,7 @@ class Style:
     entry_color: str = "363636"
     company_font_size: int = 13
     company_color: str = "191919"
-    skill_colors: tuple[str, ...] = ("777777", "363636")
+    skill_colors: tuple[str, ...] = ("363636", "777777")
     theme: str | None = None
     themes: dict[str, StyleOverrides] = field(factory=dict)
 

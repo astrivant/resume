@@ -44,7 +44,7 @@ poetry env use "$(brew --prefix python@3.13)/bin/python3.13"
 ```
 
 Copy [.config/resumeme.config.ref.yaml](../.config/resumeme.config.ref.yaml) to `resumeme.config.yaml`
-for a new owner, then set `linkedin.username`,
+for a new owner, then set `profile.linkedin.username`,
 [capture your profile](#local-capture), then follow [fork publication setup](automation.md#configure-a-fork).
 
 ## Configuration
@@ -52,7 +52,7 @@ for a new owner, then set `linkedin.username`,
 `resumeme.config.yaml` is the active user configuration. The checked-in copy contains
 the author's personal settings. Start a new fork by copying
 [.config/resumeme.config.ref.yaml](../.config/resumeme.config.ref.yaml) over it, then change
-`linkedin.username`. The reference lists package defaults and commented examples;
+`profile.linkedin.username`. The reference lists package defaults and commented examples;
 it is not loaded automatically or merged with the active config. Users must capture their own
 profile while signed in. Configuration and snapshot ownership are validated before
 rendering. All paths are relative to the configuration file, even when the command
@@ -61,40 +61,41 @@ runs from another directory. Unknown fields and paths escaping that directory fa
 `logging.level` defaults to `ERROR`. Logs use the OpenTelemetry SDK's JSON console
 format on stdout. `INFO` reports progress; `DEBUG` adds sanitized request and browser
 details. Override with `RESUMEME_LOG_LEVEL` or `resumeme --log-level DEBUG capture`.
-See [logging controls and record fields](CLI.md#logging).
+See [logging controls and record fields](CLI.md#logging). The complete grouped
+layout and legacy-path migration table are in [configuration layout](configuration-migration.md).
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
-| `linkedin.username` | Required | Public username or LinkedIn `/in/<username>/` URL, normalized to a slug; replace the reference placeholder |
-| `linkedin.resume.publish` | `false` | Upload the verified signed PDF to LinkedIn's saved application resumes after a tag release; [setup and recovery](linkedin-resume.md) |
-| `linkedin.resume.replace_existing` | `false` | After a confirmed upload, delete every other saved LinkedIn resume; the repository's personal config enables this |
-| `linkedin.resume.share_with_recruiters` | `null` | After upload, `true` enables recruiter resume-data sharing and `false` disables it; `null` preserves LinkedIn's current setting |
-| `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
-| `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
-| `codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after tag capture; live publication waits for the signed release; `false` skips generation and its API usage |
-| `codex.skills.publish` | `false` | Opt in to adding missing skills to LinkedIn; existing skills and endorsements are always retained |
-| `codex.skills.max_skills` | `20` | Maximum suggested skill names per tagged release |
-| `codex.skills.context` | Empty | Skill selection preferences; [generation and publishing instructions](skills.md) |
-| `linkedin.ownership.update_about` | `false` | Update live About with the public signing fingerprint after a signed release |
-| `linkedin.ownership.repository` | `null` | Release repository (`OWNER/REPO`); defaults to Actions context or local origin |
-| `linkedin.ownership.releases_url` | `null` | Optional HTTPS short link; otherwise use the repository releases page |
+| `profile.linkedin.username` | Required | Public username or LinkedIn `/in/<username>/` URL, normalized to a slug; replace the reference placeholder |
+| `publishing.linkedin.resume.publish` | `false` | Upload the verified signed PDF to LinkedIn's saved application resumes after a tag release; [setup and recovery](linkedin-resume.md) |
+| `publishing.linkedin.resume.replace_existing` | `false` | After a confirmed upload, delete every other saved LinkedIn resume; the repository's personal config enables this |
+| `publishing.linkedin.resume.share_with_recruiters` | `null` | After upload, `true` enables recruiter resume-data sharing and `false` disables it; `null` preserves LinkedIn's current setting |
+| `publishing.readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
+| `publishing.readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |
+| `automation.codex.skills.enabled` | `false` | Generate evidence-backed skill proposals after tag capture; live publication waits for the signed release; `false` skips generation and its API usage |
+| `automation.codex.skills.publish` | `false` | Opt in to adding missing skills to LinkedIn; existing skills and endorsements are always retained |
+| `automation.codex.skills.max_skills` | `20` | Maximum suggested skill names per tagged release |
+| `automation.codex.skills.context` | Empty | Skill selection preferences; [generation and publishing instructions](skills.md) |
+| `publishing.linkedin.ownership.update_about` | `false` | Update live About with the public signing fingerprint after a signed release |
+| `publishing.linkedin.ownership.repository` | `null` | Release repository (`OWNER/REPO`); defaults to Actions context or local origin |
+| `publishing.linkedin.ownership.releases_url` | `null` | Optional HTTPS short link; otherwise use the repository releases page |
 | `logging.level` | `ERROR` | Minimum severity for OpenTelemetry JSON logs on stdout; override with `RESUMEME_LOG_LEVEL` or `--log-level` |
-| `section_order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
-| `project_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
-| `projects.include` | `null` | Project filters with `name`, `affiliation`, or both; `null` keeps all projects, `[]` selects none |
-| `projects.exclude` | `[]` | Omit matching name/affiliation selectors; exclusions override `include` |
-| `experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
-| `experience.last_years` | `null` | Trailing N calendar years when `since` is unset; null keeps all dates |
-| `experience.since` | `null` | Inclusive fixed start date; overrides `last_years` when set |
-| `experience.as_of` | `null` | Quoted ISO date fixing the window endpoint; null uses today's UTC date |
-| `experience.reflow_soft_breaks` | `true` | Join wrapped job prose and bullet continuations; false retains captured line boundaries |
-| `experience.subheadings` | Built-in job labels | Complete standalone subsection labels; a supplied list replaces the defaults and `[]` disables recognition |
-| `education.disable` | `[]` | Selectors with `school`, `degree`, `major`, or a combination; matching education entries are omitted |
-| `github.username` | `null` | Public account used by the profile link and optional contribution graph |
-| `github.contributions.enabled` | `false` | Acquire public GitHub activity during `render` or `build` |
-| `github.contributions.months` | `1` | Trailing calendar months, from 1 through 12, including both boundary dates |
-| `github.contributions.placement` | `profile` | Below the GitHub link in the profile column, or `appendix` for a separate final page |
-| `github.contributions.as_of` | `null` | Quoted ISO end date; null uses today's UTC date |
+| `profile.sections.order` | All known section keys | Enabled sections in PDF and contents order; comment out a key to hide it |
+| `profile.sections.projects.source_url_filter` | GitHub source URLs | Python regex selecting Projects by resolved source URL; `null` includes all projects |
+| `profile.sections.projects.include` | `null` | Project filters with `name`, `affiliation`, or both; `null` keeps all projects, `[]` selects none |
+| `profile.sections.projects.exclude` | `[]` | Omit matching name/affiliation selectors; exclusions override `include` |
+| `profile.sections.experience.disable` | `[]` | Job selectors with `title`, `company`, or both; matching jobs are omitted |
+| `profile.sections.experience.last_years` | `null` | Trailing N calendar years when `since` is unset; null keeps all dates |
+| `profile.sections.experience.since` | `null` | Inclusive fixed start date; overrides `last_years` when set |
+| `profile.sections.experience.as_of` | `null` | Quoted ISO date fixing the window endpoint; null uses today's UTC date |
+| `profile.sections.experience.reflow_soft_breaks` | `true` | Join wrapped job prose and bullet continuations; false retains captured line boundaries |
+| `profile.sections.experience.subheadings` | Built-in job labels | Complete standalone subsection labels; a supplied list replaces the defaults and `[]` disables recognition |
+| `profile.sections.education.disable` | `[]` | Selectors with `school`, `degree`, `major`, or a combination; matching education entries are omitted |
+| `profile.github.username` | `null` | Public account used by the profile link and optional contribution graph |
+| `profile.github.contributions.enabled` | `false` | Acquire public GitHub activity during `render` or `build` |
+| `profile.github.contributions.months` | `1` | Trailing calendar months, from 1 through 12, including both boundary dates |
+| `profile.github.contributions.placement` | `profile` | Below the GitHub link in the profile column, or `appendix` for a separate final page |
+| `profile.github.contributions.as_of` | `null` | Quoted ISO end date; null uses today's UTC date |
 | `capture.browser` | `firefox` | `firefox` or `chrome` for capture, live profile updates, and saved resume uploads |
 | `capture.page_timeout_seconds` | `30` | Browser and media request timeout |
 | `capture.app_approval_timeout_seconds` | `900` | Headless wait for LinkedIn app approval, capped at 15 minutes; `0` disables waiting. Logs and the Actions summary include a sanitized run-correlation record. Code-entry MFA and CAPTCHA fail immediately |
@@ -104,97 +105,102 @@ See [logging controls and record fields](CLI.md#logging).
 | `capture.retry_backoff_seconds` | `10` | Initial exponential retry delay |
 | `capture.retry_max_backoff_seconds` | `300` | Maximum retry delay |
 | `capture.fetch_link_previews` | `true` | Resolve external links, record page titles, and download previews or icons |
-| `output.profile` | `data/profile.json` | Portable, validated profile snapshot |
-| `output.assets` | `data/assets` | Content-addressed PNG images |
-| `output.tex` | `tex/resume.tex` | Generated LaTeX source |
-| `output.pdf` | `resume.pdf` | Compiled PDF and CI commit destination |
-| `codex.enabled` | `false` | Enable optional generated About and portrait summaries; requires the `OPENAI_API_KEY` Actions secret |
-| `codex.context` | `''` | Additional background, target roles, audience, and tone supplied to Codex |
-| `codex.model` | `null` | Codex model override, or the pinned CLI's default |
-| `codex.reasoning_effort` | `null` | Reasoning level override; this repository selects `low` with `gpt-6-astra`. See [model selection](codex.md#model-selection) |
-| `codex.about_max_words` | `100` | Maximum generated About length, from 1 to 300 words |
-| `codex.headline_max_words` | `18` | Maximum portrait summary length, from 1 to 40 words |
-| `codex.companies` | `[]` | Company usernames and job URLs for additional tailored PDFs under `single-origin/`; see [company summaries](codex.md#single-origin-resumes) |
-| `style.profile_column_side` | `left` | Place the profile in a separate first-page column on the left or right |
-| `style.profile_column_wrap` | `false` | Allow body text beneath a right-side profile; ignored for the left-side layout |
-| `style.text_wrap_width` | `0.9` | Body text uses this fraction of its available column/page width; greater than 0 and at most 1 |
-| `style.paper` | `letter` | `letter` (8.5 x 11 inches) or `a4` |
-| `style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
-| `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
-| `style.about_background` | `null` | Optional six-digit hex About panel color, without `#`; uses project tile corners and padding |
-| `style.line_height` | `1.0` | Body baseline spacing multiplier, from `1` to `2`; `1.1` adds 10% space between lines |
-| `style.paragraph_spacing` | `3` | Space between body paragraphs and bullets in points, from `0` to `24` |
-| `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
-| `style.show_header_photo` | `true` | Display the cover/background photo; disabled in the author's personal config |
-| `style.display_profile_photo` | `true` | Display the round profile portrait in either first-page column; independent of the cover photo |
-| `style.show_headline` | `false` | Show the captured headline or generated portrait summary; independent of About and the current employment block |
-| `style.display_location` | `true` | Display the profile location and labeled personal address fields; false also removes them from the committed snapshot. Both checked-in configs opt out |
-| `style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page profile column |
-| `style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
-| `style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |
-| `style.show_connection_link` | `false` | Link the count, or a concise Connections label, to the captured connections page |
-| `style.display_birthday` | `false` | Show the birthday field when Contact is enabled |
-| `style.display_websites` | `false` | Show captured Website fields in Contact; independent of LinkedIn, Email, and GitHub |
-| `style.display_phone` | `true` | Show captured Phone fields in Contact; independent of Website fields, while Email remains available |
-| `style.website_icon` | `null` | Local image path relative to the config directory, or direct public image/favicon URL, beside enabled Website fields |
-| `style.display_current_position` | `null` | Sidebar company/logo/title: latest visible role; `true` uses the latest captured role regardless of filters, `false` hides it |
-| `style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
-| `style.skills_allow_vertical` | `false` | Allow mixed vertical and horizontal cloud labels; enabled in this repository |
-| `style.skills_size_legend` | `false` | Show character-size examples for 0, 1+, and 5+ endorsements beneath the cloud's color scale |
-| `style.ink` | `363636` | Six-digit hexadecimal body text color; soft charcoal by default |
-| `style.name_color` | `191919` | Six-digit hexadecimal profile name color |
-| `style.heading_color` | `191919` | Six-digit hexadecimal section heading color |
-| `style.entry_color` | `363636` | Six-digit hexadecimal entry heading color; matches body text by default |
-| `style.skill_colors` | `[777777, 363636]` | Ordered color stops from zero to maximum displayed endorsements |
-| `style.theme` | `null` | Optional name from `style.themes`; null uses the base style |
-| `style.themes` | `{}` | Inline partial style overrides; the reference config includes `tiger` |
-| `template` | `null` | Optional custom Jinja/LaTeX template |
+| `document.output.profile` | `data/profile.json` | Portable, validated profile snapshot |
+| `document.output.assets` | `data/assets` | Content-addressed PNG images |
+| `document.output.tex` | `tex/resume.tex` | Generated LaTeX source |
+| `document.output.pdf` | `resume.pdf` | Compiled PDF and CI commit destination |
+| `automation.codex.enabled` | `false` | Enable optional generated About and portrait summaries; requires the `OPENAI_API_KEY` Actions secret |
+| `automation.codex.context` | `''` | Additional background, target roles, audience, and tone supplied to Codex |
+| `automation.codex.model` | `null` | Codex model override, or the pinned CLI's default |
+| `automation.codex.reasoning_effort` | `null` | Reasoning level override; this repository selects `low` with `gpt-6-astra`. See [model selection](codex.md#model-selection) |
+| `automation.codex.about_max_words` | `100` | Maximum generated About length, from 1 to 300 words |
+| `automation.codex.headline_max_words` | `18` | Maximum portrait summary length, from 1 to 40 words |
+| `automation.codex.companies` | `[]` | Company usernames and job URLs for additional tailored PDFs under `single-origin/`; see [company summaries](codex.md#single-origin-resumes) |
+| `document.style.profile_column_side` | `left` | Place the profile in a separate first-page column on the left or right |
+| `document.style.profile_column_wrap` | `false` | Allow body text beneath a right-side profile; ignored for the left-side layout |
+| `document.style.text_wrap_width` | `0.9` | Body text on later full-width pages uses this fraction of its available width; greater than 0 and at most 1 |
+| `document.style.profile_column_text_wrap_width` | `1.0` | First-page column text uses this fraction independently; `1.0` keeps the column at its full available width |
+| `document.style.paper` | `letter` | `letter` (8.5 x 11 inches) or `a4` |
+| `document.style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
+| `document.style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
+| `document.style.about_background` | `null` | Optional six-digit hex About panel color, without `#`; uses project tile corners and padding |
+| `document.style.line_height` | `1.0` | Body baseline spacing multiplier, from `1` to `2`; `1.1` adds 10% space between lines |
+| `document.style.paragraph_spacing` | `3` | Space between body paragraphs and bullets in points, from `0` to `24` |
+| `document.style.about_text_indent` | `8` | Left inset for About body text in points; the heading remains at the normal section margin |
+| `document.style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
+| `document.style.show_header_photo` | `true` | Display the cover/background photo; disabled in the author's personal config |
+| `document.style.display_profile_photo` | `true` | Display the round profile portrait in either first-page column; independent of the cover photo |
+| `document.style.show_headline` | `false` | Show the captured headline or generated portrait summary; independent of About and the current employment block |
+| `document.style.display_location` | `true` | Display the profile location and labeled personal address fields; false also removes them from the committed snapshot. Both checked-in configs opt out |
+| `document.style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page profile column |
+| `document.style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
+| `document.style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |
+| `document.style.show_connection_link` | `false` | Link the count, or a concise Connections label, to the captured connections page |
+| `document.style.display_birthday` | `false` | Show the birthday field when Contact is enabled |
+| `document.style.display_websites` | `false` | Show captured Website fields in Contact; independent of LinkedIn, Email, and GitHub |
+| `document.style.display_phone` | `true` | Show captured Phone fields in Contact; independent of Website fields, while Email remains available |
+| `document.style.website_icon` | `null` | Local image path relative to the config directory, or direct public image/favicon URL, beside enabled Website fields |
+| `document.style.display_current_position` | `null` | Sidebar company/logo/title: latest visible role; `true` uses the latest captured role regardless of filters, `false` hides it |
+| `document.style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
+| `document.style.skills_allow_vertical` | `false` | Allow mixed vertical and horizontal cloud labels; enabled in this repository |
+| `document.style.skills_size_legend` | `false` | Show character-size examples for 0, 1+, and 5+ endorsements beneath the cloud's color scale |
+| `document.style.ink` | `363636` | Six-digit hexadecimal body text color; soft charcoal by default |
+| `document.style.name_color` | `191919` | Six-digit hexadecimal profile name color |
+| `document.style.heading_color` | `191919` | Six-digit hexadecimal section heading color |
+| `document.style.entry_color` | `363636` | Six-digit hexadecimal entry heading color; matches body text by default |
+| `document.style.skill_colors` | `[363636, 777777]` | Ordered color stops from zero to maximum displayed endorsements; this repository's bar runs dark to light |
+| `document.style.theme` | `null` | Optional name from `document.style.themes`; null uses the base style |
+| `document.style.themes` | `{}` | Inline partial style overrides; the reference config includes `tiger` |
+| `document.template` | `null` | Optional custom Jinja/LaTeX template |
 
 The configuration and profile JSON Schemas are packaged under
 `pkg/resumeme/compiler/asts/resources/` and checked by pre-commit.
 
-Select `style.theme: tiger` to use the autumn palette included in the reference
-config, or add your own entries under `style.themes`. The selected entry overrides
+Select `document.style.theme: tiger` to use the autumn palette included in the reference
+config, or add your own entries under `document.style.themes`. The selected entry overrides
 matching base style fields, including paper size and visibility toggles. Omitted
 fields keep their base values. See [inline themes and palette sources](themes.md).
 
 ### First-page profile placement
 
-Set `style.profile_column_side: right` to place the profile on the right and body
+Set `document.style.profile_column_side: right` to place the profile on the right and body
 content on the left. Both placements use separate full-height columns by default;
 later pages use the full width.
 
-Enable `style.profile_column_wrap: true` to let body text expand beneath the
+Enable `document.style.profile_column_wrap: true` to let body text expand beneath the
 right-side profile. The exclusion height follows the enabled portrait, header
 text, contact details, contribution graph, and contents. An oversized profile
 falls back to breakable columns so long contact information remains visible.
 The wrap setting is ignored on the left. Both settings support inline theme overrides.
 
-`style.text_wrap_width: 0.9` keeps body paragraphs and bullets within 90% of their
-available text area. This follows the narrower body column on page one and the
-full text area on later pages, regardless of which side holds the profile. With
-floating text enabled, the limit expands as the text clears the profile. Headings,
-logos, figures, and page margins keep their existing dimensions. This is a maximum
-line width, not a minimum line-fill or justification rule; paragraph endings may
-still be short. Set `1.0` for full-width text. Inline themes can override the value.
+`document.style.text_wrap_width: 0.9` keeps body paragraphs and bullets within 90% of their
+available text area on later full-width pages. The separate
+`document.style.profile_column_text_wrap_width` setting controls the first-page column and
+defaults to `1.0`, so changing the global width does not squeeze that distinct
+layout. With floating text enabled, the first-page limit expands as text clears the
+profile. Headings, logos, figures, and page margins keep their existing dimensions.
+These are maximum line widths, not minimum line-fill or justification rules;
+paragraph endings may still be short. Inline themes can override either value.
 
 ### Section visibility, order, and tiles
 
-The top-level `section_order` array controls both visibility and order. Move an
+The `profile.sections.order` array controls both visibility and order. Move an
 entry to reorder it, comment it out to hide it, and uncomment it to restore it:
 
 ```yaml
-section_order:
-  - about
-  - experience
-  - projects
-  # - featured
-  - education
-  - skills
+profile:
+  sections:
+    order:
+      - about
+      - experience
+      - projects
+      # - featured
+      - education
+      - skills
 ```
 
 Only listed sections appear, in that order. Missing and empty sections are skipped;
-`section_order: []` renders only the profile header. Omitting the setting uses the
+`profile.sections.order: []` renders only the profile header. Omitting the setting uses the
 package's full default list. Use lowercase `sections[].key` values from
 `data/profile.json`; add unfamiliar keys explicitly to include them. Known aliases
 are accepted, with their first occurrence setting the position.
@@ -207,20 +213,21 @@ remains complete. The table of contents follows the chosen order, including
 generated Projects and Skills sections.
 
 The former top-level `disable` key is no longer accepted. To migrate an older
-config, remove it and comment out those keys in `section_order` instead.
-`experience.disable` and `education.disable` control individual jobs and education entries.
+config, remove it and comment out those keys in `profile.sections.order` instead.
+`profile.sections.experience.disable` and `profile.sections.education.disable` control
+individual jobs and education entries.
 
 Contact occupies the first-page identity column above Contents whenever `contact`
 is enabled, with both headings at the same size. It groups the LinkedIn and GitHub
 links, the profile contribution graph, and captured contact fields. Commenting out
 `contact` hides this block; an explicitly configured contribution appendix remains independent.
 The compiler removes repeated LinkedIn profile URLs and edit controls, and links
-website captions inline. Birthday visibility still follows `style.display_birthday`.
+website captions inline. Birthday visibility still follows `document.style.display_birthday`.
 Email addresses display as an envelope icon and a clickable `Email` label.
 GitHub and its contribution graph follow the other contact links, immediately above Contents.
-Phone visibility follows `style.display_phone` independently of Website visibility; Email remains available whenever Contact is enabled.
+Phone visibility follows `document.style.display_phone` independently of Website visibility; Email remains available whenever Contact is enabled.
 Captured Website fields, such as linktr.ee, are hidden by default. Set
-`style.display_websites: true` to show them. Optionally set `style.website_icon`
+`document.style.display_websites: true` to show them. Optionally set `document.style.website_icon`
 to an image path relative to the configuration directory, such as
 `docs/assets/website.png`, or a direct public URL such as
 `https://example.org/favicon.ico`. PNG, JPEG, WebP, and ICO favicons are decoded
@@ -232,21 +239,21 @@ credentials. Use a local path for offline builds. Invalid or unavailable enabled
 icons fail the build with a configuration-specific error.
 `null` keeps the text-only website row; hidden or absent websites require no icon
 file or download. Both settings support inline theme overrides.
-About follows its position in `section_order` among body sections. With
-`style.profile_column_side: right` and `about` first after `contact`, it starts
+About follows its position in `profile.sections.order` among body sections. With
+`document.style.profile_column_side: right` and `about` first after `contact`, it starts
 at the upper left. The section must exist in the captured profile or in an
 explicitly supplied Codex summary; enabling it cannot create missing text.
 If About is absent from `data/profile.json`, capture the profile again.
 
 Projects and Featured use the same two-column tiles with a subtle gray background
 and inset padding. Tiles use the full page width and can continue across pages
-without truncating long posts. Uncomment `featured` in `section_order` to display posts;
+without truncating long posts. Uncomment `featured` in `profile.sections.order` to display posts;
 their project previews still consolidate into Projects.
 
 ### Header and skills
 
 - `show_headline` controls captured and generated headlines beneath the portrait;
-  it defaults to false. Set `style.show_headline: true` to display one. About,
+  it defaults to false. Set `document.style.show_headline: true` to display one. About,
   location, and the selected employment block are independent. Captures without
   an explicit headline use a conservative role-at-company or three-field
   pipe-separated match at the start of the intro.
@@ -257,14 +264,14 @@ their project previews still consolidate into Projects.
   listed order, including the first retained role within a company group. With
   no eligible experience, no employment block is shown. This setting also supports
   theme overrides and never restores excluded job descriptions or project assets.
-- `github.username` adds a public GitHub link below LinkedIn; `null` hides it.
+- `profile.github.username` adds a public GitHub link below LinkedIn; `null` hides it.
   Both links have platform icons. This setting is top-level identity configuration.
 - `show_header_photo` controls the cover image; `display_profile_photo` independently
   controls the round portrait. Both default to `true`; hiding the portrait removes its layout space.
 - `show_table_of_contents` adds links to visible sections in document order.
 - `show_connection_count` and `show_connection_link` control connection metadata
   independently. Enabling both links the count.
-- `display_birthday` applies only when `contact` is included in `section_order`.
+- `document.style.display_birthday` applies only when `contact` is included in `profile.sections.order`.
 - `skills_word_cloud` replaces the Skills list with the top 20 weighted skills.
   Size represents references plus twice the endorsement count. Color represents
   endorsements relative to the highest count among those 20 skills.
@@ -273,23 +280,25 @@ their project previews still consolidate into Projects.
 - `skills_size_legend` shows small, medium, and large `a` examples beneath the
   endorsement color scale. It defaults to `false`; the color scale remains visible.
 
-Set `skills_word_cloud: false` for the text list or comment out `skills` in `section_order` to
+Set `document.style.skills_word_cloud: false` for the text list or comment out `skills` in `profile.sections.order` to
 hide the section. See [skill scoring](profile-schema.md#scoring-and-rendering) and
 [theme configuration](themes.md). All style fields support inline theme overrides.
 
 ## Job filtering
 
-Keep job presentation settings under `experience` in `resumeme.config.yaml`:
+Keep job presentation settings under `profile.sections.experience` in `resumeme.config.yaml`:
 
 ```yaml
-experience:
-  disable:
-    - title: Intern
-      company: Example Company
-    - company: Another Employer
-  last_years: 5
-  since: null
-  as_of: null
+profile:
+  sections:
+    experience:
+      disable:
+        - title: Intern
+          company: Example Company
+        - company: Another Employer
+      last_years: 5
+      since: null
+      as_of: null
 ```
 
 - `disable` accepts selectors with a job `title`, a `company`, or both. All supplied
@@ -329,20 +338,22 @@ Legacy flattened groups support the same layout when title/date boundaries are
 recognizable. Partial job filtering still requires structured positions; run
 `resumeme capture` if the filter reports missing role boundaries.
 
-Omitting `experience` from `section_order` hides all jobs. Excluded roles cannot contribute
+Omitting `experience` from `profile.sections.order` hides all jobs. Excluded roles cannot contribute
 project attachments or skill references. Independently captured Projects and Skills
 entries remain subject to their own section settings.
 
 ## Education filtering
 
-Exclude individual schools or qualifications under `education`:
+Exclude individual schools or qualifications under `profile.sections.education`:
 
 ```yaml
-education:
-  disable:
-    - school: Example University
-    - degree: Associate's Degree
-      major: Mathematics
+profile:
+  sections:
+    education:
+      disable:
+        - school: Example University
+        - degree: Associate's Degree
+          major: Mathematics
 ```
 
 All fields within a selector must match; any matching selector removes the entire
@@ -357,24 +368,25 @@ one qualification value is present, either field can match that complete value.
 Dates and later descriptive paragraphs are not searched for qualification matches.
 
 The default `disable: []` keeps every entry. Comment out `education` in
-`section_order` to hide the entire section. Exclusions run before rendering, asset
+`profile.sections.order` to hide the entire section. Exclusions run before rendering, asset
 staging, skill scoring, and summary generation; the captured snapshot is unchanged.
 An empty education list produces no section heading or contents link.
 
 ## GitHub contribution graph
 
 ```yaml
-github:
-  username: your-github-account
-  contributions:
-    enabled: true
-    months: 1
-    placement: profile
-    as_of: null
+profile:
+  github:
+    username: your-github-account
+    contributions:
+      enabled: true
+      months: 1
+      placement: profile
+      as_of: null
 ```
 
 `profile` fills the profile column beneath its GitHub link, following
-`style.profile_column_side`. `appendix` adds a separate final page and a contents
+`document.style.profile_column_side`. `appendix` adds a separate final page and a contents
 link. Longer windows are easier to read in the appendix. The graph uses
 Sunday-first weeks, one clickable circle per day, and GitHub's default light-theme
 greens independently of your resume theme. Partial weeks stay blank outside the
@@ -488,7 +500,7 @@ Actions variables are not automatically exported: adding a repository variable
 alone has no effect because these workflows do not read `vars.RETRY_*`.
 
 Browser and image-download retries use the YAML `capture.retry_*` settings instead
-of these shell overrides. Profile selection also uses YAML (`linkedin.username`);
+of these shell overrides. Profile selection also uses YAML (`profile.linkedin.username`);
 `LINKEDIN_USERNAME` (login email/phone) and `LINKEDIN_PASSWORD` supply credentials for
 automated login. The same username variable detects public usernames and profile
 URLs, which require interactive sign-in and must match the configured owner.
@@ -598,29 +610,29 @@ Docker Desktop runs its amd64 toolchain under emulation on Apple Silicon.
 
 Compilation disables networking and shell escape. Failed builds preserve the
 previous PDF; compiler logs are in `.cache/build/`. Identical inputs and dependency
-versions produce reproducible output. Pin `experience.as_of` when using a date
+versions produce reproducible output. Pin `profile.sections.experience.as_of` when using a date
 window in a reproducible build.
 
 ### Document layout
 
 The default is US Letter with 19 mm margins and bundled EB Garamond. Set
-`style.paper: a4` for ISO A4 and `style.font_size` for 10, 11, or 12 point body text.
+`document.style.paper: a4` for ISO A4 and `document.style.font_size` for 10, 11, or 12 point body text.
 The first page has an identity column and a content column starting with About by
-default; `section_order` controls the content sequence. Subsequent pages use the
+default; `profile.sections.order` controls the content sequence. Subsequent pages use the
 full text width. Projects and Featured use two-column tiles.
 
-Set `style.line_height` and `style.paragraph_spacing` independently to open up
+Set `document.style.line_height` and `document.style.paragraph_spacing` independently to open up
 body text, including About, experience descriptions, and tile descriptions.
 The sidebar and heading spacing remain independent. These settings change layout,
 not the captured paragraph boundaries. This repository uses `1.1` line height
 and `6` points between paragraphs; the reference config retains `1.0` and `3`.
 
-`style.about_background: 'F0F4F7'` adds a pale gray-blue panel around About,
+`document.style.about_background: 'F0F4F7'` adds a pale gray-blue panel around About,
 with the same 4-point corner radius and 2 mm padding as project tiles. Set it to
 `null` to remove the panel. The panel follows its available column width and
 splits across pages for long sections. All three settings support inline themes.
 
-With `style.profile_column_side: right` and `style.profile_column_wrap: true`, each body paragraph adjusts its line widths
+With `document.style.profile_column_side: right` and `document.style.profile_column_wrap: true`, each body paragraph adjusts its line widths
 to the measured profile height. Portraits, headline, social links, contribution
 graph, contents, and leading Contact information all participate in that measurement.
 Text can widen within a paragraph or bullet as it clears the profile; disabling
@@ -671,7 +683,7 @@ Same-named projects at different companies remain distinct unless they share a
 resolved destination. Unknown affiliations do not bridge ambiguous names.
 Shared LinkedIn viewer URLs do not identify a unique project.
 
-`project_filter` applies after consolidation and deduplication. By default, only
+`profile.sections.projects.source_url_filter` applies after consolidation and deduplication. By default, only
 projects linking to `github.com` appear. The filter uses Python `re.search` on each
 resolved destination, falling back to its captured URL when unresolved. Image click
 targets count as source URLs; image download URLs, titles, and descriptions do not.
@@ -680,13 +692,14 @@ unless the filter is `null`.
 
 ```yaml
 # Default: github.com and www.github.com, case-insensitive.
-project_filter: '(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
-
-# To limit projects to one GitHub account:
-# project_filter: '(?i)^https?://github\.com/emmeowzing/'
-
-# To include every project, including entries without a source URL:
-# project_filter: null
+profile:
+  sections:
+    projects:
+      source_url_filter: '(?i)^https?://(?:www\.)?github\.com(?:[/?#]|$)'
+      # To limit projects to one GitHub account:
+      # source_url_filter: '(?i)^https?://github\.com/emmeowzing/'
+      # To include every project, including entries without a source URL:
+      # source_url_filter: null
 ```
 
 Use single-quoted YAML strings to preserve regex backslashes. Custom expressions
@@ -695,19 +708,22 @@ validation. Filtering leaves the snapshot and inline links in role/post narrativ
 intact. Excluded project entries contribute no media, skill weights, or Codex
 summary evidence. It does not change the visibility of other sections.
 
-Use `projects.include` to select individual projects and `projects.exclude` to omit matches:
+Use `profile.sections.projects.include` to select individual projects and
+`profile.sections.projects.exclude` to omit matches:
 
 ```yaml
-projects:
-  include:
-    - name: resumeme
-    - affiliation: Another Company
-    - name: Deployment platform
-      affiliation: Example Company
-  exclude:
-    - affiliation: Archived Company
-    - name: resumeme
-      affiliation: Former Company
+profile:
+  sections:
+    projects:
+      include:
+        - name: resumeme
+        - affiliation: Another Company
+        - name: Deployment platform
+          affiliation: Example Company
+      exclude:
+        - affiliation: Archived Company
+        - name: resumeme
+          affiliation: Former Company
 ```
 
 Each selector accepts `name`, `affiliation`, or both. A name-only filter matches
@@ -721,16 +737,16 @@ platform` does not match `Deployment platform v2`.
 
 Every supplied field in a selector must match. Any matching inclusion selector includes the project;
 the existing project order is preserved. `include: null` (the default) adds no
-selector restriction. `include: []` selects no project tiles. `project_filter` still
+selector restriction. `include: []` selects no project tiles. The source URL filter still
 applies: set it to `null` when selecting projects without GitHub or source links.
-Projects must also remain enabled in `section_order`.
+Projects must also remain enabled in `profile.sections.order`.
 
 `exclude` uses the same selectors and removes a tile if any selector matches,
 even if `include` also matches. Its default, `[]`, excludes nothing. To keep
 everything except specific projects, use `include: null` with an `exclude` list.
 
-The same field rules apply to `experience.disable` (`title`, `company`) and
-`education.disable` (`school`, `degree`, `major`). Each filter requires at least
+The same field rules apply to `profile.sections.experience.disable` (`title`, `company`)
+and `profile.sections.education.disable` (`school`, `degree`, `major`). Each filter requires at least
 one supported field. Empty mappings, blank or null field values, and unknown keys
 fail configuration validation.
 
@@ -759,7 +775,7 @@ standalone URL is omitted.
 
 ### Templates and assets
 
-Set `template` to a project-relative Jinja file to replace the packaged layout.
+Set `document.template` to a project-relative Jinja file to replace the packaged layout.
 See the [template interface](templates.md) for context variables, filters, and
 escaping requirements.
 

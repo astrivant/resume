@@ -14,6 +14,76 @@
         }
       }
     },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["linkedin"],
+      "description": "Profile identity and the captured sections selected for the document.",
+      "properties": {
+        "linkedin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["username"],
+          "properties": {
+            "username": {"$ref": "#/properties/linkedin/properties/username"}
+          }
+        },
+        "github": {"$ref": "#/properties/github"},
+        "sections": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "order": {"$ref": "#/properties/section_order"},
+            "experience": {"$ref": "#/properties/experience"},
+            "education": {"$ref": "#/properties/education"},
+            "projects": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "source_url_filter": {"$ref": "#/properties/project_filter"},
+                "include": {"$ref": "#/properties/projects/properties/include"},
+                "exclude": {"$ref": "#/properties/projects/properties/exclude"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Resume compilation inputs, output paths, and visual presentation.",
+      "properties": {
+        "output": {"$ref": "#/properties/output"},
+        "style": {"$ref": "#/properties/style"},
+        "template": {"$ref": "#/properties/template"}
+      }
+    },
+    "publishing": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "External publication targets and release follow-up actions.",
+      "properties": {
+        "linkedin": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "resume": {"$ref": "#/properties/linkedin/properties/resume"},
+            "ownership": {"$ref": "#/properties/linkedin/properties/ownership"}
+          }
+        },
+        "readme": {"$ref": "#/properties/readme"},
+        "pages": {"$ref": "#/properties/pages"}
+      }
+    },
+    "automation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional AI-assisted generation and employer-specific resume variants.",
+      "properties": {
+        "codex": {"$ref": "#/properties/codex"}
+      }
+    },
     "pages": {
       "type": "object",
       "additionalProperties": false,
@@ -244,6 +314,13 @@
           "maximum": 24,
           "default": 3
         },
+        "about_text_indent": {
+          "description": "Left inset for About body text in points; the section heading remains at the normal margin.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 24,
+          "default": 8
+        },
         "font_size": {
           "enum": [
             10,
@@ -359,6 +436,9 @@
               "paragraph_spacing": {
                 "$ref": "#/properties/style/properties/paragraph_spacing"
               },
+              "about_text_indent": {
+                "$ref": "#/properties/style/properties/about_text_indent"
+              },
               "font_size": {
                 "$ref": "#/properties/style/properties/font_size"
               },
@@ -439,6 +519,9 @@
               },
               "text_wrap_width": {
                 "$ref": "#/properties/style/properties/text_wrap_width"
+              },
+              "profile_column_text_wrap_width": {
+                "$ref": "#/properties/style/properties/profile_column_text_wrap_width"
               }
             },
             "additionalProperties": false
@@ -500,11 +583,18 @@
           "default": false
         },
         "text_wrap_width": {
-          "description": "Fraction of available body-text width on every page, including narrow first-page columns and floating layouts. Headings and figures retain their widths; 1 uses the full text area.",
+          "description": "Fraction of available body-text width on later full-width pages. First-page columns use profile_column_text_wrap_width; 1 uses the full text area.",
           "type": "number",
           "exclusiveMinimum": 0,
           "maximum": 1,
           "default": 0.9
+        },
+        "profile_column_text_wrap_width": {
+          "description": "Fraction of available first-page profile-column width. Set to 1 to leave the column at its full width.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "default": 1
         }
       },
       "required": [],
@@ -761,6 +851,58 @@
                 "additionalProperties": false,
                 "description": "Partial per-job config: mappings merge recursively; lists, scalars, and null replace inherited values. Capture identity, publication, and output paths remain shared or matrix-owned.",
                 "properties": {
+                  "profile": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Partial profile selection overrides; identity and LinkedIn login settings remain global.",
+                    "properties": {
+                      "github": {"$ref": "#/properties/github"},
+                      "sections": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "order": {"$ref": "#/properties/section_order"},
+                          "experience": {"$ref": "#/properties/experience"},
+                          "education": {"$ref": "#/properties/education"},
+                          "projects": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "source_url_filter": {"$ref": "#/properties/project_filter"},
+                              "include": {"$ref": "#/properties/projects/properties/include"},
+                              "exclude": {"$ref": "#/properties/projects/properties/exclude"}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "document": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Partial document presentation overrides; output paths remain matrix-owned.",
+                    "properties": {
+                      "style": {"$ref": "#/properties/style"},
+                      "template": {"$ref": "#/properties/template"}
+                    }
+                  },
+                  "automation": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "codex": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "context": {"$ref": "#/properties/codex/properties/context"},
+                          "model": {"$ref": "#/properties/codex/properties/model"},
+                          "reasoning_effort": {"$ref": "#/properties/codex/properties/reasoning_effort"},
+                          "about_max_words": {"$ref": "#/properties/codex/properties/about_max_words"},
+                          "headline_max_words": {"$ref": "#/properties/codex/properties/headline_max_words"}
+                        }
+                      }
+                    }
+                  },
                   "style": {"$ref": "#/properties/style"},
                   "section_order": {"$ref": "#/properties/section_order"},
                   "experience": {"$ref": "#/properties/experience"},
@@ -857,8 +999,9 @@
       ]
     }
   },
-  "required": [
-    "linkedin"
+  "anyOf": [
+    {"required": ["linkedin"]},
+    {"required": ["profile"]}
   ],
   "additionalProperties": false
 }

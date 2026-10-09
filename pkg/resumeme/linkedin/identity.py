@@ -52,7 +52,7 @@ def release_destination(settings: Ownership, root: Path, *, allow_missing: bool 
             or location.password is not None
             or any(character.isspace() or ord(character) < 32 for character in settings.releases_url)
         ):
-            raise SigningError("linkedin.ownership.releases_url must be an HTTPS URL without credentials or whitespace.")
+            raise SigningError("publishing.linkedin.ownership.releases_url must be an HTTPS URL without credentials or whitespace.")
 
         return settings.releases_url
 
@@ -75,7 +75,7 @@ def release_destination(settings: Ownership, root: Path, *, allow_missing: bool 
         return ""
 
     if not _REPOSITORY.fullmatch(repository) or repository.split("/")[-1] in {".", ".."}:
-        raise SigningError("Set linkedin.ownership.repository to OWNER/REPO, or configure a GitHub origin remote.")
+        raise SigningError("Set publishing.linkedin.ownership.repository to OWNER/REPO, or configure a GitHub origin remote.")
 
     return f"https://github.com/{repository}/releases"
 

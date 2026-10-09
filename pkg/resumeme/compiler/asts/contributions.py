@@ -116,7 +116,7 @@ def calendar_window(settings: GitHubContributions, *, today: date | None = None)
     end = date.fromisoformat(settings.as_of) if settings.as_of else today
 
     if end is None:
-        raise ContributionError("GitHub calendar filtering requires github.contributions.as_of or an explicit reference date.")
+        raise ContributionError("GitHub calendar filtering requires profile.github.contributions.as_of or an explicit reference date.")
 
     year, month = divmod(end.year * 12 + end.month - 1 - settings.months, 12)
 

@@ -53,7 +53,7 @@ def publish_resume(
         OSError: The PDF cannot be read or its private staging copy cannot be written.
     """
     if not dry_run and not config.linkedin.resume.publish:
-        raise BrowserError("Set linkedin.resume.publish: true to opt in to saving resumes on LinkedIn.")
+        raise BrowserError("Set publishing.linkedin.resume.publish: true to opt in to saving resumes on LinkedIn.")
 
     if headless and connect_port is not None:
         raise BrowserError("Headless resume publication cannot attach to an interactive browser.")

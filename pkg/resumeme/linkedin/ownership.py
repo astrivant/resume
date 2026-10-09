@@ -184,7 +184,7 @@ def _editor(driver: WebDriver, config: Config) -> tuple[WebElement, WebElement]:
     )
 
     if not editable:
-        raise BrowserError("No owner edit control found. Sign in as linkedin.username before updating About.")
+        raise BrowserError("No owner edit control found. Sign in as profile.linkedin.username before updating About.")
 
     _LOGGER.info("Opening the About editor")
     summary = next(

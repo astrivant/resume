@@ -2,7 +2,7 @@
 
 Publish the current résumé at your site's `index.html`, with an embedded PDF,
 open/download links, public profile links, and a link to signed releases.
-The page uses your captured name, `readme.introduction`, and the selected theme's
+The page uses your captured name, `publishing.readme.introduction`, and the selected theme's
 colors. It serves the same working PDF accepted on `main`.
 
 ## Enable publication
@@ -12,10 +12,11 @@ colors. It serves the same working PDF accepted on `main`.
 2. Update `resumeme.config.yaml`:
 
    ```yaml
-   pages:
-     enabled: true
-     path: /
-     custom_domain: null
+   publishing:
+     pages:
+       enabled: true
+       path: /
+       custom_domain: null
    ```
 
 3. Push to `main`, or run `gh workflow run ci.yml --ref main` after pushing the
@@ -58,10 +59,11 @@ For `https://resume.tiger-lily-plants.com/` from `astrivant/resumeme`:
    settings once GitHub makes the certificate available.
 
    ```yaml
-   pages:
-     enabled: true
-     path: /
-     custom_domain: resume.tiger-lily-plants.com
+   publishing:
+     pages:
+       enabled: true
+       path: /
+       custom_domain: resume.tiger-lily-plants.com
    ```
 
 The resulting URLs are `https://resume.tiger-lily-plants.com/`,
@@ -81,11 +83,11 @@ domain verification, DNS propagation, and certificate setup in its
 
 ## Publication paths
 
-`pages.path` is relative to the Pages site's base URL, with leading and trailing
+`publishing.pages.path` is relative to the Pages site's base URL, with leading and trailing
 slashes. Use ordinary URL directory names; traversal, query strings, and fragments
 are rejected. GitHub supplies the repository prefix on project sites.
 
-| Pages base URL | `pages.path` | Visitor URL |
+| Pages base URL | `publishing.pages.path` | Visitor URL |
 | --- | --- | --- |
 | `https://resume.example.com` | `/` | `https://resume.example.com/` |
 | `https://resume.example.com` | `/cv/` | `https://resume.example.com/cv/` |
@@ -93,7 +95,7 @@ are rejected. GitHub supplies the repository prefix on project sites.
 | `https://person.github.io/resume` | `/career/cv/` | `https://person.github.io/resume/career/cv/` |
 
 The public PDF is always named `resume.pdf` beside `index.html`, even when the
-repository uses another `output.pdf` path. Relative links work at either the
+repository uses another `document.output.pdf` path. Relative links work at either the
 directory URL or its explicit `index.html` URL.
 
 This artifact owns the repository's whole Pages site. Each deployment replaces
@@ -128,7 +130,7 @@ gh run rerun RUN_ID --job FAILED_PAGES_JOB_ID
 ```
 
 For other errors, fix the indicated setting and rerun the failed job, or trigger
-a new main run if `main` has advanced. Setting `pages.enabled: false` stops
+a new main run if `main` has advanced. Setting `publishing.pages.enabled: false` stops
 updates; unpublishing an already-live site is a separate operation in GitHub
 Pages settings.
 
@@ -142,7 +144,7 @@ poetry run resumeme site
 python3 -m http.server 8000 --bind 127.0.0.1 --directory .cache/pages
 ```
 
-Open `http://127.0.0.1:8000/`, or append the configured `pages.path`. `resumeme site`
+Open `http://127.0.0.1:8000/`, or append the configured `publishing.pages.path`. `resumeme site`
 prints the generated index path and works while CI publication is disabled.
 It reads `GITHUB_REPOSITORY` in CI and the local Git origin otherwise; override
 the release-link repository with `--repository OWNER/REPO` when previewing a fork.

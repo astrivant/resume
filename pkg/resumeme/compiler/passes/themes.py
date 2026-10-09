@@ -34,7 +34,7 @@ def resolve_style(style: Style) -> Style:
         return style
 
     if style.theme not in style.themes:
-        raise ConfigurationError(f"Unknown style.theme {style.theme!r}; define it under style.themes or use null.")
+        raise ConfigurationError(f"Unknown document.style.theme {style.theme!r}; define it under document.style.themes or use null.")
 
     # Apply overrides by key presence so False remains meaningful; theme/themes themselves cannot be overridden.
     return evolve(style, **style.themes[style.theme])

@@ -19,16 +19,17 @@ gh secret set OPENAI_API_KEY
 Configure [resumeme.config.yaml](../resumeme.config.yaml):
 
 ```yaml
-codex:
-  enabled: true
-  model: gpt-6-astra
-  reasoning_effort: low
-  about_max_words: 100
-  headline_max_words: 18
-  context: |
-    Target senior platform engineering roles.
-    Emphasize developer experience, reliability, and infrastructure automation.
-    Use direct, factual language for an engineering audience.
+automation:
+  codex:
+    enabled: true
+    model: gpt-6-astra
+    reasoning_effort: low
+    about_max_words: 100
+    headline_max_words: 18
+    context: |
+      Target senior platform engineering roles.
+      Emphasize developer experience, reliability, and infrastructure automation.
+      Use direct, factual language for an engineering audience.
 ```
 
 `context` accepts writing preferences and additional factual background. It is
@@ -51,7 +52,7 @@ apply to generic summaries, company/job variants, and tag-only skill proposals.
 The upstream [Codex Action](https://learn.chatgpt.com/docs/github-action) receives
 them through its `model` and `effort` inputs.
 
-| `codex.model` | Use case |
+| `automation.codex.model` | Use case |
 | --- | --- |
 | [`gpt-6-astra`](https://developers.openai.com/api/docs/models/gpt-6-astra) | Detailed writing and demanding reasoning; selected here with low effort. |
 | [`gpt-6.1-sol`](https://developers.openai.com/api/docs/models/gpt-6.1-sol) | Complex work with a lower cost than Astra. |
@@ -74,7 +75,7 @@ reasoning tokens. See [reasoning controls](https://developers.openai.com/api/doc
 - Section and job exclusions apply before preparing the prompt. Contact blocks,
   images, and remote link metadata are omitted.
 - About is replaced only when enabled in the document. Set
-  `style.show_headline: true` to display the short summary beneath the portrait,
+  `document.style.show_headline: true` to display the short summary beneath the portrait,
   before company/location details and social links. It replaces the captured
   headline. The default, `false`, hides both headlines without hiding About.
 - `headline_max_words` accepts 1-40 words; `about_max_words` accepts 1-300 words.
@@ -101,21 +102,22 @@ enabling either generator.
 
 ## Single-origin resumes
 
-Add company/job targets under `codex.companies`. Each target generates an additional
+Add company/job targets under `automation.codex.companies`. Each target generates an additional
 About paragraph and portrait summary based on the same visible profile, with
 emphasis on experience relevant to that employer's position.
 
 ```yaml
-codex:
-  enabled: true
-  context: Use direct, factual language for senior engineering roles.
-  companies:
-    - username: example-company
-      job_url: https://www.linkedin.com/jobs/view/1234567890/
-      context: Emphasize platform reliability and developer tooling.
-    - username: example-company
-      job_url: https://careers.example.com/jobs/developer-platform
-      context: Emphasize cross-team technical leadership.
+automation:
+  codex:
+    enabled: true
+    context: Use direct, factual language for senior engineering roles.
+    companies:
+      - username: example-company
+        job_url: https://www.linkedin.com/jobs/view/1234567890/
+        context: Emphasize platform reliability and developer tooling.
+      - username: example-company
+        job_url: https://careers.example.com/jobs/developer-platform
+        context: Emphasize cross-team technical leadership.
 ```
 
 | Field | Required | Meaning |
@@ -141,48 +143,54 @@ project filters apply to every variant after its overrides are merged.
 `overrides` uses the same field names and validation as `resumeme.config.yaml`.
 Omitted fields inherit the base config. Mappings merge recursively; lists replace
 the inherited list. Scalars, `false`, and `null` replace the inherited value.
-For example, `experience.disable: []` clears inherited job exclusions, while an
+For example, `profile.sections.experience.disable: []` clears inherited job exclusions, while an
 omitted `disable` preserves them. An empty mapping changes nothing.
 
 ```yaml
-codex:
-  enabled: true
-  companies:
-    - username: example-company
-      job_url: https://www.linkedin.com/jobs/view/1234567890/
-      context: Emphasize platform reliability.
-      overrides: &platform_resume
-        section_order: [contact, about, experience, projects, skills]
-        experience:
-          since: '2020-06-01'
-          disable: []
-        projects:
-          include:
-            - affiliation: Example Company
-        style:
-          theme: null
-          font_size: 10
-          display_current_position: false
-        codex:
-          about_max_words: 70
-          headline_max_words: 12
-    - username: another-company
-      job_url: https://careers.example.com/jobs/platform-engineer
-      context: Emphasize developer experience.
-      overrides: *platform_resume
+automation:
+  codex:
+    enabled: true
+    companies:
+      - username: example-company
+        job_url: https://www.linkedin.com/jobs/view/1234567890/
+        context: Emphasize platform reliability.
+        overrides: &platform_resume
+          profile:
+            sections:
+              order: [contact, about, experience, projects, skills]
+              experience:
+                since: '2020-06-01'
+                disable: []
+              projects:
+                include:
+                  - affiliation: Example Company
+          document:
+            style:
+              theme: null
+              font_size: 10
+              display_current_position: false
+          automation:
+            codex:
+              about_max_words: 70
+              headline_max_words: 12
+      - username: another-company
+        job_url: https://careers.example.com/jobs/platform-engineer
+        context: Emphasize developer experience.
+        overrides: *platform_resume
 ```
 
 YAML anchors reuse partials without extra files or a separate preset language.
 YAML's `<<` merge also works, but merges at one mapping level; nested values in
 each final partial then merge recursively with the base config.
 
-Supported root sections are `style`, `section_order`, `experience`, `education`,
-`projects`, `project_filter`, `template`, `github`, and `capture`. Under `codex`,
-override `context`, `model`, `reasoning_effort`, `about_max_words`, or
-`headline_max_words`. `codex.context` replaces the shared writing context;
+Supported grouped sections are `profile.sections`, `document`, `capture`, and
+`automation.codex`. Under `profile.sections`, use `order`, `experience`, `education`,
+and `profile.sections.projects.source_url_filter`; under `document`, use `document.style` and `document.template`.
+Under `automation.codex`, override `context`, `model`, `reasoning_effort`,
+`about_max_words`, or `headline_max_words`. `automation.codex.context` replaces the shared writing context;
 the target's sibling `context` remains additional guidance. Theme precedence
-still applies: set `style.theme: null` to use direct style values, or override
-the selected entry under `style.themes`.
+still applies: set `document.style.theme: null` to use direct style values, or override
+the selected entry under `document.style.themes`.
 
 The LinkedIn capture, account publication settings, Pages/README settings,
 logging, summary enablement, skill publication, and target matrix remain global.
@@ -212,7 +220,7 @@ makes request preparation offline. These fields are committed with your config.
         reliability, and collaborate with application teams on developer tooling.
 ```
 
-The generic PDF keeps its configured `output.pdf` path. Additional PDFs use:
+The generic PDF keeps its configured `document.output.pdf` path. Additional PDFs use:
 
 ```text
 resume.pdf
@@ -263,8 +271,8 @@ CODEX_API_KEY="$OPENAI_API_KEY" codex exec --ephemeral --sandbox read-only \
 poetry run resumeme build --summary .cache/codex/summary.json
 ```
 
-Match `--model` to `codex.model` and `-c 'model_reasoning_effort="low"'` to
-`codex.reasoning_effort`; omit the corresponding flag when its value is `null`.
+Match `--model` to `automation.codex.model` and `-c 'model_reasoning_effort="low"'` to
+`automation.codex.reasoning_effort`; omit the corresponding flag when its value is `null`.
 See the [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).
 Review both summary fields before publishing. Requests and generated
 JSON stay under ignored `.cache/codex/`; no credentials are written into them.

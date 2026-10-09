@@ -138,15 +138,15 @@ Color represents endorsement count independently of references:
 endorsement percentage = 100 * endorsements / highest displayed endorsement count
 ```
 
-`style.skill_colors` defines ordered stops from 0% to 100%. Equal counts share a
+`document.style.skill_colors` defines ordered stops from 0% to 100%. Equal counts share a
 color. Profiles with no endorsements use the first stop; a single-stop palette is
 monochrome. Raw counts for all skills remain in `tex/skills.weights.json`, including
 skills outside the top 20. See [theme configuration](themes.md).
 
-`style.skills_word_cloud: true` replaces the Skills list with the cloud. Explicit
+`document.style.skills_word_cloud: true` replaces the Skills list with the cloud. Explicit
 tags can produce a Skills card even when there is no separate captured Skills
-section. Omitting `skills` from `section_order` hides the cloud and the list; disabled sections cannot
-contribute labels, endorsements, or references. Set `style.skills_word_cloud: false`
+section. Omitting `skills` from `profile.sections.order` hides the cloud and the list; disabled sections cannot
+contribute labels, endorsements, or references. Set `document.style.skills_word_cloud: false`
 to render the captured list. No available skills means no cloud or empty Skills card.
 
 The source snapshot is retained. Custom templates receive the filtered `profile`

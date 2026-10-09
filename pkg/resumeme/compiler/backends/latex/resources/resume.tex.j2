@@ -88,7 +88,10 @@
 ((# Standalone positions own one rail; nested positions share their company's existing progression rail. #))
 ((* if standalone_role *))\begin{roleprogression}((* endif *))
 ((* if section.key == 'about' *))
+% About captures commonly store all prose in the entry title; apply the same inset to that text as to paragraph entries.
+\begingroup\setlength{\leftskip}{\abouttextindent}%
 ((( render_text([heading], entry.links) )))
+\endgroup
 ((* elif heading *))
 ((* if badge and badge[0] == -1 *))
 ((( company_name(badge, heading, entry.links, heading=true, anchor=anchor, employer=section.key == 'experience') )))
@@ -127,6 +130,11 @@
 ((* elif company_index == 0 *))
 \profileparagraph[1]{((( company_label(entry.paragraphs[0], entry.links) )))}
 ((( render_text(entry.paragraphs[1:], entry.links, locations, job_text=true) )))
+((* elif section.key == 'about' *))
+% Keep About prose slightly inset so its first text column begins near the right edge of the section heading's capital letter.
+\begingroup\setlength{\leftskip}{\abouttextindent}%
+((( render_text(entry.paragraphs, text_links, locations, job_text=false) )))
+\endgroup
 ((* else *))
 ((( render_text(entry.paragraphs, text_links, locations, project.affiliations if project else {}, job_text=section.key == 'experience') )))
 ((* endif *))
@@ -241,7 +249,7 @@
 ((* endfor *))
 ((* endif *))
 ((* if section.key == 'about' and style.about_background *))\end{aboutpanel}((* endif *))
-\par\addvspace{10pt}
+\par\addvspace{\sectionheadingbefore}
 ((* endmacro *))
 ((* macro render_contributions() *))
 \par\addvspace{5pt}
@@ -319,11 +327,20 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* endif *))
 % Declare mutable dimensions and boxes before the reusable commands that consume them.
 \newcommand{\bodytextwidthratio}{((( "%.6f"|format(style.text_wrap_width) )))}
+% First-page columns use their own width ratio; later full-width pages use bodytextwidthratio.
+\newcommand{\profilecolumntextwidthratio}{((( "%.6f"|format(style.profile_column_text_wrap_width) )))}
 % Shared corner radii keep About and project backgrounds visually consistent.
 \newcommand{\tilecornerradius}{4pt}
 \newcommand{\tilepadding}{2mm}
 % About prose needs a little more breathing room than compact project tiles.
 \newcommand{\aboutpadding}{3mm}
+% Keep the About heading at the section margin while aligning its body near the capital A's right edge.
+\newlength{\abouttextindent}
+\setlength{\abouttextindent}{((( "%.6f"|format(style.about_text_indent) )))pt}
+% Increase the existing section-heading margins by ten percent for clearer separation.
+\newcommand{\sectionheadingbefore}{11pt}
+\newcommand{\sectionheadingafter}{0.55\baselineskip}
+\newcommand{\identityheadingbefore}{13.2pt}
 % The sidebar uses compact defaults; body rendering selects the configured spacing below.
 \newcommand{\bodylinespread}{1}
 % Paragraph-scoped overrides keep headings and figures independent of the body line limit.
@@ -421,8 +438,11 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* else *))
 \newcommand{\roletitle}[2][\normalsize]{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}\par\nopagebreak}
 ((* endif *))
-% Give each section heading half a body-text line of breathing room before its content.
-\newcommand{\sectiontitle}[1]{{\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{0.5\baselineskip}}
+% Give each body section heading ten percent more room above and below its content.
+\newcommand{\sectiontitle}[1]{%
+  \par\addvspace{\sectionheadingbefore}%
+  {\color{sectionheading}\Large\bfseries #1}\par\nopagebreak\vspace{\sectionheadingafter}%
+}
 % The rule is painted before the role contents, whose vertices interrupt it with a clear gap.
 % It continues on subsequent pages without boxing the whole history or repeating title vertices.
 \newcommand{\roleframe}[2][100]{%
@@ -562,7 +582,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \ifnum\value{page}=1\clearpage\fi%
   \fi%
 }%
-\newcommand{\profileparagraph}[2][\bodytextwidthratio]{%
+\newcommand{\profileparagraph}[2][\ifnum\value{page}=1\profilecolumntextwidthratio\else\bodytextwidthratio\fi]{%
   \par
   \profilesetwidth
   \setlength{\profileparagraphwidth}{\linewidth}%
@@ -617,7 +637,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \fi
 }
 ((* else *))
-\newcommand{\profileparagraph}[2][\bodytextwidthratio]{%
+\newcommand{\profileparagraph}[2][\ifnum\value{page}=1\profilecolumntextwidthratio\else\bodytextwidthratio\fi]{%
   \par
   \ifnum\value{page}=1
     \sbox{\paragraphmeasure}{\parbox{\linewidth}{\paragraphcontent{#1}{#2}}}%
@@ -758,11 +778,11 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \printprojectrow
   \endgroup
 }
-% Contact and Contents use the same compact hierarchy in the identity column.
+% Contact and Contents use the same hierarchy with the same ten-percent spacing increase.
 \newcommand{\identityheading}[1]{%
-  \par\addvspace{12pt}%
+  \par\addvspace{\identityheadingbefore}%
   \Needspace{3\baselineskip}%
-  {\color{sectionheading}\large\bfseries #1}\par\nopagebreak\vspace{0.5\baselineskip}%
+  {\color{sectionheading}\large\bfseries #1}\par\nopagebreak\vspace{\sectionheadingafter}%
 }
 % Allocate 26% to identity and 69% to the body, retaining a 5% gutter on either side.
 % =============================================================================

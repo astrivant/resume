@@ -145,18 +145,18 @@ git push origin main
 ```
 
 After the pipeline succeeds, your fork contains **`resume.pdf` on `main`**.
-Set `readme.output: README.md` to make its README a personal résumé page: your name,
+Set `publishing.readme.output: README.md` to make its README a personal résumé page: your name,
 a clickable first-page preview, and links to the full PDF, profiles, and releases.
 This repository overrides the destination to [docs/FORK_EXAMPLE.md](docs/FORK_EXAMPLE.md)
 so you can preview the result alongside these instructions. CI refreshes the
-configured page and preview in the same commit as the PDF. Set `readme.mode: project`
-to disable generation, or customize `readme.introduction`; see [README publication](docs/automation.md#personal-readme).
+configured page and preview in the same commit as the PDF. Set `publishing.readme.mode: project`
+to disable generation, or customize `publishing.readme.introduction`; see [README publication](docs/automation.md#personal-readme).
 Configure LinkedIn secrets for automatic monthly refreshes. When ready to share,
 tag the updated commit to create a release with signatures, hashes, and the key
 fingerprint; see [monthly refresh and release](docs/automation.md).
-Set `linkedin.resume.publish: true` to also save the signed release PDF to
+Set `publishing.linkedin.resume.publish: true` to also save the signed release PDF to
 [LinkedIn's application resumes](docs/linkedin-resume.md) in a separate tag job.
-The PDF link stays relative to your fork and follows `output.pdf`. Preview images
+The PDF link stays relative to your fork and follows `document.output.pdf`. Preview images
 use absolute GitHub URLs so they also display on package indexes such as PyPI.
 
 ### Use with an AI agent
@@ -198,7 +198,7 @@ replace the current PDF.
 Pull requests validate without publishing or signing in.
 
 For applications, add LinkedIn company usernames and job links to
-`codex.companies`. CI tailors additional summaries to those employers and commits
+`automation.codex.companies`. CI tailors additional summaries to those employers and commits
 the PDFs under `single-origin/`, alongside your generic resume. See
 [single-origin resumes](docs/codex.md#single-origin-resumes) for configuration and
 company/job context overrides.
@@ -258,17 +258,19 @@ For colors and typography, see [inline themes](docs/themes.md).
 
 ### Sections and projects
 
-Use the `section_order` array for both visibility and order. Comment out an entry
+Use the `profile.sections.order` array for both visibility and order. Comment out an entry
 to hide it; uncomment or move it to include or reorder it:
 
 ```yaml
-section_order:
-  - about
-  - experience
-  - projects
-  # - featured
-  - education
-  - skills
+profile:
+  sections:
+    order:
+      - about
+      - experience
+      - projects
+      # - featured
+      - education
+      - skills
 ```
 
 This changes the generated resume while retaining the captured data. See
@@ -285,19 +287,21 @@ appear below the project's image or logo; role narrative stays with the job.
 Post text and inline links stay in Featured. Commenting out `projects` also hides
 the relocated project cards.
 
-`project_filter` selects projects by source URL using a Python regex and defaults
+`profile.sections.projects.source_url_filter` selects projects by source URL using a Python regex and defaults
 to GitHub URLs. Set it to `null` to remove the URL restriction.
-Use `projects.include` to choose names and optionally distinguish their companies:
+Use `profile.sections.projects.include` to choose names and optionally distinguish their companies:
 
 ```yaml
-projects:
-  include:
-    - name: resumeme
-    - name: Deployment platform
-      affiliation: Example Company
-  exclude:
-    - name: resumeme
-      affiliation: Former Company
+profile:
+  sections:
+    projects:
+      include:
+        - name: resumeme
+        - name: Deployment platform
+          affiliation: Example Company
+      exclude:
+        - name: resumeme
+          affiliation: Former Company
 ```
 
 Matching ignores case and extra spaces. `include: null` keeps all names;
@@ -310,12 +314,14 @@ when both lists match; `exclude: []` excludes nothing. The URL filter still appl
 Filter individual jobs in the same file:
 
 ```yaml
-experience:
-  disable:
-    - title: Intern
-      company: Example Company
-  last_years: 5
-  as_of: null
+profile:
+  sections:
+    experience:
+      disable:
+        - title: Intern
+          company: Example Company
+      last_years: 5
+      as_of: null
 ```
 
 Exclusions match the exact job title, company, or both, ignoring case and extra
@@ -329,40 +335,42 @@ missing dates remain visible. Defaults keep all jobs (`disable: []`,
 
 ### Education
 
-Use `education.disable` to exclude entries by `school`, `degree`, `major`, or a
+Use `profile.sections.education.disable` to exclude entries by `school`, `degree`, `major`, or a
 combination. All fields in a selector must match; any matching selector hides the
 entry. The default is `[]`. For example:
 
 ```yaml
-education:
-  disable:
-    - school: Example University
-    - degree: Associate's Degree
-      major: Mathematics
+profile:
+  sections:
+    education:
+      disable:
+        - school: Example University
+        - degree: Associate's Degree
+          major: Mathematics
 ```
 
-Comment out `education` in `section_order` to hide the entire section. See
+Comment out `education` in `profile.sections.order` to hide the entire section. See
 [education filtering](docs/README.md#education-filtering) for matching rules.
 
 ### Profile header and contact information
 
 The headline beneath the portrait is hidden by default; set
-`style.show_headline: true` to restore it. The company and location remain visible.
-Set `github.username` to your GitHub account for an icon and profile link directly
+`document.style.show_headline: true` to restore it. The company and location remain visible.
+Set `profile.github.username` to your GitHub account for an icon and profile link directly
 below LinkedIn, or `null` to omit it. Both links use their platform icons.
 
 The cover/background photo is hidden by default in `resumeme.config.yaml`. Set
-`style.show_header_photo: true` to restore it; the portrait stays visible.
+`document.style.show_header_photo: true` to restore it; the portrait stays visible.
 
 Below the LinkedIn profile link, a compact contents list links to each visible
-section in PDF order. Set `style.show_table_of_contents: false` to hide it;
+section in PDF order. Set `document.style.show_table_of_contents: false` to hide it;
 it defaults to `true` and supports inline theme overrides.
 
-Connection details are optional: set `style.show_connection_count: true` to show the captured count,
-`style.show_connection_link: true` for a Connections link, or both to link the count.
+Connection details are optional: set `document.style.show_connection_count: true` to show the captured count,
+`document.style.show_connection_link: true` for a Connections link, or both to link the count.
 Both default to `false` and can also be overridden in inline themes. Re-enable the
 separate contact block by removing `contact` from `disable`.
-The birthday stays hidden unless you also set `style.display_birthday: true`;
+The birthday stays hidden unless you also set `document.style.display_birthday: true`;
 this setting defaults to `false` and supports inline theme overrides.
 
 ### GitHub activity
@@ -370,12 +378,13 @@ this setting defaults to `false` and supports inline theme overrides.
 Show clickable contribution circles beneath the GitHub link or in an appendix:
 
 ```yaml
-github:
-  username: your-github-account
-  contributions:
-    enabled: true
-    months: 1
-    placement: profile # or appendix
+profile:
+  github:
+    username: your-github-account
+    contributions:
+      enabled: true
+      months: 1
+      placement: profile # or appendix
 ```
 
 The graph uses GitHub's light-theme greens and each day's contribution link.
@@ -387,16 +396,16 @@ to choose the window. See [saved calendars and offline builds](docs/README.md#gi
 
 The top 20 skills appear as a word cloud scored by **references + 2 * endorsements**.
 Size reflects this score; color reflects endorsements relative to the most-endorsed
-displayed skill. `style.skill_colors` defines the gradient from 0% to 100%.
-Disabled sections contribute no references. Set `style.skills_word_cloud: false`
-for the text list. To hide the section, add `skills` under `disable`. Profiles with
+displayed skill. `document.style.skill_colors` defines the gradient from 0% to 100%.
+Disabled sections contribute no references. Set `document.style.skills_word_cloud: false`
+for the text list. To hide the section, comment out `skills` in `profile.sections.order`. Profiles with
 no optional sections also work. See the [profile schema and scoring rules](docs/profile-schema.md).
 
 ### Codex summaries
 
 Optionally let Codex write About and a short description beneath your portrait.
-Add the `OPENAI_API_KEY` Actions secret, set `codex.enabled: true`, and provide
-target roles, tone, or extra background under `codex.context` in
+Add the `OPENAI_API_KEY` Actions secret, set `automation.codex.enabled: true`, and provide
+target roles, tone, or extra background under `automation.codex.context` in
 [resumeme.config.yaml](resumeme.config.yaml). Main-branch CI generates the copy
 once for both document checks and the PDF build. The captured profile stays intact.
 See [model choices and API key setup](docs/codex.md#model-selection) and [local previews](docs/codex.md#local-generation-and-preview).
@@ -405,12 +414,12 @@ See [model choices and API key setup](docs/codex.md#model-selection) and [local 
 
 ### GitHub Pages
 
-Host the résumé at your Pages root or a custom domain. Enable `pages.enabled` in
+Host the résumé at your Pages root or a custom domain. Enable `publishing.pages.enabled` in
 [resumeme.config.yaml](resumeme.config.yaml) and select **GitHub Actions** as the
 publishing source in your fork's **Settings > Pages**. CI updates `index.html` and
 its linked PDF after successful publication to `main`.
 
-`pages.path: /` serves the root; use a path such as `/cv/` for a subdirectory.
+`publishing.pages.path: /` serves the root; use a path such as `/cv/` for a subdirectory.
 See [Pages setup](docs/pages.md) for custom domains, DNS, and local previews.
 
 ### Fork environment variables
@@ -421,15 +430,15 @@ features you use. GitHub supplies the publication token:
 - **`LINKEDIN_USERNAME` - required for tag and monthly refreshes.** Your LinkedIn login email
   or phone number for unattended login. The same variable also detects public usernames and
   `/in/` profile URLs for interactive capture; URLs are normalized to usernames and must match
-  `linkedin.username`. LinkedIn requires email/phone authentication, so public identifiers need manual sign-in.
+  `profile.linkedin.username`. LinkedIn requires email/phone authentication, so public identifiers need manual sign-in.
 - **`LINKEDIN_PASSWORD` - required for tag and monthly refreshes.** The login password. These
   login secrets reach capture on refresh runs and the optional
   [LinkedIn signing identity update](docs/ownership.md), skill additions, and
   [saved application resume upload](docs/linkedin-resume.md) after signed releases.
-- **`OPENAI_API_KEY` - required when `codex.enabled` or `codex.skills.enabled` is `true`.** Create a project key on
+- **`OPENAI_API_KEY` - required when `automation.codex.enabled` or `automation.codex.skills.enabled` is `true`.** Create a project key on
   the [OpenAI API keys page](https://platform.openai.com/api-keys) and store it as an Actions repository secret. The Codex summary
   jobs receive it; pull-request checks do not. API usage is billed to that project.
-  To stop API usage, set `codex.enabled`, `codex.skills.enabled`, and `codex.skills.publish` to `false`.
+  To stop API usage, set `automation.codex.enabled`, `automation.codex.skills.enabled`, and `automation.codex.skills.publish` to `false`.
   See [Codex setup](docs/codex.md) and [tag-only skill suggestions](docs/skills.md).
 - **`COSIGN_PRIVATE_KEY` - required for signed releases.** Set this to the complete
   PEM contents of your own Cosign private key, including the header, footer, and
@@ -484,7 +493,7 @@ encrypted cache future tags can restore. See [encrypted sessions and dedicated r
 
 #### LinkedIn authentication
 
-Set the public profile username or LinkedIn `/in/` URL under `linkedin.username` in `resumeme.config.yaml`.
+Set the public profile username or LinkedIn `/in/` URL under `profile.linkedin.username` in `resumeme.config.yaml`.
 Local `resumeme capture` opens the configured browser and waits for you to finish signing in.
 When both login environment variables are present, it submits them automatically;
 interactive capture still waits for you to complete MFA. Scheduled runs use
@@ -499,6 +508,7 @@ own device label; resumeme cannot set or verify the label shown in the app.
 
 - [CLI reference](docs/CLI.md): complete command help, options, examples, and exit status.
 - [Configuration and operation](docs/README.md): capture, job filters, rendering, and signed releases.
+- [Configuration layout and migration](docs/configuration-migration.md): grouped paths, legacy compatibility, and company overrides.
 - [Profile formatting](docs/profile-formatting.md): paragraphs, bullets, labels, and links that translate cleanly from LinkedIn.
 - [Monthly refresh and release](docs/automation.md): LinkedIn secrets, scheduling, and shareable signed PDFs.
 - [Suggested LinkedIn skills](docs/skills.md): tag-only Codex proposals and optional additions that preserve existing skills and endorsements.

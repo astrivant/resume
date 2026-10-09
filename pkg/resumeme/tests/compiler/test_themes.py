@@ -115,10 +115,10 @@ def test_unknown_theme_fails_before_rendering(tmp_path: Path) -> None:
     path = tmp_path / "resumeme.config.yaml"
     path.write_text("linkedin:\n  username: example-person\nstyle:\n  theme: missing\n", encoding="utf-8")
 
-    with pytest.raises(ValueError, match="Unknown style.theme"):
+    with pytest.raises(ValueError, match="Unknown document.style.theme"):
         load_config(path)
 
-    with pytest.raises(ValueError, match="Unknown style.theme"):
+    with pytest.raises(ValueError, match="Unknown document.style.theme"):
         resolve_style(Style(theme="missing"))
 
 

@@ -23,7 +23,7 @@ then commits its snapshot, referenced media, and signed PDF to the latest `main`
 tree. It preserves newer source files and replaces only generated publication
 outputs. Pages deploys the accepted commit, including the signed PDF.
 
-Enable `pages.enabled` to also update a [GitHub Pages website](pages.md) after
+Enable `publishing.pages.enabled` to also update a [GitHub Pages website](pages.md) after
 that commit is accepted. The optional stage serves `index.html` and the same PDF
 at the configured site path, including custom domains.
 
@@ -194,9 +194,9 @@ comments.
 ## Configure a fork
 
 Copy [.config/resumeme.config.ref.yaml](../.config/resumeme.config.ref.yaml) to `resumeme.config.yaml`,
-set `linkedin.username`, and capture your own profile before publishing. The
-reference keeps optional integrations disabled and uses `readme.mode: auto` with
-`readme.output: README.md`; it contains no personal exclusions or date window.
+set `profile.linkedin.username`, and capture your own profile before publishing. The
+reference keeps optional integrations disabled and uses `publishing.readme.mode: auto` with
+`publishing.readme.output: README.md`; it contains no personal exclusions or date window.
 
 Enable Actions, keep `main` as the default branch, and permit the workflow bot to
 push generated updates through your branch rules. Set the login secrets using
@@ -215,7 +215,7 @@ gh secret set LINKEDIN_PASSWORD
 - `LINKEDIN_PASSWORD`: account password, passed only to capture or explicitly enabled
   ownership/skill updates or saved resume uploads. A login identifier and password are required for tag, monthly, and
   requested manual captures.
-- `OPENAI_API_KEY`: needed if `codex.enabled` or `codex.skills.enabled` is true.
+- `OPENAI_API_KEY`: needed if `automation.codex.enabled` or `automation.codex.skills.enabled` is true.
   Create it on the [OpenAI API keys page](https://platform.openai.com/api-keys) and save it as an Actions secret.
   The first enables main-branch and tag summaries; the second enables tag-only skill proposals.
 - `COSIGN_PRIVATE_KEY` and optional `COSIGN_PASSWORD`: needed when publishing a
@@ -250,7 +250,7 @@ gh secret set LINKEDIN_PASSWORD
   access to this organization Actions secret for tag-only pushes to
   `emmeowzing/resumeme`. Forks skip this job; see [container publication](containers.md#publish-on-a-tag).
 
-`linkedin.username` accepts a public username or a profile URL such as
+`profile.linkedin.username` accepts a public username or a profile URL such as
 `https://www.linkedin.com/in/your-name/`. URLs are normalized to the username,
 discarding tracking parameters and fragments. Configuration remains authoritative
 for profile selection; login secrets do not silently switch the captured owner.
@@ -292,34 +292,35 @@ With the default destination, a fork's first successful publication to `main` re
 the inherited logo and project instructions with the owner's name, a short introduction, a first-page
 image linked to the complete PDF, and LinkedIn, optional GitHub, and release links.
 The preview is committed at `docs/assets/resume-preview.png`. The PDF link follows
-`output.pdf`; release links always target the publishing repository. The page count
+`document.output.pdf`; release links always target the publishing repository. The page count
 comes from the actual PDF, and the name comes from the matching captured profile.
 Hidden headline and contact fields are not copied into the introduction.
 
 ```yaml
-readme:
-  mode: auto
-  output: README.md
-  introduction: null
+publishing:
+  readme:
+    mode: auto
+    output: README.md
+    introduction: null
 ```
 
 | Setting | Behavior |
 | --- | --- |
-| `mode: auto` | Default: generate on repositories GitHub identifies as forks; preserve the upstream project README |
-| `mode: resume` | Generate a personal page even in a standalone repository |
-| `mode: project` | Preserve the existing README, including manual customizations |
-| `output: README.md` | Default destination; replace the repository landing page |
-| `output: docs/FORK_EXAMPLE.md` | Publish the same page separately and retain the project README and its coffee branding |
-| `introduction: null` | Use the shared résumé introduction |
-| `introduction: "Platform engineer building reliable developer infrastructure."` | Replace the introduction with plain text; Markdown and HTML are escaped |
+| `publishing.readme.mode: auto` | Default: generate on repositories GitHub identifies as forks; preserve the upstream project README |
+| `publishing.readme.mode: resume` | Generate a personal page even in a standalone repository |
+| `publishing.readme.mode: project` | Preserve the existing README, including manual customizations |
+| `publishing.readme.output: README.md` | Default destination; replace the repository landing page |
+| `publishing.readme.output: docs/FORK_EXAMPLE.md` | Publish the same page separately and retain the project README and its coffee branding |
+| `publishing.readme.introduction: null` | Use the shared résumé introduction |
+| `publishing.readme.introduction: "Platform engineer building reliable developer infrastructure."` | Replace the introduction with plain text; Markdown and HTML are escaped |
 
-This repository sets `mode: resume` and `output: docs/FORK_EXAMPLE.md` to exercise the
+This repository sets `publishing.readme.mode: resume` and `publishing.readme.output: docs/FORK_EXAMPLE.md` to exercise the
 publication flow and keep a current example for adopters. Every successful PDF
 publication to `main` regenerates the example and first-page preview, committing
 them alongside the PDF. Copying the reference
-configuration selects `output: README.md` for your landing page. Forks retaining
-the author's config can set that field directly. `mode: auto` restricts generation
-to forks; `mode: resume` also generates in
+configuration selects `publishing.readme.output: README.md` for your landing page. Forks retaining
+the author's config can set that field directly. `publishing.readme.mode: auto` restricts generation
+to forks; `publishing.readme.mode: resume` also generates in
 standalone repositories. Nested paths such as `docs/examples/resume.md` are
 supported, with PDF, configuration, and documentation links relative to
 the destination. Images use absolute `raw.githubusercontent.com` URLs targeting
@@ -329,7 +330,7 @@ configured inputs or other outputs.
 
 Names, profile links, and PDF paths are parameterized automatically. After changing
 owners, capture the new owner's profile before pushing; a username mismatch fails
-the build. A profile with only a name is sufficient. Set `github.username` to your
+the build. A profile with only a name is sufficient. Set `profile.github.username` to your
 own account or `null` to omit that link.
 
 Every PDF publication refreshes the README and preview together, including monthly
@@ -339,7 +340,7 @@ packages are needed. The preview retains the PDF's paper proportions and colors.
 Retries produce identical output, and unchanged artifacts do not create extra commits.
 Preview failures block publication; stale runs cannot overwrite newer `main` commits.
 
-Edits to the configured output are overwritten on the next publication. Set `mode: project`
+Edits to the configured output are overwritten on the next publication. Set `publishing.readme.mode: project`
 before maintaining your own page; the current README and preview remain in place.
 Tag releases, pull requests, and non-main branches never replace the tracked README.
 Configuration and operation instructions remain available in [the documentation](README.md),
@@ -475,8 +476,8 @@ branding. The Pages stage then publishes that accepted commit. The container
 stage appends its pull instructions to the same release. See
 [signature verification](README.md#signed-releases).
 
-When `codex.skills.enabled` is true, a separate stage generates an evidence-backed
-`resumeme-skills` artifact. Set `codex.skills.publish: true` to add missing skills
+When `automation.codex.skills.enabled` is true, a separate stage generates an evidence-backed
+`resumeme-skills` artifact. Set `automation.codex.skills.publish: true` to add missing skills
 to LinkedIn after publication. All existing skills and endorsements are retained;
 see [skill proposals and publication](skills.md).
 

@@ -15,13 +15,14 @@ describes that distinction and the 100-skill profile limit.
 ## Configure generation and publication
 
 ```yaml
-codex:
-  # Independent of codex.enabled, which controls résumé summaries on main and tags.
-  skills:
-    enabled: true
-    publish: false
-    max_skills: 20
-    context: Prioritize platform engineering, infrastructure, and developer tooling.
+automation:
+  codex:
+    # Independent of automation.codex.enabled, which controls résumé summaries on main and tags.
+    skills:
+      enabled: true
+      publish: false
+      max_skills: 20
+      context: Prioritize platform engineering, infrastructure, and developer tooling.
 ```
 
 - `enabled`: generate a proposal after the tag's profile capture. The package default
@@ -31,7 +32,7 @@ codex:
 - `max_skills`: maximum proposed names per tag, from 1 to 100; defaults to 20.
 - `context`: selection preferences. Captured text remains the evidence source.
 
-Generation uses `codex.model`, `codex.reasoning_effort`, and the existing `OPENAI_API_KEY`
+Generation uses `automation.codex.model`, `automation.codex.reasoning_effort`, and the existing `OPENAI_API_KEY`
 repository secret. See [model choices and API key setup](codex.md#model-selection).
 Prepared evidence, model output, and supporting quotes can contain personal data;
 see [AI processing and artifact retention](data-handling.md#optional-ai-processing).
@@ -45,8 +46,8 @@ wait for both the validated proposal and a successful signed release. Generation
 can consume API usage and retain its proposal artifact even if another pipeline
 branch later fails; `publish: false` does not disable generation.
 
-To stop all Codex API usage, set `codex.enabled`, `codex.skills.enabled`, and
-`codex.skills.publish` to `false`. PDF builds, signed releases, and Pages publication
+To stop all Codex API usage, set `automation.codex.enabled`, `automation.codex.skills.enabled`, and
+`automation.codex.skills.publish` to `false`. PDF builds, signed releases, and Pages publication
 remain available using the captured profile. No API key is required in this mode.
 Commit the config before pushing the next tag: rerunning an existing tag uses
 the config at that tag, not the updated config on `main`.
@@ -91,7 +92,7 @@ poetry run resumeme publish-skills --tag resume-2026-10 \
     --suggestions .cache/codex/skills/skills.json --dry-run
 ```
 
-After opting in with `codex.skills.publish: true`, omit `--dry-run` to add the
+After opting in with `automation.codex.skills.publish: true`, omit `--dry-run` to add the
 missing skills. Use `--headless` with the LinkedIn login secrets for unattended
 execution. Interactive login waits for you to finish signing in. The command
 requires the supplied tag to point to the checked-out commit; in Actions it also
@@ -107,8 +108,8 @@ CODEX_API_KEY="$OPENAI_API_KEY" codex exec --ephemeral --sandbox read-only \
 ```
 
 Use the [same pinned Codex CLI](codex.md#local-generation-and-preview) as CI and
-pass `--model` if `codex.model` is set and `-c 'model_reasoning_effort="low"'` for
-`codex.reasoning_effort: low` (adjust the value to match your config). The command prepares inputs; CI uses the
+pass `--model` if `automation.codex.model` is set and `-c 'model_reasoning_effort="low"'` for
+`automation.codex.reasoning_effort: low` (adjust the value to match your config). The command prepares inputs; CI uses the
 upstream Codex action to generate the structured response.
 
 ## Preservation and retry behavior
