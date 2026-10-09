@@ -21,7 +21,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-      issues: write
+      pull-requests: write
     steps:
       # workflow_run executes this trusted default-branch script, never code from the pull request.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -37,7 +37,6 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/trivy-results
-          if-no-files-found: ignore
 
       - name: Resolve the report and create a safe comment payload
         env:
