@@ -12,7 +12,7 @@ in collapsible blocks, plus command behavior and examples.
 - [Logging](#logging)
 - [Commands](#commands)
   - [resumeme capture](#resumeme-capture)
-  - [CI capture fan-out](#ci-capture-fan-out)
+  - [CI capture fan-out and fan-in](#ci-capture-fan-out-and-fan-in)
   - [resumeme enrich](#resumeme-enrich)
   - [resumeme validate](#resumeme-validate)
   - [resumeme aggregate](#resumeme-aggregate)
@@ -184,15 +184,19 @@ options:
 
 </details>
 
-### CI capture fan-out
+### CI capture fan-out and fan-in
 
 The Actions workflow uses `capture-plan` to authenticate with the configured
 browser and write an overview plus weighted section routes. Six jobs run
 `capture-shard --index 1` through `capture-shard --index 6` against independent
 restored copies of that browser's encrypted session. They upload one result each
-and never save back to the shared cache. `aggregate` requires all six outputs to
-match the plan exactly before it writes the accepted profile. Firefox and Chrome
-use distinct cache namespaces; a refresh uses only `capture.browser`.
+and never save back to the shared cache. `aggregate` is the fan-in: it requires
+all six outputs to match the plan exactly before writing the accepted profile.
+Firefox and Chrome use distinct cache namespaces; a refresh uses only
+`capture.browser`. See [pipeline concurrency](automation.md#pipeline-concurrency)
+for the workflow topology and its relation to Polyad CI, and the [sharding
+algorithm](automation.md#linkedin-capture-sharding-algorithm) for route weights,
+placement, and completeness checks.
 
 These commands are CI workflow interfaces. Ordinary local `resumeme capture`
 still collects the complete profile in one browser process.

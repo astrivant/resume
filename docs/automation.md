@@ -55,20 +55,63 @@ It has only a `workflow_call` trigger, so it creates no separate push-triggered 
 
 Jobs depend on the artifacts they consume. Once the source SHA is resolved,
 package and container builds run alongside any required LinkedIn capture.
-Python checks validate the selected profile alongside summary generation and
-tag-only skill proposals. PDF compilation and TeXtidote review run independently
-after summaries finish. Summary matrix jobs retain their four-worker limit;
+Capture is a fan-out/fan-in subgraph: bootstrap creates a weighted plan, six
+independent browser jobs collect sections, and aggregation joins their outputs
+only after every shard succeeds and matches the plan. Downstream profile checks,
+summary generation, and tag-only skill proposals start from that accepted
+profile. PDF compilation and TeXtidote review run independently after summaries
+finish. Summary matrix jobs retain their four-worker limit;
 pytest partitions the collected cases across three `ubuntu-24.04` runners with
 four workers each. Lint, type, and schema checks run once in parallel with those
 partitions. A failed partition does not cancel the others, and all partitions
 must succeed before their coverage is combined into the badge report. The
 required verification check still waits for the entire test stage.
 
+### LinkedIn capture sharding algorithm
+
+The plan contains the overview snapshot and the owner-scoped detail routes found
+on the profile. Each route receives a deterministic weight. If an overview
+preview exists, the weight is `max(1, 2 * entry_count + text_characters // 500 + 1)`,
+where `text_characters` is the combined length of entry titles and paragraphs.
+Without a preview, the fallback is `max(1, title_length // 80 + 1)`. The contact
+route has weight `1`. These are estimates of work from profile size, not measured
+browser durations.
+
+The planner sorts routes by descending weight, then by route key for a stable
+tie-break. For each route, it chooses the shard with the lowest accumulated
+weight; equal shard loads go to the lower shard number. Once assignment is done,
+each shard's routes are put back in their original profile order. The worker
+count is fixed at six, so profiles with fewer routes can have empty shards.
+
+Fan-in requires one result from each of the six shards, including empty ones.
+It verifies each result's capture ID, browser, shard index and count, then checks
+that its route keys exactly match the planner's assignment. Missing, duplicate,
+unexpected, or misrouted results fail aggregation without replacing the accepted
+profile. The complete overview is retained, and each collected detail section
+replaces only its matching overview preview.
+
 ```mermaid
 flowchart LR
     source[Source SHA] --> builds[Package and container builds]
     source --> trivy[Trivy secrets and vulnerability scan]
-    source --> profile[Stored or refreshed profile]
+    source --> refresh{Refresh requested?}
+    refresh -->|No| stored[Committed profile for ordinary builds]
+    refresh -->|Yes| bootstrap[Refresh bootstrap]
+    bootstrap --> plan[Overview and weighted section plan]
+    plan --> shard1[Shard 1]
+    plan --> shard2[Shard 2]
+    plan --> shard3[Shard 3]
+    plan --> shard4[Shard 4]
+    plan --> shard5[Shard 5]
+    plan --> shard6[Shard 6]
+    shard1 --> aggregate[Fan-in: validate and aggregate]
+    shard2 --> aggregate
+    shard3 --> aggregate
+    shard4 --> aggregate
+    shard5 --> aggregate
+    shard6 --> aggregate
+    stored --> profile[Selected complete profile]
+    aggregate --> profile
     profile --> tests[Python and schema checks]
     profile --> summaries[Summary matrix]
     profile --> skills[Tag skill proposals]
@@ -88,6 +131,12 @@ flowchart LR
     release --> publishskills[Optional LinkedIn skill additions]
     skills --> publishskills
 ```
+
+This is the same pipeline shape used by [Polyad's CI workflow](https://github.com/astrivant/polyad/blob/main/.github/workflows/ci.yml):
+resolve one source revision, fan out independent work, and fan in at the required
+verification point. In resumeme, the six section workers form the fan-out and the
+strict profile aggregator is their fan-in. GitHub Actions artifacts carry the
+plan and results between jobs; every job checks out the same resolved source SHA.
 
 `CI verification` requires successful source resolution, summaries, Trivy and Python checks,
 document review, source builds, and PDF compilation. Requested captures must also

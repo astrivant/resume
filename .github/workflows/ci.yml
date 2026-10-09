@@ -103,8 +103,8 @@ jobs:
         with:
           groups: main
 
-      # The bootstrap logs in once with the configured browser, captures an overview, and saves its browser-specific encrypted cache.
-      # LinkedIn credentials stay in this job; section workers receive only the encrypted session-cache key.
+      # Fan-out begins with one authenticated overview and a weighted section plan.
+      # LinkedIn credentials stay here; workers receive only the encrypted session-cache key.
       - name: Authenticate and build the section plan
         uses: ./.github/actions/linkedin-session
         with:
@@ -206,6 +206,7 @@ jobs:
           pattern: resumeme-capture-shard-*
           path: .cache/capture/shards/
           merge-multiple: true
+      # Fan-in is strict: incomplete or mismatched shards prevent profile publication.
       - name: Validate and aggregate all six profile shards
         run: poetry run resumeme --config resumeme.config.yaml aggregate
       - name: Export complete capture for downstream stages
