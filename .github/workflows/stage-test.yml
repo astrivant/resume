@@ -26,7 +26,27 @@ jobs:
           ref: ${{ inputs.sha }}
           persist-credentials: false
 
-      # Scan a read-only checkout with the pinned Docker Hub image and ignore no findings or repo-supplied rules.
+      # Rotate the cache key every six hours so Trivy never restores an older database window.
+      - name: Select Trivy database cache window
+        id: trivy-cache-key
+        run: |
+          cache_window=$(( $(date -u +%s) / 21600 ))
+          echo "key=trivy-db-v1-${RUNNER_OS}-0.75.0-$cache_window" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare Trivy database cache paths
+        run: mkdir -p "$RUNNER_TEMP/trivy-cache/db" "$RUNNER_TEMP/trivy-cache/java-db"
+
+      # Cache only downloaded vulnerability databases, not scan results or files from the checkout.
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: trivy-cache
+        continue-on-error: true
+        with:
+          path: |
+            ${{ runner.temp }}/trivy-cache/db
+            ${{ runner.temp }}/trivy-cache/java-db
+          key: ${{ steps.trivy-cache-key.outputs.key }}
+
+      # Keep findings in the mounted JSON file and forward the scanner's console logs to the Actions stdout stream.
       - name: Scan source for vulnerabilities and secrets
         id: scan
         continue-on-error: true
@@ -35,19 +55,34 @@ jobs:
           docker run --rm --pull=always \
             --mount "type=bind,source=$GITHUB_WORKSPACE,target=/src,readonly" \
             --mount "type=bind,source=$RUNNER_TEMP/trivy-results,target=/tmp" \
+            --mount "type=bind,source=$RUNNER_TEMP/trivy-cache,target=/trivy-cache" \
             --workdir /src \
             aquasec/trivy:0.75.0 fs \
-            --config /dev/null \
+            --config "" \
+            --cache-dir /trivy-cache \
             --scanners vuln,secret \
             --format json \
             --output /tmp/raw.json \
             --exit-code 0 \
             --no-progress \
             --timeout 10m \
-            --ignorefile /dev/null \
-            --secret-config /dev/null \
+            --ignorefile "" \
+            --secret-config "" \
             --skip-dirs .git \
-            .
+            . 2>&1
+
+      # Save a complete database only after a successful scan; cache failures must not gate security checks.
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: >-
+          always()
+          && steps.scan.outcome == 'success'
+          && steps.trivy-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        with:
+          path: |
+            ${{ runner.temp }}/trivy-cache/db
+            ${{ runner.temp }}/trivy-cache/java-db
+          key: ${{ steps.trivy-cache-key.outputs.key }}
 
       # Matched values and source snippets are removed before reports, summaries, or PR comments are published.
       - name: Redact report and summarize findings
