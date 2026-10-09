@@ -156,6 +156,67 @@ jobs:
       sha: ${{ needs.source.outputs.sha }}
       refresh: ${{ needs.source.outputs.refresh == 'true' }}
 
+  # Keep PR feedback in the same pipeline as the Trivy scan that produced its sanitized report.
+  trivy-pr-comment:
+    name: Trivy PR summary
+    needs: [source, test-stage]
+    if: >-
+      always()
+      && github.event_name == 'pull_request'
+      && needs.source.result == 'success'
+      && needs.test-stage.result != 'cancelled'
+      && needs.test-stage.result != 'skipped'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      # Use trusted default-branch code to interpret the sanitized artifact, never scripts from the PR checkout.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true
+        with:
+          name: trivy-scan-report
+          path: ${{ runner.temp }}/trivy-results
+
+      - name: Resolve the report and create a safe comment payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          artifact_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts" \
+            --jq '[.artifacts[] | select(.name == "trivy-scan-report")][0].id // empty')
+          artifact_url=
+          if [[ -n "$artifact_id" ]]; then
+              artifact_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts/$artifact_id"
+          fi
+          python3 scripts/ci/trivy-report.py comment \
+            --input "$RUNNER_TEMP/trivy-results/trivy-report.json" \
+            --output "$RUNNER_TEMP/trivy-comment.json" \
+            --artifact-url "$artifact_url" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$RUN_ID"
+
+      - name: Create or update the pull request comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          existing_comment_id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq '.[] | select(.body | contains("<!-- resumeme-trivy-scan -->")) | .id' | tail -n 1)
+          if [[ -n "$existing_comment_id" ]]; then
+              gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing_comment_id" \
+                --input "$RUNNER_TEMP/trivy-comment.json"
+          else
+              gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+                --input "$RUNNER_TEMP/trivy-comment.json"
+          fi
+
   # Both document consumers use identical capture and summary artifacts but run in parallel on separate runners.
   documents-stage:
     name: Review documents
