@@ -50,13 +50,15 @@ def test_pdf_artifact_carries_utc_build_date_across_midnight(tmp_path: Path, mon
     assert (tmp_path / ".cache/publication/brew-date.txt").read_text() == "2026-01-02\n"
 
 
-def test_unsigned_main_build_removes_signatures_for_the_replaced_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("layout", ["legacy", "bundle"])
+def test_unsigned_main_build_removes_signatures_for_the_replaced_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, layout: str) -> None:
     """
     Remove stale release signatures when a routine branch build replaces the tagged PDF.
 
     Args:
         tmp_path (Path): Temporary checkout containing a tracked signed PDF and its sidecars.
         monkeypatch (pytest.MonkeyPatch): Scoped working directory for the publication restore script.
+        layout (str): Former root sidecars or the complete output directory bundle.
 
     Returns:
         None: The new unsigned PDF is staged and verification files for its predecessor are removed.
@@ -75,10 +77,18 @@ def test_unsigned_main_build_removes_signatures_for_the_replaced_pdf(tmp_path: P
         "SHA256SUMS",
         "SHA256SUMS.sigstore.json",
     ]
+
+    if layout == "bundle":
+        release_files = [f"output/release/{name}" for name in ["resume.pdf", *release_files]]
+
     (tmp_path / "resume.pdf").write_bytes(b"%PDF-1.7\nold signed build")
+    (tmp_path / "output").mkdir()
+    (tmp_path / "output/notes.txt").write_text("User-owned output\n", encoding="utf-8")
 
     for filename in release_files:
-        (tmp_path / filename).write_text("old verification material\n", encoding="utf-8")
+        path = tmp_path / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("old verification material\n", encoding="utf-8")
 
     _git(tmp_path, "add", ".")
     _git(tmp_path, "commit", "-m", "signed release")
@@ -90,6 +100,7 @@ def test_unsigned_main_build_removes_signatures_for_the_replaced_pdf(tmp_path: P
 
     staged = _git(tmp_path, "diff", "--cached", "--name-status").splitlines()
     assert staged == sorted([*(f"D\t{name}" for name in release_files), "M\tresume.pdf"], key=lambda item: item.split("\t")[1])
+    assert (tmp_path / "output/notes.txt").read_text() == "User-owned output\n"
 
 
 @pytest.mark.parametrize("matching_revision", [False, True])
@@ -596,6 +607,11 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
     (root / "README.md").write_text("tag source README\n", encoding="utf-8")
     (root / "data").mkdir()
     (root / "data/profile.json").write_text('{"name": "Example"}\n', encoding="utf-8")
+
+    # Migrate old root metadata while retaining an unchanged bundle member from the tagged source.
+    (root / "cosign.pub").write_text("legacy public key\n", encoding="utf-8")
+    (root / "output/release").mkdir(parents=True)
+    (root / "output/release/cosign.pub").write_text("release artifact cosign.pub\n", encoding="utf-8")
     _git(root, "add", ".")
     _git(root, "commit", "-m", "tag source")
     source = _git(root, "rev-parse", "HEAD")
@@ -604,6 +620,8 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
     _git(root, "push", "origin", "refs/tags/resume-selected")
 
     if main_advanced:
+        # A newer unsigned publication removes the bundle, even though its public key did not change on the tag.
+        _git(root, "rm", "output/release/cosign.pub")
         (root / "newer-source.txt").write_text("newer branch content\n", encoding="utf-8")
         (root / "README.md").write_text("newer main README\n", encoding="utf-8")
         _git(root, "add", "newer-source.txt")
@@ -693,10 +711,16 @@ def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path
     assert _git(remote, "show", "main:resume.pdf") == "release artifact resume.pdf"
     assert _git(remote, "show", "main:data/profile.json") == '{"name": "Captured Example"}'
     assert _git(remote, "show", "main:README.md") == ("newer main README" if main_advanced else "tag resume preview")
-    assert _git(remote, "show", "main:key-fingerprint.txt") == "release artifact key-fingerprint.txt"
+    for filename in filenames:
+        assert _git(remote, "show", f"main:output/release/{filename}") == (artifact_dir / filename).read_text().strip()
+
+    assert "cosign.pub" not in _git(remote, "ls-tree", "--name-only", "main").splitlines()
     assert "Resumeme-Signed-Release: resume-selected" in _git(remote, "log", "-1", "--format=%B", "main")
     assert output.read_text(encoding="utf-8") == f"published-sha={published}\n"
-    changed_paths = [*filenames, "data/profile.json"]
+    changed_paths = ["resume.pdf", "cosign.pub", "data/profile.json", *(f"output/release/{name}" for name in filenames)]
+
+    if not main_advanced:
+        changed_paths.remove("output/release/cosign.pub")
 
     if not main_advanced:
         changed_paths.append("README.md")

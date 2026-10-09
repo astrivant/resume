@@ -255,6 +255,10 @@ the pipeline does not automatically redact their contents.
 
 Tag releases attach the generic PDF and its verification files; employer PDFs in
 the build artifact are not individually signed by the current signing script.
+The same signed bundle is committed under `output/release/`, with its PDF also
+copied to the root `resume.pdf`. These files contain public verification material,
+not private signing keys. A later unsigned build removes the bundle from the
+current tree; previous commits and release downloads retain it.
 The signed release footer and notes disclose the release URL, public-key
 fingerprint, source commit, and hashes. Main publication can expose employer
 targets through committed configuration and variant paths as well as PDF text.

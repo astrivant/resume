@@ -481,12 +481,14 @@ The capture artifact is retained for seven days and the PDF build artifact for
 fourteen days. `source.json` identifies the tagged code revision; the live capture
 is an input artifact from the run, not a change to that Git commit.
 
-If `main` has advanced or a newer release exists, the tag remains available on
-GitHub but its older PDF is not copied over current files. A successful tag
-publication adds `resume.pdf`, its detached signature and Cosign bundles,
-`cosign.pub`, the fingerprint, provenance, and both checksum files to `main`.
-The next unsigned branch build removes those sidecars when it replaces the
-signed PDF, so the repository never leaves a stale signature beside new bytes.
+If `main` has advanced, publication overlays only generated files and preserves
+newer source changes. A newer published release prevents an older tag from
+replacing current files. A successful tag
+publication stores the complete signed bundle in `output/release/` and copies
+its PDF to the root `resume.pdf` entry point. The bundle includes the detached
+signature, Cosign bundles, public key, fingerprint, provenance, and checksum files.
+The next unsigned branch build removes the generated bundle when it replaces
+the root PDF. Publication also removes sidecars from the former root layout.
 If `linkedin.ownership.update_about` is enabled, a separate job signs in after
 publication to maintain the public signing fingerprint and releases link in
 About. See [configuration, previews, and recovery](ownership.md).

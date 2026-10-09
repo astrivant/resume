@@ -876,6 +876,13 @@ See [monthly refresh and choosing a release](automation.md). Release assets are:
 - `SHA256SUMS`: SHA-256 hashes of the PDF and its verification metadata.
 - `SHA256SUMS.sigstore.json`: signature bundle authenticating the manifest.
 
+On `main`, the complete signed set lives in `output/release/`. Its PDF is also
+copied to the root `resume.pdf` for the existing résumé link. Run the commands
+below from `output/release/` to verify the checked-in bundle, or from a directory
+containing the downloaded release assets. The manifest and all signed files
+retain their original bytes and filenames. Unsigned branch builds remove the
+bundle when replacing the root PDF.
+
 Release notes include the PDF hash, key fingerprint, source commit, and verification
 commands. Compare the key fingerprint with a separately trusted copy of the signing
 key, then verify downloaded assets:

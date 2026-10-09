@@ -512,8 +512,8 @@ captured snapshot. `--dry-run` opens the browser and prints the proposed About
 text without saving it.
 
 ```bash
-resumeme publish-ownership --public-key cosign.pub --dry-run
-resumeme publish-ownership --public-key cosign.pub
+resumeme publish-ownership --public-key output/release/cosign.pub --dry-run
+resumeme publish-ownership --public-key output/release/cosign.pub
 ```
 
 The local command explicitly authorizes the update regardless of the CI setting

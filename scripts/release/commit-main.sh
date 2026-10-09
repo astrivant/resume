@@ -6,6 +6,7 @@ set -euo pipefail
 : "${RELEASE_TAG:?Set RELEASE_TAG to the published release tag}"
 : "${GH_TOKEN:?Set GH_TOKEN so the latest published release can be checked}"
 artifact_dir="${1:-.cache/publication}"
+release_dir=output/release
 artifacts=(resume.pdf resume.pdf.sig resume.pdf.sigstore.json cosign.pub key-fingerprint.txt source.json SHA256SUMS SHA256SUMS.sigstore.json)
 
 # Bind every downloaded file to the selected source and tag before changing the checkout.
@@ -20,22 +21,27 @@ if [[ "$latest_tag" != "$RELEASE_TAG" ]]; then
     exit 0
 fi
 
-# Copy the complete verified release set so the committed PDF remains independently verifiable.
+# Keep the signed manifest and its inputs together without changing their signed bytes or relative filenames.
+mkdir -p "$release_dir"
+release_paths=()
+
 for artifact in "${artifacts[@]}"; do
     test -s "$artifact_dir/$artifact"
-    cp -- "$artifact_dir/$artifact" "$artifact"
+    cp -- "$artifact_dir/$artifact" "$release_dir/$artifact"
+    release_paths+=("$release_dir/$artifact")
 done
 
-git add -- "${artifacts[@]}"
+# The root PDF remains the public entry point; migrate legacy sidecars out of the root on the next tag publication.
+cp -- "$artifact_dir/resume.pdf" resume.pdf
+git rm --ignore-unmatch -- "${artifacts[@]:1}"
+git add -- resume.pdf "${release_paths[@]}"
 
 # Preserve exactly the generated files staged by this verified tag, including its fresh profile and media.
 staged_tree="$(git write-tree)"
 mapfile -d '' -t generated_paths < <(git diff --cached --name-only -z)
 
-if ((${#generated_paths[@]} == 0)); then
-    echo 'The verified release did not stage any files for main.' >&2
-    exit 1
-fi
+# Include unchanged bundle members: a newer unsigned main may have removed a key that matches the tagged source.
+generated_paths+=(resume.pdf "${release_paths[@]}" "${artifacts[@]:1}")
 
 # The tag source must remain part of main history; unrelated rewrites require review instead of an automatic overlay.
 git fetch --no-tags origin main

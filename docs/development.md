@@ -34,6 +34,7 @@ Supporting files live beside their owning subsystem:
 | [`.config/`](../.config/) | Homebrew dependencies, ESLint configuration, and the copyable reference résumé config |
 | [`.github/`](../.github/) | Actions, repository settings, and GitHub's security and contribution guides |
 | [`docs/`](./) | Usage and development documentation, including the generated fork example |
+| [`output/release/`](../output/release/) | Complete signed PDF bundle: PDF, signatures, public key, fingerprint, checksums, and provenance |
 | [`pkg/resumeme/tests/`](../pkg/resumeme/tests/) | Tests and the sharding plugin loaded explicitly through `pyproject.toml` before pytest parses arguments |
 
 Copy `.config/resumeme.config.ref.yaml` to the root as `resumeme.config.yaml`
@@ -88,7 +89,7 @@ local validation hooks live in [`scripts/validation/`](../scripts/validation/).
 ## Local commits and CI-owned files
 
 [`.gitattributes`](../.gitattributes) marks published PDFs, captured profile/media,
-signature sidecars, and generated presentation assets with `ci-generated`.
+the `output/release/` signing bundle, and generated presentation assets with `ci-generated`.
 This metadata lets compatible local Git shortcuts exclude CI-owned output from
 routine source commits. Native Git commands and CI publication are unaffected.
 Keep these attributes aligned with configured output paths. The authored README

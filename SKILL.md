@@ -214,7 +214,8 @@ without it creates a new identity. Do not rotate an existing key merely to retry
 Follow [signing and verification](docs/README.md#signed-releases).
 
 Tag the intended configuration/code revision. Tag pushes capture LinkedIn and
-rebuild before signing; they do not update `main` or Pages. Missing credentials or
+rebuild before signing, commit the verified bundle to `output/release/` on `main`,
+update the root `resume.pdf`, and deploy Pages when enabled. Missing credentials or
 interactive challenges fail the tag run without falling back to a committed PDF.
 Check the actual Actions run and outputs before reporting publication success.
 Stale runs cannot overwrite newer `main`; rerun against the new revision rather
@@ -230,7 +231,7 @@ command to reconcile rather than blindly submitting again. Stop on ambiguous
 ownership, missing required controls, or validation failure. Detailed recovery
 and private backup locations are in the linked guides.
 
-- **Signing identity:** `publish-ownership --public-key cosign.pub --dry-run`
+- **Signing identity:** `publish-ownership --public-key output/release/cosign.pub --dry-run`
   previews the About text. Omit `--dry-run` only for an authorized live update.
   Use the verified release public key; the CLI preserves surrounding About text.
   The local command writes regardless of the CI `update_about` setting.
