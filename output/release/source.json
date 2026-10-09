@@ -1,0 +1,6 @@
+{
+  "source_commit": "8a9f55e047b879f5692808d80b6746aa3663b357",
+  "tex_image": "drpsychick/texlive-pdflatex@sha256:55b4bef7344394c0aafcd69b1796280f64b871ee2d2f2c3115e8f93ec9fea6ea",
+  "public_key_sha256_der": "02767699f2dd0e097b0684fea09aece52298e4a107fc0e2f01be55c53ed367f2",
+  "release_url": "https://github.com/astrivant/resumeme/releases/tag/v0.4.1"
+}
