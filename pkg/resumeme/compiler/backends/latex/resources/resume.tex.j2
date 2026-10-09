@@ -11,14 +11,14 @@
 ((* if block.text in badges *))
 ((( company_name((0, badges[block.text]), block.text, links) )))
 ((* elif company_labels and block.text|job_destination *))
-\profileparagraph{((( company_label(block.text, links) )))}
+\profileparagraph[1]{((( company_label(block.text, links) )))}
 ((* elif block.text in affiliations *))
 ((* set prefix, company, logo = affiliations[block.text] *))
-\profileparagraph{((( prefix|tex )))%
+\profileparagraph[1]{((( prefix|tex )))%
 ((* if logo.link *))\href{((( logo.link|url )))}{((* endif *))\inlinecompanylogo{((( logo.path )))}((* if logo.link *))}((* endif *))%
 \nobreak\hspace{0.3em}\companytext{((( company|tex )))}}
 ((* elif association *))
-\profileparagraph{((( association[0]|tex )))\hyperlink{((( association[2] )))}{((* if association[1]|job_destination *))\companytext{((* endif *))((( association[1]|tex )))((* if association[1]|job_destination *))}((* endif *))}}
+\profileparagraph[1]{((( association[0]|tex )))\hyperlink{((( association[2] )))}{((* if association[1]|job_destination *))\companytext{((* endif *))((( association[1]|tex )))((* if association[1]|job_destination *))}((* endif *))}}
 ((* elif block.text in locations *))
 ((* set location = locations[block.text] *))
 \profileparagraph{\href{((( location.url|url )))}{((( location.label|tex )))}((( block.text[location.label|length:]|tex_links(links) )))}
@@ -93,7 +93,7 @@
 ((* if badge and badge[0] == -1 *))
 ((( company_name(badge, heading, entry.links, heading=true, anchor=anchor, employer=section.key == 'experience') )))
 ((* elif company_index == -1 *))
-\profileparagraph{((* if anchor *))\hypertarget{((( anchor )))}{}((* endif *))((( company_label(heading, entry.links) )))}\nopagebreak
+\profileparagraph[1]{((* if anchor *))\hypertarget{((( anchor )))}{}((* endif *))((( company_label(heading, entry.links) )))}\nopagebreak
 ((* elif project and project.title_url *))
 \entrytitle{\href{((( project.title_url|url )))}{((( heading|tex )))}}
 ((* elif role *))
@@ -125,14 +125,14 @@
 ((( company_name(badge, entry.paragraphs[0], entry.links) )))
 ((( render_text(entry.paragraphs[1:], entry.links, locations, job_text=section.key == 'experience') )))
 ((* elif company_index == 0 *))
-\profileparagraph{((( company_label(entry.paragraphs[0], entry.links) )))}
+\profileparagraph[1]{((( company_label(entry.paragraphs[0], entry.links) )))}
 ((( render_text(entry.paragraphs[1:], entry.links, locations, job_text=true) )))
 ((* else *))
 ((( render_text(entry.paragraphs, text_links, locations, project.affiliations if project else {}, job_text=section.key == 'experience') )))
 ((* endif *))
 ((# Match the source hierarchy: featured illustrations, compact attachments, organization logos, then tiny site icons. #))
 ((* set gallery = entry.images|reject('equalto', badge[1])|list if badge else entry.images *))
-((* if gallery *))\profileparagraph{((* endif *))
+((* if gallery *))\profileparagraph[1]{((* endif *))
 ((* for image in gallery -*))
 ((* set role = image|image_role -*))
 ((* if image.link *))\href{((( image.link|url )))}{((* endif *))%
@@ -199,6 +199,7 @@
 \Needspace{((* if section.key == 'education' *))11((* else *))5((* endif *))\baselineskip}
 ((* if section.key == 'skills' and skill_cloud *))\begin{minipage}{\linewidth}((* endif *))
 ((* if not tiled *))((( section_heading(section, anchor) )))((* endif *))
+((* if section.key == 'about' and style.about_background *))\begin{aboutpanel}((* endif *))
 ((* if section.key == 'skills' and skill_cloud *))
 % Center the cloud, keeping the section heading aligned with other sections.
 \begingroup\centering
@@ -239,6 +240,7 @@
 ((( render_entry(entry, section, anchor=anchor ~ '-job-' ~ loop.index0 if section.key == 'experience' else '') )))
 ((* endfor *))
 ((* endif *))
+((* if section.key == 'about' and style.about_background *))\end{aboutpanel}((* endif *))
 \par\addvspace{10pt}
 ((* endmacro *))
 ((* macro render_contributions() *))
@@ -285,6 +287,9 @@
 % =============================================================================
 \definecolor{accent}{HTML}{((( style.accent )))}
 \definecolor{canvas}{HTML}{((( style.background )))}
+((* if style.about_background *))
+\definecolor{aboutbackground}{HTML}{((( style.about_background )))}
+((* endif *))
 \definecolor{ink}{HTML}{((( style.ink )))}
 \definecolor{profilename}{HTML}{((( style.name_color )))}
 \definecolor{sectionheading}{HTML}{((( style.heading_color )))}
@@ -313,6 +318,16 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 }
 ((* endif *))
 % Declare mutable dimensions and boxes before the reusable commands that consume them.
+\newcommand{\bodytextwidthratio}{((( "%.6f"|format(style.text_wrap_width) )))}
+% Shared corner radii keep About and project backgrounds visually consistent.
+\newcommand{\tilecornerradius}{4pt}
+\newcommand{\tilepadding}{2mm}
+% About prose needs a little more breathing room than compact project tiles.
+\newcommand{\aboutpadding}{3mm}
+% The sidebar uses compact defaults; body rendering selects the configured spacing below.
+\newcommand{\bodylinespread}{1}
+% Paragraph-scoped overrides keep headings and figures independent of the body line limit.
+\newcommand{\currenttextwidthratio}{1}
 \colorlet{roleconnector}{ink!18}
 \newsavebox{\roleframemeasure}
 \newsavebox{\portraitmeasure}
@@ -373,13 +388,13 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % Reusable commands and environments
 % =============================================================================
 ((* if has_contents *))
-% Keep a direct route back to the first-page Contents list on continuation pages.
+% Return to the top of the first page using Hyperref's page destination.
 \newcommand{\resumemeindexfooter}{%
   \ifnum\value{page}>1\relax
     \begin{tikzpicture}[remember picture,overlay]
       \node[anchor=base west,inner sep=0pt]
         at ([xshift=19mm,yshift=26pt]current page.south west)
-        {\fontsize{7}{9}\selectfont\hyperlink{resumeme-contents}{Index}};
+        {\fontsize{7}{9}\selectfont\hyperlink{page.1}{Index}};
     \end{tikzpicture}%
   \fi
 }
@@ -402,7 +417,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   }%
 }
 ((* if floating_profile *))
-\newcommand{\roletitle}[2][\normalsize]{\profileparagraph{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}}\nopagebreak}
+\newcommand{\roletitle}[2][\normalsize]{\profileparagraph[1]{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}}\nopagebreak}
 ((* else *))
 \newcommand{\roletitle}[2][\normalsize]{{\color{entryheading}#1\bfseries\leavevmode\rolevertex #2}\par\nopagebreak}
 ((* endif *))
@@ -473,6 +488,15 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 }
 % Measure paragraph starts for progression rails. Fixed-column layouts also use the
 % measurement to avoid carrying narrow line breaks onto a wider continuation page.
+% Apply the same width in measured and printed paragraphs without narrowing headings or figures.
+\newcommand{\paragraphcontent}[2]{%
+  \begingroup
+    \def\currenttextwidthratio{#1}%
+    \linespread{\bodylinespread}\selectfont
+    \setlength{\rightskip}{\dimexpr\linewidth-#1\linewidth\relax plus1fil}%
+    #2\par
+  \endgroup
+}
 ((* if floating_profile *))
 \newcommand{\profilesetwidth}{%
   \ifprofilewrapping\ifinner\else%
@@ -510,6 +534,11 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
             \setlength{\profilelineindent}{\hangindent}%
           \fi%
           \addtolength{\profilelinewidth}{-\profilelineindent}%
+          % Scale each line's available content width, including lines that widen below the profile.
+          % TeX applies leftskip separately; keep progression-rail indentation outside the ratio.
+          \addtolength{\profilelinewidth}{-\leftskip}%
+          \setlength{\profilelinewidth}{\currenttextwidthratio\profilelinewidth}%
+          \addtolength{\profilelinewidth}{\leftskip}%
           \edef\profileshapespec{\profileshapespec\space\the\profilelineindent\space\the\profilelinewidth}%
           \advance\profileshapeline by1\relax%
         \ifnum\profileshapeline<\numexpr\profilenarrowlines+2\relax\repeat%
@@ -533,12 +562,12 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \ifnum\value{page}=1\clearpage\fi%
   \fi%
 }%
-\newcommand{\profileparagraph}[1]{%
+\newcommand{\profileparagraph}[2][\bodytextwidthratio]{%
   \par
   \profilesetwidth
   \setlength{\profileparagraphwidth}{\linewidth}%
   \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
-  \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{#1}}%
+  \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{\paragraphcontent{#1}{#2}}}%
   % Fixed columns and headers too tall to wrap remeasure paragraphs when moving to a wider continuation page.
   \ifprofilewrapping\else
     \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\typeblockheight
@@ -546,7 +575,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
         \framebreak
         \setlength{\profileparagraphwidth}{\linewidth}%
         \ifprofileprogression\addtolength{\profileparagraphwidth}{\dimexpr-6mm-0.6pt\relax}\fi
-        \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{#1}}%
+        \sbox{\paragraphmeasure}{\parbox[t]{\profileparagraphwidth}{\paragraphcontent{#1}{#2}}}%
       \fi
     \fi
   \fi
@@ -563,7 +592,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
           \coordinate (role-start-\arabic{profileparagraphid}) at (-3mm-0.3pt,\ht\paragraphmeasure);
         }%
       }%
-      #1\par
+      \paragraphcontent{#1}{#2}%
     \endgroup
     % A zero-height mark records the paragraph's bottom without changing its baseline spacing.
     \profileraildepth=\prevdepth
@@ -584,14 +613,14 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \profilerailpage=\value{page}
     \def\profilerailopacity{100}%
   \else
-    #1\par
+    \paragraphcontent{#1}{#2}%
   \fi
 }
 ((* else *))
-\newcommand{\profileparagraph}[1]{%
+\newcommand{\profileparagraph}[2][\bodytextwidthratio]{%
   \par
   \ifnum\value{page}=1
-    \sbox{\paragraphmeasure}{\parbox{\linewidth}{#1}}%
+    \sbox{\paragraphmeasure}{\parbox{\linewidth}{\paragraphcontent{#1}{#2}}}%
     % Include leading baseline space; underestimating it can overflow before framebreak and flush a second, nearly empty page.
     \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax<\textheight
       \ifdim\dimexpr\ht\paragraphmeasure+\dp\paragraphmeasure+\parskip+\baselineskip\relax>\dimexpr\pagegoal-\pagetotal\relax
@@ -599,7 +628,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
       \fi
     \fi
   \fi
-  #1\par
+  \paragraphcontent{#1}{#2}%
 }
 ((* endif *))
 % Plain LinkedIn labels such as Projects introduce subsections, rather than continuing the preceding bullet.
@@ -607,11 +636,11 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newcommand{\profilesubheading}[1]{%
   \par\addvspace{0.35\baselineskip}%
   \Needspace{2.5\baselineskip}%
-  \profileparagraph{{\color{entryheading}\bfseries #1}}%
+  \profileparagraph[1]{{\color{entryheading}\bfseries #1}}%
 }
 % Keep a company's linked logo beside its name, allowing long employer names to wrap within the remaining width.
 \newcommand{\companyline}[2]{%
-  \profileparagraph{%
+  \profileparagraph[1]{%
     \begin{minipage}[c]{8mm}\centering #1\end{minipage}%
     \hspace{2mm}%
     \begin{minipage}[c]{\dimexpr\linewidth-10mm\relax}\raggedright #2\end{minipage}%
@@ -624,7 +653,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % Each project company gets a fixed logo slot beside a wrapping name and subordinate role titles.
 % Keep the row together so a long name stays aligned within either project column.
 \newcommand{\projectcompany}[3]{%
-  \profileparagraph{%
+  \profileparagraph[1]{%
     \begin{minipage}[t]{4mm}\vspace{0pt}\centering #1\end{minipage}%
     \hspace{1.5mm}%
     \begin{minipage}[t]{\dimexpr\linewidth-5.5mm\relax}%
@@ -643,13 +672,33 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
     \noindent\hspace*{#1em}\makebox[1em][l]{\textbullet}#2%
   }%
 }
-% Keep project pairs top-aligned. Split oversized cards into column-width pieces instead of clipping their text.
+((* if style.about_background *))
+% Framed splits long About sections across flow frames instead of boxing the complete section onto one page.
+\newcommand{\aboutframe}[1]{%
+  \tikz[baseline=(abouttile.base)]{%
+    \node[fill=aboutbackground,rounded corners=\tilecornerradius,inner sep=\aboutpadding,outer sep=0pt]
+      (abouttile) {#1};%
+  }%
+}
+\newenvironment{aboutpanel}{%
+  \par
+  ((* if floating_profile *))\profilesetwidth((* endif *))
+  % Fit the background to the body text measure, leaving the same inset on every side.
+  \let\centerline\leftline
+  \let\FrameCommand\aboutframe
+  % Apply the width limit once to the frame contents, not again to each paragraph inside it.
+  \renewcommand{\profileparagraph}[2][1]{\paragraphcontent{##1}{##2}}%
+  \MakeFramed{\hsize=\dimexpr\linewidth-\width\relax\hsize=\bodytextwidthratio\hsize\FrameRestore}%
+}{\endMakeFramed}
+((* endif *))
+% Project pairs share the same corner radius as an enabled About panel.
+% Keep pairs top-aligned and split oversized cards instead of clipping their text.
 \newcommand{\projecttile}[1]{%
   % Do not paint an empty partner when the final row is odd or one long card has already finished.
   \ifdim\dimexpr\ht#1+\dp#1\relax>0pt
     % Round only the background; preserve the measured content, padding, and row baseline.
     \tikz[baseline=(projecttile.base)]{%
-      \node[fill=projectbackground,rounded corners=4pt,inner sep=\fboxsep,outer sep=0pt] (projecttile) {%
+      \node[fill=projectbackground,rounded corners=\tilecornerradius,inner sep=\fboxsep,outer sep=0pt] (projecttile) {%
         \vtop to\projectheight{\hrule height0pt width\projectwidth\unvbox#1\vfil}%
       };%
     }%
@@ -692,7 +741,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newcommand{\projectrow}[3][]{%
   \begingroup
   % Include the inset inside each existing column's width so backgrounds never consume the gutter.
-  \setlength{\fboxsep}{2mm}%
+  \setlength{\fboxsep}{\tilepadding}%
   \projectwidth=\dimexpr0.48\linewidth-2\fboxsep\relax
   \setbox\projectleft=\vbox{\hsize=\projectwidth\linewidth=\projectwidth #2}%
   \setbox\projectright=\vbox{\hsize=\projectwidth\linewidth=\projectwidth #3}%
@@ -780,7 +829,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* if current_position.logo *))
 ((( company_name((0, current_position.logo), current_position.company, []) )))
 ((* else *))
-\profileparagraph{((( company_label(current_position.company, []) )))}
+\profileparagraph[1]{((( company_label(current_position.company, []) )))}
 ((* endif *))
 ((* endif *))
 ((* if current_position.title *))
@@ -832,7 +881,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \begin{minipage}{\linewidth}
     \raggedright\setlength{\parskip}{3pt}%
     % Pagination belongs to the surrounding frames, never to this measurement box.
-    \renewcommand{\profileparagraph}[1]{#1\par}%
+    \renewcommand{\profileparagraph}[2][\bodytextwidthratio]{\paragraphcontent{#1}{#2}}%
     \renewcommand{\Needspace}[1]{}%
     \profileidentity
   \end{minipage}%
@@ -853,6 +902,9 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* if body *))
 \framebreak
 ((* if floating_profile *))\profilebodytrue((* endif *))
+% Body paragraphs and bullets receive their own spacing without expanding the sidebar or section headings.
+\renewcommand{\bodylinespread}{((( "%.6f"|format(style.line_height) )))}
+\setlength{\parskip}{((( "%.6f"|format(style.paragraph_spacing) )))pt}
 % The section markers below follow the configured order after visibility filtering.
 % Follow the configured section order for body sections; Contact remains with the identity block.
 ((* for anchor, section in body *))

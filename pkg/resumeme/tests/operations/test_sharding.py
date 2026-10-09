@@ -31,7 +31,7 @@ def shard_suite(tmp_path: Path) -> Path:
     Returns:
         Path: Suite with eleven distinct cases and independently measurable source lines.
     """
-    shutil.copyfile(REPOSITORY_ROOT / "conftest.py", tmp_path / "conftest.py")
+    shutil.copyfile(REPOSITORY_ROOT / "pkg/resumeme/tests/sharding.py", tmp_path / "sharding.py")
     (tmp_path / "sample.py").write_text(
         "def identify(value):\n" + "".join(f"    if value == {value}:\n        return {value}\n" for value in range(11))
     )
@@ -59,7 +59,7 @@ def run_shard(suite: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
     environment = dict(os.environ, PYTEST_ADDOPTS="", PYTEST_DISABLE_PLUGIN_AUTOLOAD="1", COVERAGE_FILE=str(suite / ".coverage"))
     environment.pop("COVERAGE_PROCESS_START", None)
     return subprocess.run(
-        [sys.executable, "-m", "pytest", "-p", "xdist.plugin", "-p", "pytest_cov.plugin", "-q", *arguments],
+        [sys.executable, "-m", "pytest", "-p", "sharding", "-p", "xdist.plugin", "-p", "pytest_cov.plugin", "-q", *arguments],
         cwd=suite,
         env=environment,
         capture_output=True,

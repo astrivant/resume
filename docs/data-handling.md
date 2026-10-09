@@ -3,7 +3,7 @@
 This document describes the checked-in CLI and workflows, reviewed on 2026-10-09.
 Paths below are defaults relative to the configuration directory unless stated
 otherwise. Fork changes, custom templates, alternate actions, and runner settings
-can change these boundaries. See [SECURITY.md](../SECURITY.md) for reporting and
+can change these boundaries. See [SECURITY.md](../.github/SECURITY.md) for reporting and
 maintainer responsibilities.
 
 ## Contents
@@ -417,7 +417,7 @@ policy. LinkedIn independently chooses the device label and notification text.
    necessary. Copies in forks, clones, search indexes, recipient downloads,
    backups, or transparency logs may remain beyond your control.
 
-For upstream defects, use the private reporting route in [SECURITY.md](../SECURITY.md).
+For upstream defects, use the private reporting route in [SECURITY.md](../.github/SECURITY.md).
 For fork credentials, infrastructure, or published personal data, contact the
 fork owner. Send synthetic examples or sanitized excerpts, never working secrets.
 

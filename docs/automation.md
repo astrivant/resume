@@ -193,7 +193,7 @@ comments.
 
 ## Configure a fork
 
-Copy [resumeme.config.ref.yaml](../resumeme.config.ref.yaml) to `resumeme.config.yaml`,
+Copy [.config/resumeme.config.ref.yaml](../.config/resumeme.config.ref.yaml) to `resumeme.config.yaml`,
 set `linkedin.username`, and capture your own profile before publishing. The
 reference keeps optional integrations disabled and uses `readme.mode: auto` with
 `readme.output: README.md`; it contains no personal exclusions or date window.
@@ -286,7 +286,7 @@ the command stops without another upload; check LinkedIn before manually rerunni
 
 ## Personal README
 
-See [the fork example](../FORK_EXAMPLE.md) for the generated landing page using this project's current profile and PDF.
+See [the fork example](FORK_EXAMPLE.md) for the generated landing page using this project's current profile and PDF.
 
 With the default destination, a fork's first successful publication to `main` replaces
 the inherited logo and project instructions with the owner's name, a short introduction, a first-page
@@ -309,12 +309,14 @@ readme:
 | `mode: resume` | Generate a personal page even in a standalone repository |
 | `mode: project` | Preserve the existing README, including manual customizations |
 | `output: README.md` | Default destination; replace the repository landing page |
-| `output: FORK_EXAMPLE.md` | Publish the same page separately and retain the project README and its coffee branding |
+| `output: docs/FORK_EXAMPLE.md` | Publish the same page separately and retain the project README and its coffee branding |
 | `introduction: null` | Use the shared résumé introduction |
 | `introduction: "Platform engineer building reliable developer infrastructure."` | Replace the introduction with plain text; Markdown and HTML are escaped |
 
-This repository sets `mode: resume` and `output: FORK_EXAMPLE.md` to exercise the
-publication flow and keep a current example for adopters. Copying the reference
+This repository sets `mode: resume` and `output: docs/FORK_EXAMPLE.md` to exercise the
+publication flow and keep a current example for adopters. Every successful PDF
+publication to `main` regenerates the example and first-page preview, committing
+them alongside the PDF. Copying the reference
 configuration selects `output: README.md` for your landing page. Forks retaining
 the author's config can set that field directly. `mode: auto` restricts generation
 to forks; `mode: resume` also generates in

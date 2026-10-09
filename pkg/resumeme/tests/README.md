@@ -2,6 +2,10 @@
 
 The suite is grouped by the subsystem a maintainer is changing. Pytest still discovers every group from the configured test root.
 
+[`sharding.py`](sharding.py) owns the optional `--shard-count` and `--shard-index`
+flags. `pyproject.toml` loads it before parsing arguments, so both default
+discovery and explicitly selected test paths support CI partitioning.
+
 | Directory | Coverage |
 | --- | --- |
 | `compiler/` | Profile transformations, section layout, links, themes, and LaTeX/PDF output |

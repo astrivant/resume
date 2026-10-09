@@ -209,7 +209,7 @@ def render_readme(profile: Profile, config: Config, repository: str, pages: int)
         f"{' - '.join(links)}\n\n"
         f"[![First page of {name}'s résumé]({preview})]({pdf})\n\n"
         "*Preview of page 1. Click to open the complete PDF.*\n\n"
-        "Built with [resumeme](https://github.com/astrivant/resume). "
+        "Built with [resumeme](https://github.com/astrivant/resumeme). "
         f"[Configuration]({targets['config']}) - [Automation]({targets['automation']}).\n"
     )
 

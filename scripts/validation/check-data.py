@@ -22,7 +22,7 @@ if f"FROM {tex_image()} AS texlive" not in Path("Dockerfile").read_text(encoding
     raise ValueError("Dockerfile and pkg/resumeme/compiler/backends/latex/resources/toolchain.json must pin the same TeX image.")
 
 # Validate the copyable base independently; its placeholder username must never be compared with the owner's snapshot.
-load_config(Path("resumeme.config.ref.yaml"))
+load_config(Path(".config/resumeme.config.ref.yaml"))
 
 configuration = load_config(Path("resumeme.config.yaml"))
 snapshot = project_path(Path.cwd(), configuration.output.profile)

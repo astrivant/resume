@@ -48,7 +48,40 @@
     {
       "key": "contact",
       "title": "Contact info",
-      "entries": []
+      "entries": [
+        {
+          "title": "Your profile",
+          "paragraphs": [
+            "linkedin.com/in/emmeowzing",
+            "Website",
+            "resume.tiger-lily-plants.com (Other)",
+            "Phone",
+            "8573848103 (Mobile)",
+            "Email",
+            "emma.ann.doyle@gmail.com",
+            "Birthday",
+            "November 25",
+            "Edit contact info"
+          ],
+          "links": [
+            {
+              "label": "linkedin.com/in/emmeowzing",
+              "url": "https://www.linkedin.com/in/emmeowzing/",
+              "resolved_url": "",
+              "title": ""
+            },
+            {
+              "label": "resume.tiger-lily-plants.com",
+              "url": "https://www.linkedin.com/resume.tiger-lily-plants.com",
+              "resolved_url": "",
+              "title": ""
+            }
+          ],
+          "images": [],
+          "skills": [],
+          "positions": []
+        }
+      ]
     },
     {
       "key": "about",

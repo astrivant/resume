@@ -203,7 +203,12 @@ def render_profile(
             evolve(
                 section,
                 title="Contact",
-                entries=prepare_contact(section.entries, display_birthday=style.display_birthday, display_websites=style.display_websites),
+                entries=prepare_contact(
+                    section.entries,
+                    display_birthday=style.display_birthday,
+                    display_websites=style.display_websites,
+                    display_phone=style.display_phone,
+                ),
             )
             if section.key == "contact"
             else section

@@ -1,0 +1,19 @@
+# CI publishes these files on main; local tooling can use this attribute to exclude generated output.
+# Custom attributes do not change native Git commands or CI publication.
+/resume.pdf ci-generated
+/resume.pdf.sig ci-generated
+/resume.pdf.sigstore.json ci-generated
+/cosign.pub ci-generated
+/key-fingerprint.txt ci-generated
+/source.json ci-generated
+/SHA256SUMS ci-generated
+/SHA256SUMS.sigstore.json ci-generated
+/data/profile.json ci-generated
+/data/assets/** ci-generated
+/single-origin/**/resume.pdf ci-generated
+/docs/FORK_EXAMPLE.md ci-generated
+/docs/assets/resume-preview.png ci-generated
+/docs/assets/branding/resumeme-logo.png ci-generated
+/docs/assets/branding/brew-date.svg ci-generated
+
+# README.md mixes authored documentation with generated branding; keep it reviewable as source.

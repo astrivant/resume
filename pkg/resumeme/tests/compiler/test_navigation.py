@@ -90,7 +90,10 @@ def test_projects_link_only_to_visible_employment(tmp_path: Path, disabled: str)
     # Check actual targets rather than assuming that a correctly formed link points to a rendered role.
     anchors = re.findall(r"\\hypertarget\{([^}]+)\}", source)
     assert len(anchors) == len(set(anchors))
-    assert all(target in anchors for target in re.findall(r"\\hyperlink\{([^}]+)\}", source))
+
+    # Hyperref creates page.1 during compilation; role and section destinations remain explicit in the source.
+    destinations = {*anchors, "page.1"}
+    assert all(target in destinations for target in re.findall(r"\\hyperlink\{([^}]+)\}", source))
 
 
 def test_repeated_titles_and_suppressed_headings_keep_unique_destinations(tmp_path: Path) -> None:
@@ -119,15 +122,15 @@ def test_repeated_titles_and_suppressed_headings_keep_unique_destinations(tmp_pa
     assert len(anchors) == len(set(anchors)) == 5
 
 
-def test_continuation_pages_link_back_to_contents(tmp_path: Path) -> None:
+def test_continuation_pages_link_back_to_first_page_top(tmp_path: Path) -> None:
     """
-    Add a footer shortcut on continuation pages that targets the first-page Contents heading.
+    Add a footer shortcut on continuation pages that targets the top of the first page.
 
     Args:
         tmp_path (Path): Isolated template output directory.
 
     Returns:
-        None: The continuation footer uses the same internal destination as the visible Contents list.
+        None: The continuation footer targets Hyperref's page destination while Contents retains its own anchor.
     """
     profile = Profile(
         "example-person",
@@ -138,5 +141,5 @@ def test_continuation_pages_link_back_to_contents(tmp_path: Path) -> None:
 
     assert r"\AddToHook{shipout/foreground}{\resumemeindexfooter}" in source
     assert r"\ifnum\value{page}>1\relax" in source
-    assert r"\hyperlink{resumeme-contents}{Index}" in source
+    assert r"\hyperlink{page.1}{Index}" in source
     assert r"\hypertarget{resumeme-contents}{}" in source

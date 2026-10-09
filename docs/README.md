@@ -2,25 +2,27 @@
 
 ## Contents
 
-- [Install](#install)
-- [Configuration](#configuration)
-- [Job filtering](#job-filtering)
-- [Education filtering](#education-filtering)
-- [GitHub contribution graph](#github-contribution-graph)
-- [Job text and subheadings](#job-text-and-subheadings)
-- [Environment variables](#environment-variables)
-- [Sensitive data handling](data-handling.md)
-- [Profile schema and skill clouds](profile-schema.md)
-- [Local capture](#local-capture)
-- [Rendering and PDF builds](#rendering-and-pdf-builds)
-- [Container usage and tag publication](containers.md)
-- [Signed releases](#signed-releases)
-- [LinkedIn signing identity](ownership.md)
-- [LinkedIn application resume uploads](linkedin-resume.md)
-- [Pipeline and ownership](#pipeline-and-ownership)
-- [Development](development.md)
-- [Contributing](../CONTRIBUTING.md)
-- [Capture limits and recovery](#capture-limits-and-recovery)
+- [Configuration and operation](#configuration-and-operation)
+  - [Contents](#contents)
+  - [Install](#install)
+  - [Configuration](#configuration)
+    - [First-page profile placement](#first-page-profile-placement)
+    - [Section visibility, order, and tiles](#section-visibility-order-and-tiles)
+    - [Header and skills](#header-and-skills)
+  - [Job filtering](#job-filtering)
+  - [Education filtering](#education-filtering)
+  - [GitHub contribution graph](#github-contribution-graph)
+  - [Job text and subheadings](#job-text-and-subheadings)
+  - [Environment variables](#environment-variables)
+  - [Local capture](#local-capture)
+  - [Rendering and PDF builds](#rendering-and-pdf-builds)
+    - [Document layout](#document-layout)
+    - [Project consolidation and links](#project-consolidation-and-links)
+    - [Templates and assets](#templates-and-assets)
+  - [Signed releases](#signed-releases)
+  - [Pipeline and ownership](#pipeline-and-ownership)
+    - [Document review](#document-review)
+  - [Capture limits and recovery](#capture-limits-and-recovery)
 
 ## Install
 
@@ -32,16 +34,16 @@ poetry install --only main
 poetry run resumeme --help
 ```
 
-On macOS, install the host tools from [Brewfile](../Brewfile) and select Python:
+On macOS, install the host tools from [Brewfile](../.config/Brewfile) and select Python:
 
 ```bash
-brew bundle install
+brew bundle install --file .config/Brewfile
 pipx install --python "$(brew --prefix python@3.13)/bin/python3.13" "poetry==2.5.1"
 export PATH="${PIPX_BIN_DIR:-$HOME/.local/bin}:$PATH"
 poetry env use "$(brew --prefix python@3.13)/bin/python3.13"
 ```
 
-Copy [resumeme.config.ref.yaml](../resumeme.config.ref.yaml) to `resumeme.config.yaml`
+Copy [.config/resumeme.config.ref.yaml](../.config/resumeme.config.ref.yaml) to `resumeme.config.yaml`
 for a new owner, then set `linkedin.username`,
 [capture your profile](#local-capture), then follow [fork publication setup](automation.md#configure-a-fork).
 
@@ -49,7 +51,7 @@ for a new owner, then set `linkedin.username`,
 
 `resumeme.config.yaml` is the active user configuration. The checked-in copy contains
 the author's personal settings. Start a new fork by copying
-[resumeme.config.ref.yaml](../resumeme.config.ref.yaml) over it, then change
+[.config/resumeme.config.ref.yaml](../.config/resumeme.config.ref.yaml) over it, then change
 `linkedin.username`. The reference lists package defaults and commented examples;
 it is not loaded automatically or merged with the active config. Users must capture their own
 profile while signed in. Configuration and snapshot ownership are validated before
@@ -115,9 +117,13 @@ See [logging controls and record fields](CLI.md#logging).
 | `codex.companies` | `[]` | Company usernames and job URLs for additional tailored PDFs under `single-origin/`; see [company summaries](codex.md#single-origin-resumes) |
 | `style.profile_column_side` | `left` | Place the profile in a separate first-page column on the left or right |
 | `style.profile_column_wrap` | `false` | Allow body text beneath a right-side profile; ignored for the left-side layout |
+| `style.text_wrap_width` | `0.9` | Body text uses this fraction of its available column/page width; greater than 0 and at most 1 |
 | `style.paper` | `letter` | `letter` (8.5 x 11 inches) or `a4` |
 | `style.accent` | `245135` | Six-digit hexadecimal link color; deep plant green by default |
 | `style.background` | `FFFFFF` | Six-digit hexadecimal page background; white by default |
+| `style.about_background` | `null` | Optional six-digit hex About panel color, without `#`; uses project tile corners and padding |
+| `style.line_height` | `1.0` | Body baseline spacing multiplier, from `1` to `2`; `1.1` adds 10% space between lines |
+| `style.paragraph_spacing` | `3` | Space between body paragraphs and bullets in points, from `0` to `24` |
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; disabled in the author's personal config |
 | `style.display_profile_photo` | `true` | Display the round profile portrait in either first-page column; independent of the cover photo |
@@ -129,6 +135,7 @@ See [logging controls and record fields](CLI.md#logging).
 | `style.show_connection_link` | `false` | Link the count, or a concise Connections label, to the captured connections page |
 | `style.display_birthday` | `false` | Show the birthday field when Contact is enabled |
 | `style.display_websites` | `false` | Show captured Website fields in Contact; independent of LinkedIn, Email, and GitHub |
+| `style.display_phone` | `true` | Show captured Phone fields in Contact; independent of Website fields, while Email remains available |
 | `style.website_icon` | `null` | Local image path relative to the config directory, or direct public image/favicon URL, beside enabled Website fields |
 | `style.display_current_position` | `null` | Sidebar company/logo/title: latest visible role; `true` uses the latest captured role regardless of filters, `false` hides it |
 | `style.skills_word_cloud` | `true` | Render Skills as a cloud weighted by references and endorsements |
@@ -163,6 +170,14 @@ text, contact details, contribution graph, and contents. An oversized profile
 falls back to breakable columns so long contact information remains visible.
 The wrap setting is ignored on the left. Both settings support inline theme overrides.
 
+`style.text_wrap_width: 0.9` keeps body paragraphs and bullets within 90% of their
+available text area. This follows the narrower body column on page one and the
+full text area on later pages, regardless of which side holds the profile. With
+floating text enabled, the limit expands as the text clears the profile. Headings,
+logos, figures, and page margins keep their existing dimensions. This is a maximum
+line width, not a minimum line-fill or justification rule; paragraph endings may
+still be short. Set `1.0` for full-width text. Inline themes can override the value.
+
 ### Section visibility, order, and tiles
 
 The top-level `section_order` array controls both visibility and order. Move an
@@ -184,7 +199,7 @@ package's full default list. Use lowercase `sections[].key` values from
 `data/profile.json`; add unfamiliar keys explicitly to include them. Known aliases
 are accepted, with their first occurrence setting the position.
 
-[resumeme.config.ref.yaml](../resumeme.config.ref.yaml) lists every known section, with
+[.config/resumeme.config.ref.yaml](../.config/resumeme.config.ref.yaml) lists every known section, with
 `contact`, `featured`, `recommendations`, `interests`, `causes`, `organizations`, and
 `languages` commented out. The same visibility rules apply before project
 consolidation, skill scoring, and Codex summary generation. The captured snapshot
@@ -203,6 +218,7 @@ The compiler removes repeated LinkedIn profile URLs and edit controls, and links
 website captions inline. Birthday visibility still follows `style.display_birthday`.
 Email addresses display as an envelope icon and a clickable `Email` label.
 GitHub and its contribution graph follow the other contact links, immediately above Contents.
+Phone visibility follows `style.display_phone` independently of Website visibility; Email remains available whenever Contact is enabled.
 Captured Website fields, such as linktr.ee, are hidden by default. Set
 `style.display_websites: true` to show them. Optionally set `style.website_icon`
 to an image path relative to the configuration directory, such as
@@ -388,6 +404,8 @@ Tag builds refresh enabled contribution graphs under the configured date window.
 The release signs that run's compiled PDF without fetching or rerendering the graph again.
 
 ## Job text and subheadings
+
+For practical editing examples, see [formatting your LinkedIn profile](profile-formatting.md).
 
 Job descriptions retain their internal hierarchy. Standalone labels such as
 "Responsibilities," "Projects," and "Technologies" use bold body-sized text with a
@@ -591,6 +609,17 @@ The first page has an identity column and a content column starting with About b
 default; `section_order` controls the content sequence. Subsequent pages use the
 full text width. Projects and Featured use two-column tiles.
 
+Set `style.line_height` and `style.paragraph_spacing` independently to open up
+body text, including About, experience descriptions, and tile descriptions.
+The sidebar and heading spacing remain independent. These settings change layout,
+not the captured paragraph boundaries. This repository uses `1.1` line height
+and `6` points between paragraphs; the reference config retains `1.0` and `3`.
+
+`style.about_background: 'F0F4F7'` adds a pale gray-blue panel around About,
+with the same 4-point corner radius and 2 mm padding as project tiles. Set it to
+`null` to remove the panel. The panel follows its available column width and
+splits across pages for long sections. All three settings support inline themes.
+
 With `style.profile_column_side: right` and `style.profile_column_wrap: true`, each body paragraph adjusts its line widths
 to the measured profile height. Portraits, headline, social links, contribution
 graph, contents, and leading Contact information all participate in that measurement.
@@ -611,6 +640,9 @@ stays in its first-page column and full-width tiles and skills start on a later 
 | Lists | Recognized ASCII, Unicode, checkbox, and ordered markers render as bullets with nested indentation |
 | Locations | Captured job locations link to Google Maps; work arrangements remain plain text |
 | Images | Portrait: 36.4 mm; organization logos: up to 8 mm; icons: up to 3.5 mm; attachments: up to 24 x 14 mm |
+
+When Contents is enabled, the Index link on pages after page one returns to the
+top of the first page. Contents links then navigate to individual sections.
 
 Photos and logos retain their proportions; only portraits are cropped. Section and
 entry text remains complete across page breaks. LinkedIn UI attribution, repeated

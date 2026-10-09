@@ -393,8 +393,12 @@ class StyleOverrides(TypedDict, total=False):
         paper (str): A4 or letter paper name.
         profile_column_side (Literal["left", "right"]): First-page profile placement in a separate column.
         profile_column_wrap (bool): Allow body text beneath a right-side profile; False keeps separate first-page columns.
+        text_wrap_width (float): Fraction of the available body-text width, independently of profile placement.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
+        about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
+        line_height (float): Multiplier for the font's normal body-text baseline spacing.
+        paragraph_spacing (float): Separation between body paragraphs in points.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile cover photo.
         display_profile_photo (bool): Whether to display the profile portrait.
@@ -407,6 +411,7 @@ class StyleOverrides(TypedDict, total=False):
         show_connection_link (bool): Whether to link to the captured connections page.
         display_birthday (bool): Whether to display the birthday field in enabled contact information.
         display_websites (bool): Whether to display captured Website fields in Contact.
+        display_phone (bool): Whether to display captured Phone fields in Contact; email remains always available.
         website_icon (str | None): Configuration-relative raster path or direct public image/favicon URL for displayed websites.
         skills_word_cloud (bool): Whether to replace the Skills list with a cloud.
         skills_allow_vertical (bool): Whether the cloud may mix vertical and horizontal labels.
@@ -423,8 +428,12 @@ class StyleOverrides(TypedDict, total=False):
     paper: str
     profile_column_side: Literal["left", "right"]
     profile_column_wrap: bool
+    text_wrap_width: float
     accent: str
     background: str
+    about_background: str | None
+    line_height: float
+    paragraph_spacing: float
     font_size: int
     show_header_photo: bool
     display_profile_photo: bool
@@ -437,6 +446,7 @@ class StyleOverrides(TypedDict, total=False):
     show_connection_link: bool
     display_birthday: bool
     display_websites: bool
+    display_phone: bool
     website_icon: str | None
     skills_word_cloud: bool
     skills_allow_vertical: bool
@@ -459,8 +469,12 @@ class Style:
         paper (str): A4 or letter paper name.
         profile_column_side (Literal["left", "right"]): First-page profile placement in a separate column.
         profile_column_wrap (bool): Allow body text beneath a right-side profile; disabled by default and ignored on the left.
+        text_wrap_width (float): Fraction of available body-text width; 0.9 reserves the rightmost ten percent on every page.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
+        about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
+        line_height (float): Multiplier for the font's normal body-text baseline spacing.
+        paragraph_spacing (float): Separation between body paragraphs in points.
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile's cover/background photo.
         display_profile_photo (bool): Display the profile portrait; enabled by default.
@@ -473,6 +487,7 @@ class Style:
         show_connection_link (bool): Link the count or a concise Connections label to its captured destination.
         display_birthday (bool): Display the birthday field when contact information is enabled.
         display_websites (bool): Display captured Website fields in Contact; hidden by default.
+        display_phone (bool): Display captured Phone fields in Contact; enabled by default and independent of websites and email.
         website_icon (str | None): Configuration-relative raster path or direct public image/favicon URL for displayed websites.
         skills_word_cloud (bool): Replace the Skills list with a cloud weighted by references and endorsements.
         skills_allow_vertical (bool): Allow a mix of vertical and horizontal cloud labels; False keeps all labels horizontal.
@@ -491,8 +506,12 @@ class Style:
     paper: str = "letter"
     profile_column_side: Literal["left", "right"] = "left"
     profile_column_wrap: bool = False
+    text_wrap_width: float = 0.9
     accent: str = "245135"
     background: str = "FFFFFF"
+    about_background: str | None = None
+    line_height: float = 1.0
+    paragraph_spacing: float = 3.0
     font_size: int = 10
     show_header_photo: bool = True
     display_profile_photo: bool = True
@@ -505,6 +524,7 @@ class Style:
     show_connection_link: bool = False
     display_birthday: bool = False
     display_websites: bool = False
+    display_phone: bool = True
     website_icon: str | None = None
     skills_word_cloud: bool = True
     skills_allow_vertical: bool = False

@@ -31,7 +31,7 @@ Review inherited `github.username`, job and school exclusions, date windows,
 README destination, Pages domain, and optional Codex/live-update settings when
 setting up a new owner. Apply the user's choices while preserving YAML comments.
 For a first setup still using the author's configuration, copy
-[resumeme.config.ref.yaml](resumeme.config.ref.yaml) to `resumeme.config.yaml` and
+[.config/resumeme.config.ref.yaml](.config/resumeme.config.ref.yaml) to `resumeme.config.yaml` and
 set the confirmed username. The reference uses package defaults and disables
 optional integrations; preserve an existing owner's customized config.
 The checked-in configuration contains personal overrides; do not assume it is the
@@ -65,7 +65,7 @@ when requested or already authorized.
 
 For a source checkout, use Python 3.13+, Poetry 2.5.1, and the committed lockfile.
 Reuse the project environment, not an unrelated inherited virtualenv. Follow the
-[installation guide](docs/README.md#install) and `Brewfile` on macOS when tools are
+[installation guide](docs/README.md#install) and `.config/Brewfile` on macOS when tools are
 missing. Install Firefox (default) or Chrome for capture according to
 `capture.browser`. A normal local PDF build needs a running Docker daemon.
 
@@ -129,6 +129,7 @@ Follow these settings and their linked contracts:
 | Job text | Tune `experience.reflow_soft_breaks`, literal `experience.subheadings`, and `style.highlight_job_subheadings` to preserve paragraphs while recognizing small headers. [Text parsing](docs/README.md#job-text-and-subheadings). |
 | Header and page style | `style.profile_column_side` selects left or right placement with separate columns by default. `style.profile_column_wrap: true` allows body text beneath the right-side profile. Configure paper, headline, cover photo, contact/birthday/connection visibility, and contents links through the [header options](docs/README.md#header-and-skills). |
 | Themes and company hierarchy | `style.theme` selects an entry in `style.themes`, whose values override base fields. Use `tiger`, inline palettes, company font size/color, and link/skill colors as requested. [Themes](docs/themes.md). |
+| Body spacing and About panel | `style.line_height` scales body baseline spacing; `style.paragraph_spacing` sets paragraph gaps in points. `style.about_background` accepts a six-digit hex color or `null`; enabled panels share project tile corners. These fields support inline themes. [Document layout](docs/README.md#document-layout). |
 | Skills | The cloud shows at most 20 skills, sized by references plus twice observed endorsements and colored by relative endorsements. `style.skills_allow_vertical` allows rotated labels; `skills_word_cloud: false` uses the list. Raw scores remain in `tex/skills.weights.json`. [Scoring](docs/profile-schema.md#scoring-and-rendering). |
 | GitHub activity | `github.username` supplies the profile link. `github.contributions` selects enabled state, months, profile/appendix placement, and `as_of`. [Calendar behavior](docs/README.md#github-contribution-graph). |
 | Custom layouts | `template` selects a Jinja/LaTeX template. Read its [interface](docs/templates.md) and the [compiler architecture](docs/compiler.md) before changing rendering code. |
@@ -199,7 +200,7 @@ Browser state, diagnostics, API credentials, and signing keys stay out of commit
 | --- | --- |
 | Push or manual build on `main` | Verify committed inputs, optionally generate enabled generic/company summaries, and commit accepted PDFs back to `main`. |
 | Monthly schedule or manual `refresh=true` on `main` | Authenticate once with LinkedIn login secrets, capture six section shards in parallel on the configured browser, aggregate and verify the complete profile, then commit fresh inputs and PDFs. Interactive challenges leave `main` unchanged. |
-| Personal README | Set `readme.output: README.md` for a fork landing page with its name, clickable first-page preview, and links. This repository uses `FORK_EXAMPLE.md`; forks inherit that override. `mode: project` preserves handwritten content. [README publication](docs/automation.md#personal-readme). |
+| Personal README | Set `readme.output: README.md` for a fork landing page with its name, clickable first-page preview, and links. This repository uses `docs/FORK_EXAMPLE.md`; forks inherit that override. `mode: project` preserves handwritten content. [README publication](docs/automation.md#personal-readme). |
 | Coffee branding | Project READMEs keep the generated coffee-stained logo and linked Brew date badge. Accepted updates retain a fading recent stain trail; retries do not add stains. [Branding renderer](docs/assets/branding/README.md). |
 | Pages | `resumeme site` prepares files only. Enable `pages.enabled` and GitHub Actions as the Pages source to deploy the accepted PDF. `pages.path` selects the site directory; `custom_domain` checks an existing setup and does not configure DNS. [Pages setup](docs/pages.md). |
 | User-created tag | Authenticate once with LinkedIn login secrets, capture six section shards in parallel on the configured browser, aggregate and validate the complete profile, then build and sign this run's generic PDF with its release/key footer. Enabled summaries and skill proposals use the same capture. Release the PDF, signature bundles, public key, fingerprint, hashes, and provenance. The tag also publishes the verified GHCR image and adds pull commands to release notes. Only `astrivant/resumeme` additionally publishes `emmeowzing/resumeme` to Docker Hub using `DOCKER_HUB_TOKEN_EMMEOWZING`; forks skip that job. |

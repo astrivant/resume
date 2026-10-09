@@ -149,7 +149,19 @@ def test_module_entry_point_and_hook_selection(tmp_path: Path) -> None:
     assert hook["language"] == "python" and hook.get("pass_filenames", True)
     assert hook["types"] == ["yaml"]
 
-    for path in ("resumeme.config.yaml", "resumeme.config.ref.yaml", "profiles/resumeme.config.work.yml"):
+    for path in (
+        "resumeme.config.yaml",
+        ".config/resumeme.config.ref.yaml",
+        "resumeme.config.ref.yaml",
+        "profiles/resumeme.config.work.yml",
+    ):
         assert re.search(hook["files"], path)
 
     assert not re.search(hook["files"], ".github/workflows/ci.yml")
+
+    # The local hook validates the moved reference file as well as the active root config.
+    local = yaml.safe_load((root / ".pre-commit-config.yaml").read_text())
+    validator = next(item for repo in local["repos"] if repo["repo"] == "local" for item in repo["hooks"] if item["id"] == hook["id"])
+    assert re.search(validator["files"], "resumeme.config.yaml")
+    assert re.search(validator["files"], ".config/resumeme.config.ref.yaml")
+    assert not re.search(validator["files"], ".github/workflows/ci.yml")

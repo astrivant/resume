@@ -264,7 +264,7 @@ def test_readme_rejects_a_snapshot_from_another_owner() -> None:
 
 
 @pytest.mark.parametrize("damage", [None, "pdf", "preview", "markdown"])
-@pytest.mark.parametrize("output", ["README.md", "FORK_EXAMPLE.md", "docs/examples/resume.md"])
+@pytest.mark.parametrize("output", ["README.md", "docs/FORK_EXAMPLE.md", "docs/examples/resume.md"])
 def test_readme_bundle_is_bound_to_the_published_pdf(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, damage: str | None, output: str
 ) -> None:

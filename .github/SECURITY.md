@@ -15,7 +15,7 @@ fields when present. The upstream project does not operate a service that receiv
 fork captures or credentials; configured workflows communicate with LinkedIn,
 GitHub, and enabled external providers.
 
-Before enabling automation, read the [data-handling inventory](docs/data-handling.md).
+Before enabling automation, read the [data-handling inventory](../docs/data-handling.md).
 It documents each storage location, recipient, artifact retention period,
 encryption boundary, cleanup limit, and recovery procedure. In particular:
 
@@ -40,15 +40,15 @@ encryption boundary, cleanup limit, and recovery procedure. In particular:
   restrict runner access, and protect key backups. Generated backup directories
   contain both the encrypted private key and its password.
 
-The [session-cache guide](docs/linkedin-session-cache.md) covers setup. The
-[disable/delete/recovery procedure](docs/data-handling.md#disable-delete-or-respond-to-exposure)
+The [session-cache guide](../docs/linkedin-session-cache.md) covers setup. The
+[disable/delete/recovery procedure](../docs/data-handling.md#disable-delete-or-respond-to-exposure)
 explains why deleting a cache or changing a display setting does not revoke an
 account session or remove already-published copies.
 
 CI also reuses installed Python dependencies and Poetry through exact-key Actions
 caches. These contain executable public packages, not browser sessions or secret
 files, and are saved before commands use publication credentials. They are not
-encrypted by resumeme. See [dependency cache boundaries](docs/data-handling.md#dependency-environment-caches)
+encrypted by resumeme. See [dependency cache boundaries](../docs/data-handling.md#dependency-environment-caches)
 before adding private dependencies or extending the archived paths.
 
 ## Automated source scanning
@@ -65,10 +65,10 @@ secret text. CI retains the sanitized report artifact for 90 days. A follow-up
 job in the same pipeline posts or updates a pull request comment with finding counts and links to
 the report and scan logs. That job checks out the default branch, not pull
 request code, and alone receives permission to write issue comments. See the
-[Trivy pipeline details](docs/automation.md#trivy-security-scan) and its
-[scanner stage](.github/workflows/stage-security.yml),
-[report redaction code](scripts/ci/trivy-report.py), and
-[pull request comment job](.github/workflows/ci.yml).
+[Trivy pipeline details](../docs/automation.md#trivy-security-scan) and its
+[scanner stage](workflows/stage-security.yml),
+[report redaction code](../scripts/ci/trivy-report.py), and
+[pull request comment job](workflows/ci.yml).
 
 This is a source-filesystem scan, not a scan of the built container image, runner,
 or live services. A clean result cannot establish that the application or its

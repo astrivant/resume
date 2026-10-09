@@ -120,6 +120,68 @@ def _assert_cloud_centered(path: Path, cloud: Path) -> int:
     return len(reader.pages)
 
 
+def check_about_panels(root: Path) -> None:
+    """
+    Compile long About panels to verify spacing, links, and breakable layout in each profile arrangement.
+
+    Args:
+        root (Path): Scratch directory for synthetic TeX, assets, and PDFs.
+
+    Returns:
+        None: Every paragraph and link survives, configured spacing is measured, and subsequent sections remain visible.
+
+    Raises:
+        AssertionError: A panel clips content, changes paragraph order, or ignores configured typography.
+    """
+    sentence = "Build practical tools and reliable platforms for engineering teams, improving delivery speed and operational consistency."
+    paragraphs = [f"Paragraph {index:03d}. {sentence}" for index in range(60)]
+    profile = Profile(
+        "layout-check",
+        "Layout Check",
+        sections=[
+            Section("about", "About", [Entry(paragraphs=paragraphs, links=[Link("Documentation", "https://example.org/docs")])]),
+            Section("experience", "Experience", [Entry("Engineer", ["Content after About."])]),
+        ],
+    )
+
+    # Fixed and floating columns share the same panel contract, including continuation pages.
+    for side, wrap in (("left", False), ("right", False), ("right", True)):
+        name = f"about-{side}-{wrap}"
+        config = Config(
+            LinkedIn(profile.username),
+            style=Style(
+                profile_column_side="left" if side == "left" else "right",
+                profile_column_wrap=wrap,
+                line_height=1.2,
+                paragraph_spacing=8,
+                about_background="F0F4F7",
+            ),
+            output=Output(tex=f"{name}/resume.tex", pdf=f"{name}/resume.pdf"),
+        )
+        pdf = compile_pdf(render_profile(profile, config, root), config, root)
+        rows = _rows(pdf)
+        text = " ".join(row[1] for row in rows)
+        assert re.findall(r"Paragraph \d{3}", text) == [f"Paragraph {index:03d}" for index in range(60)]
+        assert "Content after About." in text
+        assert any(page == 1 and "Paragraph 000" in value for page, value, _, _ in rows)
+        assert any(page > 1 and "Paragraph" in value for page, value, _, _ in rows)
+
+        # Read successive PDF baselines: 12pt nominal leading times 1.2, plus an 8pt paragraph gap, converted to PDF points.
+        start = next(index for index, row in enumerate(rows) if "Paragraph 000" in row[1])
+        following = next(index for index, row in enumerate(rows) if "Paragraph 001" in row[1])
+        assert following > start + 1, "The spacing fixture requires a multiline paragraph"
+        leading = 12 * 1.2 * 72 / 72.27
+        assert abs(rows[start][3] - rows[start + 1][3] - leading) < 0.5, "Body line spacing was not applied"
+        assert abs(rows[following - 1][3] - rows[following][3] - leading - 8 * 72 / 72.27) < 0.5, "Paragraph gap was not applied"
+        destinations = {
+            str(annotation.get_object().get("/A", {}).get("/URI", ""))
+            for page in PdfReader(pdf).pages
+            for annotation in page.get("/Annots", [])
+        }
+        assert "https://example.org/docs" in destinations, "About panel lost its clickable link"
+        print(f"{name}: all paragraphs and links preserved across pages; line and paragraph spacing verified")
+
+
 def main() -> None:
     """
     Compile bounded layout fixtures using the selected installed PDF backend.
@@ -146,6 +208,7 @@ def main() -> None:
     # Both previews use one uninterrupted paragraph, so moving it wholesale below the profile cannot pass.
     with tempfile.TemporaryDirectory(prefix="profile-layout-", dir=Path.cwd()) as directory:
         root = Path(directory)
+        check_about_panels(root)
         Image.new("RGB", (200, 200), "#dddddd").save(root / "portrait.png")
         Image.new("RGB", (600, 150), "#eeeeee").save(root / "cover.png")
 

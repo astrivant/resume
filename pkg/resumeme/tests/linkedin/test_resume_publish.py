@@ -259,7 +259,7 @@ def test_resume_replacement_defaults_to_opt_out_in_reference_and_opt_in_for_auth
     root = REPOSITORY_ROOT
 
     assert not LinkedInResume().replace_existing
-    assert not load_config(root / "resumeme.config.ref.yaml").linkedin.resume.replace_existing
+    assert not load_config(root / ".config/resumeme.config.ref.yaml").linkedin.resume.replace_existing
     assert load_config(root / "resumeme.config.yaml").linkedin.resume.replace_existing
 
 

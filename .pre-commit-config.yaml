@@ -7,6 +7,7 @@ repos:
     hooks:
       - id: eslint
         name: ESLint LinkedIn browser scripts
+        args: [--config, .config/eslint.config.mjs]
         files: '^pkg/resumeme/linkedin/scripts/.*\.js$'
   - repo: local
     hooks:
@@ -15,7 +16,7 @@ repos:
         name: Validate resumeme configurations
         entry: bash scripts/tooling/project-python.sh -m resumeme.cli config lint
         language: system
-        files: '^resumeme\.config(?:\.ref)?\.yaml$'
+        files: '^(resumeme\.config\.yaml|\.config/resumeme\.config\.ref\.yaml)$'
         types: [yaml]
         require_serial: true
       - id: pydocstyle

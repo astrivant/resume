@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=./pkg/resumeme/compiler/asts/resources/config.schema.json
 # Base configuration matching package defaults. Copy to resumeme.config.yaml and set linkedin.username.
 # Capture your own profile before building; the checked-in snapshot belongs to the project's author.
 # Settings and examples: docs/README.md. Credentials belong in environment variables or Actions secrets.
@@ -224,6 +223,16 @@ style:
 
   # true lets body text wrap beneath a right-side profile; false keeps full-height separate columns.
   profile_column_wrap: false
+
+  # Limit body lines to this fraction of their available column/page width; 1.0 uses the full width.
+  text_wrap_width: 0.9
+
+  # Body baseline multiplier (1-2) and paragraph separation in points (0-24).
+  line_height: 1.0
+  paragraph_spacing: 3
+
+  # Six-digit hex, such as 'F0F4F7', enables a rounded About panel; null leaves it unshaded.
+  about_background: null
   paper: letter  # US Letter; use a4 for ISO A4.
   font_size: 10
 
@@ -254,6 +263,9 @@ style:
   show_connection_count: false
   show_connection_link: false
   display_birthday: false
+
+  # Captured Phone fields are independently optional; Email remains visible whenever Contact is enabled.
+  display_phone: false
 
   # Enable captured Website fields in Contact; LinkedIn, Email, and GitHub remain independent.
   display_websites: false

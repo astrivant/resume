@@ -48,7 +48,7 @@ readme:
   mode: resume
 
   # This repository publishes an example. Set README.md in your fork to replace the project landing page.
-  output: FORK_EXAMPLE.md
+  output: docs/FORK_EXAMPLE.md
 
   # Optional plain-text introduction; null uses the shared boilerplate. The heading uses your captured name.
   introduction: null
@@ -239,6 +239,16 @@ style:
   # true lets body text wrap beneath a right-side profile; false keeps full-height separate columns.
   profile_column_wrap: false
 
+  # Limit body lines to this fraction of their available column/page width; 1.0 uses the full width.
+  text_wrap_width: 0.8
+
+  # Body baseline multiplier and paragraph separation in points; headings and sidebar retain their compact spacing.
+  line_height: 1.0
+  paragraph_spacing: 3
+
+  # Optional About panel, with the same rounded corners as project tiles. null removes the background.
+  about_background: null
+
   # Keep personal location and any explicitly labeled address out of the PDF and published profile snapshot.
   display_location: false
 
@@ -287,8 +297,11 @@ style:
   # Display the birthday only when Contact is enabled (uncomment contact in section_order).
   display_birthday: false
 
+  # Keep phone separate from Website visibility; Email remains visible whenever Contact is enabled.
+  display_phone: false
+
   # Captured Website fields (such as linktr.ee) are hidden independently of LinkedIn, Email, and GitHub.
-  display_websites: true
+  display_websites: false
 
   # Optional local image path or direct public image/favicon URL, e.g. https://example.org/favicon.ico.
   website_icon: null

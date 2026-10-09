@@ -9,7 +9,9 @@
 !.python-version
 !.pre-commit-config.yaml
 !resumeme.config.yaml
-!resumeme.config.ref.yaml
+!.config/
+!.config/eslint.config.mjs
+!.config/resumeme.config.ref.yaml
 !pkg/
 !pkg/**
 !scripts/

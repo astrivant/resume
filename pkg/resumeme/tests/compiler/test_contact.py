@@ -82,6 +82,30 @@ def test_inline_contacts_empty_dialogs_and_link_only_values() -> None:
     ) == [Entry("Websites", ["example.org (Personal)", "work.example.org (Company)"], links=domains)]
 
 
+def test_website_and_phone_visibility_are_independent_and_email_is_retained() -> None:
+    """
+    Apply Website and Phone switches independently while keeping Email in the contact contract.
+
+    Returns:
+        None: Each disabled field disappears without affecting the other field or Email.
+    """
+    entries = [
+        Entry("Website", ["example.org"]),
+        Entry("Phone", ["+1 555 0100"]),
+        Entry("Email", ["alex@example.org"]),
+    ]
+
+    assert prepare_contact(entries, display_websites=False, display_phone=False) == [Entry("Email", ["alex@example.org"])]
+    assert prepare_contact(entries, display_websites=True, display_phone=False) == [
+        Entry("Website", ["example.org"]),
+        Entry("Email", ["alex@example.org"]),
+    ]
+    assert prepare_contact(entries, display_websites=False, display_phone=True) == [
+        Entry("Phone", ["+1 555 0100"]),
+        Entry("Email", ["alex@example.org"]),
+    ]
+
+
 def test_contact_links_are_inline_escaped_and_unambiguous() -> None:
     """
     Link exact observed captions and complete URLs without matching domain substrings inside email addresses.

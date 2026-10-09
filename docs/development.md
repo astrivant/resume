@@ -23,6 +23,40 @@ targeted pytest commands.
 Hooks check Ruff, strict mypy, Google-style docstrings, schemas, ShellCheck, and
 shfmt. For container-based development, see [local image builds](containers.md#build-locally).
 
+## Repository layout
+
+The root keeps the README, license, published PDF, active `resumeme.config.yaml`,
+and files used by native packaging, Git, Docker, version managers, and pre-commit.
+Supporting files live beside their owning subsystem:
+
+| Location | Contents |
+| --- | --- |
+| [`.config/`](../.config/) | Homebrew dependencies, ESLint configuration, and the copyable reference résumé config |
+| [`.github/`](../.github/) | Actions, repository settings, and GitHub's security and contribution guides |
+| [`docs/`](./) | Usage and development documentation, including the generated fork example |
+| [`pkg/resumeme/tests/`](../pkg/resumeme/tests/) | Tests and the sharding plugin loaded explicitly through `pyproject.toml` before pytest parses arguments |
+
+Copy `.config/resumeme.config.ref.yaml` to the root as `resumeme.config.yaml`
+before using it; output paths remain relative to the active configuration.
+Homebrew uses `--file .config/Brewfile`. Pre-commit and the workspace editor
+select `.config/eslint.config.mjs` explicitly, with file patterns relative to the
+repository root. The published pre-commit hook manifest remains at its required
+root path, `.pre-commit-hooks.yaml`.
+
+## Local commits and CI-owned files
+
+[`.gitattributes`](../.gitattributes) marks published PDFs, captured profile/media,
+signature sidecars, and generated presentation assets with `ci-generated`.
+This metadata lets compatible local Git shortcuts exclude CI-owned output from
+routine source commits. Native Git commands and CI publication are unaffected.
+Keep these attributes aligned with configured output paths. The authored README
+remains source because its generated branding shares the file with maintained docs.
+
+Stage source paths explicitly for routine changes. Preserve local generated
+previews before pulling CI's published versions. For intentional manual
+publication, review and stage the complete PDF/signature bundle together.
+Intentional edits to the same generated paths can still conflict.
+
 ## CI environment caches
 
 The shared [project setup action](../.github/actions/setup-project/action.yml)
@@ -84,7 +118,7 @@ this inventory in the same change whenever one of those pins changes.
 | Trivy scanner | `aquasec/trivy:0.75.0` | [`stage-security.yml`](../.github/workflows/stage-security.yml); version tag, not an immutable digest |
 | TeXtidote image | `gokhlayeh/textidote`, digest `sha256:f0fe1a468f9818e2a91f7c660f25f7a17ba7ff1cd39e7daee32bdee7533f1441` | [`stage-readme.yml`](../.github/workflows/stage-readme.yml) and [`stage-documents.yml`](../.github/workflows/stage-documents.yml) |
 | Tini | Debian package `0.19.0-1+b3` | [`Dockerfile`](../Dockerfile) |
-| ESLint | `10.10.0` | [`.pre-commit-config.yaml`](../.pre-commit-config.yaml); lints standalone Selenium JavaScript resources |
+| ESLint | `10.10.0` | [`.pre-commit-config.yaml`](../.pre-commit-config.yaml) selects [`.config/eslint.config.mjs`](../.config/eslint.config.mjs) to lint standalone Selenium JavaScript resources |
 
 JavaScript executed in LinkedIn's browser is kept under
 [`pkg/resumeme/linkedin/scripts/`](../pkg/resumeme/linkedin/scripts/) and linted
@@ -118,7 +152,7 @@ actual reference. Repeated references use the same pin.
 
 The workflow requests the GitHub-hosted `ubuntu-24.04` runner image. GitHub
 updates the contents behind that label, so it is not an immutable image pin.
-Likewise, Homebrew formulas in [`Brewfile`](../Brewfile) are package selections,
+Likewise, Homebrew formulas in [`Brewfile`](../.config/Brewfile) are package selections,
 not version locks; Debian's `firefox-esr` and development `git` packages are
 installed from the current apt index. These platform-managed tools can change
 without a source edit. The Tini apt package is version-constrained as listed above.
@@ -189,7 +223,7 @@ the latest checkout's code with the existing Poetry environment. Check both
 maintained configurations explicitly with:
 
 ```bash
-poetry run pre-commit run resumeme-config-validator --files resumeme.config.yaml resumeme.config.ref.yaml
+poetry run pre-commit run resumeme-config-validator --files resumeme.config.yaml .config/resumeme.config.ref.yaml
 ```
 
 Other repositories can install the published hook with Python 3.13 available:

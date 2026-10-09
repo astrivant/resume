@@ -1,5 +1,14 @@
 {
     "markdown.extension.toc.levels": "1..3",
     "markdown-toc.depthFrom": 1,
-    "markdown-toc.depthTo": 3
+    "markdown-toc.depthTo": 3,
+    "eslint.options": {
+        "overrideConfigFile": ".config/eslint.config.mjs"
+    },
+    "yaml.schemas": {
+        "./pkg/resumeme/compiler/asts/resources/config.schema.json": [
+            "resumeme.config.yaml",
+            ".config/resumeme.config.ref.yaml"
+        ]
+    }
 }

@@ -15,7 +15,7 @@ Build and release your résumé like software: fork the project, set your userna
 capture your profile, and keep `main` current with monthly refreshes. Tag the
 version you want to share to get a signed release.
 
-**[View the résumé (PDF)](resume.pdf)** - [Preview a fork's README](FORK_EXAMPLE.md) - [Fork this project][fork-resumeme]
+**[View the résumé (PDF)](resume.pdf)** - [Preview a fork's README](docs/FORK_EXAMPLE.md) - [Fork this project][fork-resumeme]
 
 [fork-resumeme]: https://github.com/astrivant/resumeme/fork?name=resume&description=My%20resume%2C%20generated%20from%20LinkedIn%20and%20signed%20with%20GitHub%20Actions.&default_branch_only=true
 
@@ -81,22 +81,22 @@ poetry run resumeme --help
 #### macOS prerequisites
 
 On macOS with [Homebrew](https://brew.sh) installed, bootstrap host tools from the
-[Brewfile](Brewfile) and install the project's pinned Poetry version:
+[Brewfile](.config/Brewfile) and install the project's pinned Poetry version:
 
 ```bash
-brew bundle install
+brew bundle install --file .config/Brewfile
 pipx install --python "$(brew --prefix python@3.13)/bin/python3.13" "poetry==2.5.1"
 export PATH="${PIPX_BIN_DIR:-$HOME/.local/bin}:$PATH"
 poetry env use "$(brew --prefix python@3.13)/bin/python3.13"
 ```
 
-Run `brew bundle check` to verify host dependencies. Start Docker Desktop before
+Run `brew bundle check --file .config/Brewfile` to verify host dependencies. Start Docker Desktop before
 building a PDF locally. Homebrew supplies current host tools; CI keeps its existing
 version pins, and Python dependencies and linters install from `poetry.lock`.
 
 ### 2. Capture your profile
 
-For a new fork, copy [resumeme.config.ref.yaml](resumeme.config.ref.yaml) over
+For a new fork, copy [.config/resumeme.config.ref.yaml](.config/resumeme.config.ref.yaml) over
 [resumeme.config.yaml](resumeme.config.yaml), which contains the author's personal
 settings. The reference uses package defaults, with optional integrations disabled
 and no job, school, project, or date exclusions. Set your LinkedIn username:
@@ -147,7 +147,7 @@ git push origin main
 After the pipeline succeeds, your fork contains **`resume.pdf` on `main`**.
 Set `readme.output: README.md` to make its README a personal résumé page: your name,
 a clickable first-page preview, and links to the full PDF, profiles, and releases.
-This repository overrides the destination to [FORK_EXAMPLE.md](FORK_EXAMPLE.md)
+This repository overrides the destination to [docs/FORK_EXAMPLE.md](docs/FORK_EXAMPLE.md)
 so you can preview the result alongside these instructions. CI refreshes the
 configured page and preview in the same commit as the PDF. Set `readme.mode: project`
 to disable generation, or customize `readme.introduction`; see [README publication](docs/automation.md#personal-readme).
@@ -164,7 +164,7 @@ use absolute GitHub URLs so they also display on package indexes such as PyPI.
 Open your checkout in an agent with terminal access and give it this prompt:
 
 > Read `SKILL.md` in this checkout and generate my résumé for LinkedIn username
-> `YOUR-USERNAME`. For first setup, start from `resumeme.config.ref.yaml` if the
+> `YOUR-USERNAME`. For first setup, start from `.config/resumeme.config.ref.yaml` if the
 > fork still has the author's config. Preserve my existing configuration choices.
 > Handle setup, capture or reuse of my matching saved profile, validation, PDF
 > generation, and visual checks.
@@ -499,12 +499,13 @@ own device label; resumeme cannot set or verify the label shown in the app.
 
 - [CLI reference](docs/CLI.md): complete command help, options, examples, and exit status.
 - [Configuration and operation](docs/README.md): capture, job filters, rendering, and signed releases.
+- [Profile formatting](docs/profile-formatting.md): paragraphs, bullets, labels, and links that translate cleanly from LinkedIn.
 - [Monthly refresh and release](docs/automation.md): LinkedIn secrets, scheduling, and shareable signed PDFs.
 - [Suggested LinkedIn skills](docs/skills.md): tag-only Codex proposals and optional additions that preserve existing skills and endorsements.
 - [GitHub Pages](docs/pages.md): automatic website updates, publication paths, and custom domains.
 - [Themes](docs/themes.md) and [templates](docs/templates.md): colors, typography, and custom layouts.
 - [Container image](docs/containers.md): Docker usage, local builds, and tag publication to GHCR and Docker Hub.
-- [Contributing](CONTRIBUTING.md): local checks, CI behavior, and dependency pinning.
+- [Contributing](.github/CONTRIBUTING.md): local checks, CI behavior, and dependency pinning.
 - [Development](docs/development.md): setup, parallel tests, tooling, and document checks.
-- [Security policy](SECURITY.md) and [sensitive data handling](docs/data-handling.md): reporting, storage, recipients, retention, encryption limits, and fork responsibilities.
+- [Security policy](.github/SECURITY.md) and [sensitive data handling](docs/data-handling.md): reporting, storage, recipients, retention, encryption limits, and fork responsibilities.
 - [Studies](studies/README.md): design assessments, including the proposed automated job application workflow.

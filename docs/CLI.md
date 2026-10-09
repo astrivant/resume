@@ -8,24 +8,26 @@ in collapsible blocks, plus command behavior and examples.
 
 ## Contents
 
-- [Invocation and paths](#invocation-and-paths)
-- [Logging](#logging)
-- [Commands](#commands)
-  - [resumeme capture](#resumeme-capture)
-  - [CI capture fan-out and fan-in](#ci-capture-fan-out-and-fan-in)
-  - [resumeme enrich](#resumeme-enrich)
-  - [resumeme validate](#resumeme-validate)
-  - [resumeme aggregate](#resumeme-aggregate)
-  - [resumeme config lint](#resumeme-config-lint)
-  - [resumeme summary-prompt](#resumeme-summary-prompt)
-  - [resumeme render](#resumeme-render)
-  - [resumeme build](#resumeme-build)
-  - [resumeme site](#resumeme-site)
-  - [resumeme publish-ownership](#resumeme-publish-ownership)
-  - [resumeme publish-resume](#resumeme-publish-resume)
-  - [resumeme skills-prompt](#resumeme-skills-prompt)
-  - [resumeme publish-skills](#resumeme-publish-skills)
-- [Exit status](#exit-status)
+- [CLI reference](#cli-reference)
+  - [Contents](#contents)
+  - [Invocation and paths](#invocation-and-paths)
+  - [Logging](#logging)
+  - [Commands](#commands)
+    - [resumeme capture](#resumeme-capture)
+    - [CI capture fan-out and fan-in](#ci-capture-fan-out-and-fan-in)
+    - [resumeme aggregate](#resumeme-aggregate)
+    - [resumeme enrich](#resumeme-enrich)
+    - [resumeme validate](#resumeme-validate)
+    - [resumeme config lint](#resumeme-config-lint)
+    - [resumeme summary-prompt](#resumeme-summary-prompt)
+    - [resumeme render](#resumeme-render)
+    - [resumeme build](#resumeme-build)
+    - [resumeme site](#resumeme-site)
+    - [resumeme publish-ownership](#resumeme-publish-ownership)
+    - [resumeme publish-resume](#resumeme-publish-resume)
+    - [resumeme skills-prompt](#resumeme-skills-prompt)
+    - [resumeme publish-skills](#resumeme-publish-skills)
+  - [Exit status](#exit-status)
 
 ## Invocation and paths
 
@@ -312,7 +314,7 @@ their effective settings, including themes and per-company overrides. No saved
 profile, browser, credentials, or PDF toolchain is required.
 
 ```bash
-resumeme config lint resumeme.config.yaml resumeme.config.ref.yaml
+resumeme config lint resumeme.config.yaml .config/resumeme.config.ref.yaml
 resumeme config lint ./profiles/custom.yaml
 ```
 

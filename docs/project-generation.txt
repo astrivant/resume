@@ -11,7 +11,8 @@ progress updates. Consecutive messages by the same speaker are grouped together.
 Spelling and wording are preserved; smart punctuation is normalized to keyboard
 punctuation. UI question/answer and annotation wrappers are rendered as text.
 Tool traces, internal reasoning, system/developer instructions, environment
-metadata, and binary attachments are omitted. User-pasted logs are retained.
+metadata, and binary attachments are omitted. Private configuration paths are
+redacted. User-pasted logs are retained.
 For current setup instructions, use README.md and docs/CLI.md.
 
 **Emma: Initialize this repository for a Python package, use ../polyad as a reference for the structure and all of the tooling / pre-commit / project folder structure, etc.; it will be called "resume". We'll use requests, and open LinkedIn in the local browser (use the Python browser client) / firefox to log into LinkedIn. Then, it will pull down every detail from my profile. Users should be able to fork this project and update just that one field, i.e. their LinkedIn username, and get a resume.pdf committed back to the project / main branch via GitHub Actions & CI. Let's define a local config ./resume.reference.yaml, that specifies that username as well as any other configurations an end-user would update to facilitate this.
@@ -1030,7 +1031,7 @@ Applied 30% transparency to the connector above the first role's dot for compani
 
 Rebuilt and visually verified :codex-file-citation{path="/Users/emmadoyle/projects/personal/resume/resume.pdf" purpose="output"}. All 15 focused tests and relevant pre-commit checks passed.
 
-**Emma: Document any relevant, transferrable critiques cross-project for further instances of yourself, under ~/.codex/config - back up the old config with an epoch every time this is modified, such as ~/.codex/<name>.<epoch>.<ext>, so we can restore the old version if need-be; document this process in the config as well, so next time I ask, you do the same thing.
+**Emma: Document any relevant, transferrable critiques cross-project for further instances of yourself, under [private configuration path redacted] - back up the old config with an epoch every time this is modified, such as [private configuration path redacted], so we can restore the old version if need-be; document this process in the config as well, so next time I ask, you do the same thing.
 
 Let's also ensure that the codex API / client in CI is running under its own user account entirely locked down permissions / privilege-wise from a sysadmin perspective / even sudoers if need-be, that ensures that client can only do these small tasks based on the info we have from LinkedIn.
 
@@ -1038,7 +1039,7 @@ Let's also ensure that the codex API / client in CI is running under its own use
 
 The summary job currently runs as the shared runner account. I'll give Codex a separate account and an isolated directory containing only the filtered prompt and output schema. I also found that the action pin is an annotated tag object; I'll replace it with the underlying commit SHA.
 
-The config is updated, with a verified backup at `~/.codex/config.1791403433.toml`. It now records the backup/restore procedure and transferable guidance on filtered data, visual checks, retries, preserving edits, and least-privilege CI.
+The config is updated, with a verified backup at `[private configuration path redacted]`. It now records the backup/restore procedure and transferable guidance on filtered data, visual checks, retries, preserving edits, and least-privilege CI.
 
 For CI, I'm adding permission checks that fail before the API call if the Codex account can access sudo, the checkout, the runner's home, or privileged service sockets.
 
@@ -2976,7 +2977,7 @@ Also fixed the stale assertion that expected tests and package builds to wait fo
 
 Verified locally: **1,404 tests passed**, coverage merged, pre-commit and actionlint passed. Hosted CI has not been rerun.
 
-**Emma: Ensure my core prompt / ~/.codex config is updated with the preferences / statement or aka practically my personal SKILL.md (lol) with the preferences I critiqued you on here, so the knowledge is transferrable for you.
+**Emma: Ensure my core prompt / [private configuration path redacted] config is updated with the preferences / statement or aka practically my personal SKILL.md (lol) with the preferences I critiqued you on here, so the knowledge is transferrable for you.
 
 **AI: I'll review your existing Codex preferences, add the reusable feedback from this conversation, and create an epoch-stamped backup before changing them.
 

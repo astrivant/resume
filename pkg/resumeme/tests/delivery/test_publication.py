@@ -221,7 +221,7 @@ def _git(root: Path, *arguments: str) -> str:
 
 @pytest.mark.parametrize("advanced", [False, True])
 @pytest.mark.parametrize("refresh", [False, True])
-@pytest.mark.parametrize("fork, readme_output", [(False, None), (True, "README.md"), (False, "FORK_EXAMPLE.md")])
+@pytest.mark.parametrize("fork, readme_output", [(False, None), (True, "README.md"), (False, "docs/FORK_EXAMPLE.md")])
 @pytest.mark.parametrize("publication_token", [False, True])
 def test_publication_resumes_only_for_the_identical_generated_commit(
     tmp_path: Path, advanced: bool, refresh: bool, fork: bool, readme_output: str | None, publication_token: bool
@@ -405,12 +405,16 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
         artifact.with_name("brew-date.txt").write_text("2026-02-03\n", encoding="ascii")
 
         if readme_output:
+            (bundle / "README.md").write_text("# Updated owner - Résumé\n", encoding="utf-8")
             (bundle / "pdf.sha256").write_text(hashlib.sha256(artifact.read_bytes()).hexdigest())
             Image.new("RGB", (20, 30), "green").save(bundle / "resume-preview.png")
 
         subprocess.run(["bash", "scripts/ci/publish.sh"], cwd=root, env=environment, capture_output=True, text=True, check=True)
         assert _git(remote, "rev-parse", "main") != published
         assert logo.read_bytes() != published_logo
+
+        if readme_output:
+            assert _git(remote, "show", f"main:{readme_output}") == "# Updated owner - Résumé"
 
         if not fork:
             assert "2026-02-03" in (root / "docs/assets/branding/brew-date.svg").read_text()

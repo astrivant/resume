@@ -53,6 +53,16 @@ The tiger palette references [Tiger Lily Plants](https://tiger-lily-plants.com/a
 Colors are configured locally; builds do not fetch the stylesheet. Logos and
 photographs retain their source colors.
 
+## Body spacing and About background
+
+Body typography and About panels also accept theme overrides: `line_height`
+is a baseline multiplier (`1` to `2`), `paragraph_spacing` is measured in points
+(`0` to `24`), and `about_background` is a six-digit hex color or `null` for
+unshaded text. For example, `about_background: 'F0F4F7'` uses a pale gray-blue
+panel with the shared project tile corners. The panel follows `text_wrap_width`
+with 3 mm padding around the body text; the About heading stays outside it.
+See [document layout](README.md#document-layout).
+
 ## Company names
 
 `company_font_size` defaults to **13 pt**, with bold weight, above the normal

@@ -86,7 +86,7 @@ build-backend = "poetry.core.masonry.api"
 testpaths = ["pkg/resumeme/tests"]
 
 # Share CPU-based worker selection between local runs and CI; use -n 0 when debugging a single process.
-addopts = "-ra -n auto -m 'not browser_e2e'"
+addopts = "-p resumeme.tests.sharding -ra -n auto -m 'not browser_e2e'"
 markers = ["browser_e2e: real Firefox or Chrome capture tests against a local fixture server"]
 
 [tool.coverage.run]
@@ -121,7 +121,7 @@ mypy_path = ["scripts/typing"]
 exclude = ["scripts/typing/"]
 python_version = "3.13"
 strict = true
-files = ["pkg", "scripts", "conftest.py"]
+files = ["pkg", "scripts"]
 disallow_any_explicit = true
 disallow_any_unimported = true
 

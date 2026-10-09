@@ -224,6 +224,26 @@
           "type": "string",
           "pattern": "^[A-Fa-f0-9]{6}$"
         },
+        "about_background": {
+          "description": "Optional six-digit hexadecimal About panel color, without #; null leaves About unshaded.",
+          "type": ["string", "null"],
+          "pattern": "^[A-Fa-f0-9]{6}$",
+          "default": null
+        },
+        "line_height": {
+          "description": "Body-text baseline spacing multiplier relative to the font's normal line height.",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 2,
+          "default": 1
+        },
+        "paragraph_spacing": {
+          "description": "Space between body paragraphs in points; independent of section and heading spacing.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 24,
+          "default": 3
+        },
         "font_size": {
           "enum": [
             10,
@@ -330,6 +350,15 @@
               "background": {
                 "$ref": "#/properties/style/properties/background"
               },
+              "about_background": {
+                "$ref": "#/properties/style/properties/about_background"
+              },
+              "line_height": {
+                "$ref": "#/properties/style/properties/line_height"
+              },
+              "paragraph_spacing": {
+                "$ref": "#/properties/style/properties/paragraph_spacing"
+              },
               "font_size": {
                 "$ref": "#/properties/style/properties/font_size"
               },
@@ -390,6 +419,9 @@
               "display_websites": {
                 "$ref": "#/properties/style/properties/display_websites"
               },
+              "display_phone": {
+                "$ref": "#/properties/style/properties/display_phone"
+              },
               "website_icon": {
                 "$ref": "#/properties/style/properties/website_icon"
               },
@@ -404,6 +436,9 @@
               },
               "profile_column_wrap": {
                 "$ref": "#/properties/style/properties/profile_column_wrap"
+              },
+              "text_wrap_width": {
+                "$ref": "#/properties/style/properties/text_wrap_width"
               }
             },
             "additionalProperties": false
@@ -426,6 +461,11 @@
           "description": "Display captured Website fields in Contact; hidden by default. Social links remain independent.",
           "type": "boolean",
           "default": false
+        },
+        "display_phone": {
+          "description": "Display captured Phone fields in Contact; email remains available and phone visibility is independent of websites.",
+          "type": "boolean",
+          "default": true
         },
         "website_icon": {
           "description": "Optional local raster path or direct public HTTP(S) image/favicon URL; normalized to PNG for LaTeX.",
@@ -458,6 +498,13 @@
           "description": "Allow body text to expand below the right-side profile; false keeps separate first-page columns. Ignored when profile_column_side is left.",
           "type": "boolean",
           "default": false
+        },
+        "text_wrap_width": {
+          "description": "Fraction of available body-text width on every page, including narrow first-page columns and floating layouts. Headings and figures retain their widths; 1 uses the full text area.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "default": 0.9
         }
       },
       "required": [],

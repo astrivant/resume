@@ -14,14 +14,27 @@ from resumeme.compiler.constants.contact import BIRTHDAY as _BIRTHDAY
 from resumeme.compiler.constants.contact import CONTACT_CONTROL as _CONTACT_CONTROL
 from resumeme.compiler.constants.contact import CONTACT_FIELD as _CONTACT_FIELD
 from resumeme.compiler.constants.contact import EMAIL_ADDRESS as _EMAIL_ADDRESS
+from resumeme.compiler.constants.contact import PHONE_FIELDS, WEBSITE_FIELDS
 from resumeme.compiler.constants.contact import PROFILE_FIELD as _PROFILE_FIELD
 from resumeme.compiler.constants.contact import PROFILE_URL as _PROFILE_URL
-from resumeme.compiler.constants.contact import WEBSITE_FIELDS
 
 if TYPE_CHECKING:
     from resumeme.compiler.asts.profile import Link
 
-__all__ = ["contact_email_url", "is_contact_website", "prepare_contact", "without_birthday"]
+__all__ = ["contact_email_url", "is_contact_phone", "is_contact_website", "prepare_contact", "without_birthday"]
+
+
+def is_contact_phone(entry: Entry) -> bool:
+    """
+    Identify a normalized Phone field.
+
+    Args:
+        entry (Entry): Contact field produced by the normalization pass.
+
+    Returns:
+        bool: Whether the field has a captured Phone or Phone number heading.
+    """
+    return entry.title.strip().casefold() in PHONE_FIELDS
 
 
 def is_contact_website(entry: Entry) -> bool:
@@ -89,7 +102,9 @@ def _field_entry(title: str, values: list[str], links: list[Link]) -> Entry:
     return Entry(title, retained, links=owned)
 
 
-def prepare_contact(entries: list[Entry], *, display_birthday: bool = False, display_websites: bool = False) -> list[Entry]:
+def prepare_contact(
+    entries: list[Entry], *, display_birthday: bool = False, display_websites: bool = False, display_phone: bool = True
+) -> list[Entry]:
     """
     Split flattened dialogs into contact fields and remove LinkedIn navigation and edit controls.
 
@@ -97,6 +112,7 @@ def prepare_contact(entries: list[Entry], *, display_birthday: bool = False, dis
         entries (list[Entry]): Captured contact blocks; both flattened dialogs and individual fields are accepted.
         display_birthday (bool): Whether birthday data may appear in the display copy.
         display_websites (bool): Whether captured Website fields and their references may appear in Contact.
+        display_phone (bool): Whether captured Phone fields and their references may appear in Contact; email is always retained.
 
     Returns:
         list[Entry]: Ordered field/value entries with inline references, suitable for packaged and custom templates.
@@ -157,8 +173,12 @@ def prepare_contact(entries: list[Entry], *, display_birthday: bool = False, dis
 
             fields[0] = evolve(fields[0], images=images)
 
-        # Filter complete fields after associating links and images, so hidden websites cannot return as orphaned references.
-        result.extend(field for field in fields if display_websites or not is_contact_website(field))
+        # Filter complete fields after associating links and images, so hidden fields cannot return as orphaned references.
+        result.extend(
+            field
+            for field in fields
+            if (display_websites or not is_contact_website(field)) and (display_phone or not is_contact_phone(field))
+        )
 
     return result
 
