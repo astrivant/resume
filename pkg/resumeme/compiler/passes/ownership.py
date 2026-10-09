@@ -41,7 +41,18 @@ def _clean_text(value: str) -> tuple[str, set[str], set[str]]:
         else:
             kept.append(line)
 
-    return "\n".join(kept).strip(), removed_urls, removed_labels
+    # Preserve the source exactly when no managed field was present, including spaces that encode nested list depth.
+    if not removed_labels:
+        return value, removed_urls, removed_labels
+
+    # Trim blank boundary lines after filtering without stripping meaningful indentation from retained prose.
+    while kept and not kept[0].strip():
+        kept.pop(0)
+
+    while kept and not kept[-1].strip():
+        kept.pop()
+
+    return "\n".join(kept), removed_urls, removed_labels
 
 
 def _clean_entry(entry: Entry) -> Entry | None:

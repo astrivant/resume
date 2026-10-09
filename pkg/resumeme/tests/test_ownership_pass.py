@@ -53,6 +53,30 @@ def test_ownership_lines_are_removed_only_from_the_rendered_about_copy() -> None
     assert source.sections[0].entries[0].paragraphs[-2].startswith("RESUME SIGNATURE:")
 
 
+def test_ownership_filter_preserves_nested_list_indentation() -> None:
+    """
+    Keep bullet nesting stable while removing a managed ownership line from About text.
+
+    Returns:
+        None: Leading spaces in retained list items survive the display-copy filter.
+    """
+    profile = Profile(
+        "example-person",
+        "Alex Example",
+        sections=[
+            Section(
+                "about",
+                "About",
+                [Entry("About", ["- Platform work", "  - Nested work", "resume signature: SHA256:" + "a" * 64])],
+            )
+        ],
+    )
+
+    display = without_ownership_metadata(profile)
+
+    assert display.sections[0].entries[0].paragraphs == ["- Platform work", "  - Nested work"]
+
+
 def test_generated_tex_omits_published_identity_lines(tmp_path: Path) -> None:
     """
     Exclude LinkedIn's managed ownership block before LaTeX generation.

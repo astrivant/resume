@@ -117,3 +117,26 @@ def test_repeated_titles_and_suppressed_headings_keep_unique_destinations(tmp_pa
     assert r"\hyperlink{resumeme-section-0-job-1}{\companytext{Two}}" in projects
     anchors = re.findall(r"\\hypertarget\{(resumeme-section-0-job-[^}]+)\}", source)
     assert len(anchors) == len(set(anchors)) == 5
+
+
+def test_continuation_pages_link_back_to_contents(tmp_path: Path) -> None:
+    """
+    Add a footer shortcut on continuation pages that targets the first-page Contents heading.
+
+    Args:
+        tmp_path (Path): Isolated template output directory.
+
+    Returns:
+        None: The continuation footer uses the same internal destination as the visible Contents list.
+    """
+    profile = Profile(
+        "example-person",
+        "Alex",
+        sections=[Section("experience", "Experience", [Entry("Engineer", ["2022 - Present", "Built systems."])])],
+    )
+    source = render_profile(profile, Config(LinkedIn(profile.username)), tmp_path).read_text()
+
+    assert r"\AddToHook{shipout/foreground}{\resumemeindexfooter}" in source
+    assert r"\ifnum\value{page}>1\relax" in source
+    assert r"\hyperlink{resumeme-contents}{Index}" in source
+    assert r"\hypertarget{resumeme-contents}{}" in source
