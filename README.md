@@ -21,8 +21,6 @@ version you want to share to get a signed release.
 
 ## Why use this tool?
 
-<a href="https://github.com/astrivant/resumeme/blob/main/resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/resume-preview.png" alt="First page of Emma Doyle's résumé" width="150"></a>
-
 - **Review your résumé in Git.** Profile text, images, configuration, and templates
   live in your repository. Changes have diffs and history.
 - **Keep the engineering detail.** Expanded descriptions, project links, company
@@ -35,6 +33,8 @@ version you want to share to get a signed release.
 - **Own the presentation.** Adjust paper size, colors, or text size in YAML, or
   select an [inline theme](docs/themes.md), including the autumn-colored `tiger`
   option. Custom LaTeX templates can change the layout without changing the collector.
+
+<a href="https://github.com/astrivant/resumeme/blob/main/resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/resume-preview.png" alt="First page of Emma Doyle's résumé" width="375"></a>
 
 ## Contents
 
