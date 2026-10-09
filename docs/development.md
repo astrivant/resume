@@ -163,6 +163,13 @@ this inventory in the same change whenever one of those pins changes.
 | ESLint | `10.10.0` | [`.pre-commit-config.yaml`](../.pre-commit-config.yaml) selects [`.config/eslint.config.mjs`](../.config/eslint.config.mjs) to lint standalone Selenium JavaScript resources |
 | Markdown math parsers | KaTeX `0.19.0`, remark-math `6.0.0`, remark-parse `11.0.0`, unified `11.0.5` | [`package.json`](../scripts/validation/math/package.json) and its adjacent `package-lock.json`; development checks only |
 
+The math-check package overrides transitive KaTeX versions with its direct
+`katex` pin (`"katex": "$katex"`). `micromark-extension-math` currently requests
+the vulnerable `0.16` line; the override removes that nested copy and addresses
+[CVE-2026-103923](https://github.com/KaTeX/KaTeX/security/advisories/GHSA-238p-pmpm-9mq7).
+Retain the override until upstream accepts a patched version, and rerun the math
+checks when changing it. Trivy continues to scan the complete committed lockfile.
+
 JavaScript executed in LinkedIn's browser is kept under
 [`pkg/resumeme/linkedin/scripts/`](../pkg/resumeme/linkedin/scripts/) and linted
 separately with ESLint. The Python package loads these files as resources at
