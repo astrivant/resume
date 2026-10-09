@@ -37,15 +37,15 @@ jobs:
             --mount "type=bind,source=$RUNNER_TEMP/trivy-results,target=/tmp" \
             --workdir /src \
             aquasec/trivy:0.75.0 fs \
-            --config /dev/null \
+            --config "" \
             --scanners vuln,secret \
             --format json \
             --output /tmp/raw.json \
             --exit-code 0 \
             --no-progress \
             --timeout 10m \
-            --ignorefile /dev/null \
-            --secret-config /dev/null \
+            --ignorefile "" \
+            --secret-config "" \
             --skip-dirs .git \
             .
 
