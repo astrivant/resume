@@ -241,6 +241,10 @@ release, `pre-commit autoupdate` selects the latest tagged version. Override
 `files` on the hook entry to select other config filenames. Pre-commit passes
 every matching filename to the validator, and any invalid file fails the hook.
 
+The migration also records the reusable [configuration schema design lesson](configuration-migration.md#schema-design-lesson):
+group public keys by the operation that owns them, keep one canonical path per
+setting, and make compatibility translation explicit at the loader boundary.
+
 ## Repository settings and reviews
 
 [`.github/settings.yml`](../.github/settings.yml) is applied by the

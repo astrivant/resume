@@ -69,6 +69,29 @@ automation:
 | `publishing.pages` | GitHub Pages enablement, path, and custom domain. |
 | `automation.codex` | Optional generated summaries, skill proposals, and company-specific variants. |
 
+## Schema design lesson
+
+Configuration is an interface, not an implementation dump. Group fields by the
+operation that owns them, and make the path tell a maintainer where the value is
+used. Identity and section selection belong under `profile`; files and visual
+choices belong under `document`; external writes belong under `publishing`; and
+model-assisted work belongs under `automation`. A short key is useful only when
+its parent gives it a precise meaning, so `document.output.pdf` is clearer than a
+top-level `pdf` or an ambiguous `output` shared by unrelated operations.
+
+Keep one canonical path for every setting. The loader may translate legacy paths
+at the input boundary during a migration, but it must reject a file that supplies
+both paths instead of choosing a winner. The typed runtime model may be flatter
+for implementation convenience; that translation should be explicit and tested
+so the public schema remains readable without coupling users to internal classes.
+
+When a schema moves, update the reference config, active examples, partial
+overrides, JSON Schema, migration table, CLI and operational documentation, and
+round-trip tests in the same change. Validate defaults, unknown fields, nested
+overrides, empty and minimal configurations, and the ambiguity rule. This keeps
+the configuration language deterministic and lets a maintainer understand both
+the human-facing contract and the compiler boundary at a glance.
+
 The loader maps this public structure to the stable typed runtime model used by
 the compiler and publishers. That keeps the processing pipeline deterministic
 while allowing the configuration language to remain readable. Existing flat

@@ -123,7 +123,7 @@ def test_required_destination_without_git_needs_configuration(tmp_path: Path, mo
     monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
     monkeypatch.setenv("PATH", str(tmp_path))
 
-    with pytest.raises(ValueError, match=r"Set linkedin\.ownership\.repository to OWNER/REPO"):
+    with pytest.raises(ValueError, match=r"Set publishing\.linkedin\.ownership\.repository to OWNER/REPO"):
         release_destination(Ownership(), tmp_path)
 
     assert release_destination(Ownership(repository="person/project"), tmp_path) == "https://github.com/person/project/releases"

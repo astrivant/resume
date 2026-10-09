@@ -112,7 +112,10 @@ def test_real_browser_capture_is_validated_and_exported(tmp_path: Path, monkeypa
     # Keep LinkedIn login and its remote network outside the test while exercising the production browser lifecycle and capture path.
     monkeypatch.setenv("LINKEDIN_USERNAME", "browser-e2e@example.invalid")
     monkeypatch.setenv("LINKEDIN_PASSWORD", "fixture-only-password")
-    monkeypatch.setattr("resumeme.linkedin.browser._login", lambda driver, settings, *, headless: None)
+    monkeypatch.setattr(
+        "resumeme.linkedin.browser._login",
+        lambda driver, settings, *, headless, profile_username: None,
+    )
     monkeypatch.setattr("resumeme.linkedin.browser._authenticated", lambda driver: True)
     navigate = _navigate
     visited: list[str] = []
