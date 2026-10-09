@@ -105,6 +105,20 @@ profile:
 
 # Resume compilation inputs, generated paths, and visual presentation.
 document:
+  # Optional evidence figures. Reorder these keys; include narrows enabled figures and exclude wins.
+  appendices:
+    awareness:
+      figures:
+        knowledge-usage: false
+        knowledge-map: false
+        knowledge-hierarchy: false
+        toolbox-use: false
+        problem-repertoire: false
+        checkpoint-transitions: false
+        checkpoint-comparisons: false
+      include: [] # For example: [{group: knowledge}] or [{id: knowledge-usage}]
+      exclude: [] # Filters accept id, group, or both.
+
   output:
     profile: data/profile.json
     assets: data/assets
@@ -183,6 +197,11 @@ publishing:
 
 # Optional AI-assisted generation and employer-specific resume variants.
 automation:
+  # Accept GitHub-authenticated rebuild requests only from explicitly allowed account/App logins.
+  awareness:
+    enabled: false
+    allowed_actors: []
+
   codex:
     enabled: false
     model: gpt-6-astra

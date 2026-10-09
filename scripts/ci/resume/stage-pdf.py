@@ -9,6 +9,8 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
+from resumeme.awareness.bundle import validate_bundle
+from resumeme.awareness.models import BUNDLE_PATH
 from resumeme.config import load_config, project_path
 from resumeme.github.companies.artifacts import stage_companies
 
@@ -22,6 +24,13 @@ if not source.read_bytes().startswith(b"%PDF-"):
 
 artifact.parent.mkdir(parents=True, exist_ok=True)
 shutil.copyfile(source, artifact)
+
+# Preserve the exact figure input with the PDF so a later ordinary build can reproduce the accepted appendix.
+awareness = project_path(Path.cwd(), BUNDLE_PATH)
+
+if awareness.is_file():
+    validate_bundle(awareness.read_bytes())
+    shutil.copyfile(awareness, artifact.with_name("awareness.json"))
 
 # Use the completed PDF's timestamp even if staging crosses midnight; deploy retries retain this artifact-owned UTC date.
 brewed_on = datetime.fromtimestamp(source.stat().st_mtime, UTC).date()

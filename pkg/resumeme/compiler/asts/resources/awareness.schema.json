@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "Bundle",
+  "additionalProperties": false,
+  "properties": {
+    "figures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "Figure",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "png": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "group",
+          "title",
+          "sha256",
+          "png"
+        ]
+      }
+    },
+    "version": {
+      "enum": [
+        1
+      ],
+      "type": "integer"
+    }
+  },
+  "required": [
+    "figures"
+  ]
+}

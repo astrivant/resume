@@ -264,7 +264,7 @@ def _normalize_config(raw: object) -> object:
                 assign("projects", projects)
 
     if isinstance(grouped_document, Mapping):
-        for name in ("output", "style", "template"):
+        for name in ("output", "style", "template", "appendices"):
             if name in grouped_document:
                 assign(name, grouped_document[name])
 
@@ -298,8 +298,10 @@ def _normalize_config(raw: object) -> object:
         merged_linkedin.update(publishing_linkedin)
         normalized["linkedin"] = merged_linkedin
 
-    if isinstance(grouped_automation, Mapping) and "codex" in grouped_automation:
-        assign("codex", grouped_automation["codex"])
+    if isinstance(grouped_automation, Mapping):
+        for name in ("codex", "awareness"):
+            if name in grouped_automation:
+                assign(name, grouped_automation[name])
 
     if "style" in normalized:
         normalized["style"] = _normalize_style(normalized["style"])
@@ -377,6 +379,9 @@ def _parse_config(raw: object, path: Path, *, validate_companies: bool) -> Confi
     converter = cattrs.Converter(forbid_extra_keys=True)
     converter.register_structure_hook_func(lambda target_type: target_type is object, _override_value)
     config = converter.structure(raw, Config)
+
+    if config.awareness.enabled and not config.awareness.allowed_actors:
+        raise ConfigurationError("automation.awareness.enabled requires at least one allowed_actors login.")
 
     # Count bounds remain meaningful when values are supplied through partial company overrides too.
     sharding = config.capture.sharding

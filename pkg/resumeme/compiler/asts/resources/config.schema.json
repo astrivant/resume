@@ -3,6 +3,127 @@
   "title": "Resumeme config",
   "type": "object",
   "properties": {
+    "awareness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "allowed_actors": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*(\\[bot\\])?$"
+          },
+          "default": []
+        }
+      }
+    },
+    "appendices": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "awareness": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "figures": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "knowledge-usage": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "knowledge-map": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "knowledge-hierarchy": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "toolbox-use": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "problem-repertoire": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "checkpoint-transitions": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "checkpoint-comparisons": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "knowledge-usage",
+                      "knowledge-map",
+                      "knowledge-hierarchy",
+                      "toolbox-use",
+                      "problem-repertoire",
+                      "checkpoint-transitions",
+                      "checkpoint-comparisons"
+                    ]
+                  },
+                  "group": {
+                    "enum": [
+                      "knowledge",
+                      "repertoire",
+                      "checkpoints"
+                    ]
+                  }
+                }
+              }
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                  "id": {
+                    "enum": [
+                      "knowledge-usage",
+                      "knowledge-map",
+                      "knowledge-hierarchy",
+                      "toolbox-use",
+                      "problem-repertoire",
+                      "checkpoint-transitions",
+                      "checkpoint-comparisons"
+                    ]
+                  },
+                  "group": {
+                    "enum": [
+                      "knowledge",
+                      "repertoire",
+                      "checkpoints"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "logging": {
       "type": "object",
       "additionalProperties": false,
@@ -56,6 +177,7 @@
       "properties": {
         "output": {"$ref": "#/properties/output"},
         "style": {"$ref": "#/properties/style"},
+        "appendices": {"$ref": "#/properties/appendices"},
         "template": {"$ref": "#/properties/template"}
       }
     },
@@ -81,6 +203,7 @@
       "additionalProperties": false,
       "description": "Optional AI-assisted generation and employer-specific resume variants.",
       "properties": {
+        "awareness": {"$ref": "#/properties/awareness"},
         "codex": {"$ref": "#/properties/codex"}
       }
     },
@@ -911,6 +1034,7 @@
                     "description": "Partial document presentation overrides; output paths remain matrix-owned.",
                     "properties": {
                       "style": {"$ref": "#/properties/style"},
+                      "appendices": {"$ref": "#/properties/appendices"},
                       "template": {"$ref": "#/properties/template"}
                     }
                   },
@@ -931,12 +1055,14 @@
                       }
                     }
                   },
+                  "appendices": {"$ref": "#/properties/appendices"},
                   "style": {"$ref": "#/properties/style"},
                   "section_order": {"$ref": "#/properties/section_order"},
                   "experience": {"$ref": "#/properties/experience"},
                   "education": {"$ref": "#/properties/education"},
                   "projects": {"$ref": "#/properties/projects"},
                   "project_filter": {"$ref": "#/properties/project_filter"},
+                  "appendices": {"$ref": "#/properties/appendices"},
                   "template": {"$ref": "#/properties/template"},
                   "github": {"$ref": "#/properties/github"},
                   "capture": {"$ref": "#/properties/capture"},

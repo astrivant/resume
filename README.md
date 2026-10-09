@@ -508,6 +508,7 @@ own device label; resumeme cannot set or verify the label shown in the app.
 
 ## Documentation
 
+- [Awareness appendices](docs/awareness.md): opt-in Witful figures and authenticated GitHub rebuild requests.
 - [CLI reference](docs/CLI.md): complete command help, options, examples, and exit status.
 - [Configuration and operation](docs/README.md): capture, job filters, rendering, and signed releases.
 - [Configuration layout and migration](docs/configuration-migration.md): grouped paths, legacy compatibility, and company overrides.

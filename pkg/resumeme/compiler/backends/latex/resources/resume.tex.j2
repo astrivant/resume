@@ -271,7 +271,7 @@
 ((( contributions.start|tex ))) - ((( contributions.end|tex )))\par}
 \endgroup
 ((* endmacro *))
-((* set has_contents = style.show_table_of_contents and ((section_navigation|rejectattr('1.key', 'equalto', 'contact')|list) or (contributions and contribution_placement == 'appendix')) *))
+((* set has_contents = style.show_table_of_contents and ((section_navigation|rejectattr('1.key', 'equalto', 'contact')|list) or (contributions and contribution_placement == 'appendix') or awareness_figures) *))
 % =============================================================================
 % Document class and imported packages
 % =============================================================================
@@ -849,6 +849,9 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* if contributions and contribution_placement == 'appendix' *))
 \noindent\hspace*{0.6em}\hyperlink{github-contributions}{GitHub contributions}\par
 ((* endif *))
+((* for figure in awareness_figures *))
+\noindent\hspace*{0.6em}\hyperlink{awareness-((( figure.id )))}{((( figure.title|tex )))}\par
+((* endfor *))
 \par\addvspace{6pt}
 ((* endif *))
 ((* if floating_profile *))
@@ -905,4 +908,16 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((( render_contributions() )))
 \end{minipage}\par
 ((* endif *))
+((* for figure in awareness_figures *))
+% =============================================================================
+% Appendix: selected awareness figure
+% =============================================================================
+% Complete first-page frames even for minimal profiles; keep each figure and caption on one full-width page.
+\par\finishthispage
+\hypertarget{awareness-((( figure.id )))}{}
+{\color{sectionheading}\Large\bfseries ((( figure.title|tex )))}\par\nopagebreak\vspace{0.5\baselineskip}
+\begin{center}
+\includegraphics[width=\linewidth,height=0.75\textheight,keepaspectratio]{((( figure.path )))}
+\end{center}
+((* endfor *))
 \end{document}

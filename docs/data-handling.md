@@ -16,6 +16,7 @@ maintainer responsibilities.
 - [Key creation, backups, and rotation](#key-creation-backups-and-rotation)
 - [CI artifacts, commits, and public output](#ci-artifacts-commits-and-public-output)
 - [Optional AI processing](#optional-ai-processing)
+- [Optional awareness figures](#optional-awareness-figures)
 - [Other network recipients and live writes](#other-network-recipients-and-live-writes)
 - [Logs and debugging](#logs-and-debugging)
 - [Disable, delete, or respond to exposure](#disable-delete-or-respond-to-exposure)
@@ -282,6 +283,27 @@ package metadata/README text. Docker's `type=gha` cache is separate, unencrypted
 by this project, and can retain intermediate build layers containing source and
 README content. The development build context also admits configuration and
 scripts. Review package archives and build inputs before registry publication.
+
+## Optional awareness figures
+
+`witful awareness push` sends selected PNG figures and a small manifest to the
+destination repository's `witful-awareness` branch. GitHub stores the images in
+Git history. The authenticated dispatch carries only version, commit, and bundle
+hash. Resumeme checks its own opt-in and actor allowlist, downloads only a fixed
+file from that repository, and validates schema, hashes, and raster limits.
+
+The validated input artifact lasts one day. The accepted bundle also travels with
+the ordinary 14-day PDF artifact and is committed to `data/awareness.json` alongside
+the PDF. Compiled TeX includes normalized images in its source artifact. Figures
+enabled in the document also appear in previews, Pages, and subsequent releases
+where those publication targets are enabled. None of these copies are encrypted
+by the browser-session cache feature.
+
+No source journals or credentials are exported, but labels inside images can
+identify projects, concepts, and relationships. Witful's pattern scan is not
+complete anonymization. Review the selected plots before pushing. Disabling a
+figure changes later presentation only; removing prior copies requires separate
+Git/artifact/release cleanup. See [awareness setup and boundaries](awareness.md).
 
 ## Optional AI processing
 

@@ -275,9 +275,10 @@
     "pkg/resumeme/linkedin/capture/scheduling.py": "0f4d380a7b91fc26715f8b21d359d6b05aaa9fe41b534442a230fd5d7c174bdf",
     "pkg/resumeme/linkedin/capture/shards.py": "03cf508610c5f1ce2ebf5794d703d180eb03f1acfe7bc5c63dd6692523ac62fd",
     "scripts/studies/capture_convergence/__main__.py": "1cadbe1f78e723fa67dded240afe5f9ca2b6089c14e115779a7ddd5aae328bde",
-    "scripts/studies/capture_convergence/report.py": "a51101e19a220140bbd65c8e0bc4dac40164213f357f7cee26cbc60c179881cf",
-    "scripts/studies/capture_convergence/resizing.py": "94256a1306e5a201833d981c1c51e351f4b310942cfa64c4a33278789af2ff00",
-    "scripts/studies/capture_convergence/simulation.py": "9f5811f06d6f22a6545937c8d7d614f225d882b5c6ba3e2858f93671215a3c8a"
+    "scripts/studies/capture_convergence/report.py": "89624e28069cc6c61c08c636bb59d4bea2786cc3d9ed6e8e05a9b47f34bc7427",
+    "scripts/studies/capture_convergence/resizing.py": "0178f9c95928f74bcb39670da22e30fac4fd3cf6ed800bcd0f8da3cbb0e641c3",
+    "scripts/studies/capture_convergence/simulation.py": "9f5811f06d6f22a6545937c8d7d614f225d882b5c6ba3e2858f93671215a3c8a",
+    "scripts/studies/plotting.py": "a13e5ed875ee1248660d2019bd2ff6b778b33c0d8d3479ca2409c4c3bc5f093c"
   },
   "units": 36
 }

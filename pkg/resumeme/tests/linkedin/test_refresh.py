@@ -263,9 +263,9 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     assert build_upload["with"]["path"] == ".cache/publication/"
 
 
-def test_live_capture_uses_six_read_only_browser_scoped_workers() -> None:
+def test_live_capture_uses_planned_read_only_browser_scoped_workers() -> None:
     """
-    Require six workers to restore the seed session without racing cache writes.
+    Require the planned workers to restore the seed session without racing cache writes.
 
     Returns:
         None: The selected browser cache is bootstrapped once, read by all workers, and merged before downstream stages.
@@ -278,7 +278,11 @@ def test_live_capture_uses_six_read_only_browser_scoped_workers() -> None:
     worker_action = next(step for step in workers["steps"] if step.get("uses") == "./.github/actions/linkedin-session")
     cache_action = yaml.safe_load((REPOSITORY_ROOT / ".github/actions/linkedin-session/action.yml").read_text())
 
-    assert workers["strategy"]["matrix"]["shard"] == [1, 2, 3, 4, 5, 6]
+    # The frozen plan owns the adaptive count; the fan-out must consume that same count and shard list.
+    assert bootstrap["outputs"]["shards"] == "${{ steps.matrix.outputs.shards }}"
+    assert bootstrap["outputs"]["count"] == "${{ steps.matrix.outputs.count }}"
+    assert workers["strategy"]["matrix"]["shard"] == "${{ fromJSON(needs.capture-bootstrap.outputs.shards) }}"
+    assert worker_action["with"]["shard-count"] == "${{ needs.capture-bootstrap.outputs.count }}"
     assert workers["needs"] == ["source", "capture-bootstrap"]
     assert bootstrap_action["with"]["command"] == "capture-plan"
     assert worker_action["with"]["command"] == "capture-shard"

@@ -58,6 +58,13 @@ before adding private dependencies or extending the archived paths.
 
 ## Automated source scanning
 
+The optional [awareness integration](../docs/awareness.md) accepts only explicitly
+allowed GitHub actors through authenticated repository dispatches. It validates
+the fixed-path bundle at an immutable commit and checks schema, SHA-256, and PNG
+limits before building. It never executes code from the data branch. Figure labels
+can disclose collection information; visibility controls do not erase previously
+published figures, artifacts, or Git history. The data bundle is not encrypted.
+
 The required CI test stage runs Trivy against the checked-out repository using
 the `aquasec/trivy:0.75.0` image. It checks filesystem dependencies for known
 vulnerabilities and repository files for secret patterns. The checkout is mounted

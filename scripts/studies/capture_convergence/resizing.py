@@ -21,6 +21,7 @@ from resumeme.linkedin.capture.feedback import update_feedback
 from resumeme.linkedin.capture.shards import assign_routes, make_capture_plan
 from resumeme.linkedin.capture.timings import CaptureTimings
 from scripts.studies.capture_convergence.simulation import workload
+from scripts.studies.plotting import question_header
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -144,7 +145,11 @@ def render_capacity(output: Path, raw: Path) -> None:
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
     figure.legend(handles, labels, loc="outside lower center", ncol=2, frameon=False)
-    figure.suptitle("Capacity adaptation: 12 paired synthetic seeds, cooldown and startup overhead included", fontsize=14)
+    question_header(
+        figure,
+        "Capacity adaptation: 12 paired seeds with cooldown and startup overhead",
+        "When does changing shard count reduce completion time or browser-seconds?",
+    )
     figure.savefig(output / "capacity.svg", metadata={"Date": None})
     figure.savefig(raw / "capacity.png", dpi=150)
     plt.close(figure)

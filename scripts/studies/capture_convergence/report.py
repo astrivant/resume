@@ -17,6 +17,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from scripts.studies.capture_convergence.simulation import POLICIES, SCENARIOS
+from scripts.studies.plotting import question_header
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -148,6 +149,7 @@ def render(samples: list[Sample], output: Path, raw: Path, seeds: int) -> None:
         Path(__file__).with_name("simulation.py"),
         Path(__file__).with_name("__main__.py"),
         Path(__file__).with_name("resizing.py"),
+        Path(__file__).parents[1] / "plotting.py",
         Path("pkg/resumeme/linkedin/capture/scheduling.py"),
         Path("pkg/resumeme/linkedin/capture/feedback.py"),
         Path("pkg/resumeme/linkedin/capture/shards.py"),
@@ -249,7 +251,11 @@ def render(samples: list[Sample], output: Path, raw: Path, seeds: int) -> None:
         transform=axes[1, 2].transAxes,
         linespacing=1.8,
     )
-    figure.suptitle("Capture convergence on synthetic workloads", fontsize=16)
+    question_header(
+        figure,
+        "Capture convergence on synthetic workloads",
+        "Which policies reach balanced shard runtimes sooner under noise and changing workloads?",
+    )
     figure.savefig(output / "convergence.svg", metadata={"Date": None})
     figure.savefig(raw / "convergence.png", dpi=150)
     plt.close(figure)
@@ -267,6 +273,11 @@ def render(samples: list[Sample], output: Path, raw: Path, seeds: int) -> None:
         axis.set_ylabel(label)
 
     figure.legend(handles, labels, loc="outside lower center", ncol=3, frameon=False)
+    question_header(
+        figure,
+        "Balancing speed and assignment churn",
+        "How do the policies trade faster balancing against reassignment and prediction error?",
+    )
     figure.savefig(output / "tradeoffs.svg", metadata={"Date": None})
     figure.savefig(raw / "tradeoffs.png", dpi=150)
     plt.close(figure)

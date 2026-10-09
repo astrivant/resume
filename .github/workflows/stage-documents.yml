@@ -35,6 +35,11 @@ jobs:
       - uses: ./.github/actions/restore-profile
         with:
           refresh: ${{ inputs.refresh }}
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: github.event_name == 'repository_dispatch'
+        with:
+          name: awareness-figures
+          path: data/
 
       # Check the rendered document from this source commit, including a user's configured output.tex path.
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2

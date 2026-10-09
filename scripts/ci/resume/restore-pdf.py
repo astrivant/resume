@@ -8,6 +8,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from resumeme.awareness.bundle import validate_bundle
+from resumeme.awareness.models import BUNDLE_PATH
 from resumeme.config import load_config, project_path
 from resumeme.github.companies.artifacts import restore_companies
 
@@ -39,3 +41,13 @@ subprocess.run(["git", "rm", "--ignore-unmatch", "--", *release_files], check=Tr
 
 # Restrict the bot commit to explicit generated PDFs; cached source text and incidental files are not publication inputs.
 subprocess.run(["git", "add", "--", config.output.pdf, *companies], check=True)
+
+# Store only the verified derived figures; no collection journals or arbitrary incoming paths are staged.
+awareness = artifact.with_name("awareness.json")
+
+if awareness.is_file():
+    validate_bundle(awareness.read_bytes())
+    target = project_path(Path.cwd(), BUNDLE_PATH)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(awareness, target)
+    subprocess.run(["git", "add", "--", BUNDLE_PATH], check=True)

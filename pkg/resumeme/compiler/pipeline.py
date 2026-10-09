@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 from attrs import evolve
 from jinja2 import Environment, StrictUndefined
 
+from resumeme.awareness.bundle import stage_figures
 from resumeme.compiler.asts.contributions import calendar_window, save_calendar, validate_calendar
 from resumeme.compiler.asts.links import discover_profile_links
 from resumeme.compiler.asts.profile import Section
@@ -376,6 +377,7 @@ def render_profile(
         website_icon=website_icon,
         current_position=current_position,
         section_navigation=section_navigation,
+        awareness_figures=stage_figures(config, root, target.parent),
     )
     # Normalize Jinja's loop whitespace for readable, reviewable generated source.
     target.write_text(format_tex_source(content), encoding="utf-8")

@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 
 from attrs import field, frozen
 
+from resumeme.awareness.models import Appendices, Awareness
 from resumeme.compiler.constants.links import DEFAULT_PROJECT_FILTER
 from resumeme.compiler.constants.lists import BODY_HEADINGS
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
@@ -592,6 +593,8 @@ class Config:
         projects (Projects): Project names and affiliations to include or exclude alongside the source URL filter.
         pages (Pages): Optional static site publication and its location within GitHub Pages.
         logging (Logging): Application log severity for OpenTelemetry JSON output on stdout.
+        appendices (Appendices): Optional evidence figures, all disabled by default.
+        awareness (Awareness): Explicit authorization for external figure rebuild requests.
     """
 
     linkedin: LinkedIn
@@ -609,3 +612,5 @@ class Config:
     projects: Projects = field(factory=Projects)
     pages: Pages = field(factory=Pages)
     logging: Logging = field(factory=Logging)
+    appendices: Appendices = field(factory=Appendices)
+    awareness: Awareness = field(factory=Awareness)

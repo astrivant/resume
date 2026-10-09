@@ -31,6 +31,10 @@ in collapsible blocks, plus command behavior and examples.
 
 ## Invocation and paths
 
+Optional evidence figures are pushed by `witful awareness push`, then consumed by
+the ordinary `resumeme render` and `resumeme build` commands. See
+[awareness configuration and delivery](awareness.md) for setup and per-figure controls.
+
 ```bash
 resumeme --help
 resumeme --config ./resumeme.config.yaml capture

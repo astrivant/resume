@@ -1,9 +1,12 @@
 name: Resumeme pipeline
 on:
   push:
-    branches: ['**']
+    # The figure-only transport branch dispatches an explicit rebuild; its push must not start a second pipeline.
+    branches: ['**', '!witful-awareness']
     tags: ['**']
   pull_request:
+  repository_dispatch:
+    types: [witful-awareness]
   schedule:
     # Refresh on the first of each month at 06:17 UTC, away from the busiest start-of-hour queue.
     - cron: '17 6 1 * *'
@@ -65,6 +68,32 @@ jobs:
         env:
           REFRESH_PROFILE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh) }}
         run: bash scripts/ci/pipeline/source.sh
+
+  # Authenticate and validate incoming figures in parallel with ordinary source checks, inside this pipeline.
+  awareness:
+    name: Verify awareness figures
+    needs: source
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+        with:
+          groups: main
+      - name: Verify sender, bundle digest, and image schema
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: poetry run python scripts/ci/awareness/receive.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: awareness-figures
+          path: data/awareness.json
+          if-no-files-found: error
+          retention-days: 1
 
   # Source-only validation starts before live capture; no browser, profile artifact, or model output is needed.
   test-stage:
@@ -380,11 +409,12 @@ jobs:
   # Both document consumers use identical capture and summary artifacts but run in parallel on separate runners.
   documents-stage:
     name: Review documents
-    needs: [source, summary-stage]
+    needs: [source, summary-stage, awareness]
     if: >-
       ${{ !cancelled()
       && needs.source.result == 'success'
-      && needs.summary-stage.result == 'success' }}
+      && needs.summary-stage.result == 'success'
+      && (needs.awareness.result == 'success' || needs.awareness.result == 'skipped') }}
     uses: ./.github/workflows/stage-documents.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -392,11 +422,12 @@ jobs:
       summary: ${{ needs.summary-stage.outputs.generated == 'true' }}
   resume-stage:
     name: Build resume
-    needs: [source, summary-stage]
+    needs: [source, summary-stage, awareness]
     if: >-
       ${{ !cancelled()
       && needs.source.result == 'success'
-      && needs.summary-stage.result == 'success' }}
+      && needs.summary-stage.result == 'success'
+      && (needs.awareness.result == 'success' || needs.awareness.result == 'skipped') }}
     uses: ./.github/workflows/stage-resume.yml
     with:
       sha: ${{ needs.source.outputs.sha }}
@@ -413,6 +444,7 @@ jobs:
       && github.event.schedule == '43 6 * * 1')
     needs:
       - source
+      - awareness
       - capture
       - summary-stage
       - test-stage
@@ -433,7 +465,8 @@ jobs:
             ([.source, .["summary-stage"], .["test-stage"], .["security-stage"], .["readme-stage"],
               .["build-stage"], .["browser-e2e-stage"], .["documents-stage"], .["resume-stage"]] |
               all(.result == "success")) and
-            (if .source.outputs.refresh == "true" then .capture.result == "success" else .capture.result == "skipped" end)
+            (if .source.outputs.refresh == "true" then .capture.result == "success" else .capture.result == "skipped" end) and
+            (.awareness.result == "success" or .awareness.result == "skipped")
           ' <<<"$RESULTS_JSON"
 
   # Coverage reporting is a leaf job, independent of PDF publication and required verification.
