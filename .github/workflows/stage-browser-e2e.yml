@@ -1,0 +1,80 @@
+name: Browser end-to-end stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: Immutable source commit resolved by the entry workflow
+        type: string
+        required: true
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  capture:
+    name: Capture with Firefox and Chrome
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+
+      # One runner keeps the timing comparison on the same hardware and launches no LinkedIn account or network session.
+      - name: Check installed browser
+        run: |
+          firefox --version
+          google-chrome --version
+      - name: Capture, validate, and compare each browser
+        run: |
+          browser_status=0
+
+          for browser in firefox chrome; do
+              browser_output=".cache/browser-e2e/$browser"
+              mkdir -p "$browser_output"
+              if RESUMEME_E2E_BROWSER="$browser" \
+                  RESUMEME_E2E_OUTPUT="$browser_output/profile.json" \
+                  RESUMEME_E2E_TIMING_OUTPUT="$browser_output/duration_seconds.txt" \
+                      poetry run pytest pkg/resumeme/tests/test_browser_e2e.py -m browser_e2e -n 0; then
+                  :
+              else
+                  browser_status=1
+              fi
+          done
+
+          if [[ "$browser_status" -ne 0 ]]; then
+              echo 'At least one browser capture failed.' >&2
+              exit 1
+          fi
+
+          # Both files were produced from schema-validated captures after volatile timestamps were removed.
+          diff --unified=3 \
+              .cache/browser-e2e/firefox/profile.json \
+              .cache/browser-e2e/chrome/profile.json
+
+          firefox_seconds="$(<.cache/browser-e2e/firefox/duration_seconds.txt)"
+          chrome_seconds="$(<.cache/browser-e2e/chrome/duration_seconds.txt)"
+
+          if awk -v firefox="$firefox_seconds" -v chrome="$chrome_seconds" 'BEGIN { exit !(firefox <= chrome) }'; then
+              faster_browser='firefox'
+              faster_seconds="$firefox_seconds"
+          else
+              faster_browser='chrome'
+              faster_seconds="$chrome_seconds"
+          fi
+
+          echo "Measured faster capture browser: $faster_browser ($faster_seconds seconds)."
+          printf '| Browser | Capture seconds |\n| --- | ---: |\n| Firefox | %s |\n| Chrome | %s |\n\nRecommended default after both captures pass: **%s**.\n' \
+              "$firefox_seconds" "$chrome_seconds" "$faster_browser" >>"$GITHUB_STEP_SUMMARY"
+      - name: Compare the Firefox and Chrome payloads
+        run: echo 'Firefox and Chrome produced identical validated profile payloads.'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: browser-e2e-captures
+          path: .cache/browser-e2e/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 3

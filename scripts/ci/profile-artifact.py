@@ -10,7 +10,8 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from resumeme.compiler.asts.profile import load_profile
+from resumeme.compiler.asts.profile import load_profile, save_profile
+from resumeme.compiler.passes.privacy import without_profile_location
 from resumeme.config import load_config, project_path
 
 if TYPE_CHECKING:
@@ -52,10 +53,17 @@ def transfer(mode: str, root: Path) -> None:
     artifact = root / ".cache/refresh"
     snapshot = project_path(root, config.output.profile)
     assets = project_path(root, config.output.assets)
-    profile = load_profile(artifact / "profile.json" if mode == "restore" else snapshot, config.linkedin.username)
+    profile_path = artifact / "profile.json" if mode == "restore" else snapshot
+    profile = load_profile(profile_path, config.linkedin.username)
 
     if profile.warnings:
         raise ValueError("A profile refresh cannot publish an incomplete profile: " + "; ".join(profile.warnings))
+
+    # Redact personal location before determining which images and fields enter a published artifact.
+    redact_location = not config.style.display_location
+
+    if redact_location:
+        profile = without_profile_location(profile)
 
     # The profile owns the file list; incidental assets, Firefox state, and diagnostic pages are never transferred.
     pairs = {(snapshot, artifact / "profile.json")}
@@ -78,6 +86,10 @@ def transfer(mode: str, root: Path) -> None:
 
         if not source.is_file() or source.is_symlink():
             raise ValueError(f"Missing captured input: {source}")
+
+    # Persist the validated, sanitized profile only after every referenced file passes the transfer checks.
+    if redact_location:
+        save_profile(profile, profile_path)
 
     if mode == "stage":
         subprocess.run(["git", "add", "--", *(str(local.relative_to(root)) for local, _ in sorted(pairs))], cwd=root, check=True)

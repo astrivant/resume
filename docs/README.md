@@ -118,6 +118,7 @@ See [logging controls and record fields](CLI.md#logging).
 | `style.font_size` | `10` | Body font size: `10`, `11`, or `12` points |
 | `style.show_header_photo` | `true` | Display the cover/background photo; disabled in the author's personal config |
 | `style.display_profile_photo` | `true` | Display the round profile portrait in either first-page column; independent of the cover photo |
+| `style.display_location` | `true` | Display the profile location and labeled personal address fields; false also removes them from the committed snapshot. Both checked-in configs opt out |
 | `style.show_table_of_contents` | `true` | Link visible sections below the LinkedIn profile link in the first-page profile column |
 | `style.highlight_job_subheadings` | `true` | Bold recognized job subsection labels with a small preceding gap; false leaves their text plain |
 | `style.show_connection_count` | `false` | Show the captured connection count once below the LinkedIn profile link |

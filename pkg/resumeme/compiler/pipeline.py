@@ -41,6 +41,7 @@ from resumeme.compiler.passes.media import employer_badge, employer_name_index, 
 from resumeme.compiler.passes.navigation import experience_navigation
 from resumeme.compiler.passes.ordering import order_sections
 from resumeme.compiler.passes.ownership import without_ownership_metadata
+from resumeme.compiler.passes.privacy import without_profile_location
 from resumeme.compiler.passes.progression import experience_layout
 from resumeme.compiler.passes.project_layout import company_logos, project_layout
 from resumeme.compiler.passes.projects import consolidate_projects
@@ -166,6 +167,10 @@ def render_profile(
     # Filter before scoring or staging so hidden sections and jobs contribute neither cloud weights nor referenced assets.
     enabled = {section_key(key) for key in config.section_order}
     visible = visible_profile(profile, config)
+
+    # Apply the same privacy opt-out used before capture artifacts are published.
+    if not style.display_location:
+        visible = without_profile_location(visible)
 
     # Signing identity belongs on LinkedIn's About, while the PDF keeps only the person's authored profile content.
     visible = without_ownership_metadata(visible)

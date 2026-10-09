@@ -234,6 +234,8 @@ style:
   # Cover/background photo and portrait visibility are independent.
   show_header_photo: true
   display_profile_photo: true
+  # Personal location and labeled address fields are optional; Experience locations remain visible.
+  display_location: false
   show_headline: false
 
   # Sidebar company/logo/title: null uses the latest visible Experience role; true ignores its filters; false hides the block.

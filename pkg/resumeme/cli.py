@@ -21,6 +21,7 @@ from resumeme.codex.skills import prepare_skills
 from resumeme.compiler.asts.contributions import load_calendar
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.compiler.backends.latex.compilation import compile_pdf
+from resumeme.compiler.passes.privacy import without_profile_location
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Ownership, load_config, project_path
 from resumeme.exceptions import ConfigurationError, ProfileError, ResumemeError
@@ -234,6 +235,10 @@ def _run(args: argparse.Namespace) -> int:
                 if args.command == "capture"
                 else cache_media(load_profile(snapshot, config.linkedin.username), config, root)
             )
+
+            # Apply the user's privacy choice before a new or enriched snapshot reaches disk.
+            if not config.style.display_location:
+                profile = without_profile_location(profile)
 
             if profile.warnings and not args.allow_incomplete:
                 # Preserve recoverable diagnostics without replacing the last accepted, publishable snapshot.

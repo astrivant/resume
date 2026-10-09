@@ -74,6 +74,29 @@ def test_capture_artifact_round_trip_preserves_nested_assets_only(tmp_path: Path
     assert private.read_bytes() == b"must never leave the runner"
 
 
+def test_capture_artifact_redacts_profile_location_when_disabled(tmp_path: Path) -> None:
+    """
+    Remove the owner's location from the committed snapshot and transfer artifact when opted out.
+
+    Args:
+        tmp_path (Path): Temporary configured capture root.
+
+    Returns:
+        None: The artifact and staged source snapshot contain no personal location.
+    """
+    config = tmp_path / "resumeme.config.yaml"
+    config.write_text("linkedin:\n  username: example-person\nstyle:\n  display_location: false\n")
+    snapshot = tmp_path / "data/profile.json"
+    profile = Profile("example-person", "Alex Example", intro=["Staff Engineer", "Atlanta Metropolitan Area"])
+    save_profile(profile, snapshot)
+
+    result = _transfer(tmp_path, "export")
+
+    assert result.returncode == 0
+    assert json.loads(snapshot.read_text(encoding="utf-8"))["intro"] == ["Staff Engineer"]
+    assert json.loads((tmp_path / ".cache/refresh/profile.json").read_text(encoding="utf-8"))["intro"] == ["Staff Engineer"]
+
+
 @pytest.mark.parametrize("failure", ["warnings", "missing", "outside", "owner"])
 def test_capture_restore_rejects_incomplete_or_unrelated_inputs(tmp_path: Path, failure: str) -> None:
     """
@@ -242,19 +265,21 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
         (True, "success", "skipped", False),
     ],
 )
-@pytest.mark.parametrize("stage", ["source", "summary-stage", "test-stage", "build-stage", "documents-stage", "resume-stage"])
+@pytest.mark.parametrize(
+    "stage", ["source", "summary-stage", "test-stage", "build-stage", "browser-e2e-stage", "documents-stage", "resume-stage"]
+)
 def test_verification_gate_requires_requested_capture_and_successful_work(
     refresh: bool, capture: str, build: str, accepted: bool, stage: str
 ) -> None:
     """
-    Execute the real verification gate for fresh captures and ordinary saved-profile builds.
+    Execute the real verification gate for capture, browser parity, and ordinary saved-profile builds.
 
     Args:
         refresh (bool): Whether this event requires a fresh LinkedIn capture.
         capture (str): Capture job result supplied by Actions.
         build (str): Selected required job result supplied by Actions.
         accepted (bool): Whether publication is allowed for this combination.
-        stage (str): Required source, test, review, or build branch exercised independently.
+        stage (str): Required source, test, browser, review, or build branch exercised independently.
 
     Returns:
         None: Failed or skipped required work blocks publication, while an intentionally omitted capture does not.
@@ -267,6 +292,7 @@ def test_verification_gate_requires_requested_capture_and_successful_work(
         "summary-stage": {"result": "success"},
         "test-stage": {"result": "success"},
         "build-stage": {"result": "success"},
+        "browser-e2e-stage": {"result": "success"},
         "documents-stage": {"result": "success"},
         "resume-stage": {"result": "success"},
     }
@@ -285,6 +311,7 @@ def test_verification_gate_requires_requested_capture_and_successful_work(
         "summary-stage",
         "test-stage",
         "build-stage",
+        "browser-e2e-stage",
         "documents-stage",
         "resume-stage",
         "coverage-badge",
@@ -327,6 +354,7 @@ def test_independent_pipeline_work_has_no_profile_or_summary_barrier() -> None:
         "summary-stage",
         "test-stage",
         "build-stage",
+        "browser-e2e-stage",
         "documents-stage",
         "resume-stage",
     }

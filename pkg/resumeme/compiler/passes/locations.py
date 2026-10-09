@@ -18,7 +18,7 @@ from resumeme.compiler.constants.locations import WORK_MODES as _WORK_MODES
 if TYPE_CHECKING:
     from resumeme.compiler.asts.profile import Entry
 
-__all__ = ["job_locations"]
+__all__ = ["is_location_line", "job_locations"]
 
 
 def _location_link(line: str) -> Link | None:
@@ -55,6 +55,34 @@ def _location_link(line: str) -> Link | None:
 
     destination = "https://www.google.com/maps/search/?" + urlencode({"api": "1", "query": place})
     return Link(place, destination)
+
+
+def is_location_line(line: str) -> bool:
+    """
+    Identify a standalone place label without classifying short role titles as locations.
+
+    Args:
+        line (str): Candidate LinkedIn profile location.
+
+    Returns:
+        bool: Whether the line has a geographic shape supported by the employment parser.
+    """
+    if _location_link(line) is None:
+        return False
+
+    place = line.partition("\u00b7")[0].strip().casefold()
+    last_word = place.rsplit(maxsplit=1)[-1]
+
+    # Require a geographic shape so a short role such as "Staff Engineer" is never treated as a home location.
+    return "," in place or last_word in {
+        "area",
+        "city",
+        "county",
+        "metropolitan",
+        "province",
+        "region",
+        "states",
+    }
 
 
 def job_locations(entry: Entry) -> dict[str, Link]:

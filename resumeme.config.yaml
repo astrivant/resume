@@ -233,6 +233,9 @@ style:
   # left keeps the full-height profile column; right places it at the upper right with body text flowing below it.
   profile_column_side: right
 
+  # Keep personal location and any explicitly labeled address out of the PDF and published profile snapshot.
+  display_location: false
+
   show_headline: false
 
   # Sidebar company/logo/title: null uses the latest visible Experience role; true ignores its filters; false hides the block.

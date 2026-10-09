@@ -408,6 +408,7 @@ class StyleOverrides(TypedDict, total=False):
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile cover photo.
         display_profile_photo (bool): Whether to display the profile portrait.
+        display_location (bool): Whether to publish the profile location and labeled personal address fields.
         show_headline (bool): Whether to display the captured headline beneath the portrait.
         display_current_position (bool | None): Latest visible role when None, latest captured role when True, or hidden when False.
         show_table_of_contents (bool): Whether to link visible sections beneath the LinkedIn profile link.
@@ -436,6 +437,7 @@ class StyleOverrides(TypedDict, total=False):
     font_size: int
     show_header_photo: bool
     display_profile_photo: bool
+    display_location: bool
     show_headline: bool
     display_current_position: bool | None
     show_table_of_contents: bool
@@ -470,6 +472,7 @@ class Style:
         font_size (int): Body font size in points.
         show_header_photo (bool): Whether to display the profile's cover/background photo.
         display_profile_photo (bool): Display the profile portrait; enabled by default.
+        display_location (bool): Display the captured profile location and labeled personal address fields.
         show_headline (bool): Display the captured headline beneath the portrait; hidden by default.
         display_current_position (bool | None): Latest visible role when None, latest captured role when True, or hidden when False.
         show_table_of_contents (bool): Link visible sections beneath the LinkedIn profile link in the identity column.
@@ -500,6 +503,7 @@ class Style:
     font_size: int = 10
     show_header_photo: bool = True
     display_profile_photo: bool = True
+    display_location: bool = True
     show_headline: bool = False
     display_current_position: bool | None = None
     show_table_of_contents: bool = True

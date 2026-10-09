@@ -67,6 +67,17 @@ jobs:
     with:
       sha: ${{ needs.source.outputs.sha }}
 
+  # Validate real browser behavior without LinkedIn credentials; the PR run gates merge and main runs it again independently.
+  browser-e2e-stage:
+    name: Browser E2E
+    needs: source
+    if: >-
+      ${{ !cancelled()
+      && needs.source.result == 'success' }}
+    uses: ./.github/workflows/stage-browser-e2e.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+
   capture:
     name: Refresh LinkedIn source
     needs: source
@@ -178,7 +189,7 @@ jobs:
       always()
       && !(github.event_name == 'schedule'
       && github.event.schedule == '43 6 * * 1')
-    needs: [source, capture, summary-stage, test-stage, build-stage, documents-stage, resume-stage]
+    needs: [source, capture, summary-stage, test-stage, build-stage, browser-e2e-stage, documents-stage, resume-stage]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -187,7 +198,7 @@ jobs:
           RESULTS_JSON: ${{ toJSON(needs) }}
         run: |
           jq -e '
-            ([.source, .["summary-stage"], .["test-stage"], .["build-stage"], .["documents-stage"], .["resume-stage"]] |
+            ([.source, .["summary-stage"], .["test-stage"], .["build-stage"], .["browser-e2e-stage"], .["documents-stage"], .["resume-stage"]] |
               all(.result == "success")) and
             (if .source.outputs.refresh == "true" then .capture.result == "success" else .capture.result == "skipped" end)
           ' <<<"$RESULTS_JSON"

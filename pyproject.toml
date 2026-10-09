@@ -85,7 +85,8 @@ build-backend = "poetry.core.masonry.api"
 testpaths = ["pkg/resumeme/tests"]
 
 # Share CPU-based worker selection between local runs and CI; use -n 0 when debugging a single process.
-addopts = "-ra -n auto"
+addopts = "-ra -n auto -m 'not browser_e2e'"
+markers = ["browser_e2e: real Firefox or Chrome capture tests against a local fixture server"]
 
 [tool.coverage.run]
 relative_files = true

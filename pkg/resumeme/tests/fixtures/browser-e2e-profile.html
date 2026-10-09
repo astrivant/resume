@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LinkedIn profile capture fixture</title>
+    <style>
+      body { min-height: 2200px; }
+      [hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section aria-label="Primary content">
+        <section>
+          <h1>Alex Example</h1>
+          <div class="text-body-medium break-words" data-resume-headline>Senior Platform Engineer</div>
+          <p>Builds reliable platforms for product teams.</p>
+          <a href="https://github.com/alex-example">GitHub</a>
+          <img src="http://127.0.0.1:1/alex-example.png" alt="Alex Example profile photo">
+        </section>
+        <section>
+          <div id="experience" data-resume-section="experience"></div>
+          <h2>Experience</h2>
+          <ul>
+            <li class="artdeco-list__item">
+              <h3>Lead Platform Engineer</h3>
+              <p>Acme Systems</p>
+              <p>Jan 2022 - Present</p>
+              <p>Built a reliable deployment platform.</p>
+              <button id="show-more" type="button" aria-label="Show more">See more</button>
+              <p id="expanded-description" hidden>Reduced deployment time by 60 percent across 40 services.</p>
+              <a href="https://github.com/acme/platform">Platform source</a>
+              <img src="http://127.0.0.1:1/acme-systems.png" alt="Acme Systems logo">
+            </li>
+          </ul>
+        </section>
+        <section>
+          <div id="skills" data-resume-section="skills"></div>
+          <h2>Skills</h2>
+          <ul>
+            <li class="artdeco-list__item">
+              <h3>Python</h3>
+              <span aria-label="5 endorsements">5 endorsements</span>
+            </li>
+          </ul>
+        </section>
+      </section>
+    </main>
+    <script>
+      document.querySelector("#show-more").addEventListener("click", () => {
+        document.querySelector("#expanded-description").hidden = false;
+        document.querySelector("#show-more").remove();
+      });
+    </script>
+  </body>
+</html>

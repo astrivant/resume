@@ -38,6 +38,25 @@ Indices are one-based. `bash scripts/ci/test.sh` still runs both pre-commit and
 the complete suite; use `checks` or `tests` as its first argument to run only
 that portion. Additional arguments in `tests` or `all` mode go to pytest.
 
+## Browser end-to-end parity
+
+The browser end-to-end stage launches real headless Firefox and Chrome sessions
+against the same local LinkedIn-shaped fixture. It checks expanded profile text,
+links, images, sections, skills, and profile-schema round trips, then requires the
+normalized JSON payloads to match exactly. Both runs use one runner, and the job
+summary records capture durations and recommends the faster browser as the default.
+The fixture keeps LinkedIn credentials, MFA, and external network access out of CI.
+This stage runs on pull requests and runs again on pushes to `main`; its result is
+part of `CI verification`.
+
+The regular test suite excludes these browser tests. Run one locally with the
+matching browser installed:
+
+```bash
+RESUMEME_E2E_BROWSER=firefox poetry run pytest pkg/resumeme/tests/test_browser_e2e.py -m browser_e2e -n 0
+RESUMEME_E2E_BROWSER=chrome poetry run pytest pkg/resumeme/tests/test_browser_e2e.py -m browser_e2e -n 0
+```
+
 The README coverage badge uses the combined `python-coverage` XML artifact from
 CI. Each partition uploads distinct raw coverage as `python-coverage-1`, `-2`,
 or `-3`, including on failure. The aggregation job merges all three after every

@@ -235,6 +235,11 @@
           "type": "boolean",
           "default": true
         },
+        "display_location": {
+          "description": "Display the owner's profile location and labeled Address fields; employment locations remain visible.",
+          "type": "boolean",
+          "default": true
+        },
         "show_table_of_contents": {
           "description": "Link visible sections below the LinkedIn profile link in the first-page identity column; enabled by default.",
           "type": "boolean",
@@ -328,6 +333,9 @@
               },
               "display_profile_photo": {
                 "$ref": "#/properties/style/properties/display_profile_photo"
+              },
+              "display_location": {
+                "$ref": "#/properties/style/properties/display_location"
               },
               "show_table_of_contents": {
                 "$ref": "#/properties/style/properties/show_table_of_contents"
