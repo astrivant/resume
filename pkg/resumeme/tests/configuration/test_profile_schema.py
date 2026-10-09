@@ -5,7 +5,7 @@ Exercise minimal, maximal, and unfamiliar profile content through schema and ren
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from attrs import evolve
@@ -17,6 +17,10 @@ from resumeme.compiler.asts.profile import Entry, Profile, Section, Skill, load_
 from resumeme.compiler.asts.sections import SECTION_TITLES
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn
+from resumeme.tests.paths import TEST_FIXTURES
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.mark.parametrize("filename", ["profile-minimal.html", "profile-maximal.html"])
@@ -31,7 +35,7 @@ def test_profile_extremes_roundtrip_and_render(tmp_path: Path, filename: str) ->
     Returns:
         None: Identity, sections, skills, and references survive without requiring optional content.
     """
-    html = Path(__file__).with_name("fixtures").joinpath(filename).read_text(encoding="utf-8")
+    html = TEST_FIXTURES.joinpath(filename).read_text(encoding="utf-8")
     profile = parse_profile(merge_profile_html([html]), "example-person")
     assert profile.name == "Alex Example"
 

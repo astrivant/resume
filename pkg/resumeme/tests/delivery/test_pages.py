@@ -7,7 +7,7 @@ from __future__ import annotations
 import os
 import runpy
 import subprocess
-from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
 import pytest
@@ -21,6 +21,10 @@ from resumeme.cli import main
 from resumeme.compiler.asts.profile import Entry, Profile, Section, save_profile
 from resumeme.config import Config, GitHub, LinkedIn, Output, Pages, Readme, Style, load_config
 from resumeme.github.pages import build_site
+from resumeme.tests.paths import REPOSITORY_ROOT
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.mark.parametrize("path", ["/", "/cv/", "/career/my-resume.v2/"])
@@ -175,7 +179,7 @@ def test_site_cli_previews_without_enabling_deployments_and_exports_validated_se
     assert (tmp_path / ".cache/pages/index.html").exists()
 
     # Emit only schema-validated settings; no capture or Pages API is touched when disabled.
-    script = Path(__file__).resolve().parents[3] / "scripts/ci/pages-settings.py"
+    script = REPOSITORY_ROOT / "scripts/ci/pages-settings.py"
     output = tmp_path / "outputs"
     monkeypatch.setenv("GITHUB_OUTPUT", str(output))
     monkeypatch.chdir(tmp_path)
@@ -205,7 +209,7 @@ def test_pages_destination_uses_github_metadata(tmp_path: Path, base: str, path:
     Returns:
         None: The environment URL targets the exact configured path, or domain mismatch blocks deployment.
     """
-    script = Path(__file__).resolve().parents[3] / "scripts/ci/pages-destination.sh"
+    script = REPOSITORY_ROOT / "scripts/ci/pages-destination.sh"
     output = tmp_path / "outputs"
     environment = dict(
         os.environ,
@@ -226,7 +230,7 @@ def test_pages_destination_uses_github_metadata(tmp_path: Path, base: str, path:
         ("push", "refs/heads/main", "accepted", "true"),
         ("schedule", "refs/heads/main", "newer", "false"),
         ("pull_request", "refs/heads/main", "accepted", None),
-        ("push", "refs/tags/resume-1", "accepted", None),
+        ("push", "refs/tags/resume-1", "accepted", "true"),
     ],
 )
 def test_pages_deployment_guard_skips_stale_or_untrusted_runs(
@@ -243,9 +247,9 @@ def test_pages_deployment_guard_skips_stale_or_untrusted_runs(
         expected (str | None): Freshness output, or None when the event must be rejected.
 
     Returns:
-        None: Only accepted main-branch runs can request a Pages deployment.
+        None: Only accepted default-branch commits can request a Pages deployment, including tag publications.
     """
-    root = Path(__file__).resolve().parents[3]
+    root = REPOSITORY_ROOT
     command = tmp_path / "gh"
     command.write_text(
         "#!/usr/bin/env bash\nset -eu\n"

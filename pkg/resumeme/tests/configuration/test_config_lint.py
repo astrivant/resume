@@ -8,7 +8,6 @@ import json
 import re
 import subprocess
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
@@ -16,8 +15,11 @@ import pytest
 import yaml
 
 from resumeme.cli import main
+from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pytest import CaptureFixture, MonkeyPatch
 
 
@@ -141,7 +143,7 @@ def test_module_entry_point_and_hook_selection(tmp_path: Path) -> None:
         [sys.executable, "-m", "resumeme.cli", "config", "lint", str(config)], cwd=tmp_path, text=True, capture_output=True, check=False
     )
     assert result.returncode == 0 and f"Valid configuration: {config}" in result.stdout
-    root = Path(__file__).resolve().parents[3]
+    root = REPOSITORY_ROOT
     hook = yaml.safe_load((root / ".pre-commit-hooks.yaml").read_text())[0]
     assert hook["id"] == "resumeme-config-validator" and hook["entry"] == "resumeme config lint"
     assert hook["language"] == "python" and hook.get("pass_filenames", True)

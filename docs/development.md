@@ -18,6 +18,8 @@ poetry build
 
 Tests run in parallel with pytest-xdist and combined coverage. Select a worker
 count with `poetry run pytest -n 4`, or use `-n 0` for single-process debugging.
+The [test suite layout](../pkg/resumeme/tests/README.md) maps subsystem folders to
+targeted pytest commands.
 Hooks check Ruff, strict mypy, Google-style docstrings, schemas, ShellCheck, and
 shfmt. For container-based development, see [local image builds](containers.md#build-locally).
 
@@ -53,8 +55,8 @@ The regular test suite excludes these browser tests. Run one locally with the
 matching browser installed:
 
 ```bash
-RESUMEME_E2E_BROWSER=firefox poetry run pytest pkg/resumeme/tests/test_browser_e2e.py -m browser_e2e -n 0
-RESUMEME_E2E_BROWSER=chrome poetry run pytest pkg/resumeme/tests/test_browser_e2e.py -m browser_e2e -n 0
+RESUMEME_E2E_BROWSER=firefox poetry run pytest pkg/resumeme/tests/linkedin/test_browser_e2e.py -m browser_e2e -n 0
+RESUMEME_E2E_BROWSER=chrome poetry run pytest pkg/resumeme/tests/linkedin/test_browser_e2e.py -m browser_e2e -n 0
 ```
 
 The README coverage badge uses the combined `python-coverage` XML artifact from

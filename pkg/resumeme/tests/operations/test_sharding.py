@@ -8,11 +8,16 @@ import os
 import shutil
 import subprocess
 import sys
-from pathlib import Path
+from typing import TYPE_CHECKING
 from xml.etree import ElementTree
 
 import pytest
 from coverage import Coverage, CoverageData
+
+from resumeme.tests.paths import REPOSITORY_ROOT
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture
@@ -26,7 +31,7 @@ def shard_suite(tmp_path: Path) -> Path:
     Returns:
         Path: Suite with eleven distinct cases and independently measurable source lines.
     """
-    shutil.copyfile(Path(__file__).resolve().parents[3] / "conftest.py", tmp_path / "conftest.py")
+    shutil.copyfile(REPOSITORY_ROOT / "conftest.py", tmp_path / "conftest.py")
     (tmp_path / "sample.py").write_text(
         "def identify(value):\n" + "".join(f"    if value == {value}:\n        return {value}\n" for value in range(11))
     )

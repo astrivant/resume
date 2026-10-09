@@ -8,12 +8,16 @@ import json
 import os
 import subprocess
 import sys
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 import yaml
 
 from resumeme.compiler.asts.profile import Entry, Media, Profile, Section, save_profile
+from resumeme.tests.paths import REPOSITORY_ROOT
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _transfer(root: Path, mode: str) -> subprocess.CompletedProcess[str]:
@@ -27,7 +31,7 @@ def _transfer(root: Path, mode: str) -> subprocess.CompletedProcess[str]:
     Returns:
         subprocess.CompletedProcess[str]: Captured process outcome without registry or browser access.
     """
-    script = Path(__file__).resolve().parents[3] / "scripts/ci/profile-artifact.py"
+    script = REPOSITORY_ROOT / "scripts/ci/profile-artifact.py"
     return subprocess.run([sys.executable, str(script), mode], cwd=root, capture_output=True, text=True, check=False)
 
 
@@ -163,7 +167,7 @@ def test_refresh_event_selection(tmp_path: Path, event: str, ref: str, requested
     output = tmp_path / "output"
     result = subprocess.run(
         ["bash", "scripts/ci/source.sh"],
-        cwd=Path(__file__).resolve().parents[3],
+        cwd=REPOSITORY_ROOT,
         env=dict(
             os.environ,
             REFRESH_PROFILE=str(requested).lower(),
@@ -189,7 +193,7 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     Returns:
         None: Consumers restore the same capture and release signs this run's verified artifact without restaging an older PDF.
     """
-    workflows = Path(__file__).resolve().parents[3] / ".github/workflows"
+    workflows = REPOSITORY_ROOT / ".github/workflows"
     pipeline = yaml.safe_load((workflows / "ci.yml").read_text())
     stages = {
         name: yaml.safe_load((workflows / f"stage-{name}.yml").read_text())
@@ -284,7 +288,7 @@ def test_verification_gate_requires_requested_capture_and_successful_work(
     Returns:
         None: Failed or skipped required work blocks publication, while an intentionally omitted capture does not.
     """
-    workflow = Path(__file__).resolve().parents[3] / ".github/workflows/ci.yml"
+    workflow = REPOSITORY_ROOT / ".github/workflows/ci.yml"
     jobs = yaml.safe_load(workflow.read_text())["jobs"]
     results: dict[str, dict[str, str | dict[str, str]]] = {
         "source": {"result": "success", "outputs": {"refresh": str(refresh).lower()}},
@@ -328,7 +332,7 @@ def test_independent_pipeline_work_has_no_profile_or_summary_barrier() -> None:
     Returns:
         None: Source-only builds start immediately, profile consumers fan out, and release mutation waits for its writers.
     """
-    workflows = Path(__file__).resolve().parents[3] / ".github/workflows"
+    workflows = REPOSITORY_ROOT / ".github/workflows"
     jobs = yaml.safe_load((workflows / "ci.yml").read_text())["jobs"]
     assert jobs["build-stage"]["needs"] == "source"
     assert jobs["test-stage"]["needs"] == jobs["summary-stage"]["needs"] == jobs["skills-stage"]["needs"] == ["source", "capture"]

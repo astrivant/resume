@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 import yaml
@@ -17,6 +17,10 @@ from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER, SECTION_
 from resumeme.compiler.passes.ordering import order_sections
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, load_config
+from resumeme.tests.paths import REPOSITORY_ROOT
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_default_order_matches_config_schema_and_section_catalog(tmp_path: Path) -> None:
@@ -32,7 +36,7 @@ def test_default_order_matches_config_schema_and_section_catalog(tmp_path: Path)
     path = tmp_path / "resumeme.config.yaml"
     path.write_text("linkedin:\n  username: example-person\n")
     config = load_config(path)
-    root = Path(__file__).resolve().parents[3]
+    root = REPOSITORY_ROOT
     schema = json.loads((root / "pkg/resumeme/compiler/asts/resources/config.schema.json").read_text())
     assert config.section_order == schema["properties"]["section_order"]["default"]
     assert tuple(config.section_order) == DEFAULT_SECTION_ORDER

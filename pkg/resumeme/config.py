@@ -90,10 +90,12 @@ class LinkedInResume:
 
     Attributes:
         publish (bool): Upload the verified PDF after a signed tag release.
+        replace_existing (bool): Delete other saved LinkedIn resumes after the new PDF is confirmed; false retains them.
         share_with_recruiters (bool | None): Override recruiter resume-data sharing after upload; None preserves the account setting.
     """
 
     publish: bool = False
+    replace_existing: bool = False
     share_with_recruiters: bool | None = None
 
 

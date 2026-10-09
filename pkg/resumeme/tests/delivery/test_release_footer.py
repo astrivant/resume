@@ -9,7 +9,6 @@ import os
 import subprocess
 import sys
 from io import BytesIO
-from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import quote
 
@@ -22,8 +21,11 @@ from resumeme.compiler.backends.pdf import release_footer
 from resumeme.config import Ownership
 from resumeme.linkedin.identity import release_destination
 from resumeme.signing import public_key_fingerprint
+from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pypdf import PageObject
     from pytest import MonkeyPatch
 
@@ -273,7 +275,7 @@ def test_release_metadata_embeds_the_actual_public_identity(tmp_path: Path) -> N
     tag = "resume/2026-10+é"
     environment = dict(os.environ, SOURCE_SHA="a" * 40, GITHUB_REPOSITORY="owner/fork", RELEASE_TAG=tag)
     command = [sys.executable, "scripts/release/metadata.py", str(tmp_path)]
-    root = Path(__file__).resolve().parents[3]
+    root = REPOSITORY_ROOT
     subprocess.run(command, cwd=root, env=environment, check=True)
     fingerprint = public_key_fingerprint(public)
     metadata = json.loads((tmp_path / "source.json").read_text())

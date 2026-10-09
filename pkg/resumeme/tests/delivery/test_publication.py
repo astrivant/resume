@@ -13,13 +13,17 @@ import shutil
 import subprocess
 import sys
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 import yaml
 from PIL import Image
 
 from resumeme.compiler.asts.profile import Entry, Media, Profile, Section, save_profile
+from resumeme.tests.paths import REPOSITORY_ROOT
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_pdf_artifact_carries_utc_build_date_across_midnight(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -33,7 +37,7 @@ def test_pdf_artifact_carries_utc_build_date_across_midnight(tmp_path: Path, mon
     Returns:
         None: The transferred date matches the PDF's completion timestamp and its bytes remain intact.
     """
-    script = Path(__file__).resolve().parents[3] / "scripts/ci/stage-pdf.py"
+    script = REPOSITORY_ROOT / "scripts/ci/stage-pdf.py"
     (tmp_path / "resumeme.config.yaml").write_text("linkedin: {username: example}\noutput: {pdf: documents/cv.pdf}\n")
     pdf = tmp_path / "documents/cv.pdf"
     pdf.parent.mkdir()
@@ -44,6 +48,48 @@ def test_pdf_artifact_carries_utc_build_date_across_midnight(tmp_path: Path, mon
     runpy.run_path(str(script))
     assert (tmp_path / ".cache/publication/resume.pdf").read_bytes() == pdf.read_bytes()
     assert (tmp_path / ".cache/publication/brew-date.txt").read_text() == "2026-01-02\n"
+
+
+def test_unsigned_main_build_removes_signatures_for_the_replaced_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Remove stale release signatures when a routine branch build replaces the tagged PDF.
+
+    Args:
+        tmp_path (Path): Temporary checkout containing a tracked signed PDF and its sidecars.
+        monkeypatch (pytest.MonkeyPatch): Scoped working directory for the publication restore script.
+
+    Returns:
+        None: The new unsigned PDF is staged and verification files for its predecessor are removed.
+    """
+    _git(tmp_path, "init", "--initial-branch=main")
+    _git(tmp_path, "config", "user.name", "Fixture")
+    _git(tmp_path, "config", "user.email", "fixture@example.org")
+    _git(tmp_path, "config", "commit.gpgsign", "false")
+    (tmp_path / "resumeme.config.yaml").write_text("linkedin: {username: example-person}\n", encoding="utf-8")
+    release_files = [
+        "resume.pdf.sig",
+        "resume.pdf.sigstore.json",
+        "cosign.pub",
+        "key-fingerprint.txt",
+        "source.json",
+        "SHA256SUMS",
+        "SHA256SUMS.sigstore.json",
+    ]
+    (tmp_path / "resume.pdf").write_bytes(b"%PDF-1.7\nold signed build")
+
+    for filename in release_files:
+        (tmp_path / filename).write_text("old verification material\n", encoding="utf-8")
+
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-m", "signed release")
+    artifact = tmp_path / ".cache/publication/resume.pdf"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_bytes(b"%PDF-1.7\nnew unsigned build")
+    monkeypatch.chdir(tmp_path)
+    runpy.run_path(str(REPOSITORY_ROOT / "scripts/ci/restore-pdf.py"))
+
+    staged = _git(tmp_path, "diff", "--cached", "--name-status").splitlines()
+    assert staged == sorted([*(f"D\t{name}" for name in release_files), "M\tresume.pdf"], key=lambda item: item.split("\t")[1])
 
 
 @pytest.mark.parametrize("matching_revision", [False, True])
@@ -83,7 +129,7 @@ def test_container_publication_uses_only_the_verified_archive(tmp_path: Path, ma
     )
     result = subprocess.run(
         ["bash", "scripts/ci/publish-container.sh"],
-        cwd=Path(__file__).resolve().parents[3],
+        cwd=REPOSITORY_ROOT,
         env=environment,
         capture_output=True,
         text=True,
@@ -110,7 +156,7 @@ def test_dockerhub_publication_is_upstream_tag_only() -> None:
     Returns:
         None: Docker Hub cannot run for forks or branch events and uses the verified image and source aliases.
     """
-    workflows = Path(__file__).resolve().parents[3] / ".github/workflows"
+    workflows = REPOSITORY_ROOT / ".github/workflows"
     pipeline = yaml.safe_load((workflows / "ci.yml").read_text())
     stage = yaml.safe_load((workflows / "stage-container.yml").read_text())
     caller = pipeline["jobs"]["container-stage"]
@@ -206,7 +252,7 @@ def test_publication_resumes_only_for_the_identical_generated_commit(
     _git(root, "config", "user.email", "fixture@example.org")
     _git(root, "config", "commit.gpgsign", "false")
     _git(root, "remote", "add", "origin", str(remote))
-    project = Path(__file__).resolve().parents[3]
+    project = REPOSITORY_ROOT
 
     for relative in [
         "scripts/ci/publish.sh",
@@ -416,7 +462,7 @@ exit 2
     )
     subprocess.run(
         ["bash", "scripts/tooling/retry.sh", "bash", "scripts/release/create-draft.sh", "resume-fixture", str(tmp_path / "notes")],
-        cwd=Path(__file__).resolve().parents[3],
+        cwd=REPOSITORY_ROOT,
         env=environment,
         capture_output=True,
         text=True,
@@ -454,7 +500,7 @@ def test_signed_release_uses_only_the_existing_selected_tag(tmp_path: Path, matc
         _git(root, "commit", "-am", "advance source")
 
     source = _git(root, "rev-parse", "HEAD")
-    repository = Path(__file__).resolve().parents[3]
+    repository = REPOSITORY_ROOT
 
     for relative in ("scripts/release/publish.sh", "scripts/release/create-draft.sh", "scripts/tooling/retry.sh"):
         destination = root / relative
@@ -516,6 +562,168 @@ def test_signed_release_uses_only_the_existing_selected_tag(tmp_path: Path, matc
     assert all(f".cache/publication/{filename}" in operations[3] for filename in filenames)
     assert operations[4].startswith("release edit resume-selected --draft=false ")
     assert all(f"resume-{source}" not in operation for operation in operations)
+
+
+@pytest.mark.parametrize("latest_release", [False, True])
+@pytest.mark.parametrize("main_advanced", [False, True])
+def test_tag_publication_commits_only_the_latest_signed_payload_to_main(tmp_path: Path, latest_release: bool, main_advanced: bool) -> None:
+    """
+    Commit this tag's verified release files only while main still names the tag source.
+
+    Args:
+        tmp_path (Path): Isolated checkout, bare remote, signed payload, and fake GitHub CLI.
+        latest_release (bool): Whether GitHub reports this tag as the latest release.
+        main_advanced (bool): Whether another source commit replaced the tagged commit on main.
+
+    Returns:
+        None: The exact signed files publish once, retries are idempotent, and stale releases leave main untouched.
+    """
+    root = tmp_path / "checkout"
+    remote = tmp_path / "remote.git"
+    root.mkdir()
+    remote.mkdir()
+    _git(remote, "init", "--bare", "--initial-branch=main")
+    _git(root, "init", "--initial-branch=main")
+    _git(root, "config", "user.name", "Fixture")
+    _git(root, "config", "user.email", "fixture@example.org")
+    _git(root, "config", "commit.gpgsign", "false")
+    _git(root, "remote", "add", "origin", str(remote))
+    (root / "resumeme.config.yaml").write_text("linkedin: {username: example}\n", encoding="utf-8")
+    (root / "data").mkdir()
+    (root / "data/profile.json").write_text('{"name": "Example"}\n', encoding="utf-8")
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "tag source")
+    source = _git(root, "rev-parse", "HEAD")
+    _git(root, "tag", "--no-sign", "resume-selected")
+    _git(root, "push", "origin", "HEAD:main")
+    _git(root, "push", "origin", "refs/tags/resume-selected")
+
+    if main_advanced:
+        (root / "newer-source.txt").write_text("newer branch content\n", encoding="utf-8")
+        _git(root, "add", "newer-source.txt")
+        _git(root, "commit", "-m", "newer source")
+        _git(root, "push", "origin", "HEAD:main")
+        _git(root, "checkout", "--detach", source)
+
+    # The signed artifact is a run-scoped input and carries the immutable tagged-source identity.
+    artifact_dir = root / ".cache/publication"
+    artifact_dir.mkdir(parents=True)
+    filenames = [
+        "resume.pdf",
+        "resume.pdf.sig",
+        "resume.pdf.sigstore.json",
+        "cosign.pub",
+        "key-fingerprint.txt",
+        "source.json",
+        "SHA256SUMS",
+        "SHA256SUMS.sigstore.json",
+    ]
+
+    for filename in filenames:
+        (artifact_dir / filename).write_text(f"release artifact {filename}\n", encoding="utf-8")
+
+    (artifact_dir / "source.json").write_text(json.dumps({"source_commit": source}) + "\n", encoding="utf-8")
+
+    # Model the validated profile-stage input that the workflow stages before publishing the signed files.
+    (root / "data/profile.json").write_text('{"name": "Captured Example"}\n', encoding="utf-8")
+    _git(root, "add", "data/profile.json")
+    release_scripts = root / "scripts/release"
+    release_scripts.mkdir(parents=True)
+    shutil.copyfile(REPOSITORY_ROOT / "scripts/release/commit-main.sh", release_scripts / "commit-main.sh")
+    retry = root / "scripts/tooling/retry.sh"
+    retry.parent.mkdir(parents=True)
+    shutil.copyfile(REPOSITORY_ROOT / "scripts/tooling/retry.sh", retry)
+
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    gh = fake_bin / "gh"
+    gh.write_text(
+        "#!/usr/bin/env bash\n"
+        '[[ "$*" == "release view --repo example/resume --json tagName --jq .tagName" ]]\n'
+        f"printf '%s\\n' {'resume-selected' if latest_release else 'resume-newer'}\n",
+        encoding="utf-8",
+    )
+    gh.chmod(0o700)
+    output = tmp_path / "output"
+    environment = dict(
+        os.environ,
+        PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+        SOURCE_SHA=source,
+        RELEASE_TAG="resume-selected",
+        GITHUB_REPOSITORY="example/resume",
+        GH_TOKEN="fixture-token",
+        GITHUB_OUTPUT=str(output),
+        RESUME_PUBLISH_USES_TOKEN="false",
+        RETRY_BACKOFF_SECONDS="0",
+    )
+
+    def publish() -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["bash", "scripts/release/commit-main.sh"],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    result = publish()
+    assert result.returncode == 0, result.stdout + result.stderr
+    published = _git(remote, "rev-parse", "main")
+
+    if not latest_release or main_advanced:
+        assert published != source if main_advanced else published == source
+        assert not output.exists()
+        return
+
+    assert published != source
+    assert _git(remote, "show", "main:resume.pdf") == "release artifact resume.pdf"
+    assert _git(remote, "show", "main:data/profile.json") == '{"name": "Captured Example"}'
+    assert _git(remote, "show", "main:key-fingerprint.txt") == "release artifact key-fingerprint.txt"
+    assert "Resumeme-Signed-Release: resume-selected" in _git(remote, "log", "-1", "--format=%B", "main")
+    assert output.read_text(encoding="utf-8") == f"published-sha={published}\n"
+    assert _git(remote, "diff-tree", "--no-commit-id", "--name-only", "-r", published).splitlines() == sorted(
+        [*filenames, "data/profile.json"]
+    )
+
+    # A lost workflow response followed by retry must resolve to the same signed commit.
+    _git(root, "reset", "--hard", source)
+    (root / "data/profile.json").write_text('{"name": "Captured Example"}\n', encoding="utf-8")
+    _git(root, "add", "data/profile.json")
+    output.write_text("", encoding="utf-8")
+    retry_result = publish()
+    assert retry_result.returncode == 0, retry_result.stdout + retry_result.stderr
+    assert _git(remote, "rev-parse", "main") == published
+    assert output.read_text(encoding="utf-8") == f"published-sha={published}\n"
+
+
+def test_tag_pipeline_publishes_verified_release_files_and_refreshes_pages() -> None:
+    """
+    Keep tag publication downstream of signing and connect its accepted main SHA to Pages.
+
+    Returns:
+        None: The commit stage consumes the signed release and profile artifacts; Pages deploys only its output SHA.
+    """
+    workflows = REPOSITORY_ROOT / ".github/workflows"
+    pipeline = yaml.safe_load((workflows / "ci.yml").read_text())
+    publish = yaml.safe_load((workflows / "stage-tag-publish.yml").read_text())
+    assert pipeline["jobs"]["tag-publish-stage"]["needs"] == ["source", "release-stage"]
+    assert pipeline["jobs"]["tag-publish-stage"]["with"]["sha"] == "${{ needs.source.outputs.sha }}"
+    assert pipeline["jobs"]["tag-pages-stage"]["needs"] == "tag-publish-stage"
+    assert pipeline["jobs"]["tag-pages-stage"]["with"]["sha"] == "${{ needs.tag-publish-stage.outputs.published-sha }}"
+    job = publish["jobs"]["publish"]
+    steps = job["steps"]
+    signed = next(step for step in steps if step.get("with", {}).get("name") == "signed-resume")
+    captured = next(step for step in steps if step.get("with", {}).get("name") == "resumeme-profile")
+    verify = next(index for index, step in enumerate(steps) if step.get("run") == "bash scripts/release/verify.sh")
+    stage_profile = next(index for index, step in enumerate(steps) if "profile-artifact.py stage" in step.get("run", ""))
+    stage_readme = next(index for index, step in enumerate(steps) if "readme-artifact.py stage" in step.get("run", ""))
+    restore_readme = next(index for index, step in enumerate(steps) if "readme-artifact.py restore" in step.get("run", ""))
+    commit = next(index for index, step in enumerate(steps) if step.get("run") == "bash scripts/release/commit-main.sh")
+    assert signed["with"]["path"] == ".cache/publication/"
+    assert captured["with"]["path"] == ".cache/refresh/"
+    assert steps.index(signed) < verify < stage_profile < stage_readme < restore_readme < commit
+    assert job["concurrency"]["group"] == "resumeme-pdf-main"
 
 
 @pytest.mark.parametrize("existing", ["missing", "manual", "managed"])
@@ -590,7 +798,7 @@ exit 2
     )
     subprocess.run(
         ["bash", "scripts/tooling/retry.sh", "bash", "scripts/release/publish-container-notes.sh"],
-        cwd=Path(__file__).resolve().parents[3],
+        cwd=REPOSITORY_ROOT,
         env=environment,
         capture_output=True,
         text=True,
@@ -651,7 +859,7 @@ def test_container_notes_do_not_create_releases_after_failed_lookups(tmp_path: P
     )
     result = subprocess.run(
         ["bash", "scripts/tooling/retry.sh", "bash", "scripts/release/publish-container-notes.sh"],
-        cwd=Path(__file__).resolve().parents[3],
+        cwd=REPOSITORY_ROOT,
         env=environment,
         capture_output=True,
         text=True,

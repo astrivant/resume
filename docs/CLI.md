@@ -452,7 +452,9 @@ The command preserves PDF bytes, verifies account ownership, and confirms the
 saved filename after reloading settings. `linkedin.resume.share_with_recruiters`
 optionally enables or disables recruiter resume-data sharing after upload;
 the default `null` retains LinkedIn's current setting. Dry runs preview the
-requested sharing state without changing it.
+requested sharing state without changing it. `linkedin.resume.replace_existing`
+defaults to `false`; set it to `true` to delete other saved resumes only after
+the new PDF is confirmed. Dry runs never delete saved resumes.
 
 ```bash
 resumeme publish-resume --pdf .cache/publication/resume.pdf --dry-run

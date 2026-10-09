@@ -38,7 +38,7 @@ jobs:
               if RESUMEME_E2E_BROWSER="$browser" \
                   RESUMEME_E2E_OUTPUT="$browser_output/profile.json" \
                   RESUMEME_E2E_TIMING_OUTPUT="$browser_output/duration_seconds.txt" \
-                      poetry run pytest pkg/resumeme/tests/test_browser_e2e.py -m browser_e2e -n 0; then
+                      poetry run pytest pkg/resumeme/tests/linkedin/test_browser_e2e.py -m browser_e2e -n 0; then
                   :
               else
                   browser_status=1

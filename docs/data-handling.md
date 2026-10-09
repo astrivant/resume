@@ -320,9 +320,12 @@ and [Rekor's immutable log](https://docs.sigstore.dev/logging/overview/).
 The independent write switches are `linkedin.ownership.update_about`,
 `codex.skills.publish`, and `linkedin.resume.publish`.
 `linkedin.resume.share_with_recruiters` is an optional account-setting override
-during resume publication. Review these before tagging: CI executes enabled
+during resume publication. When upload is enabled,
+`linkedin.resume.replace_existing: true` also deletes other saved resumes after
+the new file is confirmed. Review these before tagging: CI executes enabled
 writes without a separate interactive review of each change. Disabling them
-does not undo About edits, uploaded resumes, added skills, or sharing settings.
+does not undo About edits, resume deletions, uploaded resumes, added skills, or
+sharing settings.
 
 ## Logs and debugging
 

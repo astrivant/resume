@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from attrs import evolve
@@ -20,6 +20,10 @@ from resumeme.compiler.backends.latex.escaping import latex_escape
 from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, load_config, project_path
+from resumeme.tests.paths import TEST_FIXTURES
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture
@@ -30,7 +34,7 @@ def html() -> str:
     Returns:
         str: Profile HTML without personal account data.
     """
-    return Path(__file__).with_name("fixtures").joinpath("profile.html").read_text(encoding="utf-8")
+    return TEST_FIXTURES.joinpath("profile.html").read_text(encoding="utf-8")
 
 
 def test_profile_keeps_grouped_jobs_and_project_links(html: str) -> None:

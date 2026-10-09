@@ -16,6 +16,9 @@ linkedin:
   resume:
     publish: false
 
+    # Keep previously saved LinkedIn resumes when publishing a new PDF.
+    replace_existing: false
+
     # null preserves LinkedIn's recruiter-sharing setting; true enables it and false disables it after upload.
     share_with_recruiters: null
 

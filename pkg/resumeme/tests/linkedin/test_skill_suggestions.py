@@ -7,7 +7,6 @@ from __future__ import annotations
 import json
 import runpy
 import subprocess
-from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
@@ -23,8 +22,11 @@ from resumeme.compiler.asts.profile import Entry, Profile, Section, Skill, save_
 from resumeme.config import Capture, Codex, CodexSkills, Config, Experience, JobSelector, LinkedIn, load_config
 from resumeme.linkedin.account import check_owner
 from resumeme.linkedin.skills import _add_skill, _update_skills, publish_skills
+from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pytest import MonkeyPatch
 
 
@@ -502,7 +504,7 @@ def test_ci_contract_is_tag_only_and_keeps_model_and_linkedin_credentials_separa
     Returns:
         None: Proposals run alongside summaries; live publication still requires a signed tag release and opt-in.
     """
-    root = Path(__file__).resolve().parents[3]
+    root = REPOSITORY_ROOT
     jobs = yaml.safe_load((root / ".github/workflows/ci.yml").read_text())["jobs"]
     caller = jobs["skills-stage"]
     publish_caller = jobs["skills-publish-stage"]
@@ -540,7 +542,7 @@ def test_ci_skill_preparation_exports_reasoning(tagged: Path, monkeypatch: Monke
     Returns:
         None: Preparation exports matching action inputs without receiving or using an API key.
     """
-    script = Path(__file__).resolve().parents[3] / "scripts/ci/skills-artifact.py"
+    script = REPOSITORY_ROOT / "scripts/ci/skills-artifact.py"
     (tagged / "resumeme.config.yaml").write_text(
         yaml.safe_dump(
             {
@@ -575,7 +577,7 @@ def test_ci_script_rejects_branch_events(tagged: Path, monkeypatch: MonkeyPatch)
     Returns:
         None: A manually invoked branch build cannot prepare skill generation.
     """
-    script = Path(__file__).resolve().parents[3] / "scripts/ci/skills-artifact.py"
+    script = REPOSITORY_ROOT / "scripts/ci/skills-artifact.py"
     (tagged / "resumeme.config.yaml").write_text("linkedin: {username: example-person}\n")
     monkeypatch.chdir(tagged)
     monkeypatch.setattr("sys.argv", [str(script), "prepare"])

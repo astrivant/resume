@@ -2,8 +2,8 @@
 # Skip superseded site artifacts after waiting for the shared Pages deployment slot.
 set -euo pipefail
 
-if [[ "$GITHUB_REF" != refs/heads/main || "$GITHUB_EVENT_NAME" == pull_request ]]; then
-    echo 'Pages publication requires a main-branch run.' >&2
+if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+    echo 'Pages publication is unavailable to pull request runs.' >&2
     exit 1
 fi
 

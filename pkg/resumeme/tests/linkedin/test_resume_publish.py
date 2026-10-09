@@ -7,7 +7,6 @@ from __future__ import annotations
 import os
 import runpy
 import subprocess
-from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
@@ -24,28 +23,38 @@ from resumeme.compiler.asts.profile import Profile, save_profile
 from resumeme.config import Capture, Config, LinkedIn, LinkedInResume, load_config
 from resumeme.exceptions import BrowserError
 from resumeme.linkedin.resume import (
+    _delete_saved_resume,
     _pdf_bytes,
+    _replace_existing_resumes,
+    _resume_action,
     _resume_filename,
     _saved,
+    _saved_resume_names,
     _send_pdf_file,
     _upload_input,
     _upload_resume,
     publish_resume,
 )
+from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pytest import MonkeyPatch
 
 
-def _config() -> Config:
+def _config(*, replace_existing: bool = False) -> Config:
     """
     Provide an opted-in account with immediate deterministic browser waits.
+
+    Args:
+        replace_existing (bool): Whether the test account opts in to deleting older saved resumes.
 
     Returns:
         Config: Test-only timing policy and explicitly enabled upload.
     """
     return Config(
-        linkedin=LinkedIn(username="example-person", resume=LinkedInResume(publish=True)),
+        linkedin=LinkedIn(username="example-person", resume=LinkedInResume(publish=True, replace_existing=replace_existing)),
         capture=Capture(page_timeout_seconds=0, retry_attempts=3, retry_backoff_seconds=0),
     )
 
@@ -81,7 +90,7 @@ def test_config_and_ci_gate_share_explicit_opt_in(setting: bool | None, tmp_path
     Returns:
         None: Configuration and the real workflow settings script agree.
     """
-    script = Path(__file__).resolve().parents[3] / "scripts/ci/resume-settings.py"
+    script = REPOSITORY_ROOT / "scripts/ci/resume-settings.py"
     config = tmp_path / "resumeme.config.yaml"
     config.write_text("linkedin:\n  username: example-person\n" + ("" if setting is None else f"  resume:\n    publish: {setting}\n"))
     assert load_config(config).linkedin.resume.publish is (setting is True)
@@ -92,7 +101,10 @@ def test_config_and_ci_gate_share_explicit_opt_in(setting: bool | None, tmp_path
     assert output.read_text() == f"enabled={str(setting is True).lower()}\n"
 
 
-@pytest.mark.parametrize("resume", [{"publish": "true"}, {"publish": 1}, {"sharing": True}])
+@pytest.mark.parametrize(
+    "resume",
+    [{"publish": "true"}, {"publish": 1}, {"replace_existing": "true"}, {"replace_existing": 1}, {"sharing": True}],
+)
 def test_invalid_upload_config_is_rejected(resume: dict[str, str | int | bool], tmp_path: Path) -> None:
     """
     Reject ambiguous opt-in values and unsupported privacy switches.
@@ -231,6 +243,205 @@ def test_upload_filename_uses_profile_name_and_preserves_content_identity() -> N
     assert _resume_filename("Émma Doyle", content).startswith("emma-doyle-resume-")
     assert _resume_filename("Émma Doyle", content).endswith(".pdf")
     assert _resume_filename("Émma Doyle", content) != _resume_filename("Émma Doyle", content + b" update")
+
+
+def test_resume_replacement_defaults_to_opt_out_in_reference_and_opt_in_for_author() -> None:
+    """
+    Keep fork defaults conservative while allowing this project's personal config to replace older files.
+
+    Returns:
+        None: Package and reference defaults retain old resumes; the checked-in personal setting enables replacement.
+    """
+    root = REPOSITORY_ROOT
+
+    assert not LinkedInResume().replace_existing
+    assert not load_config(root / "resumeme.config.ref.yaml").linkedin.resume.replace_existing
+    assert load_config(root / "resumeme.config.yaml").linkedin.resume.replace_existing
+
+
+@pytest.mark.parametrize("replace_existing,dry_run", [(True, False), (True, True), (False, False)])
+def test_replacement_runs_only_after_confirmed_upload_and_never_in_preview(
+    replace_existing: bool, dry_run: bool, pdf: Path, monkeypatch: MonkeyPatch
+) -> None:
+    """
+    Delete older resumes only after upload reconciliation, and never during dry runs.
+
+    Args:
+        replace_existing (bool): Whether the account config opted in to replacement.
+        dry_run (bool): Whether the command only previews LinkedIn changes.
+        pdf (Path): Valid release fixture.
+        monkeypatch (MonkeyPatch): Replace browser operations with ordered boundary recorders.
+
+    Returns:
+        None: Replacement follows confirmation exactly when enabled and live.
+    """
+    events: list[str] = []
+    config = _config(replace_existing=replace_existing)
+
+    for name in ("_browser", "_login", "_navigate", "login_credentials"):
+        monkeypatch.setattr(f"resumeme.linkedin.resume.{name}", MagicMock())
+
+    def upload(_driver: object, _config: Config, _selected: Path, *, dry_run: bool) -> str:
+        """
+        Record that the new PDF has passed the upload confirmation boundary.
+
+        Args:
+            _driver (object): Test browser placeholder.
+            _config (Config): Loaded owner and replacement settings.
+            _selected (Path): Private staged release file.
+            dry_run (bool): Whether publication is only being previewed.
+
+        Returns:
+            str: Fixture filename returned by the publisher.
+        """
+        events.append("upload")
+        return pdf.name
+
+    monkeypatch.setattr("resumeme.linkedin.resume._upload_resume", MagicMock(side_effect=upload))
+    replacement = MagicMock(side_effect=lambda *_args: events.append("replace"))
+    monkeypatch.setattr("resumeme.linkedin.resume._replace_existing_resumes", replacement)
+    monkeypatch.setattr(
+        "resumeme.linkedin.resume._recruiter_sharing", MagicMock(side_effect=lambda *_args, **_kwargs: events.append("sharing"))
+    )
+
+    publish_resume(config, pdf.parent, pdf, profile_name="Example Person", dry_run=dry_run)
+
+    assert events[0] == "upload"
+    assert ("replace" in events) is (replace_existing and not dry_run)
+    assert events.index("sharing") > events.index("upload")
+    if "replace" in events:
+        assert events.index("replace") < events.index("sharing")
+
+
+def test_replace_existing_resumes_preserves_new_file_and_removes_all_others(monkeypatch: MonkeyPatch) -> None:
+    """
+    Reconcile the list until only the current verified file remains.
+
+    Args:
+        monkeypatch (MonkeyPatch): Model LinkedIn's saved list and confirmed delete operations.
+
+    Returns:
+        None: Every prior filename is removed, while the new release is retained.
+    """
+    saved = {"current-release.pdf", "old-one.pdf", "old-two.pdf"}
+    deleted: list[str] = []
+    monkeypatch.setattr("resumeme.linkedin.resume._settings", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume._saved_resume_names", lambda _driver: set(saved))
+
+    def delete(_driver: object, _config: Config, filename: str) -> None:
+        """
+        Apply a confirmed deletion to the in-memory server state.
+
+        Args:
+            _driver (object): Test browser placeholder.
+            _config (Config): Test retry settings.
+            filename (str): Saved resume selected by the replacement loop.
+
+        Returns:
+            None: The selected old resume is removed from the simulated account.
+        """
+        deleted.append(filename)
+        saved.remove(filename)
+
+    monkeypatch.setattr("resumeme.linkedin.resume._delete_saved_resume", delete)
+    _replace_existing_resumes(MagicMock(), _config(), "current-release.pdf")
+
+    assert saved == {"current-release.pdf"}
+    assert deleted == ["old-one.pdf", "old-two.pdf"]
+
+
+def test_replace_existing_fails_closed_when_new_release_is_not_visible(monkeypatch: MonkeyPatch) -> None:
+    """
+    Keep old resumes untouched if LinkedIn's saved list no longer shows the new release.
+
+    Args:
+        monkeypatch (MonkeyPatch): Model a stale or incomplete saved-resume list.
+
+    Returns:
+        None: A missing current release prevents all deletion attempts.
+    """
+    deletion = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.resume._settings", MagicMock())
+    monkeypatch.setattr("resumeme.linkedin.resume._saved_resume_names", lambda _driver: {"old.pdf"})
+    monkeypatch.setattr("resumeme.linkedin.resume._delete_saved_resume", deletion)
+
+    with pytest.raises(BrowserError, match="no previous resume was deleted"):
+        _replace_existing_resumes(MagicMock(), _config(), "current-release.pdf")
+
+    deletion.assert_not_called()
+
+
+def test_saved_resume_names_ignore_non_filename_text() -> None:
+    """
+    Count only visible full PDF filenames when deciding which saved documents to remove.
+
+    Returns:
+        None: Explanatory text, hidden names, and notices are not treated as resumes.
+    """
+    driver = MagicMock()
+    filename, explanation, hidden = MagicMock(), MagicMock(), MagicMock()
+    filename.text = "Emma Doyle resume.pdf"
+    filename.is_displayed.return_value = True
+    explanation.text = "Upload a PDF resume to apply"
+    explanation.is_displayed.return_value = True
+    hidden.text = "old-resume.pdf"
+    hidden.is_displayed.return_value = False
+    driver.find_elements.side_effect = [[], [filename, explanation, hidden]]
+
+    assert _saved_resume_names(driver) == {"Emma Doyle resume.pdf"}
+
+
+def test_resume_action_is_bound_to_filename_row() -> None:
+    """
+    Select the overflow menu on the exact filename row instead of a page-level action.
+
+    Returns:
+        None: The returned control is associated with only the requested saved file.
+    """
+    driver, label, row, menu = MagicMock(), MagicMock(), MagicMock(), MagicMock()
+    row.text = "old-resume.pdf"
+    menu.id = "resume-menu"
+    menu.is_displayed.return_value = True
+    menu.is_enabled.return_value = True
+    menu.get_attribute.side_effect = {"aria-label": "More options", "title": None}.get
+    menu.text = ""
+    label.is_displayed.return_value = True
+    label.find_element.return_value = row
+    row.find_elements.return_value = [menu]
+    driver.find_elements.return_value = [label]
+
+    assert _resume_action(driver, "old-resume.pdf", {"old-resume.pdf", "current.pdf"}) == (menu, True)
+
+
+def test_saved_resume_delete_confirms_menu_action_and_server_removal(monkeypatch: MonkeyPatch) -> None:
+    """
+    Submit a row-scoped Delete action once and verify the file disappears after navigation.
+
+    Args:
+        monkeypatch (MonkeyPatch): Replace LinkedIn reads and controls with deterministic observations.
+
+    Returns:
+        None: The menu, confirmation, and persisted removal are each observed once.
+    """
+    events: list[str] = []
+    menu = MagicMock()
+    confirmation = MagicMock()
+    driver = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.resume._settings", MagicMock(side_effect=lambda *_args: events.append("settings")))
+    monkeypatch.setattr("resumeme.linkedin.resume._saved_resume_names", MagicMock(side_effect=[{"old.pdf"}, set()]))
+    monkeypatch.setattr("resumeme.linkedin.resume._resume_action", MagicMock(return_value=(menu, True)))
+    menu_item = MagicMock()
+    menu_item.click.side_effect = lambda: events.append("delete")
+    monkeypatch.setattr("resumeme.linkedin.resume._delete_menu_item", MagicMock(return_value=menu_item))
+    confirmation.click.side_effect = lambda: events.append("confirm")
+    monkeypatch.setattr("resumeme.linkedin.resume._delete_confirmation", MagicMock(return_value=confirmation))
+
+    _delete_saved_resume(driver, _config(), "old.pdf")
+
+    menu.click.assert_called_once_with()
+    menu_item.click.assert_called_once_with()
+    confirmation.click.assert_called_once_with()
+    assert events == ["settings", "delete", "confirm", "settings"]
 
 
 @pytest.mark.parametrize(
@@ -486,7 +697,7 @@ def test_upload_workflow_requires_verified_current_tag_and_explicit_settings() -
     Returns:
         None: Every network publication step is gated by explicit configuration and current-release selection.
     """
-    root = Path(__file__).resolve().parents[3]
+    root = REPOSITORY_ROOT
     caller = yaml.safe_load((root / ".github/workflows/ci.yml").read_text())["jobs"]["linkedin-resume-stage"]
     workflow = yaml.safe_load((root / ".github/workflows/stage-linkedin-resume.yml").read_text())
     job = workflow["jobs"]["resume"]
@@ -536,7 +747,7 @@ def test_old_tag_retry_does_not_select_an_obsolete_resume(latest_tag: str, tmp_p
     Returns:
         None: Only a matching latest release enables downstream upload.
     """
-    root = Path(__file__).resolve().parents[3]
+    root = REPOSITORY_ROOT
     workflow = yaml.safe_load((root / ".github/workflows/stage-linkedin-resume.yml").read_text())
     gate = next(step for step in workflow["jobs"]["resume"]["steps"] if step.get("id") == "latest")
     gh = tmp_path / "gh"

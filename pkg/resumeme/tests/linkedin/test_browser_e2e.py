@@ -18,6 +18,7 @@ from attrs import evolve
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.config import Capture, Config, LinkedIn
 from resumeme.linkedin.browser import _navigate, capture_profile
+from resumeme.tests.paths import TEST_FIXTURES
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from pytest import MonkeyPatch
     from selenium.webdriver.remote.webdriver import WebDriver
 
-_FIXTURE = Path(__file__).with_name("fixtures") / "browser-e2e-profile.html"
+_FIXTURE = TEST_FIXTURES / "browser-e2e-profile.html"
 _USERNAME = "e2e-fixture"
 
 

@@ -9,7 +9,6 @@ import os
 import subprocess
 import sys
 import tarfile
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -18,11 +17,14 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from resumeme.exceptions import SessionCacheError
 from resumeme.linkedin.session_cache import CacheKeys, archive_profile, open_archive, restore_profile, seal_archive
+from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pytest import MonkeyPatch
 
-_ROOT = Path(__file__).resolve().parents[3]
+_ROOT = REPOSITORY_ROOT
 
 
 @pytest.fixture(scope="module")

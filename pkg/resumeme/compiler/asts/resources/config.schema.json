@@ -75,6 +75,11 @@
               "default": false,
               "description": "Upload the verified signed tag release PDF to LinkedIn's saved application resumes."
             },
+            "replace_existing": {
+              "type": "boolean",
+              "default": false,
+              "description": "After confirming the new PDF is saved, delete every other saved LinkedIn resume; false retains them."
+            },
             "share_with_recruiters": {
               "type": ["boolean", "null"],
               "default": null,

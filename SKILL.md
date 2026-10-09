@@ -244,8 +244,11 @@ and private backup locations are in the linked guides.
   duplicates. `linkedin.resume.share_with_recruiters` defaults to `null` to
   preserve the account setting; explicit `true` or `false` overrides recruiter
   resume-data sharing after upload. Dry runs inspect and preview that override
-  without clicking. Retain other preferences and existing files; do not submit
-  job applications. See [upload setup and recovery](docs/linkedin-resume.md).
+  without clicking. `linkedin.resume.replace_existing` defaults to `false`; when
+  true, the publisher removes other saved resumes only after confirming the new
+  PDF. Dry runs never delete files. This repository's personal config enables
+  replacement; its reference config does not. Do not submit job applications.
+  See [upload setup and recovery](docs/linkedin-resume.md).
 - **Skill additions:** `publish-skills --tag TAG --suggestions PATH --dry-run`
   compares the validated proposal with the live profile. Live additions require
   `codex.skills.publish: true` and omission of `--dry-run`. Both commands require

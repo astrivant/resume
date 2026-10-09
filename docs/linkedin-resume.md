@@ -15,6 +15,7 @@ linkedin:
   username: your-linkedin-username
   resume:
     publish: true
+    replace_existing: false
     share_with_recruiters: null
 ```
 
@@ -42,10 +43,24 @@ for reuse. Each new document gets a filename such as
 `emma-doyle-resume-0123456789abcdef.pdf`: the captured profile name is normalized
 to an ASCII slug, followed by the first 16 hexadecimal characters of the PDF's
 SHA-256 digest. This distinguishes revisions and lets retries skip a file
-already present. The publisher never clicks Delete; LinkedIn controls retention
-of older files. Review the selected resume when applying: uploading does not
-guarantee that LinkedIn will select it for every application or transfer it to
-external employers' application sites.
+already present. With `linkedin.resume.replace_existing: false` (the package and
+reference-config default), older saved resumes remain available. Set it to
+`true` to remove every other saved resume after the new PDF is confirmed. The
+publisher uses the resume's own options menu and verifies each deletion after a
+fresh settings load. It preserves the new release PDF, does not change other
+application settings, and fails closed if it cannot bind a delete control to a
+specific filename. A failed removal leaves the new PDF saved and reports that
+older files may remain. LinkedIn's menu path is documented as the ellipsis next
+to a resume, then **Delete** in its [resume management guide](https://www.linkedin.com/help/linkedin/answer/a510363/upload-your-resume-to-linkedin).
+Review the selected resume when applying: uploading does not guarantee that
+LinkedIn will select it for every application or transfer it to external
+employers' application sites.
+
+Replacement is a destructive account change. When enabled, the publisher removes
+previous saved resumes from LinkedIn after a successful upload; previously
+submitted job applications are unaffected. Dry runs never delete files. This
+repository enables replacement in its personal config, while the copyable
+reference config leaves it disabled.
 
 `linkedin.resume.share_with_recruiters` controls the account's **Share resume data
 with recruiters** setting after the PDF is confirmed saved:

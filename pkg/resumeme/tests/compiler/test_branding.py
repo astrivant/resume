@@ -6,14 +6,18 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import pytest
 from PIL import Image, ImageChops
 from PIL.PngImagePlugin import PngInfo
 
+from resumeme.tests.paths import REPOSITORY_ROOT
 from resumeme.visualization.branding import _coffee_layer, render_logo
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_logo_changes_visible_stain_but_repeats_the_same_revision(tmp_path: Path) -> None:
@@ -26,7 +30,7 @@ def test_logo_changes_visible_stain_but_repeats_the_same_revision(tmp_path: Path
     Returns:
         None: Revision-dependent image content is reproducible and neither source image is changed.
     """
-    assets = Path(__file__).resolve().parents[3] / "docs/assets/branding"
+    assets = REPOSITORY_ROOT / "docs/assets/branding"
     layers = [assets / "linkedin-base.png", assets / "coffee-ring.png"]
     before = [hashlib.sha256(path.read_bytes()).digest() for path in layers]
     first, retry, next_revision = (tmp_path / name for name in ("first.png", "retry.png", "next.png"))
@@ -86,7 +90,7 @@ def test_recent_stains_survive_publications_and_retries_without_unbounded_histor
     Returns:
         None: The saved five-revision history and its pixels remain stable on a retry.
     """
-    assets = Path(__file__).resolve().parents[3] / "docs/assets/branding"
+    assets = REPOSITORY_ROOT / "docs/assets/branding"
     output = tmp_path / "logo.png"
 
     # Bootstrap from the metadata written by the original single-stain renderer.
@@ -128,7 +132,7 @@ def test_logo_varies_recent_trail_length_and_composites_oldest_first(tmp_path: P
     Returns:
         None: The chosen recent stains are layered oldest first and all five revisions remain available.
     """
-    assets = Path(__file__).resolve().parents[3] / "docs/assets/branding"
+    assets = REPOSITORY_ROOT / "docs/assets/branding"
     previous = tmp_path / "previous.png"
     history = ["prior-1", "prior-2", "prior-3", "prior-4", "prior-5"]
     metadata = PngInfo()

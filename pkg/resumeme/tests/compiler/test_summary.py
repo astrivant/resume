@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 import runpy
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -22,8 +21,11 @@ from resumeme.compiler.constants.sections import DEFAULT_SECTION_ORDER
 from resumeme.compiler.passes.summary import summary_digest, summary_evidence
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Codex, Config, Experience, JobSelector, LinkedIn, load_config
+from resumeme.tests.paths import REPOSITORY_ROOT
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pytest import CaptureFixture, MonkeyPatch
 
 
@@ -332,7 +334,7 @@ def test_ci_shares_one_summary_without_key_exposure() -> None:
     Returns:
         None: Both consumers depend on generation, while the API key remains in the trusted summary job.
     """
-    workflows = Path(__file__).resolve().parents[3] / ".github/workflows"
+    workflows = REPOSITORY_ROOT / ".github/workflows"
     pipeline = yaml.safe_load((workflows / "ci.yml").read_text())
     stage = (workflows / "stage-summary.yml").read_text()
     assert "github.ref == 'refs/heads/main' && github.event_name != 'pull_request'" in stage
@@ -384,7 +386,7 @@ def test_ci_preparation_requires_opt_in_trust_and_key(
     Returns:
         None: Only fully configured trusted runs produce a prompt; missing credentials fail explicitly.
     """
-    script = Path(__file__).resolve().parents[3] / "scripts/ci/prepare-summary.py"
+    script = REPOSITORY_ROOT / "scripts/ci/prepare-summary.py"
     config = tmp_path / "resumeme.config.yaml"
     config.write_text(
         yaml.safe_dump(

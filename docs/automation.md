@@ -330,8 +330,13 @@ same capture. After verification, the release job downloads **this run's
 release link and signing key fingerprint. It preserves the freshly compiled body
 and generated summaries, then signs the PDF including that footer. It releases
 the PDF, Cosign signature bundles, public key, SHA-256 manifest, key fingerprint,
-and source revision. The container stage then appends its pull instructions to
-the same release. See [signature verification](README.md#signed-releases).
+and source revision. After release publication, a tag stage commits those same
+verified files and the matching captured profile and media to `main`, but only
+when `main` still points at the tagged source and the tag is still the latest
+release. The commit also refreshes the configured README preview or project
+branding. The Pages stage then publishes that accepted commit. The container
+stage appends its pull instructions to the same release. See
+[signature verification](README.md#signed-releases).
 
 When `codex.skills.enabled` is true, a separate stage generates an evidence-backed
 `resumeme-skills` artifact. Set `codex.skills.publish: true` to add missing skills
@@ -344,14 +349,23 @@ The capture artifact is retained for seven days and the PDF build artifact for
 fourteen days. `source.json` identifies the tagged code revision; the live capture
 is an input artifact from the run, not a change to that Git commit.
 
-Tag releases do not update `main` or the Pages website. If
-`linkedin.ownership.update_about` is enabled, a separate job signs in after
+If `main` has advanced or a newer release exists, the tag remains available on
+GitHub but its older PDF is not copied over current files. A successful tag
+publication adds `resume.pdf`, its detached signature and Cosign bundles,
+`cosign.pub`, the fingerprint, provenance, and both checksum files to `main`.
+The next unsigned branch build removes those sidecars when it replaces the
+signed PDF, so the repository never leaves a stale signature beside new bytes.
+If `linkedin.ownership.update_about` is enabled, a separate job signs in after
 publication to maintain the public signing fingerprint and releases link in
 About. See [configuration, previews, and recovery](ownership.md).
 
 Set `linkedin.resume.publish: true` to upload the same verified `signed-resume`
 artifact to LinkedIn's saved application resumes in another job. This opt-in
 defaults to false and uses the existing LinkedIn secrets. An optional
+`linkedin.resume.replace_existing` setting controls retention: `true` deletes
+all other saved resumes only after the new PDF is confirmed on LinkedIn;
+`false` keeps them and is the package and reference-config default. This
+replacement option is true in this repository's personal config. An optional
 `linkedin.resume.share_with_recruiters` override enables (`true`) or disables
 (`false`) recruiter sharing after upload; `null` preserves the account setting.
 The job checks that its tag is GitHub's latest release before

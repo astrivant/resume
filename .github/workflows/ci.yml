@@ -307,6 +307,44 @@ jobs:
     with:
       sha: ${{ needs.deploy-stage.outputs.published-sha }}
 
+  # A verified tag also places its signed PDF and fresh capture on main after release publication.
+  tag-publish-stage:
+    name: Commit signed PDF to main
+    needs: [source, release-stage]
+    if: >-
+      !cancelled()
+      && needs.source.result == 'success'
+      && needs.release-stage.result == 'success'
+      && github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
+    uses: ./.github/workflows/stage-tag-publish.yml
+    permissions:
+      contents: write
+      actions: read
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+    secrets:
+      RESUME_PUBLISH_TOKEN: ${{ secrets.RESUME_PUBLISH_TOKEN || (github.repository == 'astrivant/resumeme' && secrets.BENCHMARK_PUBLISH_TOKEN) || '' }}
+
+  # The tag publication push uses GITHUB_TOKEN and will not start a branch workflow, so deploy its accepted PDF here.
+  tag-pages-stage:
+    name: Publish signed resume website
+    needs: tag-publish-stage
+    if: >-
+      !cancelled()
+      && needs.tag-publish-stage.result == 'success'
+      && needs.tag-publish-stage.outputs.published-sha != ''
+      && github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
+    uses: ./.github/workflows/stage-pages.yml
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    with:
+      sha: ${{ needs.tag-publish-stage.outputs.published-sha }}
+
   # Tags capture LinkedIn first and release the PDF built from that capture; branch and monthly runs create no release.
   release-stage:
     name: Release signed PDF

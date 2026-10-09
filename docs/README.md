@@ -64,6 +64,7 @@ See [logging controls and record fields](CLI.md#logging).
 | --- | --- | --- |
 | `linkedin.username` | Required | Public username or LinkedIn `/in/<username>/` URL, normalized to a slug; replace the reference placeholder |
 | `linkedin.resume.publish` | `false` | Upload the verified signed PDF to LinkedIn's saved application resumes after a tag release; [setup and recovery](linkedin-resume.md) |
+| `linkedin.resume.replace_existing` | `false` | After a confirmed upload, delete every other saved LinkedIn resume; the repository's personal config enables this |
 | `linkedin.resume.share_with_recruiters` | `null` | After upload, `true` enables recruiter resume-data sharing and `false` disables it; `null` preserves LinkedIn's current setting |
 | `readme.mode` | `auto` | [Personal README](automation.md#personal-readme) on forks; `project` preserves a custom README, `resume` generates everywhere |
 | `readme.introduction` | `null` | Optional plain-text introduction replacing the personal README boilerplate |

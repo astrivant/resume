@@ -254,6 +254,7 @@
 ((( contributions.start|tex ))) - ((( contributions.end|tex )))\par}
 \endgroup
 ((* endmacro *))
+((* set has_contents = style.show_table_of_contents and ((section_navigation|rejectattr('1.key', 'equalto', 'contact')|list) or (contributions and contribution_placement == 'appendix')) *))
 \documentclass[((( style.font_size )))pt,((( style.paper )))paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -309,21 +310,19 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \pdfinfoomitdate=1
 \pdftrailerid{}
 \pdfsuppressptexinfo=15
+((* if has_contents *))
 % Keep a direct route back to the first-page Contents list on continuation pages.
-\newif\ifresumemecontents
-\resumemecontentsfalse
 \newcommand{\resumemeindexfooter}{%
   \ifnum\value{page}>1\relax
-    \ifresumemecontents
-      \begin{tikzpicture}[remember picture,overlay]
-        \node[anchor=base west,inner sep=0pt]
-          at ([xshift=19mm,yshift=26pt]current page.south west)
-          {\fontsize{7}{9}\selectfont\hyperlink{resumeme-contents}{Index}};
-      \end{tikzpicture}%
-    \fi
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[anchor=base west,inner sep=0pt]
+        at ([xshift=19mm,yshift=26pt]current page.south west)
+        {\fontsize{7}{9}\selectfont\hyperlink{resumeme-contents}{Index}};
+    \end{tikzpicture}%
   \fi
 }
 \AddToHook{shipout/foreground}{\resumemeindexfooter}
+((* endif *))
 \pagecolor{canvas}
 \color{ink}
 \setlength{\parindent}{0pt}
@@ -781,8 +780,7 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* endif *))
 ((* endif *))
 ((# A compact hierarchy links only rendered headings, including synthesized Projects and Skills sections. #))
-((* if style.show_table_of_contents and (body or (contributions and contribution_placement == 'appendix')) *))
-\global\resumemecontentstrue
+((* if has_contents *))
 \hypertarget{resumeme-contents}{}
 \identityheading{Contents}
 ((* for anchor, section in section_navigation *))

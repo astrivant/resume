@@ -186,7 +186,10 @@ from the Poetry lockfile. Ordinary branch pushes rebuild committed inputs; month
 runs and tag pushes capture LinkedIn first. After validation, main-branch publication
 commits the PDF and any refreshed inputs together. User-created tags sign the fresh
 PDF built in that run, adding a release link and key fingerprint to its footer,
-and publish a release. Tags do not update `main` or the website.
+and publish a release. The same verified PDF, signature bundles, and fingerprint
+are committed to `main` with the matching profile capture, then Pages deploys that
+commit. If `main` has advanced or a newer release exists, the older tag cannot
+replace the current PDF.
 Pull requests validate without publishing or signing in.
 
 For applications, add LinkedIn company usernames and job links to

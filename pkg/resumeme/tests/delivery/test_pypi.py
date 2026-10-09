@@ -8,9 +8,14 @@ import os
 import shutil
 import subprocess
 import tomllib
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+
+from resumeme.tests.paths import REPOSITORY_ROOT
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture
@@ -24,7 +29,7 @@ def publication(tmp_path: Path) -> Path:
     Returns:
         Path: Working directory whose upload commands cannot reach PyPI.
     """
-    repository = Path(__file__).resolve().parents[3]
+    repository = REPOSITORY_ROOT
 
     # Exercise the actual scripts while replacing only the command that owns the network boundary.
     for relative in ("scripts/release/package-version.sh", "scripts/release/publish-package.sh", "scripts/tooling/retry.sh"):

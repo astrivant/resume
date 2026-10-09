@@ -11,6 +11,9 @@ linkedin:
   resume:
     publish: true
 
+    # After the new signed PDF is confirmed saved, remove any other resumes from LinkedIn's saved application list.
+    replace_existing: true
+
     # null preserves LinkedIn's recruiter-sharing setting; true enables it and false disables it after upload.
     share_with_recruiters: true
 

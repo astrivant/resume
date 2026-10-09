@@ -1,5 +1,5 @@
 """
-Verify capture contracts, artifact safety, and complete rendering with local fixtures.
+Exercise compiler, configuration, delivery, LinkedIn, and runtime contracts.
 """
 
 from __future__ import annotations

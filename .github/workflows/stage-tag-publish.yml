@@ -1,0 +1,84 @@
+name: Commit signed resume stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: Verified tag revision that produced the signed resume
+        type: string
+        required: true
+    secrets:
+      RESUME_PUBLISH_TOKEN:
+        description: Optional contents-write token for protected main
+        required: false
+    outputs:
+      published-sha:
+        description: Main commit containing this tag's signed resume, empty when superseded
+        value: ${{ jobs.publish.outputs.sha }}
+permissions:
+  contents: write
+  actions: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  publish:
+    name: Commit the verified release payload to main
+    if: >-
+      github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      sha: ${{ steps.publish.outputs.published-sha }}
+
+    # Share the branch-PDF lock so a monthly rebuild and a tagged release cannot overwrite one another.
+    concurrency:
+      group: resumeme-pdf-main
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          fetch-depth: 0
+          token: ${{ secrets.RESUME_PUBLISH_TOKEN || github.token }}
+      - uses: ./.github/actions/setup-project
+        with:
+          groups: main
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: signed-resume
+          path: .cache/publication/
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: resumeme-profile
+          path: .cache/refresh/
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.3
+      - name: Verify the release payload before committing it
+        run: bash scripts/release/verify.sh
+      - name: Stage the matching captured profile and media
+        run: poetry run python scripts/ci/profile-artifact.py stage
+      - name: Prepare a README preview from the signed PDF
+        env:
+          RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
+        run: poetry run python scripts/ci/readme-artifact.py stage
+      - name: Restore the README and refresh project branding
+        env:
+          RESUMEME_REPOSITORY_FORK: ${{ github.event.repository.fork == true }}
+          SOURCE_SHA: ${{ inputs.sha }}
+        run: |
+          readme_mode="$(poetry run python scripts/ci/readme-artifact.py restore)"
+          if [[ "$readme_mode" == project ]]; then
+              read -r brew_date <.cache/publication/brew-date.txt
+              poetry run python scripts/ci/refresh-logo.py --seed "$SOURCE_SHA" --brew-date "$brew_date"
+              git add -- docs/assets/branding/resumeme-logo.png docs/assets/branding/brew-date.svg README.md
+          fi
+      - name: Commit signed files only when main still points at this tag source
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ inputs.sha }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RESUME_PUBLISH_USES_TOKEN: ${{ secrets.RESUME_PUBLISH_TOKEN != '' }}
+        run: bash scripts/release/commit-main.sh
