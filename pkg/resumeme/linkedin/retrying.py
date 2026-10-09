@@ -8,18 +8,42 @@ import logging
 import time
 from typing import TYPE_CHECKING, TypeVar
 
+from selenium.common.exceptions import (
+    InvalidArgumentException,
+    InvalidSelectorException,
+    InvalidSessionIdException,
+    NoSuchWindowException,
+    UnexpectedAlertPresentException,
+    WebDriverException,
+)
+
 from resumeme.exceptions import ConfigurationError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-__all__ = ["retry"]
+    from resumeme.config import Capture
+
+__all__ = ["is_retryable_selenium_error", "retry", "retry_selenium"]
 _T = TypeVar("_T")
 _LOGGER = logging.getLogger(__name__)
+_NON_RETRYABLE_SELENIUM_ERRORS = (
+    InvalidArgumentException,
+    InvalidSelectorException,
+    InvalidSessionIdException,
+    NoSuchWindowException,
+    UnexpectedAlertPresentException,
+)
 
 
 def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers.
-    operation: Callable[[], _T], *, attempts: int, backoff: float, exceptions: tuple[type[Exception], ...], max_backoff: float = 300
+    operation: Callable[[], _T],
+    *,
+    attempts: int,
+    backoff: float,
+    exceptions: tuple[type[Exception], ...],
+    max_backoff: float = 300,
+    should_retry: Callable[[Exception], bool] | None = None,
 ) -> _T:
     """
     Retry only the declared transient exceptions with capped exponential delays.
@@ -30,6 +54,7 @@ def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers
         backoff (float): Initial delay in seconds, doubled after each failure.
         exceptions (tuple[type[Exception], ...]): Failure classes safe to retry.
         max_backoff (float): Maximum delay between attempts.
+        should_retry (Callable[[Exception], bool] | None): Optional filter for matched errors.
 
     Returns:
         _T: First successful result.
@@ -47,6 +72,9 @@ def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers
         try:
             return operation()
         except exceptions as error:
+            if should_retry is not None and not should_retry(error):
+                raise
+
             delay = min(backoff * 2**attempt, max_backoff)
             _LOGGER.warning(
                 "Retrying transient operation",
@@ -61,3 +89,44 @@ def retry(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers
 
     # Let the final failure retain its original exception and traceback instead of wrapping it in a generic retry error.
     return operation()
+
+
+def retry_selenium(  # noqa: UP047 - pydocstyle 6.3 cannot parse PEP 695 function headers.
+    operation: Callable[[], _T], settings: Capture
+) -> _T:
+    """
+    Retry a read-only or state-reconciled Selenium operation using capture settings.
+
+    Args:
+        operation (Callable[[], _T]): Safe-to-repeat navigation, read, or reconciliation operation.
+        settings (Capture): Configured attempt count and exponential delay bounds.
+
+    Returns:
+        _T: The first successful browser result.
+
+    Raises:
+        ConfigurationError: The retry settings are invalid.
+        WebDriverException: The final browser failure, or a nonrecoverable Selenium error.
+        Exception: Any failure outside Selenium that the operation raises.
+    """
+    return retry(
+        operation,
+        attempts=settings.retry_attempts,
+        backoff=settings.retry_backoff_seconds,
+        max_backoff=settings.retry_max_backoff_seconds,
+        exceptions=(WebDriverException,),
+        should_retry=is_retryable_selenium_error,
+    )
+
+
+def is_retryable_selenium_error(error: Exception) -> bool:
+    """
+    Classify browser errors whose operation can safely be attempted again.
+
+    Args:
+        error (Exception): Failure observed during a Selenium operation.
+
+    Returns:
+        bool: Whether the error is a recoverable WebDriver failure.
+    """
+    return isinstance(error, WebDriverException) and not isinstance(error, _NON_RETRYABLE_SELENIUM_ERRORS)

@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException, WebDriverException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -24,7 +24,7 @@ from resumeme.exceptions import BrowserError, BrowserWaitError
 from resumeme.linkedin.account import check_owner
 from resumeme.linkedin.browser import _browser, _login, _navigate
 from resumeme.linkedin.credentials import login_credentials
-from resumeme.linkedin.retrying import retry
+from resumeme.linkedin.retrying import retry_selenium
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -42,7 +42,6 @@ _SETTINGS_PATHS = {_SETTINGS_PATH.rstrip("/"), "/jobs/preferences/application-pr
 _MAIN = ':is(main, [role="main"])'
 _LOADING_QUERY = f'{_MAIN} [role="progressbar"], {_MAIN} [aria-busy="true"], {_MAIN}[aria-busy="true"]'
 _RECRUITER_LABELS = ("share resume data with recruiters", "share resume data with hirers", "allow recruiters to view your resumes")
-_TRANSIENT = (TimeoutException, StaleElementReferenceException, NoSuchElementException)
 _UPLOAD_TIMEOUT_SECONDS = 120
 
 
@@ -333,13 +332,7 @@ def _recruiter_sharing(driver: WebDriver, config: Config, *, dry_run: bool) -> N
         _settings(driver, config)
         return WebDriverWait(driver, policy.page_timeout_seconds).until(_recruiter_control)
 
-    control, target = retry(
-        read,
-        exceptions=_TRANSIENT,
-        attempts=policy.retry_attempts,
-        backoff=policy.retry_backoff_seconds,
-        max_backoff=policy.retry_max_backoff_seconds,
-    )
+    control, target = retry_selenium(read, policy)
     current = _sharing_enabled(control)
     _LOGGER.info("Recruiter sharing preference", extra={"sharing.current": current, "sharing.requested": desired, "dry_run": dry_run})
 
@@ -372,14 +365,8 @@ def _recruiter_sharing(driver: WebDriver, config: Config, *, dry_run: bool) -> N
             raise BrowserWaitError("LinkedIn has not confirmed the requested recruiter-sharing setting.")
 
     try:
-        retry(
-            confirm,
-            exceptions=_TRANSIENT,
-            attempts=policy.retry_attempts,
-            backoff=policy.retry_backoff_seconds,
-            max_backoff=policy.retry_max_backoff_seconds,
-        )
-    except _TRANSIENT as error:
+        retry_selenium(confirm, policy)
+    except WebDriverException as error:
         raise BrowserError(
             "Could not confirm recruiter sharing. The resume is saved; inspect Share resume data with recruiters "
             "in LinkedIn's application settings, then retry the same PDF. No second toggle click was submitted."
@@ -406,13 +393,7 @@ def _upload_resume(driver: WebDriver, config: Config, pdf: Path, *, dry_run: boo
     """
     check_owner(driver, config)
     policy = config.capture
-    field = retry(
-        lambda: _settings(driver, config),
-        exceptions=_TRANSIENT,
-        attempts=policy.retry_attempts,
-        backoff=policy.retry_backoff_seconds,
-        max_backoff=policy.retry_max_backoff_seconds,
-    )
+    field = retry_selenium(lambda: _settings(driver, config), policy)
 
     if _saved(driver, pdf.name):
         _LOGGER.info("Release PDF already saved on LinkedIn", extra={"file.name": pdf.name})
@@ -448,14 +429,8 @@ def _upload_resume(driver: WebDriver, config: Config, pdf: Path, *, dry_run: boo
         return pdf.name
 
     try:
-        confirmed = retry(
-            confirm,
-            exceptions=_TRANSIENT,
-            attempts=policy.retry_attempts,
-            backoff=policy.retry_backoff_seconds,
-            max_backoff=policy.retry_max_backoff_seconds,
-        )
-    except _TRANSIENT as error:
+        confirmed = retry_selenium(confirm, policy)
+    except WebDriverException as error:
         raise BrowserError(
             "Could not confirm the resume upload. Inspect LinkedIn Jobs > Preferences > Resumes and application data "
             f"for {pdf.name} or an upload error, then retry the same PDF. No second upload was submitted."

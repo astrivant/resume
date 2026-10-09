@@ -10,12 +10,12 @@ from unittest.mock import MagicMock
 
 import pytest
 from jsonschema import ValidationError
-from selenium.common.exceptions import NoSuchWindowException, TimeoutException
+from selenium.common.exceptions import InvalidSessionIdException, NoSuchWindowException, TimeoutException, WebDriverException
 
 from resumeme.cli import main
 from resumeme.compiler.asts.profile import Profile
 from resumeme.config import Capture, Config, LinkedIn, load_config
-from resumeme.linkedin.browser import _browser, _detail_tabs, _firefox, _login, capture_profile
+from resumeme.linkedin.browser import _browser, _detail_tabs, _firefox, _login, _navigate, capture_profile
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -114,6 +114,50 @@ def test_detail_tabs_exclude_unrelated_forms() -> None:
     primary.find_elements.return_value = [received, given, hidden]
     assert _detail_tabs(browser) == {"Received": received, "Given": given}
     browser.find_element.assert_not_called()
+
+
+def test_navigation_retries_transient_webdriver_failures(monkeypatch: MonkeyPatch) -> None:
+    """
+    Retry a transient WebDriver transport failure while preserving the current session.
+
+    Args:
+        monkeypatch (MonkeyPatch): Replaces retry sleeping with a deterministic recorder.
+
+    Returns:
+        None: Navigation succeeds on its second attempt after a transient remote failure.
+    """
+    delays: list[float] = []
+    monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", delays.append)
+    browser = MagicMock()
+    browser.get.side_effect = [WebDriverException("remote end disconnected briefly"), None]
+    settings = Capture(retry_attempts=3, retry_backoff_seconds=2, retry_max_backoff_seconds=5)
+
+    _navigate(browser, "https://www.linkedin.com/in/example-person/", settings)
+
+    assert browser.get.call_count == 2
+    assert delays == [2]
+
+
+def test_navigation_does_not_retry_a_dead_webdriver_session(monkeypatch: MonkeyPatch) -> None:
+    """
+    Stop navigation immediately when Selenium reports a permanently invalid session.
+
+    Args:
+        monkeypatch (MonkeyPatch): Verifies the failure does not incur a retry delay.
+
+    Returns:
+        None: An invalid session is propagated after the initial attempt.
+    """
+    sleep = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
+    browser = MagicMock()
+    browser.get.side_effect = InvalidSessionIdException("session is gone")
+
+    with pytest.raises(InvalidSessionIdException):
+        _navigate(browser, "https://www.linkedin.com/in/example-person/", Capture(retry_attempts=3))
+
+    browser.get.assert_called_once()
+    sleep.assert_not_called()
 
 
 @pytest.mark.parametrize("managed", [False, True])
@@ -341,11 +385,11 @@ def test_headless_login_submits_once_and_requires_observed_success(monkeypatch: 
 
     if challenge:
         with pytest.raises(ValueError, match="Unattended LinkedIn login") as error:
-            _login(driver, Capture(), headless=True)
+            _login(driver, Capture(retry_attempts=1), headless=True)
 
         assert "synthetic-secret" not in str(error.value)
     else:
-        _login(driver, Capture(), headless=True)
+        _login(driver, Capture(retry_attempts=1), headless=True)
 
     username.send_keys.assert_called_once_with("example@example.org")
     password.send_keys.assert_called_once_with("synthetic-secret")

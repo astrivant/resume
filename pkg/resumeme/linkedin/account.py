@@ -7,11 +7,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 from resumeme.exceptions import BrowserError
 from resumeme.linkedin.browser import _navigate
+from resumeme.linkedin.retrying import retry_selenium
 
 if TYPE_CHECKING:
     from selenium.webdriver.remote.webdriver import WebDriver
@@ -37,23 +39,38 @@ def check_owner(driver: WebDriver, config: Config) -> str:
     """
     path = f"/in/{config.linkedin.username}/"
     _navigate(driver, f"https://www.linkedin.com{path}", config.capture)
-    WebDriverWait(driver, config.capture.page_timeout_seconds).until(
-        lambda page: page.find_elements(By.CSS_SELECTOR, 'main h1, section[aria-label="Primary content"] h2')
-    )
-    location = urlsplit(driver.current_url)
 
-    if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path.rstrip("/") != path.rstrip("/"):
-        raise BrowserError("LinkedIn redirected away from the configured owner; no account changes were submitted.")
+    def verify_owner() -> str:
+        """
+        Recheck the owner page after transient loading and DOM refreshes.
 
-    # An intro edit link also identifies owners whose Skills section is still empty.
-    editable = any(
-        link.is_displayed()
-        and urlsplit(link.get_attribute("href") or "").hostname == "www.linkedin.com"
-        and urlsplit(link.get_attribute("href") or "").path in {f"{path}edit/intro/", f"{path}edit/forms/skill/new/"}
-        for link in driver.find_elements(By.CSS_SELECTOR, "a[href]")
-    )
+        Returns:
+            str: Verified owner-scoped path.
 
-    if not editable:
-        raise BrowserError("No owner edit control found. Sign in as linkedin.username before publishing account data.")
+        Raises:
+            BrowserError: A redirect or missing owner control prevents account changes.
+        """
+        WebDriverWait(
+            driver,
+            config.capture.page_timeout_seconds,
+            ignored_exceptions=(StaleElementReferenceException,),
+        ).until(lambda page: page.find_elements(By.CSS_SELECTOR, 'main h1, section[aria-label="Primary content"] h2'))
+        location = urlsplit(driver.current_url)
 
-    return path
+        if location.scheme != "https" or location.hostname != "www.linkedin.com" or location.path.rstrip("/") != path.rstrip("/"):
+            raise BrowserError("LinkedIn redirected away from the configured owner; no account changes were submitted.")
+
+        # An intro edit link also identifies owners whose Skills section is still empty.
+        editable = any(
+            link.is_displayed()
+            and urlsplit(link.get_attribute("href") or "").hostname == "www.linkedin.com"
+            and urlsplit(link.get_attribute("href") or "").path in {f"{path}edit/intro/", f"{path}edit/forms/skill/new/"}
+            for link in driver.find_elements(By.CSS_SELECTOR, "a[href]")
+        )
+
+        if not editable:
+            raise BrowserError("No owner edit control found. Sign in as linkedin.username before publishing account data.")
+
+        return path
+
+    return retry_selenium(verify_owner, config.capture)

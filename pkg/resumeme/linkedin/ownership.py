@@ -10,7 +10,6 @@ import tempfile
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -19,7 +18,7 @@ from resumeme.exceptions import BrowserError
 from resumeme.linkedin.browser import _browser, _login, _navigate
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.identity import ownership_block, reconcile_about, release_destination
-from resumeme.linkedin.retrying import retry
+from resumeme.linkedin.retrying import retry_selenium
 from resumeme.signing import public_key_fingerprint
 
 if TYPE_CHECKING:
@@ -333,13 +332,7 @@ def _update_about(driver: WebDriver, config: Config, root: Path, block: str, *, 
 
         return desired
 
-    return retry(
-        reconcile,
-        attempts=config.capture.retry_attempts,
-        backoff=config.capture.retry_backoff_seconds,
-        max_backoff=config.capture.retry_max_backoff_seconds,
-        exceptions=(TimeoutException, StaleElementReferenceException, NoSuchElementException),
-    )
+    return retry_selenium(reconcile, config.capture)
 
 
 def publish_ownership(

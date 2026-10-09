@@ -20,6 +20,20 @@ if TYPE_CHECKING:
     from pytest import CaptureFixture, MonkeyPatch
 
 
+@pytest.fixture(autouse=True)
+def avoid_retry_delays(monkeypatch: MonkeyPatch) -> None:
+    """
+    Keep login-flow regressions fast while tests explicitly verify retry timing elsewhere.
+
+    Args:
+        monkeypatch (MonkeyPatch): Replaces retry sleeps unless a test installs its own recorder.
+
+    Returns:
+        None: Login timeout paths remain deterministic without wall-clock backoff.
+    """
+    monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", lambda _: None)
+
+
 def _browser(monkeypatch: MonkeyPatch) -> tuple[MagicMock, MagicMock, MagicMock, MagicMock]:
     """
     Model a complete login form whose single submission establishes a session.

@@ -10,7 +10,6 @@ import tempfile
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -21,7 +20,7 @@ from resumeme.exceptions import BrowserElementError, BrowserError, BrowserWaitEr
 from resumeme.linkedin.account import check_owner
 from resumeme.linkedin.browser import _browser, _details, _login, _navigate
 from resumeme.linkedin.credentials import login_credentials
-from resumeme.linkedin.retrying import retry
+from resumeme.linkedin.retrying import retry_selenium
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -34,7 +33,6 @@ if TYPE_CHECKING:
 __all__ = ["publish_skills"]
 
 _MAX_PROFILE_SKILLS = 100
-_TRANSIENT = (TimeoutException, StaleElementReferenceException, NoSuchElementException)
 
 
 def _current_skills(driver: WebDriver, config: Config) -> set[str]:
@@ -177,13 +175,7 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
     Raises:
         BrowserError: The proposal exceeds available skill slots or the live owner/form is ambiguous.
     """
-    current = retry(
-        lambda: _current_skills(driver, config),
-        exceptions=_TRANSIENT,
-        attempts=config.capture.retry_attempts,
-        backoff=config.capture.retry_backoff_seconds,
-        max_backoff=config.capture.retry_max_backoff_seconds,
-    )
+    current = retry_selenium(lambda: _current_skills(driver, config), config.capture)
     missing = [name for name in names if normalize_skill(name) not in current]
     logging.getLogger(__name__).info(
         "Compared proposed and existing LinkedIn skills",
@@ -245,13 +237,7 @@ def _update_skills(driver: WebDriver, config: Config, root: Path, names: list[st
             if normalize_skill(name) not in confirmed:
                 raise BrowserWaitError("LinkedIn has not confirmed the saved skill; reread before any retry.")
 
-        retry(
-            reconcile,
-            exceptions=_TRANSIENT,
-            attempts=config.capture.retry_attempts,
-            backoff=config.capture.retry_backoff_seconds,
-            max_backoff=config.capture.retry_max_backoff_seconds,
-        )
+        retry_selenium(reconcile, config.capture)
 
     logging.getLogger(__name__).info("LinkedIn skill additions confirmed", extra={"skills.added": len(missing)})
     return missing

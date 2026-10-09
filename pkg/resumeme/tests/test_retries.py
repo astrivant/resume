@@ -8,12 +8,13 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
-from selenium.common.exceptions import NoSuchWindowException
+from selenium.common.exceptions import InvalidSessionIdException, NoSuchWindowException, WebDriverException
 from urllib3.response import HTTPResponse
 
+from resumeme.config import Capture
 from resumeme.linkedin.browser import _wait_for_login
 from resumeme.linkedin.media import _ExponentialRetry
-from resumeme.linkedin.retrying import retry
+from resumeme.linkedin.retrying import retry, retry_selenium
 
 if TYPE_CHECKING:
     from pytest import MonkeyPatch
@@ -58,6 +59,68 @@ def test_permanent_errors_are_not_retried(monkeypatch: MonkeyPatch) -> None:
 
     with pytest.raises(ValueError):
         retry(operation, attempts=5, backoff=10, exceptions=(TimeoutError,))
+
+    operation.assert_called_once()
+    sleep.assert_not_called()
+
+
+def test_retry_predicate_stops_matched_nontransient_errors(monkeypatch: MonkeyPatch) -> None:
+    """
+    Preserve the matched exception when a retry filter classifies it as permanent.
+
+    Args:
+        monkeypatch (MonkeyPatch): Scoped sleep replacement.
+
+    Returns:
+        None: A filtered failure receives one attempt and no backoff.
+    """
+    sleep = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
+    operation = MagicMock(side_effect=TimeoutError("operation is not safe to repeat"))
+
+    with pytest.raises(TimeoutError, match="not safe"):
+        retry(operation, attempts=5, backoff=10, exceptions=(TimeoutError,), should_retry=lambda _: False)
+
+    operation.assert_called_once()
+    sleep.assert_not_called()
+
+
+def test_selenium_retry_recovers_transient_remote_errors(monkeypatch: MonkeyPatch) -> None:
+    """
+    Retry a read-only browser call after a recoverable WebDriver transport error.
+
+    Args:
+        monkeypatch (MonkeyPatch): Replaces delays with an immediate recorder.
+
+    Returns:
+        None: The successful read is returned after one configured retry.
+    """
+    delays: list[float] = []
+    monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", delays.append)
+    settings = Capture(retry_attempts=3, retry_backoff_seconds=2, retry_max_backoff_seconds=5)
+    operation = MagicMock(side_effect=[WebDriverException("disconnected from remote end"), "ready"])
+
+    assert retry_selenium(operation, settings) == "ready"
+    assert operation.call_count == 2
+    assert delays == [2]
+
+
+def test_selenium_retry_does_not_replay_a_dead_session(monkeypatch: MonkeyPatch) -> None:
+    """
+    Fail immediately when Selenium reports that its session no longer exists.
+
+    Args:
+        monkeypatch (MonkeyPatch): Verifies there is no retry delay.
+
+    Returns:
+        None: Invalid sessions are not replayed as transient page failures.
+    """
+    sleep = MagicMock()
+    monkeypatch.setattr("resumeme.linkedin.retrying.time.sleep", sleep)
+    operation = MagicMock(side_effect=InvalidSessionIdException("session is gone"))
+
+    with pytest.raises(InvalidSessionIdException):
+        retry_selenium(operation, Capture(retry_attempts=4, retry_backoff_seconds=1))
 
     operation.assert_called_once()
     sleep.assert_not_called()

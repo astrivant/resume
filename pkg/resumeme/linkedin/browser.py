@@ -21,7 +21,13 @@ from urllib.parse import urlsplit
 from attrs import evolve
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, NoSuchWindowException, StaleElementReferenceException, TimeoutException
+from selenium.common.exceptions import (
+    InvalidSessionIdException,
+    NoSuchWindowException,
+    StaleElementReferenceException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
@@ -36,7 +42,7 @@ from resumeme.exceptions import BrowserElementError, BrowserError, BrowserLaunch
 from resumeme.linkedin.challenges import observe_challenge
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.media import cache_media
-from resumeme.linkedin.retrying import retry
+from resumeme.linkedin.retrying import is_retryable_selenium_error, retry_selenium
 from resumeme.telemetry import safe_log_url
 
 if TYPE_CHECKING:
@@ -331,13 +337,7 @@ def _navigate(driver: WebDriver, url: str, settings: Capture) -> None:
         )
 
     # Retry read-only navigation in the existing session so transient page failures do not reset authentication.
-    retry(
-        navigate,
-        attempts=settings.retry_attempts,
-        backoff=settings.retry_backoff_seconds,
-        exceptions=(TimeoutException,),
-        max_backoff=settings.retry_max_backoff_seconds,
-    )
+    retry_selenium(navigate, settings)
 
 
 def _authenticated(driver: WebDriver) -> bool:
@@ -479,24 +479,33 @@ def _wait_for_app_approval(driver: WebDriver, settings: Capture, observation: Ch
             BrowserError: LinkedIn rejects the approval, requests code entry, or redirects outside its origin.
         """
         nonlocal last
-        state = _login_page(page)
 
-        if state == "loading":
+        try:
+            state = _login_page(page)
+
+            if state == "loading":
+                return False
+
+            if _authenticated(page):
+                return True
+
+            if state in _LOGIN_BLOCKED_STATES:
+                current = _check_login_challenge(page)
+
+                if current != last:
+                    _LOGGER.info("LinkedIn checkpoint changed: %s", current.summary())
+                    last = current
+            elif state in {"login", "signup", "uas"}:
+                raise BrowserError("LinkedIn app approval ended without authentication. No profile changes were submitted.")
+
             return False
+        except WebDriverException as error:
+            if not is_retryable_selenium_error(error):
+                raise
 
-        if _authenticated(page):
-            return True
-
-        if state in _LOGIN_BLOCKED_STATES:
-            current = _check_login_challenge(page)
-
-            if current != last:
-                _LOGGER.info("LinkedIn checkpoint changed: %s", current.summary())
-                last = current
-        elif state in {"login", "signup", "uas"}:
-            raise BrowserError("LinkedIn app approval ended without authentication. No profile changes were submitted.")
-
-        return False
+            # Keep polling inside the existing approval deadline after transient remote-driver failures.
+            _LOGGER.debug("Transient browser error while observing LinkedIn app approval", extra={"error.type": type(error).__name__})
+            return False
 
     # Keep one deadline even if LinkedIn redraws the prompt; poll the same session without replaying credentials.
     try:
@@ -637,7 +646,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
     """
     username, password = login_credentials(headless=headless)
 
-    if username and not _authenticated(driver):
+    if username and not retry_selenium(partial(_authenticated, driver), settings):
         _LOGGER.info("Waiting for the LinkedIn login form")
 
         def prepare() -> tuple[WebElement, WebElement, WebElement] | Literal[True]:
@@ -665,13 +674,7 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
                 raise
 
         try:
-            controls = retry(
-                prepare,
-                attempts=settings.retry_attempts,
-                backoff=settings.retry_backoff_seconds,
-                max_backoff=settings.retry_max_backoff_seconds,
-                exceptions=(TimeoutException,),
-            )
+            controls = retry_selenium(prepare, settings)
         except TimeoutException as error:
             if not headless:
                 _LOGGER.warning("LinkedIn's login form is unavailable. Finish signing in in the browser; waiting for login.")
@@ -695,9 +698,12 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
 
         # Wait for client-side validation after typing; reacquire the button if the page replaced its controls.
         try:
-            ready: WebElement | Literal[True] = WebDriverWait(
-                driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)
-            ).until(partial(_login_submit, unattended=settings if headless else None))
+            ready: WebElement | Literal[True] = retry_selenium(
+                lambda: WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
+                    partial(_login_submit, unattended=settings if headless else None)
+                ),
+                settings,
+            )
         except TimeoutException as error:
             state = _login_page(driver)
 
@@ -718,9 +724,12 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
 
         try:
             submit.click()
-        except TimeoutException:
-            # A click can submit successfully and time out waiting for the destination's assets. Observe its result without resubmitting.
-            _LOGGER.warning("Sign-in navigation timed out; checking the existing session without resubmitting credentials.")
+        except WebDriverException as error:
+            if not is_retryable_selenium_error(error):
+                raise
+
+            # A lost click response may mean credentials were submitted; observe login without clicking again.
+            _LOGGER.warning("Sign-in response was uncertain; checking the existing session without resubmitting credentials.")
 
     if not headless:
         _wait_for_login(driver)
@@ -728,8 +737,11 @@ def _login(driver: WebDriver, settings: Capture, *, headless: bool) -> None:
 
     # Only recognized app approval extends the wait; code-entry MFA and CAPTCHA terminate at the first observation.
     try:
-        WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
-            partial(_headless_login_ready, settings=settings)
+        retry_selenium(
+            lambda: WebDriverWait(driver, settings.page_timeout_seconds, ignored_exceptions=(StaleElementReferenceException,)).until(
+                partial(_headless_login_ready, settings=settings)
+            ),
+            settings,
         )
     except TimeoutException as error:
         state = _login_page(driver)
@@ -769,7 +781,15 @@ def _wait_for_login(driver: WebDriver) -> None:
 
     # Password lookup and MFA are user-paced; cancellation or closed windows end this wait instead of a timer.
     while True:
-        handles = driver.window_handles
+        try:
+            handles = driver.window_handles
+        except InvalidSessionIdException as error:
+            raise BrowserWindowError("The capture browser session ended during login.") from error
+        except WebDriverException:
+            # Remote browser hiccups do not end the user-paced wait; observe the same session on the next poll.
+            time.sleep(1)
+            continue
+
         _LOGGER.debug("Checking browser login state", extra={"browser.tabs": len(handles)})
 
         if not handles:
@@ -783,6 +803,10 @@ def _wait_for_login(driver: WebDriver) -> None:
                 if _authenticated(driver):
                     return
             except NoSuchWindowException:
+                continue
+            except InvalidSessionIdException as error:
+                raise BrowserWindowError("The capture browser session ended during login.") from error
+            except WebDriverException:
                 continue
 
         time.sleep(1)
@@ -828,7 +852,9 @@ def _expand(driver: WebDriver, settings: Capture) -> list[str]:
                     driver.execute_script("arguments[0].click()", button)
                     clicked = True
             except StaleElementReferenceException:
-                continue
+                # Restart this viewport with fresh DOM so a rerender cannot make the capture look complete prematurely.
+                clicked = True
+                break
 
         at_bottom: object = driver.execute_script(_SCROLL_SCRIPT, "next")
         current = driver.find_element(By.CSS_SELECTOR, "main").text
@@ -1285,10 +1311,22 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
         username = config.linkedin.username
         _navigate(driver, f"https://www.linkedin.com/in/{username}/", config.capture)
 
+        def profile_content_ready() -> None:
+            """
+            Wait for the requested profile's primary heading after the browser navigation.
+
+            Returns:
+                None: A profile heading is present in the current document.
+            """
+            WebDriverWait(
+                driver,
+                config.capture.page_timeout_seconds,
+                ignored_exceptions=(StaleElementReferenceException,),
+            ).until(lambda page: page.find_elements(By.CSS_SELECTOR, 'main h1, section[aria-label="Primary content"] h2'))
+
         try:
-            WebDriverWait(driver, config.capture.page_timeout_seconds).until(
-                lambda page: page.find_elements(By.CSS_SELECTOR, 'main h1, section[aria-label="Primary content"] h2')
-            )
+            # LinkedIn can finish navigation before hydrating the heading; retry this read on the same profile route.
+            retry_selenium(profile_content_ready, config.capture)
         except TimeoutException as error:
             # Retain the actual failed page for markup/debugging work instead of reporting only a generic timeout.
             diagnostic = _state_root(root) / "capture/profile.html"
@@ -1302,13 +1340,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
         if urlsplit(driver.current_url).path.casefold().rstrip("/") + "/" != expected:
             raise BrowserError("LinkedIn redirected away from the configured profile.")
 
-        snapshots = retry(
-            partial(_expand, driver, config.capture),
-            attempts=config.capture.retry_attempts,
-            backoff=config.capture.retry_backoff_seconds,
-            max_backoff=config.capture.retry_max_backoff_seconds,
-            exceptions=(NoSuchElementException, StaleElementReferenceException, TimeoutException),
-        )
+        snapshots = retry_selenium(partial(_expand, driver, config.capture), config.capture)
         html = merge_profile_html(snapshots)
         (_state_root(root) / "capture/profile.html").write_text(html, encoding="utf-8")
         profile = parse_profile(html, username)
@@ -1323,12 +1355,8 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
                 _LOGGER.info("Capturing profile section inline", extra={"profile.section": section.key})
 
                 try:
-                    replacements[section.key] = retry(
-                        partial(_inline_tabs, driver, username, section, config.capture),
-                        attempts=config.capture.retry_attempts,
-                        backoff=config.capture.retry_backoff_seconds,
-                        max_backoff=config.capture.retry_max_backoff_seconds,
-                        exceptions=(TimeoutException, StaleElementReferenceException, NoSuchElementException),
+                    replacements[section.key] = retry_selenium(
+                        partial(_inline_tabs, driver, username, section, config.capture), config.capture
                     )
                 finally:
                     (_state_root(root) / f"capture/{section.key}.html").write_text(driver.page_source, encoding="utf-8")
@@ -1338,13 +1366,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
             _LOGGER.info("Capturing profile section", extra={"profile.section": key})
 
             try:
-                replacements[key] = retry(
-                    partial(_details, driver, url, key, title, config.capture),
-                    attempts=config.capture.retry_attempts,
-                    backoff=config.capture.retry_backoff_seconds,
-                    max_backoff=config.capture.retry_max_backoff_seconds,
-                    exceptions=(TimeoutException, StaleElementReferenceException, NoSuchElementException),
-                )
+                replacements[key] = retry_selenium(partial(_details, driver, url, key, title, config.capture), config.capture)
             finally:
                 (_state_root(root) / f"capture/{key}.html").write_text(driver.page_source, encoding="utf-8")
 
@@ -1354,13 +1376,7 @@ def capture_profile(config: Config, root: Path, connect_port: int | None = None,
 
         if f"/in/{username}/overlay/contact-info" in html:
             _LOGGER.info("Capturing contact information")
-            contact = retry(
-                partial(_contact, driver, username, config.capture),
-                attempts=config.capture.retry_attempts,
-                backoff=config.capture.retry_backoff_seconds,
-                max_backoff=config.capture.retry_max_backoff_seconds,
-                exceptions=(TimeoutException, StaleElementReferenceException, NoSuchElementException),
-            )
+            contact = retry_selenium(partial(_contact, driver, username, config.capture), config.capture)
             sections.insert(0, contact)
 
         profile = evolve(profile, sections=sections, warnings=warnings, captured_at=datetime.now(UTC).isoformat())
