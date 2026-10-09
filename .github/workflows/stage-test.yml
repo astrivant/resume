@@ -26,7 +26,7 @@ jobs:
           ref: ${{ inputs.sha }}
           persist-credentials: false
 
-      # Scan a read-only checkout with the pinned Docker Hub image and ignore no findings or repo-supplied rules.
+      # Keep findings in the mounted JSON file and forward the scanner's console logs to the Actions stdout stream.
       - name: Scan source for vulnerabilities and secrets
         id: scan
         continue-on-error: true
@@ -47,7 +47,7 @@ jobs:
             --ignorefile "" \
             --secret-config "" \
             --skip-dirs .git \
-            .
+            . 2>&1
 
       # Matched values and source snippets are removed before reports, summaries, or PR comments are published.
       - name: Redact report and summarize findings
