@@ -175,7 +175,7 @@ def _execute_command(
         result = subprocess.run(command, env=environment, check=False)
 
         # A failed or interrupted interaction cannot replace the last accepted encrypted login state.
-        if result.returncode == 0 and keys:
+        if result.returncode == 0 and keys and os.environ.get("RESUMEME_SESSION_CACHE_READ_ONLY") != "true":
             data = seal_archive(archive_profile(state / config.capture.browser), keys, context)
             write_encrypted(archive, data)
 
@@ -218,7 +218,11 @@ def run() -> int:
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("operation", choices=["prepare", "run", "clean"])
-    parser.add_argument("--command", choices=["capture", "publish-ownership", "publish-resume", "publish-skills"], default="capture")
+    parser.add_argument(
+        "--command",
+        choices=["capture", "capture-plan", "capture-shard", "publish-ownership", "publish-resume", "publish-skills"],
+        default="capture",
+    )
     parser.add_argument("--interactive", action="store_true", help="Bootstrap the encrypted session in a visible local browser")
     args = parser.parse_args()
 
@@ -239,7 +243,8 @@ def run() -> int:
         ]
     ).encode()
     identity = hashlib.sha256(context).hexdigest()
-    prefix = f"resumeme-session-v1-{identity}-{keys.fingerprint() if keys else 'disabled'}"
+    # The readable browser component keeps Firefox and Chrome cache entries separate before any identity hash is inspected.
+    prefix = f"resumeme-session-v2-{config.capture.browser}-{identity}-{keys.fingerprint() if keys else 'disabled'}"
     archive = root / ".cache/encrypted-session" / f"{prefix}.bin"
     persistent: Path | None = None
 
@@ -263,12 +268,39 @@ def run() -> int:
         )
         return 0
 
+    if args.command in {"capture-plan", "capture-shard"} and keys is None:
+        raise SessionCacheError("Six-way capture requires the dedicated encrypted LinkedIn session cache keys.")
+
     commands = {
         "capture": [],
+        "capture-plan": ["--output", os.environ.get("SESSION_PLAN_PATH", ".cache/capture/plan.json")],
         "publish-ownership": ["--public-key", ".cache/publication/cosign.pub"],
         "publish-resume": ["--pdf", ".cache/publication/resume.pdf"],
         "publish-skills": ["--tag", os.environ.get("GITHUB_REF_NAME", ""), "--suggestions", ".cache/codex/skills/skills.json"],
     }
+
+    if args.command == "capture-shard":
+        try:
+            shard_index = int(os.environ["SESSION_SHARD_INDEX"])
+            shard_count = int(os.environ.get("SESSION_SHARD_COUNT", "6"))
+        except (KeyError, ValueError) as error:
+            raise SessionCacheError("capture-shard requires numeric SESSION_SHARD_INDEX and SESSION_SHARD_COUNT inputs.") from error
+
+        if not 1 <= shard_index <= shard_count or shard_count != 6:
+            raise SessionCacheError("capture-shard requires a one-based shard index and a shard count of exactly six.")
+
+        shard_output = os.environ.get("SESSION_SHARD_OUTPUT", "").strip() or f".cache/capture/shards/shard-{shard_index}.json"
+        commands[args.command] = [
+            "--index",
+            str(shard_index),
+            "--count",
+            str(shard_count),
+            "--plan",
+            os.environ.get("SESSION_PLAN_PATH", ".cache/capture/plan.json"),
+            "--output",
+            shard_output,
+        ]
+
     command = ["resumeme", args.command, *([] if args.interactive else ["--headless"]), *commands[args.command]]
     retry_mutations = args.command in _MUTATING_COMMANDS
 

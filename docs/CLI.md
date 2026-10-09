@@ -12,8 +12,10 @@ in collapsible blocks, plus command behavior and examples.
 - [Logging](#logging)
 - [Commands](#commands)
   - [resumeme capture](#resumeme-capture)
+  - [CI capture fan-out](#ci-capture-fan-out)
   - [resumeme enrich](#resumeme-enrich)
   - [resumeme validate](#resumeme-validate)
+  - [resumeme aggregate](#resumeme-aggregate)
   - [resumeme config lint](#resumeme-config-lint)
   - [resumeme summary-prompt](#resumeme-summary-prompt)
   - [resumeme render](#resumeme-render)
@@ -51,12 +53,12 @@ and [environment variables](../README.md#fork-environment-variables).
 ~~~text
 usage: resumeme [-h] [--config CONFIG]
                 [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-                {capture,enrich,validate,summary-prompt,render,build,config,site,publish-ownership,publish-resume,skills-prompt,publish-skills} ...
+                {capture,enrich,validate,summary-prompt,render,build,capture-plan,capture-shard,aggregate,config,site,publish-ownership,publish-resume,skills-prompt,publish-skills} ...
 
 Capture your LinkedIn profile and build an illustrated PDF résumé.
 
 positional arguments:
-  {capture,enrich,validate,summary-prompt,render,build,config,site,publish-ownership,publish-resume,skills-prompt,publish-skills}
+  {capture,enrich,validate,summary-prompt,render,build,capture-plan,capture-shard,aggregate,config,site,publish-ownership,publish-resume,skills-prompt,publish-skills}
     capture             Open the configured browser, wait for login, and save
                         your expanded profile and images
     enrich              Discover text links, resolve destinations, and cache
@@ -67,6 +69,12 @@ positional arguments:
     render              Generate tex/resume.tex from the saved profile
     build               Render LaTeX and compile resume.pdf with Docker or the
                         bundled container toolchain
+    capture-plan        Authenticate once and plan six profile-section capture
+                        shards
+    capture-shard       Collect the profile sections assigned to one of six
+                        workers
+    aggregate           Validate and combine all six capture shards into the
+                        profile snapshot
     config              Validate local configuration without a captured
                         profile
     site                Prepare a GitHub Pages site in .cache/pages from the
@@ -172,6 +180,75 @@ options:
   --connect-port CONNECT_PORT
                         Attach to an explicitly opened local Firefox Marionette port
   --headless            Capture unattended using LinkedIn login environment variables
+~~~
+
+</details>
+
+### CI capture fan-out
+
+The Actions workflow uses `capture-plan` to authenticate with the configured
+browser and write an overview plus weighted section routes. Six jobs run
+`capture-shard --index 1` through `capture-shard --index 6` against independent
+restored copies of that browser's encrypted session. They upload one result each
+and never save back to the shared cache. `aggregate` requires all six outputs to
+match the plan exactly before it writes the accepted profile. Firefox and Chrome
+use distinct cache namespaces; a refresh uses only `capture.browser`.
+
+These commands are CI workflow interfaces. Ordinary local `resumeme capture`
+still collects the complete profile in one browser process.
+
+```bash
+resumeme capture-plan --help
+resumeme capture-shard --help
+resumeme aggregate --help
+```
+
+<details>
+<summary>resumeme capture-plan and capture-shard</summary>
+
+~~~text
+usage: resumeme capture-plan [-h] [--headless] [--output OUTPUT]
+
+options:
+  -h, --help       show this help message and exit
+  --headless       Use LinkedIn login environment variables without a desktop
+  --output OUTPUT  Capture plan output path
+
+usage: resumeme capture-shard [-h] --index INDEX [--count COUNT] [--plan PLAN]
+                              [--output OUTPUT] [--headless]
+
+options:
+  -h, --help       show this help message and exit
+  --index INDEX    One-based shard number from 1 through 6
+  --count COUNT    Total shard count, fixed at six
+  --plan PLAN      Bootstrap plan path
+  --output OUTPUT  Shard output path; defaults to shard-N.json in the shard
+                   directory
+  --headless       Use LinkedIn login environment variables without a desktop
+~~~
+
+</details>
+
+### resumeme aggregate
+
+Combine the six shard JSON files with their capture plan and save a profile only
+after validating every shard's index, browser, capture identity, and route
+ownership.
+
+```bash
+resumeme --config resumeme.config.yaml aggregate
+```
+
+<details>
+<summary>resumeme aggregate</summary>
+
+~~~text
+usage: resumeme aggregate [-h] [--plan PLAN] [--shards SHARDS]
+
+options:
+  -h, --help       show this help message and exit
+  --plan PLAN      Bootstrap plan path
+  --shards SHARDS  Directory containing shard-N.json outputs
 ~~~
 
 </details>

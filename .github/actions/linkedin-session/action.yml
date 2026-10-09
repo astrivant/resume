@@ -2,8 +2,23 @@ name: LinkedIn session
 description: Restore encrypted browser state, execute one LinkedIn command, and cache only authenticated ciphertext
 inputs:
   command:
-    description: capture, publish-ownership, publish-resume, or publish-skills
+    description: capture, capture-plan, capture-shard, publish-ownership, publish-resume, or publish-skills
     required: true
+  save-cache:
+    description: Save a newly authenticated browser profile after successful completion
+    default: 'true'
+  shard-index:
+    description: One-based capture shard number for capture-shard
+    default: ''
+  shard-count:
+    description: Total capture shard count for capture-shard
+    default: '6'
+  plan-path:
+    description: Capture plan path used by capture-plan and capture-shard
+    default: .cache/capture/plan.json
+  shard-output:
+    description: Capture shard output path; defaults to .cache/capture/shards/shard-N.json
+    default: ''
   private-key:
     description: Dedicated RSA private PEM supplied from an Actions secret
     default: ''
@@ -39,6 +54,11 @@ runs:
       shell: bash
       env:
         SESSION_COMMAND: ${{ inputs.command }}
+        SESSION_SHARD_INDEX: ${{ inputs.shard-index }}
+        SESSION_SHARD_COUNT: ${{ inputs.shard-count }}
+        SESSION_PLAN_PATH: ${{ inputs.plan-path }}
+        SESSION_SHARD_OUTPUT: ${{ inputs.shard-output }}
+        RESUMEME_SESSION_CACHE_READ_ONLY: ${{ inputs.save-cache != 'true' }}
         RESUMEME_CACHE_PRIVATE_KEY: ${{ inputs.private-key }}
         RESUMEME_CACHE_PUBLIC_KEY: ${{ inputs.public-key }}
         RESUMEME_CACHE_KEY_PASSWORD: ${{ inputs.key-password }}
@@ -47,6 +67,7 @@ runs:
     - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       if: >-
         always()
+        && inputs.save-cache == 'true'
         && steps.session.outputs.cache-ready == 'true'
       with:
         path: ${{ steps.prepare.outputs.cache-path }}

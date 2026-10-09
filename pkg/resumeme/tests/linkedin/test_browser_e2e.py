@@ -17,7 +17,8 @@ from attrs import evolve
 
 from resumeme.compiler.asts.profile import load_profile, save_profile
 from resumeme.config import Capture, Config, LinkedIn
-from resumeme.linkedin.browser import _navigate, capture_profile
+from resumeme.linkedin.browser import _navigate, capture_profile_shard, prepare_capture_plan
+from resumeme.linkedin.capture_shards import aggregate_capture, assign_routes
 from resumeme.tests.paths import TEST_FIXTURES
 
 if TYPE_CHECKING:
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
     from selenium.webdriver.remote.webdriver import WebDriver
 
 _FIXTURE = TEST_FIXTURES / "browser-e2e-profile.html"
+_EXPERIENCE_FIXTURE = TEST_FIXTURES / "browser-e2e-experience.html"
 _USERNAME = "e2e-fixture"
 
 
@@ -43,7 +45,8 @@ class _FixtureHandler(BaseHTTPRequestHandler):
         Returns:
             None: The fixture page and content type are written to the local response.
         """
-        body = _FIXTURE.read_bytes()
+        fixture = _EXPERIENCE_FIXTURE if urlsplit(self.path).path.endswith("/details/experience/") else _FIXTURE
+        body = fixture.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -110,7 +113,7 @@ def test_real_browser_capture_is_validated_and_exported(tmp_path: Path, monkeypa
     monkeypatch.setenv("LINKEDIN_USERNAME", "browser-e2e@example.invalid")
     monkeypatch.setenv("LINKEDIN_PASSWORD", "fixture-only-password")
     monkeypatch.setattr("resumeme.linkedin.browser._login", lambda driver, settings, *, headless: None)
-    monkeypatch.setattr("resumeme.linkedin.browser.cache_media", lambda profile, config, root: profile)
+    monkeypatch.setattr("resumeme.linkedin.browser._authenticated", lambda driver: True)
     navigate = _navigate
     visited: list[str] = []
 
@@ -135,9 +138,12 @@ def test_real_browser_capture_is_validated_and_exported(tmp_path: Path, monkeypa
     settings = Capture(browser=browser, page_timeout_seconds=10, max_scrolls=12, retry_attempts=2, retry_backoff_seconds=0)
     config = Config(LinkedIn(_USERNAME), capture=settings)
 
-    # Include browser startup and cleanup in the comparison because users experience the complete capture command.
+    # Exercise the production bootstrap, six-way route assignment, browser worker, and final schema validation.
     capture_started = time.perf_counter()
-    profile = capture_profile(config, tmp_path, headless=True)
+    plan = prepare_capture_plan(config, tmp_path, headless=True)
+    assignments = assign_routes(plan)
+    shards = [capture_profile_shard(config, tmp_path, plan, index, 6, headless=True) for index in range(1, 7)]
+    profile = aggregate_capture(plan, shards)
     capture_duration = time.perf_counter() - capture_started
     experience = next(section for section in profile.sections if section.key == "experience")
     job = next(entry for entry in experience.entries if entry.title == "Lead Platform Engineer")
@@ -158,7 +164,12 @@ def test_real_browser_capture_is_validated_and_exported(tmp_path: Path, monkeypa
 
     assert float(timing_output.read_text(encoding="utf-8")) > 0
     assert load_profile(output, _USERNAME) == normalized
-    assert visited == ["/login", f"/in/{_USERNAME}/"]
+    assert visited == [
+        "/login",
+        f"/in/{_USERNAME}/",
+        f"/in/{_USERNAME}/",
+        f"/in/{_USERNAME}/details/experience/",
+    ]
     assert profile.name == "Alex Example"
     assert profile.headline == "Senior Platform Engineer"
     assert [section.key for section in profile.sections] == ["experience", "skills"]
@@ -170,3 +181,4 @@ def test_real_browser_capture_is_validated_and_exported(tmp_path: Path, monkeypa
     assert job.images[0].alt == "Acme Systems logo"
     assert skills.entries[0].skills[0].name == "Python"
     assert skills.entries[0].skills[0].endorsements == 5
+    assert len(assignments) == 6

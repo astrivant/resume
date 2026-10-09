@@ -1,15 +1,22 @@
 # Monthly refresh and signed releases
 
 The pipeline refreshes LinkedIn on the first day of every month at **06:17 UTC**
-(`17 6 1 * *`). It captures the configured profile, downloads images and project
-previews, runs the existing validation and PDF build, and commits the complete
-snapshot, referenced assets, and PDF to `main` together. Ordinary branch pushes rebuild
-the saved inputs. Neither path creates a release.
+(`17 6 1 * *`). It authenticates with the configured browser, captures the profile
+overview and route plan, and collects assigned sections using six parallel workers.
+The aggregator verifies complete section ownership before images and project
+previews are downloaded, validation and PDF generation run, and the complete
+snapshot, referenced assets, and PDF are committed to `main` together. Ordinary
+branch pushes rebuild the saved inputs. Neither path creates a release.
 
 Every tag push also performs a headless LinkedIn capture before validation and
-compilation. The release signs the fresh PDF built in that same workflow run,
-not the PDF committed at the tag. Tags require the LinkedIn login secrets and
-do not commit their capture or PDF to `main` or deploy Pages.
+compilation. Capture authenticates once with the configured browser, saves an
+encrypted browser session, and builds a weighted plan of profile sections. Six
+parallel workers restore independent copies of that browser-specific session and
+collect assigned sections without login credentials or shared-cache writes. The
+aggregator rejects missing, duplicate, misrouted, or cross-browser shard results
+before accepting a complete snapshot. The release signs the fresh PDF built in
+that same workflow run, not the PDF committed at the tag. Tags do not commit
+their capture or PDF to `main` or deploy Pages.
 
 Enable `pages.enabled` to also update a [GitHub Pages website](pages.md) after
 that commit is accepted. The optional stage serves `index.html` and the same PDF
@@ -140,9 +147,11 @@ gh secret set LINKEDIN_PASSWORD
   the entire Cosign PEM, including its header, footer, and newlines; the password
   is required only for encrypted keys.
 - `RESUMEME_CACHE_PRIVATE_KEY`, `RESUMEME_CACHE_PUBLIC_KEY`, and `RESUMEME_CACHE_KEY_PASSWORD`:
-  optional encrypted session reuse. The [setup script](linkedin-session-cache.md#setup)
-  generates the dedicated PEM pair and uploads all three secrets. Without them,
-  jobs retain no browser-session cache.
+  required for tag and scheduled/manual-refresh captures, which fan out to six
+  browser workers. The [setup script](linkedin-session-cache.md#setup) generates
+  the dedicated PEM pair and uploads all three secrets. Firefox and Chrome use
+  distinct encrypted cache namespaces. Local interactive capture does not need
+  these secrets.
 - `GH_TOKEN` / `GITHUB_TOKEN`: supplied by Actions; no personal access token is
   needed for unprotected branches. The workflow uses `contents: write` for generated
   commits and releases,
@@ -175,11 +184,13 @@ The runner uses headless Firefox or Chrome, selected by `capture.browser` with
 Firefox as the default. The capture step sets `RESUMEME_LOG_LEVEL=DEBUG` and
 `PYTHONUNBUFFERED=1` so browser progress and sanitized request diagnostics stream
 to the Actions log. See [logging](CLI.md#logging) for the output format and redaction limits.
-The session wrapper places browser state and raw browser
-diagnostics in a temporary directory and optionally caches the browser profile
-as ciphertext. The capture artifact allowlist transfers the accepted snapshot
-and its referenced media, not browser-profile files or login variables. Other
-steps have their own artifacts and plaintext workspace files. See the
+The bootstrap job alone receives LinkedIn login secrets and writes the selected
+browser's encrypted cache. Each of the six workers restores that cache read-only;
+all six can run concurrently without racing cache updates. The session wrapper
+places browser state and raw browser diagnostics in a temporary directory. The
+capture plan and shard results are short-lived workflow artifacts, while the
+accepted snapshot and referenced media are shared with downstream jobs. These
+profile-data artifacts are not encrypted by the session-cache key. See the
 [artifact inventory and retention periods](data-handling.md#ci-artifacts-commits-and-public-output)
 and [cleanup limits](data-handling.md#encrypted-browser-sessions-in-ci).
 

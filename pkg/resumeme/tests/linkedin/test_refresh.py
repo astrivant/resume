@@ -201,11 +201,14 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
     }
     source = pipeline["jobs"]["source"]
     assert source["outputs"]["refresh"] == "${{ steps.source.outputs.refresh }}"
-    capture_job = pipeline["jobs"]["capture"]
-    assert "needs.source.outputs.refresh == 'true'" in capture_job["if"]
-    assert "github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')" in capture_job["if"]
-    capture = next(step for step in capture_job["steps"] if step.get("uses") == "./.github/actions/linkedin-session")
-    assert capture["with"]["command"] == "capture"
+    bootstrap = pipeline["jobs"]["capture-bootstrap"]
+    assert "needs.source.outputs.refresh == 'true'" in bootstrap["if"]
+    assert "github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')" in bootstrap["if"]
+    capture = next(step for step in bootstrap["steps"] if step.get("uses") == "./.github/actions/linkedin-session")
+    assert capture["with"]["command"] == "capture-plan"
+    aggregate = pipeline["jobs"]["capture"]
+    assert aggregate["needs"] == ["source", "capture-bootstrap", "capture-shards"]
+    assert any(step.get("run") == "poetry run resumeme --config resumeme.config.yaml aggregate" for step in aggregate["steps"])
     assert "capture" in pipeline["jobs"]["summary-stage"]["needs"]
     assert "continue-on-error" not in source and "continue-on-error" not in capture
 
@@ -255,6 +258,36 @@ def test_tag_pipeline_propagates_capture_and_signs_the_current_build() -> None:
         if step.get("uses", "").startswith("actions/upload-artifact@") and step.get("with", {}).get("name") == "resume-pdf"
     )
     assert build_upload["with"]["path"] == ".cache/publication/"
+
+
+def test_live_capture_uses_six_read_only_browser_scoped_workers() -> None:
+    """
+    Require six workers to restore the seed session without racing cache writes.
+
+    Returns:
+        None: The selected browser cache is bootstrapped once, read by all workers, and merged before downstream stages.
+    """
+    pipeline = yaml.safe_load((REPOSITORY_ROOT / ".github/workflows/ci.yml").read_text())
+    bootstrap = pipeline["jobs"]["capture-bootstrap"]
+    workers = pipeline["jobs"]["capture-shards"]
+    aggregator = pipeline["jobs"]["capture"]
+    bootstrap_action = next(step for step in bootstrap["steps"] if step.get("uses") == "./.github/actions/linkedin-session")
+    worker_action = next(step for step in workers["steps"] if step.get("uses") == "./.github/actions/linkedin-session")
+    cache_action = yaml.safe_load((REPOSITORY_ROOT / ".github/actions/linkedin-session/action.yml").read_text())
+
+    assert workers["strategy"]["matrix"]["shard"] == [1, 2, 3, 4, 5, 6]
+    assert workers["needs"] == ["source", "capture-bootstrap"]
+    assert bootstrap_action["with"]["command"] == "capture-plan"
+    assert worker_action["with"]["command"] == "capture-shard"
+    assert worker_action["with"]["save-cache"] == "false"
+    assert "LINKEDIN_USERNAME" not in worker_action.get("env", {})
+    assert "LINKEDIN_PASSWORD" not in worker_action.get("env", {})
+    assert any(
+        "RESUMEME_SESSION_CACHE_READ_ONLY" in step.get("env", {})
+        for step in cache_action["runs"]["steps"]
+        if isinstance(step.get("env"), dict)
+    )
+    assert any(step.get("run", "").endswith(" aggregate") for step in aggregator["steps"])
 
 
 def test_tag_runs_share_a_workflow_level_concurrency_lane() -> None:

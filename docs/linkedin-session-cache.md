@@ -35,6 +35,10 @@ automatically after a successful LinkedIn capture. A cache miss on the first run
 is normal. Users do not create or upload a cache file. GitHub authentication
 authorizes the setup script to store repository secrets when the account has
 the required permissions; it does not authenticate that browser to LinkedIn.
+Tag and scheduled or requested main-branch refreshes require all three secrets:
+the browser session must be encrypted before six capture workers can restore it.
+Firefox and Chrome use separate cache paths and keys in the Actions cache
+namespace. A run uses only the browser selected by `capture.browser`.
 
 After the workflow changes are on `main`, you can optionally warm its shared
 cache before tagging by starting a refresh:
@@ -48,17 +52,23 @@ Watch the capture job. App approvals and unknown checkpoints allow up to
 request in your LinkedIn app when one appears. Recognized code-entry MFA, CAPTCHA,
 denial, and expiry fail immediately.
 
-Without cache keys, jobs still capture using the login secrets and temporary
-browser state but save no session cache. A partial key set fails before capture.
-`LINKEDIN_USERNAME` and `LINKEDIN_PASSWORD` remain required for fresh or expired logins.
+Tag and scheduled or requested main-branch refresh jobs require all cache keys;
+without them, the bootstrap cannot hand an authenticated browser session to the
+six workers. A partial key set fails before capture. `LINKEDIN_USERNAME` and
+`LINKEDIN_PASSWORD` remain required for fresh or expired logins. Local
+`resumeme capture` continues to use a single browser process and does not use the
+CI cache secrets.
 
 ## Cache lifecycle
 
-Each LinkedIn job restores one encrypted file, decrypts it into a private temporary
-directory, and runs its browser command. The browser subprocess does not receive
-the encryption-key environment variables. After success, the wrapper encrypts and
-signs the updated profile, then removes temporary browser files and raw driver
-diagnostics. Failed commands preserve the last accepted cache.
+The bootstrap job restores one encrypted file, decrypts it into a private temporary
+directory, and runs the browser command with LinkedIn credentials. After a successful
+login and capture plan, the wrapper encrypts and signs the updated browser profile.
+Each of six workers then restores and decrypts its own copy of the same browser
+session. Workers do not receive LinkedIn login credentials and cannot rewrite the
+shared cache. The browser subprocess does not receive encryption-key environment
+variables. All jobs remove temporary browser files and raw driver diagnostics;
+failed commands preserve the last accepted cache.
 
 Cleanup also runs in an `always()` workflow step after failure or cancellation.
 This cleanup covers the temporary browser directory, not accepted snapshots,
@@ -113,10 +123,12 @@ never open the same browser directory. Successful writes replace encrypted files
 atomically. The local ciphertext copy can be reused across tags independently of
 GitHub's cache scope.
 
-Use one dedicated runner registration for the account to serialize browser jobs.
-Restrict runner access to trusted repository workflows. Pull-request and ordinary
-branch checks in this pipeline remain hosted; capture runs only for tags, monthly
-runs, or an explicit refresh on `main`. Do not grant untrusted pull-request workflows
+The capture matrix allows six browser workers to run concurrently. A self-hosted
+pool needs up to six available runner slots to run the full fan-out at once; a
+single slot serializes the workers and removes the parallel speedup. Restrict
+runner access to trusted repository workflows. Pull-request and ordinary branch
+checks in this pipeline remain hosted; capture runs only for tags, monthly runs,
+or an explicit refresh on `main`. Do not grant untrusted pull-request workflows
 access to this machine.
 
 To bootstrap interactively, use the same service account, browser, and repository

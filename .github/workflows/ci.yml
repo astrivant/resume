@@ -82,8 +82,8 @@ jobs:
     with:
       sha: ${{ needs.source.outputs.sha }}
 
-  capture:
-    name: Refresh LinkedIn source
+  capture-bootstrap:
+    name: Authenticate and plan LinkedIn capture
     needs: source
     if: >-
       needs.source.outputs.refresh == 'true'
@@ -103,12 +103,13 @@ jobs:
         with:
           groups: main
 
-      # Hosted Ubuntu includes Firefox and Chrome with their drivers; capture.browser selects one.
-      # Only this step receives LinkedIn authentication secrets.
-      - name: Refresh LinkedIn profile and downloaded media
+      # The bootstrap logs in once with the configured browser, captures an overview, and saves its browser-specific encrypted cache.
+      # LinkedIn credentials stay in this job; section workers receive only the encrypted session-cache key.
+      - name: Authenticate and build the section plan
         uses: ./.github/actions/linkedin-session
         with:
-          command: capture
+          command: capture-plan
+          plan-path: .cache/capture/plan.json
           private-key: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
           public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
           key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
@@ -119,6 +120,94 @@ jobs:
           PYTHONUNBUFFERED: '1'
           LINKEDIN_USERNAME: ${{ secrets.LINKEDIN_USERNAME }}
           LINKEDIN_PASSWORD: ${{ secrets.LINKEDIN_PASSWORD }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: resumeme-capture-plan
+          path: .cache/capture/plan.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  capture-shards:
+    name: Capture LinkedIn sections (${{ matrix.shard }}/6)
+    needs: [source, capture-bootstrap]
+    if: >-
+      !cancelled()
+      && needs.source.outputs.refresh == 'true'
+      && needs.capture-bootstrap.result == 'success'
+    runs-on: ${{ fromJSON(vars.RESUMEME_LINKEDIN_RUNNER || '["ubuntu-24.04"]') }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+        with:
+          groups: main
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: resumeme-capture-plan
+          path: .cache/capture/
+
+      # Each worker restores an isolated copy of the configured browser cache and never overwrites the shared cache.
+      - name: Collect assigned profile sections
+        uses: ./.github/actions/linkedin-session
+        with:
+          command: capture-shard
+          save-cache: 'false'
+          shard-index: ${{ matrix.shard }}
+          shard-count: '6'
+          plan-path: .cache/capture/plan.json
+          shard-output: .cache/capture/shards/shard-${{ matrix.shard }}.json
+          private-key: ${{ secrets.RESUMEME_CACHE_PRIVATE_KEY }}
+          public-key: ${{ secrets.RESUMEME_CACHE_PUBLIC_KEY }}
+          key-password: ${{ secrets.RESUMEME_CACHE_KEY_PASSWORD }}
+          cache-directory: ${{ vars.RESUMEME_SESSION_CACHE_DIR }}
+        env:
+          RESUMEME_LOG_LEVEL: DEBUG
+          PYTHONUNBUFFERED: '1'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: resumeme-capture-shard-${{ matrix.shard }}
+          path: .cache/capture/shards/shard-${{ matrix.shard }}.json
+          if-no-files-found: error
+          retention-days: 1
+
+  capture:
+    name: Aggregate LinkedIn profile
+    needs: [source, capture-bootstrap, capture-shards]
+    if: >-
+      !cancelled()
+      && needs.source.outputs.refresh == 'true'
+      && needs.capture-bootstrap.result == 'success'
+      && needs.capture-shards.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-project
+        with:
+          groups: main
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: resumeme-capture-plan
+          path: .cache/capture/
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: resumeme-capture-shard-*
+          path: .cache/capture/shards/
+          merge-multiple: true
+      - name: Validate and aggregate all six profile shards
+        run: poetry run resumeme --config resumeme.config.yaml aggregate
       - name: Export complete capture for downstream stages
         run: poetry run python scripts/ci/profile-artifact.py export
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

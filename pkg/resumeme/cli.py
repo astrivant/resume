@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import yaml
+from attrs import evolve
 from jsonschema import ValidationError
 from selenium.common.exceptions import NoSuchWindowException, TimeoutException, WebDriverException
 
@@ -33,7 +34,14 @@ from resumeme.exceptions import (
 )
 from resumeme.github.contributions import fetch_calendar
 from resumeme.github.pages import build_site
-from resumeme.linkedin.browser import capture_profile
+from resumeme.linkedin.browser import capture_profile, capture_profile_shard, prepare_capture_plan
+from resumeme.linkedin.capture_shards import (
+    aggregate_capture,
+    load_capture_plan,
+    load_capture_shard,
+    save_capture_plan,
+    save_capture_shard,
+)
 from resumeme.linkedin.identity import release_destination
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.ownership import publish_ownership
@@ -103,6 +111,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             command.add_argument(
                 "--companies", action="store_true", help="Also acquire configured employer/job context and prepare each prompt"
             )
+
+    capture_plan = commands.add_parser("capture-plan", help="Authenticate once and plan six profile-section capture shards")
+    capture_plan.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
+    capture_plan.add_argument("--output", type=Path, default=Path(".cache/capture/plan.json"), help="Capture plan output path")
+
+    capture_shard = commands.add_parser("capture-shard", help="Collect the profile sections assigned to one of six workers")
+    capture_shard.add_argument("--index", type=int, required=True, help="One-based shard number from 1 through 6")
+    capture_shard.add_argument("--count", type=int, default=6, help="Total shard count, fixed at six")
+    capture_shard.add_argument("--plan", type=Path, default=Path(".cache/capture/plan.json"), help="Bootstrap plan path")
+    capture_shard.add_argument("--output", type=Path, help="Shard output path; defaults to shard-N.json in the shard directory")
+    capture_shard.add_argument("--headless", action="store_true", help="Use LinkedIn login environment variables without a desktop")
+
+    aggregate = commands.add_parser("aggregate", help="Validate and combine all six capture shards into the profile snapshot")
+    aggregate.add_argument("--plan", type=Path, default=Path(".cache/capture/plan.json"), help="Bootstrap plan path")
+    aggregate.add_argument("--shards", type=Path, default=Path(".cache/capture/shards"), help="Directory containing shard-N.json outputs")
 
     configuration = commands.add_parser("config", help="Validate local configuration without a captured profile")
     config_commands = configuration.add_subparsers(dest="config_command", required=True)
@@ -194,6 +217,59 @@ def _run(args: argparse.Namespace) -> int:
         _LOGGER.debug("Configuration loaded", extra={"file.path": str(args.config), "resumeme.command": args.command})
         root = args.config.resolve().parent
         snapshot = project_path(root, config.output.profile)
+
+        # Split live collection from offline aggregation so only the bootstrap and assigned workers open a browser.
+        if args.command == "capture-plan":
+            plan = prepare_capture_plan(config, root, headless=args.headless)
+
+            if not config.style.display_location:
+                plan = evolve(plan, profile=without_profile_location(plan.profile))
+
+            path = project_path(root, str(args.output))
+            save_capture_plan(plan, path)
+            print(f"Saved six-shard capture plan: {path}")
+            return 0
+
+        if args.command == "capture-shard":
+            plan = load_capture_plan(project_path(root, str(args.plan)))
+            shard = capture_profile_shard(
+                config,
+                root,
+                plan,
+                args.index,
+                args.count,
+                headless=args.headless,
+            )
+            output_path = project_path(
+                root,
+                str(args.output or Path(".cache/capture/shards") / f"shard-{args.index}.json"),
+            )
+            save_capture_shard(shard, output_path)
+            _LOGGER.info(
+                "Saved profile capture shard",
+                extra={"file.path": str(output_path), "capture.shard": args.index, "profile.sections": len(shard.sections)},
+            )
+            print(f"Saved capture shard {args.index}/{args.count}: {output_path}")
+            return 0
+
+        if args.command == "aggregate":
+            plan = load_capture_plan(project_path(root, str(args.plan)))
+            shard_directory = project_path(root, str(args.shards))
+            shards = [load_capture_shard(path) for path in sorted(shard_directory.glob("shard-*.json"))]
+            profile = cache_media(aggregate_capture(plan, shards), config, root)
+
+            if not config.style.display_location:
+                profile = without_profile_location(profile)
+
+            if profile.warnings:
+                diagnostic = root / ".cache/capture/profile.json"
+                save_profile(profile, diagnostic)
+                raise ProfileError(f"Aggregated capture needs review at {diagnostic}: " + "; ".join(profile.warnings))
+
+            save_profile(profile, snapshot)
+            _LOGGER.info("Saved aggregated LinkedIn profile", extra={"file.path": str(snapshot), "profile.sections": len(profile.sections)})
+            print(f"Saved complete profile snapshot: {snapshot}")
+            return 0
 
         # Prefer the profile's display name, while allowing release-only recovery to fall back to the configured username.
         if args.command == "publish-resume":

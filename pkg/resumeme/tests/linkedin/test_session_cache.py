@@ -80,6 +80,52 @@ def _secrets(keys: CacheKeys) -> dict[str, str]:
     }
 
 
+def test_session_cache_namespaces_are_separate_for_firefox_and_chrome(tmp_path: Path, keys: CacheKeys) -> None:
+    """
+    Give each browser engine its own encrypted Actions cache key and restore prefix.
+
+    Args:
+        tmp_path (Path): Isolated config checkouts and output files.
+        keys (CacheKeys): Synthetic Actions cache encryption identity.
+
+    Returns:
+        None: Firefox and Chrome prepare distinct cache paths while preserving the same key fingerprint.
+    """
+    prepared: dict[str, str] = {}
+
+    for browser in ("firefox", "chrome"):
+        checkout = tmp_path / browser
+        checkout.mkdir()
+        (checkout / "resumeme.config.yaml").write_text(
+            f"linkedin: {{username: example-person}}\ncapture: {{browser: {browser}}}\n", encoding="utf-8"
+        )
+        output = checkout / "github-output.txt"
+        environment = {
+            **os.environ,
+            **_secrets(keys),
+            "GITHUB_OUTPUT": str(output),
+            "GITHUB_REPOSITORY": "example/resumeme",
+            "GITHUB_RUN_ID": "123",
+            "GITHUB_RUN_ATTEMPT": "1",
+            "GITHUB_JOB": "capture-bootstrap",
+        }
+        result = subprocess.run(
+            [sys.executable, str(_ROOT / "scripts/ci/linkedin-session.py"), "prepare"],
+            cwd=checkout,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        prepared[browser] = output.read_text(encoding="utf-8")
+
+    assert "resumeme-session-v2-firefox-" in prepared["firefox"]
+    assert "resumeme-session-v2-chrome-" in prepared["chrome"]
+    assert prepared["firefox"] != prepared["chrome"]
+
+
 def test_envelope_is_randomized_authenticated_and_context_bound(keys: CacheKeys) -> None:
     """
     Protect both confidentiality and cache provenance instead of accepting arbitrary public-key ciphertext.
@@ -226,6 +272,11 @@ def test_job_wrapper_reuses_only_ciphertext_and_cleans_failed_runs(tmp_path: Pat
         (checkout / "resumeme.config.yaml").write_text("linkedin: {username: example-person}\n")
         environment["COMMAND_EXIT"] = str(status)
 
+        if index == 1:
+            environment["RESUMEME_SESSION_CACHE_READ_ONLY"] = "true"
+        else:
+            environment.pop("RESUMEME_SESSION_CACHE_READ_ONLY", None)
+
         if index:
             environment["EXPECT_RESTORED"] = "true"
 
@@ -245,6 +296,9 @@ def test_job_wrapper_reuses_only_ciphertext_and_cleans_failed_runs(tmp_path: Pat
         assert len(after) == 1 and all(b"private-cookie" not in data for data in after.values())
 
         if status:
+            assert after == before
+
+        if index == 1:
             assert after == before
 
 

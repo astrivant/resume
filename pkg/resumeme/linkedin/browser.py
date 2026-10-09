@@ -21,6 +21,7 @@ from resumeme.compiler.asts.profile import save_profile
 from resumeme.compiler.asts.sections import section_key
 from resumeme.exceptions import BrowserElementError, BrowserError
 from resumeme.linkedin import browser_auth, browser_runtime, browser_scripts
+from resumeme.linkedin.capture_shards import CaptureRoute, CaptureShard, assign_routes, make_capture_plan
 from resumeme.linkedin.credentials import login_credentials
 from resumeme.linkedin.media import cache_media
 from resumeme.linkedin.retrying import retry_selenium
@@ -35,8 +36,9 @@ if TYPE_CHECKING:
 
     from resumeme.compiler.asts.profile import Entry, Profile, Section
     from resumeme.config import Capture, Config
+    from resumeme.linkedin.capture_shards import CapturePlan
 
-__all__ = ["capture_profile"]
+__all__ = ["capture_profile", "capture_profile_shard", "prepare_capture_plan"]
 _LOGGER = logging.getLogger(__name__)
 
 # Publicly consumed internal names remain available through this module for the capture workflow and existing integrations.
@@ -509,6 +511,187 @@ def _contact(driver: WebDriver, username: str, settings: Capture) -> Section:
         )
     )
     return parse_contact(driver.page_source)
+
+
+def _route_weight(section: Section | None, title: str) -> int:
+    """
+    Estimate route cost from overview text so larger profile sections land on separate workers.
+
+    Args:
+        section (Section | None): Overview preview for the route, when LinkedIn provides one.
+        title (str): Route heading used when the preview is absent.
+
+    Returns:
+        int: Positive relative work estimate for deterministic shard balancing.
+    """
+    if section is None:
+        return max(1, len(title) // 80 + 1)
+
+    text_size = sum(len(entry.title) + sum(map(len, entry.paragraphs)) for entry in section.entries)
+    return max(1, len(section.entries) * 2 + text_size // 500 + 1)
+
+
+def prepare_capture_plan(config: Config, root: Path, *, headless: bool = False) -> CapturePlan:
+    """
+    Authenticate once and capture the profile overview plus owner-scoped section routes.
+
+    Args:
+        config (Config): Profile owner and browser settings.
+        root (Path): Configuration directory for browser state and diagnostics.
+        headless (bool): Use environment credentials without opening a desktop window.
+
+    Returns:
+        CapturePlan: Base profile and all detail routes assigned to six workers.
+
+    Raises:
+        BrowserError: The profile is missing, redirected, or cannot be fully expanded.
+    """
+    if headless:
+        login_credentials(headless=True, profile=config.linkedin.username)
+
+    username = config.linkedin.username
+    _LOGGER.info("Starting LinkedIn capture plan", extra={"browser.name": config.capture.browser.title()})
+
+    with _browser(root, config.capture, headless=headless) as driver:
+        driver.set_page_load_timeout(config.capture.page_timeout_seconds)
+        driver.set_window_size(1440, 1000)
+        _navigate(driver, "https://www.linkedin.com/login", config.capture)
+        _login(driver, config.capture, headless=headless)
+        _navigate(driver, f"https://www.linkedin.com/in/{username}/", config.capture)
+
+        # The overview is the sole source of identity, section order, and route ownership for all six workers.
+        try:
+            retry_selenium(
+                lambda: WebDriverWait(driver, config.capture.page_timeout_seconds).until(
+                    lambda page: page.find_elements(By.CSS_SELECTOR, "main h1, section[aria-label='Primary content'] h2")
+                ),
+                config.capture,
+            )
+        except TimeoutException as error:
+            diagnostic = _state_root(root) / "capture/profile.html"
+            diagnostic.write_text(driver.page_source, encoding="utf-8")
+            driver.save_screenshot(str(_state_root(root) / "capture/profile.png"))
+            raise BrowserError(f"The profile heading did not load at {driver.current_url}; inspect {diagnostic}.") from error
+
+        expected = f"/in/{username}/".casefold()
+
+        if urlsplit(driver.current_url).path.casefold().rstrip("/") + "/" != expected:
+            raise BrowserError("LinkedIn redirected away from the configured profile.")
+
+        snapshots = retry_selenium(partial(_expand, driver, config.capture), config.capture)
+        html = merge_profile_html(snapshots)
+        (_state_root(root) / "capture/profile.html").write_text(html, encoding="utf-8")
+        profile = parse_profile(html, username)
+        detail_routes = detail_links(html, username)
+
+        # Only routes absent from the overview are scheduled; previews without a LinkedIn detail page are already complete.
+        sections = {section.key: section for section in profile.sections}
+        routes: list[CaptureRoute] = []
+
+        for key, url in detail_routes.items():
+            title = sections[key].title if key in sections else key.replace("-", " ").title()
+            routes.append(CaptureRoute(key, title, url, "detail", _route_weight(sections.get(key), title)))
+
+        for section in profile.sections:
+            if section.key in {"recommendations", "interests"} and section.key not in detail_routes:
+                routes.append(
+                    CaptureRoute(
+                        section.key,
+                        section.title,
+                        f"https://www.linkedin.com/in/{username}/",
+                        "inline",
+                        _route_weight(section, section.title),
+                    )
+                )
+
+        if f"/in/{username}/overlay/contact-info" in html:
+            routes.append(
+                CaptureRoute(
+                    "contact",
+                    "Contact info",
+                    f"https://www.linkedin.com/in/{username}/overlay/contact-info/",
+                    "contact",
+                    1,
+                )
+            )
+
+    return make_capture_plan(evolve(profile, captured_at=datetime.now(UTC).isoformat()), config.capture.browser, routes)
+
+
+def capture_profile_shard(
+    config: Config,
+    root: Path,
+    plan: CapturePlan,
+    shard_index: int,
+    shard_count: int,
+    *,
+    headless: bool = False,
+) -> CaptureShard:
+    """
+    Collect only the owner-scoped routes assigned to one deterministic worker.
+
+    Args:
+        config (Config): Profile and browser settings.
+        root (Path): Configuration directory for temporary browser state.
+        plan (CapturePlan): Validated six-worker plan from the bootstrap job.
+        shard_index (int): One-based matrix worker index.
+        shard_count (int): Matrix size, which must match the plan.
+        headless (bool): Use environment credentials without opening a desktop window.
+
+    Returns:
+        CaptureShard: Complete section results owned by this worker.
+
+    Raises:
+        BrowserError: Login or assigned route collection fails.
+        ValueError: The requested worker or browser does not match the plan.
+    """
+    if config.capture.browser != plan.browser:
+        raise ValueError("Capture shard browser differs from the browser that created its session cache.")
+
+    assignments = assign_routes(plan)
+
+    if shard_count != plan.shard_count or shard_index not in assignments:
+        raise ValueError("Capture shard index and count must match the six-worker plan.")
+
+    routes = assignments[shard_index]
+
+    # Empty shards still publish an explicit result, allowing aggregation to prove all six workers completed.
+    if not routes:
+        return CaptureShard(plan.capture_id, plan.browser, shard_index, shard_count, [])
+
+    _LOGGER.info(
+        "Starting LinkedIn capture shard",
+        extra={"browser.name": plan.browser.title(), "capture.shard": shard_index, "capture.shard_count": shard_count},
+    )
+    collected: list[Section] = []
+
+    with _browser(root, config.capture, headless=headless) as driver:
+        driver.set_page_load_timeout(config.capture.page_timeout_seconds)
+        driver.set_window_size(1440, 1000)
+        _navigate(driver, f"https://www.linkedin.com/in/{config.linkedin.username}/", config.capture)
+
+        # The bootstrap job owns credentials; workers verify its cached session and never receive login secrets.
+        if not retry_selenium(partial(_authenticated, driver), config.capture):
+            raise BrowserError("The encrypted LinkedIn session cache is no longer authenticated; rerun the capture bootstrap.")
+
+        for route in routes:
+            _LOGGER.info("Collecting assigned profile route", extra={"profile.section": route.key, "capture.shard": shard_index})
+
+            if route.kind == "detail":
+                operation = partial(_details, driver, route.url, route.key, route.title, config.capture)
+            elif route.kind == "inline":
+                section = next((item for item in plan.profile.sections if item.key == route.key), None)
+
+                if section is None:
+                    raise BrowserError(f"The inline section {route.title} is missing from the capture plan.")
+
+                operation = partial(_inline_tabs, driver, config.linkedin.username, section, config.capture)
+            else:
+                operation = partial(_contact, driver, config.linkedin.username, config.capture)
+
+            collected.append(retry_selenium(operation, config.capture))
+
+    return CaptureShard(plan.capture_id, plan.browser, shard_index, shard_count, collected)
 
 
 def capture_profile(config: Config, root: Path, connect_port: int | None = None, *, headless: bool = False) -> Profile:
