@@ -141,7 +141,7 @@ def test_login_resumes_after_app_approval(monkeypatch: MonkeyPatch, capsys: Capt
     driver = _driver(f"<h1>{prompt}</h1>")
     driver.current_url = "https://www.linkedin.com/login"
     username, password, submit = MagicMock(), MagicMock(), MagicMock()
-    monkeypatch.setattr("resumeme.linkedin.browser._wait_for_login", MagicMock(side_effect=AssertionError("Interactive wait")))
+    monkeypatch.setattr("resumeme.linkedin.browser_auth._wait_for_login", MagicMock(side_effect=AssertionError("Interactive wait")))
 
     def observe(page: MagicMock) -> bool:
         """
@@ -177,7 +177,7 @@ def test_login_resumes_after_app_approval(monkeypatch: MonkeyPatch, capsys: Capt
         [username] if "input#username" in selector else [password] if "input#password" in selector else original_lookup(kind, selector)
     )
     password.find_elements.return_value = [submit]
-    monkeypatch.setattr("resumeme.linkedin.browser._authenticated", observe)
+    monkeypatch.setattr("resumeme.linkedin.browser_auth._authenticated", observe)
 
     if phase == "form":
         show_prompt()
@@ -296,7 +296,7 @@ def test_unsupported_challenge_fails_on_first_observation(monkeypatch: MonkeyPat
 
     if during_wait:
         classification = MagicMock(side_effect=[observe_challenge(_driver("Check your LinkedIn app")), observe_challenge(driver)])
-        monkeypatch.setattr("resumeme.linkedin.browser.observe_challenge", classification)
+        monkeypatch.setattr("resumeme.linkedin.browser_auth.observe_challenge", classification)
 
     with pytest.raises(BrowserError, match=message):
         _headless_login_ready(driver, Capture())
