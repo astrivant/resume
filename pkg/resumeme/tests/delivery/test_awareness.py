@@ -198,6 +198,10 @@ def test_receive_and_render_exact_bundle(tmp_path: Path, monkeypatch: MonkeyPatc
     assert "Evidence & observations" not in source
     assert r"\hyperlink{awareness-knowledge-usage}{\color{sectionheading}\bfseries Figure 1}" in source
     assert r"\finishthispage" in source
+    assert config.style.figure_caption_width == 0.8
+    assert config.style.figure_caption_alignment == "center"
+    assert r"\newcommand{\figurecaptionwidthratio}{0.800000}" in source
+    assert r"\begin{figurecaption}" in source
 
     # A valid sender cannot replace the last accepted input with a corrupted or mismatched bundle.
     event = json.loads(json.dumps(event))
@@ -267,6 +271,97 @@ def test_grouped_config_roundtrip_and_job_override(tmp_path: Path) -> None:
     )
     assert selected_figures(company_config(config, target, root=tmp_path).appendices.awareness) == ()
     path.write_text(path.read_text().replace("knowledge-usage", "unknown-figure"))
+    with pytest.raises(ValidationError):
+        load_config(path)
+
+
+@pytest.mark.parametrize("location", ["base", "theme", "company"])
+@pytest.mark.parametrize(
+    "width,alignment,command", [(0.65, "left", r"\raggedright"), (0.8, "center", r"\centering"), (1.0, "right", r"\raggedleft")]
+)
+def test_caption_style_reaches_rendered_figures(tmp_path: Path, location: str, width: float, alignment: str, command: str) -> None:
+    """
+    Apply caption styling through each public override boundary without resizing body text or images.
+
+    Args:
+        tmp_path (Path): Isolated configuration and synthetic figure bundle.
+        location (str): Base configuration, inline theme, or employer override.
+        width (float): Fraction of the available page width for caption text.
+        alignment (str): Valid text alignment within the centered block.
+        command (str): Expected scoped LaTeX alignment declaration.
+
+    Returns:
+        None: The requested style reaches every figure caption and preserves navigation and page notes.
+    """
+    override = {"figure_caption_width": width, "figure_caption_alignment": alignment}
+    style: dict[str, object] = {"first_page_body_width": 0.95, "later_page_body_width": 0.7}
+
+    if location == "theme":
+        style.update(theme="captions", themes={"captions": override})
+    elif location == "base":
+        style.update(override)
+
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(yaml.safe_dump({"profile": {"linkedin": {"username": "example-person"}}, "document": {"style": style}}))
+    config = load_config(path)
+
+    if location == "company":
+        target = CompanyTarget("example", "https://www.linkedin.com/jobs/view/123/", overrides={"document": {"style": override}})
+        config = company_config(config, target, root=tmp_path)
+
+    config = evolve(config, appendices=Appendices(AwarenessAppendix({"knowledge-map": True, "decision-influences": True})))
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data/awareness.json").write_bytes(_bundle("knowledge-map", "decision-influences"))
+    source = render_profile(Profile(username="example-person", name="Example Person"), config, tmp_path).read_text()
+    environment = source.split(r"\newenvironment{figurecaption}", 1)[1].split("% Reserve a quiet page note", 1)[0]
+    assert rf"\newcommand{{\figurecaptionwidthratio}}{{{width:.6f}}}" in source
+    assert r"\begin{minipage}{\figurecaptionwidthratio\linewidth}" in environment
+    assert environment.split(r"\begin{minipage}", 1)[1].split("}{%", 1)[0].rstrip().endswith(command)
+    assert source.count(r"\begin{figurecaption}") == source.count(r"\end{figurecaption}") == 2
+    assert source.count("\\end{figurecaption}\n\\awarenesspagenote") == 2
+    assert r"\newcommand{\firstpagebodywidthratio}{0.950000}" in source
+    assert r"\newcommand{\laterpagebodywidthratio}{0.700000}" in source
+    assert r"\includegraphics[width=\linewidth,height=0.75\textheight,keepaspectratio]" in source
+    assert r"\appendixcontents{awareness-knowledge-map}{1}{Connected skills}" in source
+
+
+@pytest.mark.parametrize("location", ["base", "theme", "company"])
+@pytest.mark.parametrize(
+    "name,value",
+    [("figure_caption_width", value) for value in (0, 1.01, True, "0.8")]
+    + [("figure_caption_alignment", value) for value in (None, "justified", r"\input{unsafe}")],
+)
+def test_invalid_caption_styles_fail_before_rendering(tmp_path: Path, location: str, name: str, value: object) -> None:
+    """
+    Reject invalid widths and unsupported alignment commands at every configuration entry point.
+
+    Args:
+        tmp_path (Path): Isolated configuration directory.
+        location (str): Base configuration, inline theme, or employer override.
+        name (str): Caption setting under validation.
+        value (object): Invalid value supplied by a configuration author.
+
+    Returns:
+        None: Schema validation fails before rendering can interpolate the value.
+    """
+    override = {name: value}
+    document = {"style": {"themes": {"captions": override}} if location == "theme" else override}
+    settings: dict[str, object] = {"profile": {"linkedin": {"username": "example-person"}}}
+
+    if location == "company":
+        settings["automation"] = {
+            "codex": {
+                "companies": [
+                    {"username": "example", "job_url": "https://www.linkedin.com/jobs/view/123/", "overrides": {"document": document}}
+                ]
+            }
+        }
+    else:
+        settings["document"] = document
+
+    path = tmp_path / "resumeme.config.yaml"
+    path.write_text(yaml.safe_dump(settings))
+
     with pytest.raises(ValidationError):
         load_config(path)
 

@@ -1,6 +1,6 @@
 [project]
 name = "resumeme"
-version = "0.2.0"
+version = "0.5.0"
 description = "Turn your LinkedIn profile into a polished PDF resume, built and signed with GitHub Actions"
 authors = [{name = "Emma Doyle"}]
 readme = "README.md"

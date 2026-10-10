@@ -65,6 +65,13 @@ on page 1 and `later_page_body_width` thereafter, with 3 mm padding around the b
 text; the About heading stays outside it.
 See [document layout](README.md#document-layout).
 
+## Figure captions
+
+Figure captions also support theme overrides: `figure_caption_width` defaults to
+`0.8` of the available page width and `figure_caption_alignment` defaults to
+`center`. Use `left` or `right` to change text alignment within the centered block.
+See [awareness captions](awareness.md) for the configuration contract.
+
 ## Company names
 
 `company_font_size` defaults to **13 pt**, with bold weight, above the normal

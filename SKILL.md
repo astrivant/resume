@@ -168,8 +168,12 @@ responses rather than bypassing validation. Builds never auto-apply cached copy.
 For requested awareness projections, follow [awareness publication](docs/awareness.md).
 Rebuild the selected bundle with Witful so embedded plot titles are omitted.
 Preserve per-figure enable switches. Check the Appendix parent link, sequential
-Figure identifiers, two-word purpose labels at half size, and every figure's
+Figure identifiers, two-word purpose labels at 80% size, and every figure's
 destination after filtering. Keep axes and evidence legends readable in the PDF.
+`document.style.figure_caption_width` controls the centered caption block's share
+of page width (default `0.8`); `figure_caption_alignment` selects `left`, `center`
+(default), or `right` text alignment within it. Both support inline themes and
+employer overrides independently of body-text widths.
 
 Run `resumeme validate`, then `resumeme build`. A host build renders Jinja and runs
 two pdfLaTeX passes in the pinned Docker image; it needs no host TeX installation.

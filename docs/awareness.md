@@ -100,6 +100,22 @@ It links to **Witful** and this update workflow. Each PDF remains a snapshot of
 the evidence available at its build; automatic delivery requires the sender
 automation and receiver opt-in described below.
 
+Configure caption wrapping and alignment independently of body text:
+
+```yaml
+document:
+  style:
+    figure_caption_width: 0.8
+    figure_caption_alignment: center
+```
+
+The default caption block spans 80% of the available page width and stays centered
+below its figure. `figure_caption_width` accepts a fraction greater than `0` and
+at most `1`; `figure_caption_alignment` accepts `left`, `center` (default), or
+`right` for the figure number, title, and description inside that block. Both
+settings support inline themes and employer overrides. They do not resize images,
+Contents labels, or page notes.
+
 Witful generates projections without embedded outer titles or question subtitles.
 The resume owns their headings; axis labels, legends, and evidence notes remain
 visible. Standalone collection plots retain their titles. Existing bundles must
@@ -111,8 +127,16 @@ their layout; its covariance can rotate the ellipse, and opacity fades with
 Mahalanobis distance across twice the 1.75 standard-deviation reference distance,
 with a readable floor. Gray contours show 0.5, 1, 1.5, and 2 standard deviations;
 half steps are dashed and whole steps are solid. A gray, white-outlined plus marks
-the fitted mean. Centered labels remain fully opaque and use contrast-aware text
-without background boxes. Text placement and line gaps prevent label collisions.
+the fitted mean and rotates with the ellipse axes. Centered labels remain fully
+opaque and use contrast-aware text without background boxes. Discipline titles
+share one fixed font size and skills another, independent of bubble size or label
+count. Text placement and line gaps prevent label collisions.
+Short outer spokes lie on the major and minor axes through the fitted mean,
+beyond 2.7 standard deviations and clear of nearby bubbles. The image bounds
+fit the bubbles and spokes without extra annotation margins, preserving their
+size on the page. There are no axis or distance labels, lines through the center,
+long leaders, or endpoint diamonds.
+The ticks indicate directions rather than exact-distance measurements.
 This describes current working emphasis; the full hierarchy, relationship
 export, and historical observations remain available in the source collection.
 See [the map's evidence and layout contract](https://github.com/astrivant/identity/blob/main/docs/knowledge-map.md).

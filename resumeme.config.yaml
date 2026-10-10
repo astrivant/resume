@@ -132,6 +132,9 @@ document:
     # Fractions of available body width: page 1's column and page 2 onward, independently.
     first_page_body_width: 0.98
     later_page_body_width: 0.75
+    # Caption blocks stay centered below figures; alignment controls the text inside them.
+    figure_caption_width: 0.8
+    figure_caption_alignment: center # left, center, or right
     line_height: 1.0
     paragraph_spacing: 3
     about_text_indent: 8

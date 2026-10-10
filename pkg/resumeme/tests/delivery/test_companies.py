@@ -19,7 +19,7 @@ from jsonschema import ValidationError
 from resumeme.cli import main
 from resumeme.codex.companies import company_config, load_company, prepare_companies, render_companies
 from resumeme.codex.request import prepare_summary
-from resumeme.compiler.asts.contributions import ContributionCalendar, ContributionDay, calendar_window
+from resumeme.compiler.asts.contributions import ContributionCalendar, ContributionDay, calendar_window, load_calendar
 from resumeme.compiler.asts.profile import Entry, Profile, Section, save_profile
 from resumeme.compiler.passes.summary import summary_digest
 from resumeme.config import (
@@ -667,6 +667,14 @@ def test_company_calendar_overrides_hide_reuse_or_fetch_once(
     outputs = render_companies(profile, config, tmp_path, bundle / "companies", compile_documents=False, contributions=supplied)
     assert fetched == (["another-person"] if distinct else [])
     assert not (outputs[0].parent / "github-contributions.json").exists()
+    assert "tab=overview" not in outputs[0].read_text()
     calendars = [(source.parent / "github-contributions.json").read_bytes() for source in outputs[1:]]
     assert calendars[0] == calendars[1]
-    assert "GitHub contributions" in outputs[1].read_text()
+
+    # The graph now lives under Appendix; require its actual destination and cells in every enabled variant.
+    for output in outputs[1:]:
+        calendar = load_calendar(output.parent / "github-contributions.json")
+        body = output.read_text().split(r"\begin{document}", 1)[1]
+        appendix = body.split(r"\hypertarget{github-contributions}{}", 1)[1]
+        assert r"\figurelabel{1}{Open source}" in appendix
+        assert appendix.count("tab=overview") == body.count("tab=overview") == len(calendar.days)

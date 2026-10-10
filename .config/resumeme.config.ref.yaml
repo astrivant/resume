@@ -113,6 +113,9 @@ document:
     # Fractions of the available body width, after indentation; the identity sidebar is independent.
     first_page_body_width: 1.0
     later_page_body_width: 0.9
+    # Caption blocks stay centered below figures; alignment controls the text inside them.
+    figure_caption_width: 0.8
+    figure_caption_alignment: center # left, center, or right
     paper: letter
     accent: '245135'
     background: FFFFFF

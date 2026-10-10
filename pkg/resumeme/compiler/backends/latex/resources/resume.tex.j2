@@ -331,6 +331,8 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % Declare mutable dimensions and boxes before the reusable commands that consume them.
 \newcommand{\firstpagebodywidthratio}{((( "%.6f"|format(style.first_page_body_width) )))}
 \newcommand{\laterpagebodywidthratio}{((( "%.6f"|format(style.later_page_body_width) )))}
+% Caption width is independent of first-page columns and later-page body text.
+\newcommand{\figurecaptionwidthratio}{((( "%.6f"|format(style.figure_caption_width) )))}
 \newif\ifresumemebody
 % Shared corner radii keep About and project backgrounds visually consistent.
 \newcommand{\tilecornerradius}{4pt}
@@ -443,6 +445,23 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
   \par
 }
 ((* if awareness_figures *))
+
+% Center the caption block while scoping its text alignment to the number, title, and explanation.
+\newenvironment{figurecaption}{%
+  \par\begingroup\centering\noindent
+  \begin{minipage}{\figurecaptionwidthratio\linewidth}%
+    \setlength{\parskip}{((( "%.6f"|format(style.paragraph_spacing) )))pt}%
+((* if style.figure_caption_alignment == 'left' *))
+    \raggedright
+((* elif style.figure_caption_alignment == 'right' *))
+    \raggedleft
+((* else *))
+    \centering
+((* endif *))
+}{%
+    \par
+  \end{minipage}\par\endgroup
+}
 
 % Reserve a quiet page note above the ordinary footer without shrinking the figure's explanation.
 \newcommand{\awarenesspagenote}{%
@@ -961,8 +980,10 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \includegraphics[width=\linewidth,height=0.75\textheight,keepaspectratio]{((( figure.path )))}
 \end{center}
 % Describe the visible evidence below its image; short purpose labels belong to Contents.
+\begin{figurecaption}
 \noindent\hyperlink{awareness-((( figure.id )))}{\color{sectionheading}\bfseries Figure ((( loop.index + figure_offset )))}\enspace\textbf{((( figure.title|tex )))}\par
 \noindent ((( figure.description|tex )))\par
+\end{figurecaption}
 \awarenesspagenote
 ((* endfor *))
 \end{document}

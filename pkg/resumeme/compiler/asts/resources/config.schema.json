@@ -666,6 +666,12 @@
               "first_page_body_width": {
                 "$ref": "#/properties/style/properties/first_page_body_width"
               },
+              "figure_caption_width": {
+                "$ref": "#/properties/style/properties/figure_caption_width"
+              },
+              "figure_caption_alignment": {
+                "$ref": "#/properties/style/properties/figure_caption_alignment"
+              },
               "text_wrap_width": {
                 "$ref": "#/properties/style/properties/text_wrap_width"
               },
@@ -749,6 +755,19 @@
           "$ref": "#/properties/style/properties/later_page_body_width",
           "deprecated": true,
           "description": "Legacy alias for later_page_body_width. Do not specify both names in the same mapping."
+        },
+        "figure_caption_width": {
+          "description": "Width of the centered figure-caption block as a fraction of available page width. Independent of body-text widths; 1 uses all available width.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "default": 0.8
+        },
+        "figure_caption_alignment": {
+          "description": "Alignment of the figure number, title, and description within their centered caption block.",
+          "type": "string",
+          "enum": ["left", "center", "right"],
+          "default": "center"
         },
         "profile_column_text_wrap_width": {
           "$ref": "#/properties/style/properties/first_page_body_width",

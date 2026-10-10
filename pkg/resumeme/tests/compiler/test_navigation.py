@@ -87,13 +87,14 @@ def test_projects_link_only_to_visible_employment(tmp_path: Path, disabled: str)
         assert r"\hyperlink{" not in projects
         assert r"Associated with Engineer at Example \& Co." in projects
 
-    # Check actual targets rather than assuming that a correctly formed link points to a rendered role.
-    anchors = re.findall(r"\\hypertarget\{([^}]+)\}", source)
+    # Macro parameters in the preamble are not emitted destinations; validate links in the rendered document body.
+    body = source.split(r"\begin{document}", 1)[1]
+    anchors = re.findall(r"\\hypertarget\{([^}]+)\}", body)
     assert len(anchors) == len(set(anchors))
 
     # Hyperref creates page.1 during compilation; role and section destinations remain explicit in the source.
     destinations = {*anchors, "page.1"}
-    assert all(target in destinations for target in re.findall(r"\\hyperlink\{([^}]+)\}", source))
+    assert all(target in destinations for target in re.findall(r"\\hyperlink\{([^}]+)\}", body))
 
 
 def test_repeated_titles_and_suppressed_headings_keep_unique_destinations(tmp_path: Path) -> None:

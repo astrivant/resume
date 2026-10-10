@@ -419,6 +419,8 @@ class StyleOverrides(TypedDict, total=False):
         profile_column_wrap (bool): Allow body text beneath a right-side profile; False keeps separate first-page columns.
         later_page_body_width (float): Maximum fraction of available body width on page 2 onward, after indentation.
         first_page_body_width (float): Maximum fraction of available body width on page 1; does not resize the identity sidebar.
+        figure_caption_width (float): Fraction of the available page width used by the centered figure-caption block.
+        figure_caption_alignment (Literal["left", "center", "right"]): Text alignment inside figure-caption blocks.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
@@ -456,6 +458,8 @@ class StyleOverrides(TypedDict, total=False):
     profile_column_wrap: bool
     later_page_body_width: float
     first_page_body_width: float
+    figure_caption_width: float
+    figure_caption_alignment: Literal["left", "center", "right"]
     accent: str
     background: str
     about_background: str | None
@@ -499,6 +503,8 @@ class Style:
         profile_column_wrap (bool): Allow body text beneath a right-side profile; disabled by default and ignored on the left.
         later_page_body_width (float): Maximum fraction of available body width on page 2 onward, after indentation.
         first_page_body_width (float): Maximum fraction of available body width on page 1; does not resize the identity sidebar.
+        figure_caption_width (float): Fraction of the available page width used by the centered figure-caption block.
+        figure_caption_alignment (Literal["left", "center", "right"]): Text alignment inside figure-caption blocks.
         accent (str): Six-digit hexadecimal hyperlink color.
         background (str): Six-digit hexadecimal page background color.
         about_background (str | None): Optional six-digit hexadecimal About panel color; None leaves the section unshaded.
@@ -538,6 +544,8 @@ class Style:
     profile_column_wrap: bool = False
     later_page_body_width: float = 0.9
     first_page_body_width: float = 1.0
+    figure_caption_width: float = 0.8
+    figure_caption_alignment: Literal["left", "center", "right"] = "center"
     accent: str = "245135"
     background: str = "FFFFFF"
     about_background: str | None = None
