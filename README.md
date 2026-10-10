@@ -1,6 +1,6 @@
 # resumeme
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/astrivant/resumeme/badge)](https://scorecard.dev/viewer/?uri=github.com/astrivant/resumeme) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15311/badge)](https://www.bestpractices.dev/projects/15311) [![Python coverage](https://raw.githubusercontent.com/astrivant/resumeme/gh-pages/badges/coverage.svg)](https://github.com/astrivant/resumeme/actions/workflows/ci.yml) <!-- resumeme:brew-date:start --><a href="./resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/brew-date.svg" alt="Brew date 2026-10-09 (UTC)" height="20"></a><!-- resumeme:brew-date:end -->
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/astrivant/resumeme/badge)](https://scorecard.dev/viewer/?uri=github.com/astrivant/resumeme) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15311/badge)](https://www.bestpractices.dev/projects/15311) [![Python coverage](https://raw.githubusercontent.com/astrivant/resumeme/gh-pages/badges/coverage.svg)](https://github.com/astrivant/resumeme/actions/workflows/ci.yml) <!-- resumeme:brew-date:start --><a href="./resume.pdf"><img src="https://raw.githubusercontent.com/astrivant/resumeme/main/docs/assets/branding/brew-date.svg" alt="Brew date 2026-10-10 (UTC)" height="20"></a><!-- resumeme:brew-date:end -->
 
 <!-- resumeme:branding:start -->
 <p align="left">
