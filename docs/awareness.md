@@ -1,6 +1,7 @@
 # Awareness figures
 
-Witful can publish selected evidence plots to a resumeme repository and request
+[Witful](https://github.com/astrivant/identity) is the identity project's evidence
+and awareness tool. It can publish selected evidence plots to a resumeme repository and request
 a rebuild through GitHub's authenticated `repository_dispatch` API. Each figure
 is independently disabled by default. This integration uses the existing CI
 pipeline and publication checks, including the configured Pages deployment.
@@ -86,10 +87,18 @@ Counts describe recorded evidence, not proficiency or independently assessed
 mastery. Each selected plot receives a full-width appendix page and preserves its
 aspect ratio. Contents groups the links under **Appendix**, with consecutive
 **Figure 1**, **Figure 2**, and later identifiers. A purpose label of at most two
-words sits beside each identifier at half its text size, both in Contents and on
-the figure page. For example, the connection map is **Connected skills**, and the
+words sits beside each identifier in Contents at 80% of its text size, vertically
+centered and colored with the active theme's section-heading color. For example, the connection map is
+**Connected skills**, and the
 decision chart is **Engineering judgment**. Hidden figures leave no numbering
 gaps; an enabled GitHub contribution appendix is the first figure.
+Below each plot, the caption explains what its shapes, connections, or counts
+demonstrate and how to interpret the recorded evidence. A small note at the foot
+of each awareness page explains that the figures update automatically from
+recorded day-to-day work, forming an evolving view of engineering practice.
+It links to **Witful** and this update workflow. Each PDF remains a snapshot of
+the evidence available at its build; automatic delivery requires the sender
+automation and receiver opt-in described below.
 
 Witful generates projections without embedded outer titles or question subtitles.
 The resume owns their headings; axis labels, legends, and evidence notes remain
@@ -99,10 +108,14 @@ be regenerated to remove titles already embedded in their PNGs.
 The connection map shows up to twelve disciplines, sized and positioned by
 recent recorded applications. A weighted two-dimensional Gaussian is fitted to
 their layout; its covariance can rotate the ellipse, and opacity fades with
-Mahalanobis distance beyond 1.5 standard deviations, with a readable floor.
+Mahalanobis distance across twice the 1.75 standard-deviation reference distance,
+with a readable floor. Gray contours show 0.5, 1, 1.5, and 2 standard deviations;
+half steps are dashed and whole steps are solid. A gray, white-outlined plus marks
+the fitted mean. Centered labels remain fully opaque and use contrast-aware text
+without background boxes. Text placement and line gaps prevent label collisions.
 This describes current working emphasis; the full hierarchy, relationship
 export, and historical observations remain available in the source collection.
-See [the map's evidence and layout contract](https://github.com/astrivant/identity/blob/8e07fd1/docs/knowledge-map.md).
+See [the map's evidence and layout contract](https://github.com/astrivant/identity/blob/main/docs/knowledge-map.md).
 
 ## Configure and push from Witful
 

@@ -21,7 +21,16 @@ from PIL import Image
 
 from resumeme.awareness.bundle import stage_figures, validate_bundle
 from resumeme.awareness.dispatch import receive
-from resumeme.awareness.models import FIGURE_LABELS, FIGURES, Appendices, Awareness, AwarenessAppendix, FigureSelector, selected_figures
+from resumeme.awareness.models import (
+    FIGURE_DESCRIPTIONS,
+    FIGURE_LABELS,
+    FIGURES,
+    Appendices,
+    Awareness,
+    AwarenessAppendix,
+    FigureSelector,
+    selected_figures,
+)
 from resumeme.compiler.asts.contributions import ContributionCalendar, ContributionDay
 from resumeme.compiler.asts.profile import Profile
 from resumeme.compiler.pipeline import render_profile
@@ -313,7 +322,14 @@ def test_decision_figure_config_bundle_and_render(tmp_path: Path) -> None:
     first_caption = source.index(r"\hyperlink{awareness-knowledge-map}{\color{sectionheading}\bfseries Figure 1}")
     assert first_image < first_caption
     assert r"\textbf{Evidence \& observations}" in source
-    assert r"\fontsize{5.5}{6.5}\selectfont Connected skills" in source
+    description = source.index(FIGURE_DESCRIPTIONS["knowledge-map"])
+    page_note = source.index(r"\awarenesspagenote", description)
+    assert first_caption < description < page_note < source.index(r"\hypertarget{awareness-decision-influences}")
+    assert FIGURE_DESCRIPTIONS["decision-influences"] in source
+    assert source.count("\\awarenesspagenote\n") == 2
+    assert "updated automatically from my recorded day-to-day work" in source
+    assert r"\href{https://github.com/astrivant/identity}{Generated with Witful}" in source
+    assert r"\href{https://github.com/astrivant/resumeme/blob/main/docs/awareness.md}{How updates reach this resume}" in source
     assert r"\scalebox{0.5}{#2}" in source
     appendix = evolve(config.appendices.awareness, include=(FigureSelector(group="life"),))
     assert selected_figures(appendix) == ("decision-influences",)
@@ -355,7 +371,9 @@ def test_appendix_numbering_follows_visible_figures(tmp_path: Path, calendar_ena
     hidden = evolve(config, appendices=Appendices(), github=evolve(config.github, contributions=evolve(contributions, enabled=False)))
     empty = render_profile(Profile(username="example-person", name="Example Person"), hidden, tmp_path).read_text()
     assert r"\hypertarget{resumeme-appendix}" not in empty
+    assert r"\awarenesspagenote" not in empty
     assert set(FIGURE_LABELS) == set(FIGURES)
+    assert set(FIGURE_DESCRIPTIONS) == set(FIGURES)
     assert all(1 <= len(label.split()) <= 2 for label in FIGURE_LABELS.values())
 
 

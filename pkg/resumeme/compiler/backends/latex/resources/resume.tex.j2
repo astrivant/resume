@@ -352,6 +352,8 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \newsavebox{\portraitmeasure}
 \newlength{\portraitdiameter}
 \newsavebox{\paragraphmeasure}
+\newsavebox{\contentsfiguremeasure}
+\newsavebox{\contentspurposemeasure}
 \newbox\projectleft
 \newbox\projectright
 \newbox\projectleftpart
@@ -428,12 +430,32 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % Limit theme colors to their semantic roles; groups prevent heading colors leaking into body text.
 \newcommand{\entrytitle}[1]{{\color{entryheading}\large\bfseries #1}\par\nopagebreak}
 
-% Figure purposes remain exactly half the surrounding label size in headings and navigation.
+% Appendix headings retain their compact purpose labels; navigation uses larger, centered labels.
 \newcommand{\figurelabel}[2]{Figure #1\enspace\scalebox{0.5}{#2}}
 \newcommand{\appendixcontents}[3]{%
+  \sbox{\contentsfiguremeasure}{Figure #2}%
+  \sbox{\contentspurposemeasure}{\scalebox{0.8}{\color{sectionheading}#3}}%
   \noindent\hangindent=1.4em\hangafter=1\hspace*{1.4em}%
-  \hyperlink{#1}{\figurelabel{#2}{#3}}\par
+  \hyperlink{#1}{Figure #2\enspace%
+    % Align the actual glyph-box centers, accounting for both ascenders and descenders.
+    \raisebox{\dimexpr(\ht\contentsfiguremeasure-\dp\contentsfiguremeasure-\ht\contentspurposemeasure+\dp\contentspurposemeasure)/2\relax}%
+      {\usebox{\contentspurposemeasure}}}%
+  \par
 }
+((* if awareness_figures *))
+
+% Reserve a quiet page note above the ordinary footer without shrinking the figure's explanation.
+\newcommand{\awarenesspagenote}{%
+  \par\vfill
+  {\fontsize{7}{9}\selectfont\color{ink!65!canvas}%
+    \noindent These plots are updated automatically from my recorded day-to-day work, providing an evolving view of my practices
+    and identity as a software engineer. Each PDF captures the evidence available at its build.\par
+    \noindent\href{https://github.com/astrivant/identity}{Generated with Witful}%
+    \enspace\textperiodcentered\enspace%
+    \href{https://github.com/astrivant/resumeme/blob/main/docs/awareness.md}{How updates reach this resume}\par
+  }%
+}
+((* endif *))
 
 % Keep employer identity above body subheadings, including linked names; the group restores ordinary link styling afterward.
 \newcommand{\companytext}[1]{{%
@@ -938,8 +960,9 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 \begin{center}
 \includegraphics[width=\linewidth,height=0.75\textheight,keepaspectratio]{((( figure.path )))}
 \end{center}
-% Keep the link and short explanation under the image so the figure can be read before its caption.
+% Describe the visible evidence below its image; short purpose labels belong to Contents.
 \noindent\hyperlink{awareness-((( figure.id )))}{\color{sectionheading}\bfseries Figure ((( loop.index + figure_offset )))}\enspace\textbf{((( figure.title|tex )))}\par
-\noindent\hspace*{1.4em}{\fontsize{5.5}{6.5}\selectfont ((( figure.label|tex )))}\par
+\noindent ((( figure.description|tex )))\par
+\awarenesspagenote
 ((* endfor *))
 \end{document}

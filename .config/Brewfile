@@ -22,5 +22,7 @@ cask "firefox", args: { appdir: "/Applications" }
 
 # Optional alternative for capture.browser: chrome: brew install --cask google-chrome
 
-# Local PDF compilation uses the pinned TeX image, so no host TeX installation is needed.
+# Local PDF compilation can use the pinned TeX image or this development-only host engine.
+# MacTeX is intentionally kept out of runtime and CI images because the cask is large.
+cask "mactex"
 cask "docker-desktop"

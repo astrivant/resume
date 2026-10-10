@@ -93,8 +93,10 @@ poetry env use "$(brew --prefix python@3.13)/bin/python3.13"
 ```
 
 Run `brew bundle check --file .config/Brewfile` to verify host dependencies. Start Docker Desktop before
-building a PDF locally. Homebrew supplies current host tools; CI keeps its existing
-version pins, and Python dependencies and linters install from `poetry.lock`.
+building a PDF locally with the container backend. MacTeX is included as a development-only host
+engine for `RESUMEME_TEX_BACKEND=local`; it is large and is not installed in runtime or CI images.
+Homebrew supplies current host tools; CI keeps its existing version pins, and Python dependencies and
+linters install from `poetry.lock`.
 
 ### 2. Capture your profile
 
