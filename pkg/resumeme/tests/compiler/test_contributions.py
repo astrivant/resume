@@ -284,7 +284,7 @@ def test_template_places_linked_cells_in_configured_location(tmp_path: Path, sid
 
     if placement == "appendix":
         assert graph > source.index("\\finishthispage")
-        assert "\\hyperlink{github-contributions}" in source
+        assert r"\appendixcontents{github-contributions}{1}{Open source}" in source
     else:
         # The profile graph stays before the body-column transition in either fixed or floating layouts.
         assert graph < source.index("\\framebreak", source.index("\\begin{document}"))

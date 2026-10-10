@@ -7,6 +7,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+from datetime import date, timedelta
 from io import BytesIO
 from pathlib import Path
 from subprocess import CompletedProcess
@@ -20,7 +21,8 @@ from PIL import Image
 
 from resumeme.awareness.bundle import stage_figures, validate_bundle
 from resumeme.awareness.dispatch import receive
-from resumeme.awareness.models import FIGURES, Appendices, Awareness, AwarenessAppendix, FigureSelector, selected_figures
+from resumeme.awareness.models import FIGURE_LABELS, FIGURES, Appendices, Awareness, AwarenessAppendix, FigureSelector, selected_figures
+from resumeme.compiler.asts.contributions import ContributionCalendar, ContributionDay
 from resumeme.compiler.asts.profile import Profile
 from resumeme.compiler.pipeline import render_profile
 from resumeme.config import Config, LinkedIn, company_config, load_config
@@ -151,7 +153,7 @@ def test_receive_and_render_exact_bundle(tmp_path: Path, monkeypatch: MonkeyPatc
         monkeypatch (MonkeyPatch): GitHub request replacement.
 
     Returns:
-        None: Selected figures appear after body content, with escaped captions and first-page navigation.
+        None: Selected figures follow body content, with catalog-owned captions and first-page navigation.
     """
     bundle = _bundle("knowledge-usage", "knowledge-map")
     event = {
@@ -181,10 +183,11 @@ def test_receive_and_render_exact_bundle(tmp_path: Path, monkeypatch: MonkeyPatc
     assert (tmp_path / "data/awareness.json").read_bytes() == bundle
     profile = Profile(username="example-person", name="Example Person")
     source = render_profile(profile, config, tmp_path).read_text()
-    assert r"\hyperlink{awareness-knowledge-usage}" in source
+    assert r"\appendixcontents{awareness-knowledge-usage}{1}{Applied skills}" in source
     assert r"\hypertarget{awareness-knowledge-usage}" in source
     assert "knowledge-map.png" not in source
-    assert r"Evidence \& observations" in source
+    assert "Evidence & observations" not in source
+    assert r"\hyperlink{awareness-knowledge-usage}{\color{sectionheading}\bfseries Figure 1}" in source
     assert r"\finishthispage" in source
 
     # A valid sender cannot replace the last accepted input with a corrupted or mismatched bundle.
@@ -302,9 +305,58 @@ def test_decision_figure_config_bundle_and_render(tmp_path: Path) -> None:
     (tmp_path / "data/awareness.json").write_bytes(bundle)
     source = render_profile(Profile(username="example-person", name="Example Person"), config, tmp_path).read_text()
     assert source.index(r"\hypertarget{awareness-knowledge-map}") < source.index(r"\hypertarget{awareness-decision-influences}")
+    assert source.count(r"\hypertarget{resumeme-appendix}") == 1
+    assert source.index(r"\hyperlink{resumeme-appendix}{Appendix}") < source.index(r"\appendixcontents{awareness-knowledge-map}")
+    assert r"\appendixcontents{awareness-knowledge-map}{1}{Connected skills}" in source
+    assert r"\appendixcontents{awareness-decision-influences}{2}{Engineering judgment}" in source
+    first_image = source.index(r"\includegraphics[width=\linewidth,height=0.75\textheight,keepaspectratio]{awareness/knowledge-map.png}")
+    first_caption = source.index(r"\hyperlink{awareness-knowledge-map}{\color{sectionheading}\bfseries Figure 1}")
+    assert first_image < first_caption
+    assert r"\textbf{Evidence \& observations}" in source
+    assert r"\fontsize{5.5}{6.5}\selectfont Connected skills" in source
+    assert r"\scalebox{0.5}{#2}" in source
     appendix = evolve(config.appendices.awareness, include=(FigureSelector(group="life"),))
     assert selected_figures(appendix) == ("decision-influences",)
     assert selected_figures(evolve(appendix, exclude=(FigureSelector(group="life"),))) == ()
+
+
+@pytest.mark.parametrize("calendar_enabled", [False, True])
+def test_appendix_numbering_follows_visible_figures(tmp_path: Path, calendar_enabled: bool) -> None:
+    """
+    Number only displayed figures under one appendix, including optional contribution history.
+
+    Args:
+        tmp_path (Path): Isolated receiver with a validated two-figure bundle.
+        calendar_enabled (bool): Whether the contribution history precedes awareness plots.
+
+    Returns:
+        None: Filtering removes gaps and optional contribution figures shift every subsequent reference.
+    """
+    config = _config()
+    settings = AwarenessAppendix({"knowledge-map": False, "decision-influences": True})
+    config = evolve(config, appendices=Appendices(settings))
+    contributions = evolve(config.github.contributions, enabled=calendar_enabled, placement="appendix", as_of="2026-10-07")
+    config = evolve(config, github=evolve(config.github, username="example-person", contributions=contributions))
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data/awareness.json").write_bytes(_bundle("knowledge-map", "decision-influences"))
+    days = [ContributionDay((date(2026, 9, 7) + timedelta(days=index)).isoformat(), 0, 0) for index in range(31)]
+    calendar = ContributionCalendar("example-person", "2026-09-07", "2026-10-07", days) if calendar_enabled else None
+    source = render_profile(Profile(username="example-person", name="Example Person"), config, tmp_path, contributions=calendar).read_text()
+    number = 2 if calendar_enabled else 1
+    assert rf"\appendixcontents{{awareness-decision-influences}}{{{number}}}{{Engineering judgment}}" in source
+    assert rf"\hyperlink{{awareness-decision-influences}}{{\color{{sectionheading}}\bfseries Figure {number}}}" in source
+    assert source.count(r"\hypertarget{resumeme-appendix}") == 1
+    assert r"\appendixcontents{awareness-knowledge-map}" not in source
+
+    if calendar_enabled:
+        assert r"\appendixcontents{github-contributions}{1}{Open source}" in source
+        assert r"\figurelabel{1}{Open source}" in source
+
+    hidden = evolve(config, appendices=Appendices(), github=evolve(config.github, contributions=evolve(contributions, enabled=False)))
+    empty = render_profile(Profile(username="example-person", name="Example Person"), hidden, tmp_path).read_text()
+    assert r"\hypertarget{resumeme-appendix}" not in empty
+    assert set(FIGURE_LABELS) == set(FIGURES)
+    assert all(1 <= len(label.split()) <= 2 for label in FIGURE_LABELS.values())
 
 
 @pytest.mark.parametrize("status,accepted", [("success", True), ("skipped", True), ("failure", False), ("cancelled", False)])

@@ -271,7 +271,10 @@
 ((( contributions.start|tex ))) - ((( contributions.end|tex )))\par}
 \endgroup
 ((* endmacro *))
-((* set has_contents = style.show_table_of_contents and ((section_navigation|rejectattr('1.key', 'equalto', 'contact')|list) or (contributions and contribution_placement == 'appendix') or awareness_figures) *))
+((* set contribution_appendix = contributions and contribution_placement == 'appendix' *))
+((* set has_appendix = contribution_appendix or awareness_figures *))
+((* set figure_offset = 1 if contribution_appendix else 0 *))
+((* set has_contents = style.show_table_of_contents and ((section_navigation|rejectattr('1.key', 'equalto', 'contact')|list) or has_appendix) *))
 % =============================================================================
 % Document class and imported packages
 % =============================================================================
@@ -424,6 +427,14 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* endif *))
 % Limit theme colors to their semantic roles; groups prevent heading colors leaking into body text.
 \newcommand{\entrytitle}[1]{{\color{entryheading}\large\bfseries #1}\par\nopagebreak}
+
+% Figure purposes remain exactly half the surrounding label size in headings and navigation.
+\newcommand{\figurelabel}[2]{Figure #1\enspace\scalebox{0.5}{#2}}
+\newcommand{\appendixcontents}[3]{%
+  \noindent\hangindent=1.4em\hangafter=1\hspace*{1.4em}%
+  \hyperlink{#1}{\figurelabel{#2}{#3}}\par
+}
+
 % Keep employer identity above body subheadings, including linked names; the group restores ordinary link styling afterward.
 \newcommand{\companytext}[1]{{%
   \color{companyname}\fontsize{((( style.company_font_size )))}{((( style.company_font_size * 1.2 )))}\selectfont\bfseries
@@ -846,12 +857,15 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((* for anchor, section in section_navigation *))
 \noindent\hangindent=0.6em\hangafter=1\hspace*{0.6em}\hyperlink{((( anchor )))}{((( section.title|tex )))}\par
 ((* endfor *))
-((* if contributions and contribution_placement == 'appendix' *))
-\noindent\hspace*{0.6em}\hyperlink{github-contributions}{GitHub contributions}\par
+((* if has_appendix *))
+\noindent\hspace*{0.6em}\hyperlink{resumeme-appendix}{Appendix}\par
+((* if contribution_appendix *))
+\appendixcontents{github-contributions}{1}{Open source}
 ((* endif *))
 ((* for figure in awareness_figures *))
-\noindent\hspace*{0.6em}\hyperlink{awareness-((( figure.id )))}{((( figure.title|tex )))}\par
+\appendixcontents{awareness-((( figure.id )))}{((( loop.index + figure_offset )))}{((( figure.label|tex )))}
 ((* endfor *))
+((* endif *))
 \par\addvspace{6pt}
 ((* endif *))
 ((* if floating_profile *))
@@ -892,14 +906,16 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 ((( render_section(section, anchor) )))
 ((* endfor *))
 ((* endif *))
-((* if contributions and contribution_placement == 'appendix' *))
+((* if contribution_appendix *))
 % =============================================================================
 % Appendix: GitHub contribution history
 % =============================================================================
 % Finish every active first-page frame too, so a minimal profile still gets a separate full-width appendix.
 \par\finishthispage
+\hypertarget{resumeme-appendix}{}
+\sectiontitle{Appendix}
 \hypertarget{github-contributions}{}
-{\color{sectionheading}\Large\bfseries GitHub contributions}\par\nopagebreak\vspace{0.5\baselineskip}
+{\color{sectionheading}\Large\bfseries\figurelabel{1}{Open source}}\par\nopagebreak\vspace{0.5\baselineskip}
 \href{https://github.com/((( github_username|url )))}{\faGithub\enspace ((( github_username|tex )))}\par
 % Long windows use the page width; short windows retain readable spacing instead of stretching a few dots across the page.
 \setlength{\contributionappendixwidth}{((( [60, contributions.weeks * 5]|max )))mm}
@@ -914,10 +930,16 @@ color( ((( 18 * loop.index0 / (style.skill_colors|length - 1) )))mm)=(skillstop(
 % =============================================================================
 % Complete first-page frames even for minimal profiles; keep each figure and caption on one full-width page.
 \par\finishthispage
+((* if loop.first and not contribution_appendix *))
+\hypertarget{resumeme-appendix}{}
+\sectiontitle{Appendix}
+((* endif *))
 \hypertarget{awareness-((( figure.id )))}{}
-{\color{sectionheading}\Large\bfseries ((( figure.title|tex )))}\par\nopagebreak\vspace{0.5\baselineskip}
 \begin{center}
 \includegraphics[width=\linewidth,height=0.75\textheight,keepaspectratio]{((( figure.path )))}
 \end{center}
+% Keep the link and short explanation under the image so the figure can be read before its caption.
+\noindent\hyperlink{awareness-((( figure.id )))}{\color{sectionheading}\bfseries Figure ((( loop.index + figure_offset )))}\enspace\textbf{((( figure.title|tex )))}\par
+\noindent\hspace*{1.4em}{\fontsize{5.5}{6.5}\selectfont ((( figure.label|tex )))}\par
 ((* endfor *))
 \end{document}

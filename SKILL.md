@@ -165,6 +165,12 @@ responses rather than bypassing validation. Builds never auto-apply cached copy.
 
 ## Build and inspect the result
 
+For requested awareness projections, follow [awareness publication](docs/awareness.md).
+Rebuild the selected bundle with Witful so embedded plot titles are omitted.
+Preserve per-figure enable switches. Check the Appendix parent link, sequential
+Figure identifiers, two-word purpose labels at half size, and every figure's
+destination after filtering. Keep axes and evidence legends readable in the PDF.
+
 Run `resumeme validate`, then `resumeme build`. A host build renders Jinja and runs
 two pdfLaTeX passes in the pinned Docker image; it needs no host TeX installation.
 `render` is useful for diagnosis but generated TeX is not a completed PDF.

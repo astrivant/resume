@@ -16,6 +16,16 @@ FIGURES = {
     "checkpoint-transitions": "checkpoints",
     "checkpoint-comparisons": "checkpoints",
 }
+FIGURE_LABELS = {
+    "knowledge-usage": "Applied skills",
+    "knowledge-map": "Connected skills",
+    "decision-influences": "Engineering judgment",
+    "knowledge-hierarchy": "Knowledge breadth",
+    "toolbox-use": "Engineering tools",
+    "problem-repertoire": "Problem solving",
+    "checkpoint-transitions": "Professional growth",
+    "checkpoint-comparisons": "Experience progression",
+}
 BUNDLE_PATH = "data/awareness.json"
 MAX_BUNDLE_BYTES = 8 * 1024 * 1024
 MAX_IMAGE_BYTES = 2 * 1024 * 1024

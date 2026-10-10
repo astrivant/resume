@@ -16,7 +16,7 @@ from attrs import frozen
 from jsonschema import Draft202012Validator
 from PIL import Image, UnidentifiedImageError
 
-from resumeme.awareness.models import BUNDLE_PATH, FIGURES, MAX_BUNDLE_BYTES, MAX_IMAGE_BYTES, selected_figures
+from resumeme.awareness.models import BUNDLE_PATH, FIGURE_LABELS, FIGURES, MAX_BUNDLE_BYTES, MAX_IMAGE_BYTES, selected_figures
 from resumeme.config.loading import project_path
 from resumeme.exceptions import RenderingError
 
@@ -104,7 +104,7 @@ def stage_figures(config: Config, root: Path, directory: Path) -> list[dict[str,
         directory (Path): Compiler output directory receiving normalized PNGs.
 
     Returns:
-        list[dict[str, str]]: Selected titles, IDs, and safe relative image paths for template rendering.
+        list[dict[str, str]]: Selected titles, short purpose labels, IDs, and safe relative image paths.
 
     Raises:
         RenderingError: Enabled figures have no matching accepted bundle data.
@@ -138,6 +138,6 @@ def stage_figures(config: Config, root: Path, directory: Path) -> list[dict[str,
         with Image.open(BytesIO(figure.png)) as raster:
             raster.convert("RGB").save(target, format="PNG")
 
-        output.append({"id": key, "title": figure.title, "path": f"awareness/{key}.png"})
+        output.append({"id": key, "title": figure.title, "label": FIGURE_LABELS[key], "path": f"awareness/{key}.png"})
 
     return output

@@ -11,7 +11,7 @@ capture:
     enabled: true
     initial: 6
     minimum: 2
-    maximum: 8
+    maximum: 12
     cooldown_runs: 3
   browser: firefox
   page_timeout_seconds: 30

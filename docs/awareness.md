@@ -83,8 +83,26 @@ can change these selections independently.
 | `checkpoint-comparisons` | `checkpoints` | Latest state compared with earlier visits |
 
 Counts describe recorded evidence, not proficiency or independently assessed
-mastery. Each selected plot receives a full-width appendix page, preserves its
-aspect ratio, and is linked from the first-page Contents.
+mastery. Each selected plot receives a full-width appendix page and preserves its
+aspect ratio. Contents groups the links under **Appendix**, with consecutive
+**Figure 1**, **Figure 2**, and later identifiers. A purpose label of at most two
+words sits beside each identifier at half its text size, both in Contents and on
+the figure page. For example, the connection map is **Connected skills**, and the
+decision chart is **Engineering judgment**. Hidden figures leave no numbering
+gaps; an enabled GitHub contribution appendix is the first figure.
+
+Witful generates projections without embedded outer titles or question subtitles.
+The resume owns their headings; axis labels, legends, and evidence notes remain
+visible. Standalone collection plots retain their titles. Existing bundles must
+be regenerated to remove titles already embedded in their PNGs.
+
+The connection map shows up to twelve disciplines, sized and positioned by
+recent recorded applications. A weighted two-dimensional Gaussian is fitted to
+their layout; its covariance can rotate the ellipse, and opacity fades with
+Mahalanobis distance beyond 1.5 standard deviations, with a readable floor.
+This describes current working emphasis; the full hierarchy, relationship
+export, and historical observations remain available in the source collection.
+See [the map's evidence and layout contract](https://github.com/astrivant/identity/blob/8e07fd1/docs/knowledge-map.md).
 
 ## Configure and push from Witful
 
